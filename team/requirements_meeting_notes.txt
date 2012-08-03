@@ -1,0 +1,25 @@
+- parse linked in for useful past jobs for auto tagging
+  - Facebook? Interests possibly, past work history
+- possible connects more important than perfect  tags
+- frequency of contact indicating best fit, also for calling out bullshit
+
+- how does linked in let you search, mba etc
+- meerggggggee linked in and email
+
+- let people audit the import blob once it happens, remove people they aren't really connected to, edit tags, etc
+  - "keep this person private" button
+
+- don't provide contact details for people, provide a list of people who know him and enforce talking first
+  - send an email giving permission
+
+- maybe try 20 at once, just the important ones at first
+
+- FIGURE OUT GMAIL API, if there is one, and let the email functionality this drive the product. Figure out what we CAN'T do.
+  - search google for email scraping, there has to be a use case for this.
+- gmail api, smtp directly, screen-scraping
+
+
+- tagging / searching will have to be good
+  - autocomplete tag? both in tagging and searching
+  - multiple tag search?
+  - tag cloud?
