@@ -1,15 +1,8 @@
-lib-cov
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
-pids
-logs
-results
+config-local.coffee
 
 node_modules
-npm-debug.log
