@@ -15,7 +15,7 @@
 - Make git automatically push changes in local branches to remote repositories they track.
 	git config push.default upstream
 
-- Get all remote branches (test, staging, prod)
+- Get all remote branches locally (test, staging, prod). Make sure they're all tracking the corresponding remote branches.
 
 
 
@@ -39,7 +39,6 @@
 	git push -u origin prod
 
 
-
 Heroku Add-Ons added
 ====================
 
@@ -47,3 +46,31 @@ Heroku Add-Ons added
 * mongolab
 * memcache
 * mailgun
+
+
+heroku addons:add redistogo:nano --app redfly-dev
+heroku addons:add zerigo_dns:basic --app redfly-dev
+heroku addons:add sendgrid:starter --app redfly-dev
+heroku addons:add bonsai:test --app redfly-dev
+heroku addons:add mongolab:starter --app redfly-dev
+heroku addons:add memcachier:dev --app redfly-dev
+heroku addons:add redistogo:nano --app redfly-test
+heroku addons:add zerigo_dns:basic --app redfly-test
+heroku addons:add sendgrid:starter --app redfly-test
+heroku addons:add bonsai:test --app redfly-test
+heroku addons:add neo4j:test --app redfly-test
+heroku addons:add mongolab:starter --app redfly-test
+heroku addons:add memcachier:dev --app redfly-test
+heroku addons:add redistogo:nano --app redfly-staging
+heroku addons:add zerigo_dns:basic --app redfly-staging
+heroku addons:add sendgrid:starter --app redfly-staging
+heroku addons:add bonsai:test --app redfly-staging
+heroku addons:add mongolab:starter --app redfly-staging
+heroku addons:add memcachier:dev --app redfly-staging
+heroku addons:add redistogo:nano --app redfly-prod
+heroku addons:add zerigo_dns:basic --app redfly-prod
+heroku addons:add sendgrid:starter --app redfly-prod
+heroku addons:add bonsai:test --app redfly-prod
+heroku addons:add mongolab:starter --app redfly-prod
+heroku addons:add memcachier:dev --app redfly-prod
+
