@@ -4,10 +4,10 @@
 	git clone git@github.com:RSV3/redfly.git
 
 - Add the git remotes for respective environments.
-	heroku git:remote -a redfly-dev -r dev
-	heroku git:remote -a redfly-test -r test
-	heroku git:remote -a redfly-staging -r staging
-	heroku git:remote -a redfly-prod -r prod
+	heroku git:remote -a redfly-dev -r heroku-dev
+	heroku git:remote -a redfly-test -r heroku-test
+	heroku git:remote -a redfly-staging -r heroku-staging
+	heroku git:remote -a redfly-prod -r heroku-prod
 
 - Set the test remote as default for heroku commands.
 	git config heroku.remote test
