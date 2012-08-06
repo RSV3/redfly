@@ -6,3 +6,11 @@ Thumbs.db
 config-local.coffee
 
 node_modules
+
+
+
+
+
+public/gen
+lib/
+*.swp
