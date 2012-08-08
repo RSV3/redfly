@@ -1,1 +1,3 @@
-require('derby').run(__dirname + '/lib/server')
+require('coffee-script');
+
+require('derby').run(__dirname + '/lib/server');
