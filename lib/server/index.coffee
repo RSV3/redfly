@@ -68,7 +68,7 @@ expressApp.configure ->
 
 	expressApp.use (req, res, next) ->
 		if process.env.AUTO_AUTH
-			req.session.authenticated =  true
+			req.session.authenticated = true
 			req.session.user = 'Pharcosyle'
 		next()
 	expressApp.use app.router()
