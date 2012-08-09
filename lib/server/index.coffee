@@ -5,7 +5,7 @@ gzippo = require 'gzippo'
 derby = require 'derby'
 mongo = require 'racer-db-mongo'
 
-RedisStore = require('connect-redis')(express)
+# RedisStore = require('connect-redis')(express)
 
 app = require '../app'
 util = require '../util'
