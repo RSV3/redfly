@@ -7,9 +7,4 @@ config-local.coffee
 
 node_modules
 
-
-
-
-
 public/gen
-*.swp

@@ -1,4 +1,8 @@
 require('coffee-script');
 
-// require('derby').run(__dirname + '/lib/server', 3000, {numWorkers: 1, requires: ['coffee-script']});
-require('./lib/server').listen(3000);
+require('./config');
+
+console.info('App starting in ' + process.env.APP_ENV + ' environment');
+require('./lib/server').listen(process.env.PORT || 5000);
+
+// require('derby').run(__dirname + '/lib/server', process.env.PORT || 5000, {numWorkers: 1, requires: ['coffee-script']});

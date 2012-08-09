@@ -10,7 +10,7 @@
 	heroku git:remote -a redfly-prod -r heroku-prod
 
 - Set the test remote as default for heroku commands.
-	git config heroku.remote test
+	git config heroku.remote heroku-test
 
 - Make git automatically push changes in local branches to remote repositories they track.
 	git config push.default upstream
@@ -24,10 +24,10 @@
 ----- One-time setup -------
 
 - Add config variable for each environment to heroku
-	heroku config:add APP_ENV=development --remote dev
-	heroku config:add APP_ENV=test --remote test
-	heroku config:add APP_ENV=staging --remote staging
-	heroku config:add APP_ENV=prod --remote prod
+	heroku config:add APP_ENV=development --remote heroku-dev
+	heroku config:add APP_ENV=test --remote heroku-test
+	heroku config:add APP_ENV=staging --remote heroku-staging
+	heroku config:add APP_ENV=prod --remote heroku-prod
 
 
 - Add the branches for each environment
