@@ -1,4 +1,4 @@
-- parse linked in for useful past jobs for auto tagging
+	- parse linked in for useful past jobs for auto tagging
   - Facebook? Interests possibly, past work history
 - possible connects more important than perfect  tags
 - frequency of contact indicating best fit, also for calling out bullshit
@@ -20,6 +20,21 @@
 
 
 - tagging / searching will have to be good
+  - find a way to resolve related tag ambiguity (medicine vs medical vs health). Maybe force people to use categories? Granularity is not as important as getting the most results!
   - autocomplete tag? both in tagging and searching
   - multiple tag search?
   - tag cloud?
+
+
+
+
+
+
+MVP:
+- use oauth for imap AND redfly authentication
+- gmail oauth
+- email pull/scan, just get contact names (consider only using emails sent to and recieved from an email)
+- tagging/commentup
+-  POSSIBLY: search and newsfeed
+
+- does rapportive have an api? Another way to get a picture form email?

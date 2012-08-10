@@ -24,18 +24,50 @@
 
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
-			<div class="container">
+			<div class="container-fluid">
 				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</a>
 				<a class="brand" href="#">Redfly</a>
+				<div class="btn-group pull-right">
+
+
+					<!--
+					<form class="form-inline">
+						<input type="text" class="input-small" placeholder="Gmail username">
+						<input type="password" class="input-small" placeholder="Password">
+						<label class="checkbox">
+							<input type="checkbox"> Remember me
+						</label>
+						<button type="submit" class="btn">Sign in</button>
+					</form>
+					-->
+
+
+					<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user"></i> Username
+						<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Profile</a></li>
+						<li class="divider"></li>
+						<li><a href="#">Sign Out</a></li>
+					</ul>
+
+
+
+
+				</div>
 				<div class="nav-collapse">
 					<ul class="nav">
 						<li class="active"><a href="#">Home</a></li>
 						<li><a href="#about">About</a></li>
 						<li><a href="#contact">Contact</a></li>
+						<form class="navbar-search pull-left">
+							<input type="text" class="search-query" placeholder="Search">
+						</form>
 					</ul>
 				</div>
 			</div>
@@ -44,17 +76,63 @@
 
 
 <Body:>
-	<header></header>
-	<div role="main" class="container">
-		<h1>Redfly</h1>
-		<p>Redfly provides collaborative people tracking for teams.</p>
-	</div>
-	<footer></footer>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span3">
+				<div class="sidebar-nav well">
+					<!-- <h2>Recent Contacts</h2> -->
+					<div class="well">
+						<h3>John Resig</h3>
+						<p>Added by Kwan Lee on August 9</p>
+						<a class="btn" href="#">View</a>
+					</div><!--/span-->
+
+				</div><!--/.well -->
+			</div><!--/span-->
+			<div class="span9">
+				<div class="row-fluid title">
+					<h1><span class="red">Red</span>fly</h1> v0.1
+				</div><!--/row-->
+				<div class="row-fluid">
+					<p class="lead">Redfly provides collaborative people tracking for teams.</p>
+					<p class="lead">By connecting to your email it can find people that you communicate with and intelligently tag them.</p>
+					<p class="lead">Every few days it will send you an update containing people you've newly emailed or responded to so you can review the collected info and add your own notes.</p>
+					<p class="lead">You'll be able to view the curated contacts of other team members. <strong>No one can use your contacts without getting your permission first</strong>.</p>
+				</div><!--/row-->
+				<div class="row-fluid signup">
+					<a id="connectButton" class="btn btn-primary btn-large">Connect through Gmail</a>
+					<form id="connectForm" class="well hide">
+						<input type="text" placeholder="Username">
+						<input type="password" placeholder="Password">
+						<span class="help-block">Please type the username and password you use to sign in to Gmail. They will not be stored.</span>
+						<!-- <label class="checkbox">
+							<input type="checkbox"> Check me out
+						</label> -->
+						<button type="submit" class="btn">Submit</button>
+					</form>
+				</div>
+			</div><!--/span-->
+		</div><!--/row-->
+
+
+		<hr class="footer-line">
+		<footer>
+			<p>&copy; Redstar 2012</p>
+		</footer>
+	</div><!--/.fluid-container-->
 
 
 <Scripts:>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script src="/bootstrap/bootstrap.js"></script>
+
+	<script src="//coffeescript.org/extras/coffee-script.js"></script>
+
+	<script type="text/coffeescript" x-no-minify>
+		$ ->
+			$('#connectButton').click ->
+				$('#connectButton, #connectForm').toggle()
+	</script>
 
 <Tail:>
 	<!--

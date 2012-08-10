@@ -28,14 +28,13 @@ store.io.configure ->
 
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
-rootPath = path.dirname path.dirname __dirname
-publicPath = path.join rootPath, 'public'
+root = path.dirname path.dirname __dirname
 
-staticPages = derby.createStatic rootPath
+staticPages = derby.createStatic root
 
 expressApp.configure ->
 	# Mail template rendering.
-	expressApp.set 'views', __dirname + '/mail'
+	expressApp.set 'views', root + '/mail'
 	expressApp.set 'view engine', 'jade'
 	expressApp.locals.pretty = true
 
@@ -47,8 +46,8 @@ expressApp.configure ->
 		next()
 	# expressApp.use express.logger('dev')
 	# expressApp.use express.profiler()
-	expressApp.use express.favicon(__dirname + '/resources/favicon.ico')
-	expressApp.use gzippo.staticGzip(publicPath, maxAge: ONE_YEAR)
+	expressApp.use express.favicon(root + '/resources/favicon.ico')
+	expressApp.use gzippo.staticGzip(path.join(root, 'public'), maxAge: ONE_YEAR)
 	expressApp.use express.compress()
 
 	expressApp.use express.bodyParser()
