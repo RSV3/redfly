@@ -47,8 +47,9 @@ expressApp.configure ->
 	# expressApp.use express.logger('dev')
 	# expressApp.use express.profiler()
 	expressApp.use express.favicon(root + '/resources/favicon.ico')
-	expressApp.use gzippo.staticGzip(path.join(root, 'public'), maxAge: ONE_YEAR)
-	expressApp.use express.compress()
+	# expressApp.use gzippo.staticGzip(path.join(root, 'public'), maxAge: ONE_YEAR)
+	expressApp.use express.static(path.join(root, 'public'))
+	# expressApp.use express.compress()
 
 	expressApp.use express.bodyParser()
 	expressApp.use express.methodOverride()
@@ -67,8 +68,7 @@ expressApp.configure ->
 
 	expressApp.use (req, res, next) ->
 		if process.env.AUTO_AUTH
-			req.session.authenticated = true
-			req.session.user = 'Pharcosyle'
+			req.session.user = 'kbaranowski@redstar.com'
 		next()
 	expressApp.use app.router()
 	expressApp.use expressApp.router

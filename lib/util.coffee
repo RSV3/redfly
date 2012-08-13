@@ -22,7 +22,7 @@ transport = mailer.createTransport 'SMTP',
 # 	to: 'receiver1@example.com, receiver2@example.com'
 # 	subject: 'Hello!'
 # 	html: '<strong>Hello world.</strong>'
-mail = (options) ->
+exports.mail = (options) ->
 	if process.env.INTERCEPT_EMAIL
 		options.to = process.env.INTERCEPT_EMAIL
 	transport.sendMail options, (err, response) ->
@@ -31,5 +31,3 @@ mail = (options) ->
 			throw err 
 		else
 			console.info 'Message sent: ' + response.message
-
-exports.mail = mail

@@ -82,8 +82,21 @@
 				<div class="sidebar-nav well">
 					<!-- <h2>Recent Contacts</h2> -->
 					<div class="well">
-						<h3>John Resig</h3>
-						<p>Added by Kwan Lee on August 9</p>
+						<h3>{_contact.name}</h3>
+						<p>Added by {_contact.added_by} on {_contact.date_added}</p>
+						<div class="tagger">
+							{#each _contact.tags as :tag}
+								<span class="tag">
+									<span class="name">
+										{:tag}
+									</span>
+									<a class="close" x-bind="click: remove">&times;</a>
+								</span>
+							{/}
+							<form class="new-tag-form" x-bind="submit: add">
+								<input type="text" name="newTag" class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" data-source="{_availableTags}" value="{_currentTag}">
+							</form>
+						</div>
 						<a class="btn" href="#">View</a>
 					</div><!--/span-->
 
@@ -91,7 +104,10 @@
 			</div><!--/span-->
 			<div class="span9">
 				<div class="row-fluid title">
-					<h1><span class="red">Red</span>fly</h1> v0.1
+					<h1><span class="red">Red</span>fly</h1>
+					<h2>Institutional Memory for Redstar</h2>
+					<br>
+					<div class="version">v0.1</div>
 				</div><!--/row-->
 				<div class="row-fluid">
 					<p class="lead">Redfly provides collaborative people tracking for teams.</p>
@@ -125,14 +141,6 @@
 <Scripts:>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script src="/bootstrap/bootstrap.js"></script>
-
-	<script src="//coffeescript.org/extras/coffee-script.js"></script>
-
-	<script type="text/coffeescript" x-no-minify>
-		$ ->
-			$('#connectButton').click ->
-				$('#connectButton, #connectForm').toggle()
-	</script>
 
 <Tail:>
 	<!--
