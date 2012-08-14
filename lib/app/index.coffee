@@ -6,10 +6,7 @@ derby = require 'derby'
 derby.use(require '../../ui')
 
 
-
-## ROUTES ##
-
-get '/', (page, model) ->
+get '*', (page, model, params, next) ->
 	model.subscribe 'contacts.178', (err, contact) ->
 		model.ref '_contact', contact
 
@@ -22,11 +19,9 @@ get '/', (page, model) ->
 						unless availableTags.indexOf(tag) isnt -1 or tags.indexOf(tag) isnt -1
 							availableTags.push tag
 			return availableTags
-			
-		page.render()
 
+	next()
 
-## CONTROLLER FUNCTIONS ##
 
 ready (model) ->
 	contact = model.at 'contacts.178'
@@ -53,8 +48,8 @@ ready (model) ->
 		model.remove path, tag.leaf()
 
 	$ ->
-		$('#connectButton').click ->
-			$('#connectButton, #connectForm').toggle()
-
 		$('.tagger').click ->
 			$(this).find('.new-tag').focus()
+
+
+require './home'
