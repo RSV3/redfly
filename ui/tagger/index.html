@@ -1,0 +1,14 @@
+<tagger:>
+	<div class="tagger">
+		{#each _contact.tags as :tag}
+			<span class="tag">
+				<span class="name">
+					{:tag}
+				</span>
+				<a class="close" x-bind="click: remove">&times;</a>
+			</span>
+		{/}
+		<form class="new-tag-form" x-bind="submit: add">
+			<input type="text" name="newTag" class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" data-source="{_availableTags}" value="{_currentTag}">
+		</form>
+	</div>

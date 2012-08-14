@@ -1,4 +1,8 @@
 <import: src="home">
+<import: src="contact">
+<import: src="search">
+<import: src="tags">
+<import: src="report">
 
 
 <Root:>
@@ -87,19 +91,9 @@
 					<div class="well">
 						<h3>{_contact.name}</h3>
 						<p>Added by {_contact.added_by} on {_contact.date_added}</p>
-						<div class="tagger">
-							{#each _contact.tags as :tag}
-								<span class="tag">
-									<span class="name">
-										{:tag}
-									</span>
-									<a class="close" x-bind="click: remove">&times;</a>
-								</span>
-							{/}
-							<form class="new-tag-form" x-bind="submit: add">
-								<input type="text" name="newTag" class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" data-source="{_availableTags}" value="{_currentTag}">
-							</form>
-						</div>
+
+						<ui:tagger>
+						
 						<a class="btn" href="#">View</a>
 					</div><!--/span-->
 

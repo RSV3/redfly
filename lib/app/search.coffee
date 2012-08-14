@@ -1,8 +1,8 @@
 {get, ready, view} = require './index'
 
 
-get '/', (page, model) ->
-	page.render 'home'
+get '/search', (page, model) ->
+	page.render 'search'
 
 
 ready (model) ->
