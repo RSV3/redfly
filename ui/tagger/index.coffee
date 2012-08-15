@@ -1,5 +1,6 @@
 # Called on both the server and browser before rendering.
 exports.init = (model) ->
+	# TODO XXX
 	model.fn '_availableTags', 'contacts', (contacts) ->
 		return ['asdfadfasdf', 'qwer']
 

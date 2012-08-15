@@ -26,9 +26,9 @@ store.io.configure ->
 	store.io.set 'transports', ['xhr-polling']
 	store.io.set 'polling duration', 10
 
-store.query.expose 'contacts', 'recent', ->
-	@sort('date').limit(5)
-
+# Subscribing to a collection returns an object and not an array by default, which is annoying. This query motif returns an array.
+store.query.expose 'contacts', 'all', ->
+	return this
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
