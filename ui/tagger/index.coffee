@@ -16,17 +16,21 @@ exports.create = (model, dom) ->
 
 
 exports.add = (event, element) ->
-	# contact = model.at 'contacts.178'
+	model = @model
 
-	# currentTag = model.at '_currentTag'
-	# tag = currentTag.get()?.trim()
-	# if tag
-	# 	tags = contact.at 'tags'
-	# 	if not _.contains tags.get(), tag
-	# 		tags.push tag
-	# 	currentTag.set ''
+	contact = model.at 'contacts.178'
+
+	currentTag = model.at '_currentTag'
+	tag = currentTag.get()?.trim()
+	if tag
+		tags = contact.at 'tags'
+		if not _.contains tags.get(), tag
+			tags.push tag
+		currentTag.set ''
 
 exports.remove = (event, element) ->
+	model = @model
+	
 	tag = model.at element
 	# tags = model.parent tag
 	# model.remove tags.path(), tag.leaf()
