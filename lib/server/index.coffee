@@ -26,6 +26,9 @@ store.io.configure ->
 	store.io.set 'transports', ['xhr-polling']
 	store.io.set 'polling duration', 10
 
+store.query.expose 'contacts', 'recent', ->
+	@sort('date').limit(5)
+
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
