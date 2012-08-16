@@ -19,7 +19,6 @@ ready (model) ->
 		return ['asdfadfasdf', 'qwer']
 	
 	model.on 'set', '_currentTag', ->
-		console.log '33333'
 		field = $('.new-tag')
 		field.attr 'size', 1 + field.val().length
 
@@ -28,7 +27,6 @@ ready (model) ->
 			$(this).find('.new-tag').focus()
 
 	@add = (event, element) ->
-		console.log 'asdf'
 		contact = model.at 'contacts.178'
 
 		currentTag = model.at '_currentTag'
@@ -40,7 +38,6 @@ ready (model) ->
 			currentTag.set ''
 
 	@remove = (event, element) ->
-		console.log 'qwer'
 		tag = model.at element
 		# tags = model.parent tag
 		# model.remove tags.path(), tag.leaf()

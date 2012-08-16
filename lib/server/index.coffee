@@ -27,6 +27,7 @@ store.io.configure ->
 	store.io.set 'polling duration', 10
 
 # Subscribing to a collection returns an object and not an array by default, which is annoying. This query motif returns an array.
+# TODO XXX THIS DOESN'T WORK
 store.query.expose 'contacts', 'all', ->
 	return this
 
