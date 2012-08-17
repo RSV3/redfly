@@ -1,3 +1,16 @@
+MVP:
+- use oauth for imap AND redfly authentication
+- gmail oauth
+- email pull/scan, just get contact names (consider only using emails sent to and recieved from an email)
+- tagging/commentup
+-  POSSIBLY: search and newsfeed
+
+- does rapportive have an api? Another way to get a picture form email?
+
+
+
+
+
 	- parse linked in for useful past jobs for auto tagging
   - Facebook? Interests possibly, past work history
 - possible connects more important than perfect  tags
@@ -30,11 +43,17 @@
 
 
 
-MVP:
-- use oauth for imap AND redfly authentication
-- gmail oauth
-- email pull/scan, just get contact names (consider only using emails sent to and recieved from an email)
-- tagging/commentup
--  POSSIBLY: search and newsfeed
 
-- does rapportive have an api? Another way to get a picture form email?
+- understanding of the underlying data is crucial to glean more than the most trivial insights from visualization
+- it's easy, alarmingly easy, to create a visualization that looks pretty without conveying anything at all
+-  "spring" network for generating networks: iteratively push people together who know each other and push people apart who don't until the network stops springing around
+- community detection algorithms, quick-and-dirty ones are good enough
+- don't put yourself at the center of a graph of your contacts! (Or in it at all) It occludes the relationships between people you know, which is really what you're interested in.
+- scalable visualizations generate far more 
+
+
+- people that you and someone else know in common
+- sigma.js?
+
+
+bernie.hogan@gmail.com
