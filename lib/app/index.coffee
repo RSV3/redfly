@@ -7,9 +7,15 @@ derby.use(require '../../ui')
 
 
 get '*', (page, model, params, next) ->
-	model.subscribe 'contacts', (err, contacts) ->
+	# TODO XXX
+	# model.subscribe 'contacts', (err, contacts) ->
+	# 	throw err if err
+	# 	model.ref '_recentContacts', model.sort('contacts', 'date')
+	model.subscribe 'contacts.178', (err, contact) ->
 		throw err if err
-		model.ref '_recentContacts', model.sort('contacts', 'date')
+		model.ref '_recentContact', contact
+
+
 
 		next()	# TODO XXX does this need to be scoped into 'subscribe'?
 

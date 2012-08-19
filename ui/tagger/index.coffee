@@ -16,9 +16,8 @@ exports.create = (model, dom) ->
 	# 					availableTags.push tag
 	# 	return availableTags
 
-	contact = model.at('contact')
-	# Workaround, macros don't seem to work
-	model.ref '_contact', contact
+	contact = model.at 'contact'
+	tags = contact.at 'tags'
 
 	model.fn '_availableTags', 'contacts', (contacts) ->
 		return ['asdfadfasdf', 'qwer']
@@ -35,15 +34,10 @@ exports.create = (model, dom) ->
 		currentTag = model.at '_currentTag'
 		tag = currentTag.get()?.trim()
 		if tag
-			tags = contact.at 'tags'
 			if not _.contains tags.get(), tag
 				tags.push tag
 			currentTag.set ''
 
 	@remove = (event, element) ->
 		tag = model.at element
-		# tags = model.parent tag
-		# model.remove tags.path(), tag.leaf()
-		# TODO hack
-		path = tag.path().substring(0, tag.path().lastIndexOf('.'))
-		model.remove path, tag.leaf()
+		tags.remove tag.leaf()
