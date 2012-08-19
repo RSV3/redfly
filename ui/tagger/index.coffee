@@ -22,9 +22,9 @@ exports.create = (model, dom) ->
 
 	model.fn '_availableTags', 'contacts', (contacts) ->
 		return ['asdfadfasdf', 'qwer']
-	
+
 	model.on 'set', '_currentTag', ->
-		field = $('.new-tag')
+		field = $(dom.element('new-tag'))
 		field.attr 'size', 1 + field.val().length
 
 	$ ->

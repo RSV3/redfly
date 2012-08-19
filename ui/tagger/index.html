@@ -9,6 +9,6 @@
 			</span>
 		{/}
 		<form class="new-tag-form" x-bind="submit: add">
-			<input type="text" name="newTag" class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" data-source="{:self._availableTags}" value="{:self._currentTag}">
+			<input type="text" name="newTag" class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" data-source="{:self._availableTags}" value="{:self._currentTag}" x-as="new-tag">
 		</form>
 	</div>
