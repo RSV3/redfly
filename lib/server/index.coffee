@@ -31,6 +31,8 @@ model = store.createModel()
 model.set 'contacts.178.name', 'John Resig'
 model.set 'contacts.178.added_by', 'Kwan Lee'
 model.set 'contacts.178.date', new Date
+model.push 'contacts.178.tags', 'Sweet Tag Bro'
+model.push 'contacts.178.tags', 'VC'
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname

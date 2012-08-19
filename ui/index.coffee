@@ -3,7 +3,7 @@ config =
 	styles: '../styles/ui'
 	scripts:
 		connectionAlert: require './connectionAlert'
-		# tagger: require './tagger'
+		tagger: require './tagger'
 
 ui = (derby, options) ->
 	derby.createLibrary config, options
