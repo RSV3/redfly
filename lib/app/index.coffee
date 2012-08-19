@@ -7,14 +7,24 @@ derby.use(require '../../ui')
 
 
 get '*', (page, model, params, next) ->
-	model.subscribe model.query('contacts').all(), (err, contacts) ->
+	model.subscribe 'contacts', (err, contacts) ->
 		throw err if err
-		model.ref '_recentContacts', contacts # TODO XXX contacts.sort('date')
+		model.ref '_recentContacts', model.sort('contacts', 'date')
 
 		next()	# TODO XXX does this need to be scoped into 'subscribe'?
 
 ready (model) ->
-	# TODO XXX
+	# TODO XXX I never tested this, comment it back in and remove the other _availableTags below
+	# model.fn '_availableTags', 'contacts', 'contacts.178.tags', (contacts, tags) ->
+	# 	# Model.fn must be pure function so I can't use underscore to do this, and even coffeescipt lexical scoping sometimes causes errors.
+	# 	availableTags = []
+	# 	for id, contact of contacts
+	# 		if contact.tags
+	# 			for tag in contact.tags
+	# 				unless availableTags.indexOf(tag) isnt -1 or tags.indexOf(tag) isnt -1
+	# 					availableTags.push tag
+	# 	return availableTags
+
 	model.fn '_availableTags', 'contacts', (contacts) ->
 		return ['asdfadfasdf', 'qwer']
 	

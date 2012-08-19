@@ -16,20 +16,21 @@ expressApp = express()
 server = module.exports = http.createServer expressApp
 
 derby.use derby.logPlugin
-derby.use mongo
+# derby.use mongo
 store = derby.createStore
 	listen: server
-	db: type: 'Mongo', uri: process.env.MONGOLAB_URI
+	# db: type: 'Mongo', uri: process.env.MONGOLAB_URI
 
 # Heroku doesn't support websockets, force long polling.
 store.io.configure ->
 	store.io.set 'transports', ['xhr-polling']
 	store.io.set 'polling duration', 10
 
-# Subscribing to a collection returns an object and not an array by default, which is annoying. This query motif returns an array.
-# TODO XXX THIS DOESN'T WORK
-store.query.expose 'contacts', 'all', ->
-	return this
+# TODO XXX delete these
+model = store.createModel()
+model.set 'contacts.178.name', 'John Resig'
+model.set 'contacts.178.added_by', 'Kwan Lee'
+model.set 'contacts.178.date', new Date
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
