@@ -83,10 +83,10 @@ expressApp.configure ->
 		# 	pass: redisToGo.auth.split(':')[1]
 	expressApp.use store.modelMiddleware()
 
-	expressApp.use (req, res, next) ->
-		if process.env.AUTO_AUTH
-			req.session.user = 'kbaranowski@redstar.com'
-		next()
+	# expressApp.use (req, res, next) ->	# TODO Bring this back if it still applies.
+	# 	if process.env.AUTO_AUTH
+	# 		req.session.user = 178
+	# 	next()
 	expressApp.use app.router()
 	expressApp.use expressApp.router
 

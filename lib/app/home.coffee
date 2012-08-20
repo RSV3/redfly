@@ -7,3 +7,5 @@ get '/', (page, model) ->
 
 ready (model) ->
 	$ ->
+		$('#connectButton').click ->
+			$('#connectButton, #connectForm').toggle()

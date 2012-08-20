@@ -41,5 +41,4 @@ exports.create = (model, dom) ->
 			currentTag.set ''
 
 	@remove = (event, element) ->
-		tag = model.at element
-		tags.remove tag.leaf()
+		model.at(element).remove()
