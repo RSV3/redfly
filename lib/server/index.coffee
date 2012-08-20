@@ -30,9 +30,19 @@ store.io.configure ->
 model = store.createModel()
 model.set 'contacts.178.name', 'John Resig'
 model.set 'contacts.178.added_by', 'Kwan Lee'
-model.set 'contacts.178.date', new Date
+model.set 'contacts.178.date', +new Date
 model.push 'contacts.178.tags', 'Sweet Tag Bro'
 model.push 'contacts.178.tags', 'VC'
+model.push 'contacts.178.notes',
+	date: +new Date
+	text: 'Lorem ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+	author: 178
+model.push 'contacts.178.notes',
+	date: +new Date
+	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+	author: 178
+model.set 'users.178.email', 'kbaranowski@redstar.com'
+model.set 'users.178.name', 'Krzysztof Baranowski'
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname

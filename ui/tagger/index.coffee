@@ -16,6 +16,8 @@ exports.create = (model, dom) ->
 	# 					availableTags.push tag
 	# 	return availableTags
 
+	#TODO input size isn't changing when typeahead preselect gets entered
+
 	contact = model.at 'contact'
 	tags = contact.at 'tags'
 

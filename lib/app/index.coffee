@@ -1,9 +1,15 @@
 _ = require 'underscore'
+moment = require 'moment'
 derby = require 'derby'
 
 {get, view, ready} = derby.createApp module
 
 derby.use(require '../../ui')
+
+
+view.fn 'date', (date) ->
+	moment(date).format('MMMM Do, YYYY')
+
 
 
 get '*', (page, model, params, next) ->
@@ -16,8 +22,12 @@ get '*', (page, model, params, next) ->
 		model.ref '_recentContact', contact
 
 
+		model.fetch 'users.178', (err, user) ->	# TODO XXX only if signed in, also do this better
+			throw err if err
+			model.ref '_user', user
 
-		next()	# TODO XXX does this need to be scoped into 'subscribe'?
+			next()	# TODO XXX does this need to be scoped?
+
 
 require './home'
 require './contact'
