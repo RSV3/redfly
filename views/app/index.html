@@ -39,33 +39,26 @@
 				</a>
 				<a class="brand" href="#">Redfly</a>
 				<div class="btn-group pull-right">
-
-
-					<!--
-					<form class="form-inline">
-						<input type="text" class="input-small" placeholder="Gmail username">
-						<input type="password" class="input-small" placeholder="Password">
-						<label class="checkbox">
-							<input type="checkbox"> Remember me
-						</label>
-						<button type="submit" class="btn">Sign in</button>
-					</form>
-					-->
-
-
-					<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-						<i class="icon-user"></i> Username
-						<span class="caret"></span>
-					</a>
-					<ul class="dropdown-menu">
-						<li><a href="#">Profile</a></li>
-						<li class="divider"></li>
-						<li><a href="#">Sign Out</a></li>
-					</ul>
-
-
-
-
+					{#if not(_user)}
+						<form class="form-inline" x-bind="submit: connect">
+							<input type="text" class="input-small" placeholder="Email" value="{_email}">
+							<!-- <input type="password" class="input-small" placeholder="Password"> -->
+							<!-- <label class="checkbox">
+								<input type="checkbox"> Remember me
+							</label> -->
+							<button type="submit" class="btn" disabled="{_connectStarted}">Log In</button>
+						</form>
+					{else}
+						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+							<i class="icon-user"></i> {_user.username}
+							<span class="caret"></span>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a href="#">Profile (not yet)</a></li>	<!-- TODO XXX put something here -->
+							<li class="divider"></li>
+							<li><a href="#">Log Out (not yet)</a></li>	<!-- <li><a href="/logout">Log Out</a></li> -->
+						</ul>
+					{/}
 				</div>
 				<div class="nav-collapse">
 					<ul class="nav">

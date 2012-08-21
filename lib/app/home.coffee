@@ -6,6 +6,5 @@ get '/', (page, model) ->
 
 
 ready (model) ->
-	$ ->
-		$('#connectButton').click ->
-			$('#connectButton, #connectForm').toggle()
+	@toggle = ->
+		model.set '_showConnect', true

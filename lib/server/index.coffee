@@ -26,6 +26,29 @@ store.io.configure ->
 	store.io.set 'transports', ['xhr-polling']
 	store.io.set 'polling duration', 10
 
+myapp = store.io.of('/myapp').on 'connection', (socket) ->
+	socket.on 'login', (email, fn) ->
+		# TODO this is just for demonstrating if I use other socketio. Don't comment back in.
+		# model = store.createModel()
+		# model.fetch model.query('users').findByEmail(email), (err, userModel) ->
+		# 	throw err if err
+		# 	user = userModel.get()
+		# 	if user
+		# 		socket.set 'userId', user.id, ->
+		# 			fn()
+		# 	else
+		# 		oauth = require 'oauth-gmail'
+		# 		client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+		# 		client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+		# 			throw err if err
+		# 			fn result.authorizeUrl
+
+		# 		# TODO XXX add user with username to database
+
+
+store.query.expose 'users', 'findByEmail', (email) ->
+	@where('email').equals(email).one()
+
 # TODO XXX delete these
 model = store.createModel()
 model.set 'contacts.178.name', 'John Resig'
@@ -41,8 +64,8 @@ model.push 'contacts.178.notes',
 	date: +new Date
 	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
 	author: 178
-model.set 'users.178.email', 'kbaranowski@redstar.com'
-model.set 'users.178.name', 'Krzysztof Baranowski'
+# model.set 'users.178.email', 'kbaranowski@redstar.com'
+# model.set 'users.178.name', 'Krzysztof Baranowski'
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
@@ -110,6 +133,27 @@ expressApp.configure 'production', ->
 
 
 
-# Server-only routes go here.
-# expressApp.all '*', (req) ->
-# 	throw "404: #{req.url}"
+# Server-only routes.
+
+expressApp.post '/login', (req, res) ->
+	# If the user has never logged in before, redirect to gmail oauth page. Otherwise, log in.
+	model = req.getModel()
+	email = req.body.email
+	model.fetch model.query('users').findByEmail(email), (err, userModel) ->
+		throw err if err
+		user = userModel.get()
+		# if user and user.password is req.body.password
+		if user
+			model.session.user = user.id
+			res.send()
+		else
+			oauth = require 'oauth-gmail'
+			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+			client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+				throw err if err
+				model.session.authorizeData = email: email, request: result
+				res.send result.authorizeUrl
+
+expressApp.get '/logout', (req, res) ->
+	req.getModel().session.destroy()	# TODO XXX try logging out and see if destorying the session is okay (derby puts some stuff there), or if this even works. Try conssole.dir req.getModel().session and see if there's a destroy method.
+	res.redirect '/'

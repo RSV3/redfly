@@ -14,16 +14,21 @@
 				<p class="lead">You'll be able to view the curated contacts of other team members. <strong>No one can use your contacts without getting your permission first</strong>.</p>
 			</div><!--/row-fluid-->
 			<div class="row-fluid signup">
-				<a id="connectButton" class="btn btn-primary btn-large">Connect through Gmail</a>
-				<form id="connectForm" class="well hide">
-					<input type="text" placeholder="Username">
-					<input type="password" placeholder="Password">
-					<span class="help-block">Please type the username and password you use to sign in to Gmail. They will not be stored.</span>
-					<!-- <label class="checkbox">
-						<input type="checkbox"> Check me out
-					</label> -->
-					<button type="submit" class="btn">Sign in</button>
-				</form>
+				{#if not(_user)}
+					{#if not(_showConnect)}
+						<a class="btn btn-primary btn-large" x-bind="click: toggle">Connect through email</a>
+					{else}
+						<form class="well" x-bind="submit: connect">
+							<input type="text" placeholder="hugh.jass@redstar.com" value="{_email}">
+							<!-- <input type="password" placeholder="Password"> -->
+							<span class="help-block">Type your Redstar email (or your Gmail if you don't have one).</span>
+							<!-- <label class="checkbox">
+								<input type="checkbox"> Check me out
+							</label> -->
+							<button type="submit" class="btn" disabled="{_connectStarted}">Log In</button>
+						</form>
+					{/}
+				{/}
 			</div>
 		</div>
 	</app:content>
