@@ -43,7 +43,7 @@ ready (model) ->
 		if email
 			model.set '_connectStarted', true
 			# If only the username was typed, make it a proper email.
-			if email.indexOf '@' isnt -1
+			if email.indexOf('@') isnt -1
 				email += '@redstar.com'
 			$.post '/login', email: email, (redirect) ->
 				window.location.href = redirect or '/profile'

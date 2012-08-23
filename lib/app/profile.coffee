@@ -39,22 +39,21 @@ ready (model) ->
 	if getParameterByName 'signup'
 
 		user = model.at('_user').get()
+		loading = $.pnotify loadingOptions
 
 		currentModel = model.at '_loadercurrent'
 		totalModel = model.at '_loadertotal'
 
 		socket = io.connect 'http://localhost:5000/myapp/loader' # TODO XXX make be not localhost (autodiscovery?), search for other calls like this
-		socket.emit 'parse', user.id
+		socket.emit 'parse', user.id, ->
+			loading.effect 'bounce'
+			loading.pnotify type: 'success', closer: true
 		socket.on 'start', (total) ->
 			currentModel.set 0
 			totalModel.set total
-			loading = $.pnotify loadingOptions
 
 			socket.on 'update', ->
 				currentModel.incr()
-				if currentModel.get() is totalModel.get()
-					loading.effect 'bounce'
-					loading.pnotify type: 'success', closer: true
 
 		model.fn '_loaderpercent', '_loadercurrent', '_loadertotal', (current, total) ->
 			if not current or not total

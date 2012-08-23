@@ -29,27 +29,46 @@ store.io.configure ->
 	store.io.set 'polling duration', 10
 
 myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
-	socket.on 'parse', (id) ->
+	socket.on 'parse', (id, fn) ->
 		model = store.createModel()
 		model.fetch 'users.' + id, (err, userModel) ->
 			throw err if err
 			user = userModel.get()
+			notifications =
+				foundName: (name) ->
+					userModel.set 'name', name	# TODO XXX user name setting isn't working OR IS IT
+				foundTotal: (total) ->
+					socket.emit 'start', total
+				completedEmail: ->
+					socket.emit 'update'
+				done: (newContacts) ->
+					for newContact in newContacts
+						model.fetch model.query('contacts').findByEmail(email), (err, contactModel) ->
+							throw err if err
+							contact = contactModel.get()
+							# If the contact doesn't exist yet, just go ahead and add it!
+							if not contact
+								newContact.id = model.id()
+								model.set 'contacts.' + newContact.id, newContact
+							# If the contact does exist, merge our new data into it.
+							else
+								knowsModel = model.at contactModel.path() + '.knows.' + user.id
+								knows = newContact.knows[user.id]
+								if not knowsModel.get()
+									knowsModel.set knows
+								else
+									knowsModel.incr 'count', knows.count
 
-			# ... find the users's name
-			name = 'Bob Bobson'
-			model.set 'users.' + user.id + '.name', name	# TODO XXX user name setting isn't working OR IS IT
-
-			# ... get the total number of emails
-			total = 12
-			socket.emit 'start', total
-
-			# .. parse some emails, give updates when each one is done
-			oauth = require 'oauth-gmail'
-			xoauth = client.xoauthString user.email, user.oauth.token, user.oauth.secret
-			socket.emit 'update'
+					userModel.set 'last_parse_date', +new Date
+					# Callback to the 'parse' event, to tell the frontend parsing indicator we're all done here.
+					fn()
+			require('../parser')(user, notifications)
 
 
 store.query.expose 'users', 'findByEmail', (email) ->
+	@where('email').equals(email).one()
+
+store.query.expose 'contacts', 'findByEmail', (email) ->
 	@where('email').equals(email).one()
 
 store.query.expose 'contacts', 'addedBy', (user) ->
@@ -58,11 +77,18 @@ store.query.expose 'contacts', 'addedBy', (user) ->
 		user = user.id
 	@where('added_by').equals(user)
 
-# TODO XXX delete these
+# TODO XXX comment these out
 model = store.createModel()
 model.set 'contacts.178.name', 'John Resig'
-model.set 'contacts.178.added_by', '178'
+model.set 'contacts.178.email', 'john@name.com'
 model.set 'contacts.178.date', +new Date
+model.set 'contacts.178.added_by', '178'
+model.set 'contacts.178.date_added', +new Date
+model.set 'contacts.178.knows.178',
+		first_email:
+			date: +new Date
+			subject: 'Poopty Peupty pants'
+		count: 47
 model.push 'contacts.178.tags', 'Sweet Tag Bro'
 model.push 'contacts.178.tags', 'VC'
 model.push 'contacts.178.notes',
@@ -194,7 +220,7 @@ expressApp.get '/authorized', (req, res) ->
 			email: data.email
 			oauth:
 				token: result.accessToken
-				secret result.accessTokenSecret
+				secret: result.accessTokenSecret
 		model.set 'users.' + id, user
 		login req, id, res
 

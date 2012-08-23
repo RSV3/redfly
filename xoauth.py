@@ -356,6 +356,7 @@ def GenerateXOauthString(consumer, access_token, user, proto,
       method,
       request_url_base,
       signed_params)
+  print 'BASE STRING:' + base_string
   print 'signature base string:\n' + base_string + '\n'
   signature = GenerateOauthSignature(base_string, consumer.secret,
                                      access_token.secret)
