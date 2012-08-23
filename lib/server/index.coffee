@@ -36,14 +36,17 @@ myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
 			user = userModel.get()
 			notifications =
 				foundName: (name) ->
-					userModel.set 'name', name	# TODO XXX user name setting isn't working OR IS IT
+					userModel.set 'name', name
 				foundTotal: (total) ->
 					socket.emit 'start', total
 				completedEmail: ->
 					socket.emit 'update'
 				done: (newContacts) ->
-					for newContact in newContacts
-						model.fetch model.query('contacts').findByEmail(newContact.email), (err, contactModel) ->
+					step = require 'step'
+					step ->
+							for newContact in newContacts
+								model.fetch model.query('contacts').findByEmail(newContact.email), @parallel()
+						, (err, contactModels...) ->
 							throw err if err
 							contact = contactModel.get()
 							# If the contact doesn't exist yet, just go ahead and add it!
@@ -60,8 +63,10 @@ myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
 									knowsModel.incr 'count', knows.count
 								# Sometimes the contact's name and email are the same, in the system because they were emailed without an a name
 								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
-								if (contact.name.indexOf('@') isnt -1) and (newContact.name.indexOf('@') isnt -1)
+								if not contact.name?.trim() or
+										((contact.name.indexOf('@') isnt -1) and (newContact.name.indexOf('@') isnt -1))
 									contactModel.set 'name', newContact.name
+
 
 					userModel.set 'last_parse_date', +new Date
 					# Callback to the 'parse' event, to tell the frontend parsing indicator we're all done here.
@@ -76,36 +81,37 @@ store.query.expose 'contacts', 'findByEmail', (email) ->
 	@where('email').equals(email).one()
 
 store.query.expose 'contacts', 'addedBy', (user) ->
+	_ = require 'underscore'
 	# Arguement can be a user object or just and ID.	# Maybe also allow a Derby model?
 	if _.isObject user
 		user = user.id
 	@where('added_by').equals(user)
 
 
-# TODO XXX comment these out
-model = store.createModel()
-model.set 'contacts.178.name', 'John Resig'
-model.set 'contacts.178.email', 'john@name.com'
-model.set 'contacts.178.date', +new Date
-model.set 'contacts.178.added_by', '178'
-model.set 'contacts.178.date_added', +new Date
-model.set 'contacts.178.knows.178',
-		first_email:
-			date: +new Date
-			subject: 'Poopty Peupty pants'
-		count: 47
-model.push 'contacts.178.tags', 'Sweet Tag Bro'
-model.push 'contacts.178.tags', 'VC'
-model.push 'contacts.178.notes',
-	date: +new Date
-	text: 'Lorem ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
-	author: '178'
-model.push 'contacts.178.notes',
-	date: +new Date
-	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
-	author: '178'
+# TODO XXX comment out
+# model = store.createModel()
 # model.set 'users.178.email', 'kbaranowski@redstar.com'
 # model.set 'users.178.name', 'Krzysztof Baranowski'
+# model.set 'contacts.178.name', 'John Resig'
+# model.set 'contacts.178.email', 'john@name.com'
+# model.set 'contacts.178.date', +new Date
+# model.set 'contacts.178.added_by', '178'
+# model.set 'contacts.178.date_added', +new Date
+# model.set 'contacts.178.knows.178',
+# 		first_email:
+# 			date: +new Date
+# 			subject: 'Poopty Peupty pants'
+# 		count: 47
+# model.push 'contacts.178.tags', 'Sweet Tag Bro'
+# model.push 'contacts.178.tags', 'VC'
+# model.push 'contacts.178.notes',
+# 	date: +new Date
+# 	text: 'Lorem ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+# 	author: '178'
+# model.push 'contacts.178.notes',
+# 	date: +new Date
+# 	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+# 	author: '178'
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname

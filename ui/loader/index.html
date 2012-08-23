@@ -2,13 +2,13 @@
 	<div class="hide">
 		<div id="loadingStarted">
 			<!-- TODO bring this back and make _models in index not have 'loader' prefix
-<!-- 			{#unless equal(:self._current, :self._total)}
+				{#unless equal(:self._current, :self._total)}
 				<div>{:self._current} of {:self._total}</div>
 				<div class="progress progress-striped active">
 					<div class="bar" style="width: {:self._percent}%;"></div>
 				</div>
 			{else}
-				All done! <a href="/classify">Start classifying</a>.
+				All done! <a href="/classify">Start classifying</a>, dude.
 			{/} -->
 			{#unless equal(_loadercurrent, _loadertotal)}
 				<div>{_loadercurrent} of {_loadertotal}</div>
@@ -16,7 +16,7 @@
 					<div class="bar" style="width: {_loaderpercent}%;"></div>
 				</div>
 			{else}
-				All done! <a href="/classify">Start classifying</a>.
+				All done! <a href="/classify">Start classifying</a>, dude.
 			{/}
 		</div>
 	</div>

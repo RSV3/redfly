@@ -39,7 +39,7 @@ ready (model) ->
 	if getParameterByName 'signup'
 
 		user = model.at('_user').get()
-		loading = $.pnotify loadingOptions
+		loading = null
 
 		currentModel = model.at '_loadercurrent'
 		totalModel = model.at '_loadertotal'
@@ -51,6 +51,7 @@ ready (model) ->
 		socket.on 'start', (total) ->
 			currentModel.set 0
 			totalModel.set total
+			loading = $.pnotify loadingOptions
 
 			socket.on 'update', ->
 				currentModel.incr()
