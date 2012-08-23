@@ -15,7 +15,8 @@
 		"nib": "0.7.0",
 		"nodemailer": "0.3.22",
 		"oauth-gmail": "0.0.1",
-		"imap": "0.3.2"
+		"imap": "0.3.2",
+		"mimelib": "0.1.18"
 	},
 	"scripts": {
 		"start": "node main"

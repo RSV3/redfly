@@ -39,11 +39,11 @@ get '*', (page, model, params, next) ->
 ready (model) ->
 	@connect = ->
 		emailModel = model.at '_email'
-		email = emailModel.get()?.trim()
+		email = emailModel.get()?.trim().toLowerCase()
 		if email
 			model.set '_connectStarted', true
 			# If only the username was typed, make it a proper email.
-			if email.indexOf('@') isnt -1
+			if email.indexOf('@') is -1
 				email += '@redstar.com'
 			$.post '/login', email: email, (redirect) ->
 				window.location.href = redirect or '/profile'

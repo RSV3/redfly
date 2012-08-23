@@ -43,7 +43,7 @@ myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
 					socket.emit 'update'
 				done: (newContacts) ->
 					for newContact in newContacts
-						model.fetch model.query('contacts').findByEmail(email), (err, contactModel) ->
+						model.fetch model.query('contacts').findByEmail(newContact.email), (err, contactModel) ->
 							throw err if err
 							contact = contactModel.get()
 							# If the contact doesn't exist yet, just go ahead and add it!
@@ -58,6 +58,10 @@ myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
 									knowsModel.set knows
 								else
 									knowsModel.incr 'count', knows.count
+								# Sometimes the contact's name and email are the same, in the system because they were emailed without an a name
+								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
+								if (contact.name.indexOf('@') isnt -1) and (newContact.name.indexOf('@') isnt -1)
+									contactModel.set 'name', newContact.name
 
 					userModel.set 'last_parse_date', +new Date
 					# Callback to the 'parse' event, to tell the frontend parsing indicator we're all done here.
@@ -76,6 +80,7 @@ store.query.expose 'contacts', 'addedBy', (user) ->
 	if _.isObject user
 		user = user.id
 	@where('added_by').equals(user)
+
 
 # TODO XXX comment these out
 model = store.createModel()
