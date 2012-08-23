@@ -4,6 +4,7 @@ config =
 	scripts:
 		connectionAlert: require './connectionAlert'
 		tagger: require './tagger'
+		loader: require './loader'
 
 ui = (derby, options) ->
 	derby.createLibrary config, options

@@ -1,4 +1,5 @@
 <import: src="home">
+<import: src="profile">
 <import: src="contact">
 <import: src="search">
 <import: src="tags">
@@ -37,7 +38,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</a>
-				<a class="brand" href="#">Redfly</a>
+				<a class="brand" href="/">Redfly</a>
 				<div class="btn-group pull-right">
 					{#if not(_user)}
 						<form class="form-inline" x-bind="submit: connect">
@@ -50,20 +51,20 @@
 						</form>
 					{else}
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-							<i class="icon-user"></i> {_user.username}
+							<i class="icon-user"></i> {_user.name}
 							<span class="caret"></span>
 						</a>
 						<ul class="dropdown-menu">
-							<li><a href="#">Profile (not yet)</a></li>	<!-- TODO XXX put something here -->
+							<li><a href="/profile">Profile</a></li>
 							<li class="divider"></li>
-							<li><a href="#">Log Out (not yet)</a></li>	<!-- <li><a href="/logout">Log Out</a></li> -->
+							<li><a href="/logout">Log Out</a></li>
 						</ul>
 					{/}
 				</div>
 				<div class="nav-collapse">
 					<ul class="nav">
-						<!-- TODO make the active tab switch: page('home', 'active') -->
-						<li class="active"><a href="/">Home</a></li>
+						<!-- TODO make the active class="active" tab switch: page('home', 'active') -->
+						<li><a href="/">Home</a></li>
 						<li><a href="/tags">Tags</a></li>
 						<li><a href="/report">Report a bug</a></li>
 						<form class="navbar-search pull-left">
@@ -121,9 +122,14 @@
 	</div><!--/.fluid-container-->
 
 
+
 <Scripts:>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js"></script>
 	<script src="/bootstrap/bootstrap.js"></script>
+	<script src="/pnotify/jquery.pnotify.js"></script>
+	<!-- TODO temporary, sessions don't work --> <script src="https://raw.github.com/carhartl/jquery-cookie/master/jquery.cookie.js"></script>
+
 
 <Tail:>
 	<!--

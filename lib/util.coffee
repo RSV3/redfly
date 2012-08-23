@@ -23,8 +23,8 @@ transport = mailer.createTransport 'SMTP',
 # 	subject: 'Hello!'
 # 	html: '<strong>Hello world.</strong>'
 exports.mail = (options) ->
-	if process.env.INTERCEPT_EMAIL
-		options.to = process.env.INTERCEPT_EMAIL
+	if intercept = process.env.INTERCEPT_EMAIL
+		options.to = intercept
 	transport.sendMail options, (err, response) ->
 		if err
 			# TODO change this to logging/airbrake

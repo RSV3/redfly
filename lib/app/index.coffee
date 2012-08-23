@@ -1,4 +1,3 @@
-_ = require 'underscore'
 moment = require 'moment'
 derby = require 'derby'
 
@@ -20,42 +19,21 @@ get '*', (page, model, params, next) ->
 		throw err if err
 		model.ref '_recentContact', contact
 
-		userId = model.session.user
+		# TODO hack to get around sessions not working
+		userId = model.session?.user
+		try 
+			# $ will only be available on the client, exception otherwise
+			asdf = $
+			userId = $.cookie 'user'
+		catch err
 		if userId
 			model.subscribe 'users.' + userId, (err, user) ->
 				throw err if err
 				model.ref '_user', user
 
-				next()	# TODO XXX does this need to be scoped?
+				next()
 		else
-			next()	# TODO XXX does this need to be scoped?
-
-get '/authorized', (page, model, params, next) ->
-	data = model.session.authorizeData
-	delete model.session.authorizeData
-
-	oauth = require 'oauth-gmail'
-	client = oauth.createClient()
-	client.getAccessToken data.request, params.query.oauth_verifier, (err, result) ->
-		throw err if err
-		xoauthString = client.xoauthString data.email, result.accessToken, result.accessTokenSecret
-
-		# TODO XXX add pines notify, then use websockets to update the notifier with background parsing status, then give link to /classify
-
-		# TODO XXX make profile page where it dumps the user when they're done with the signup, and have a success message there that says
-		# their email will be parsed (check out upper right), they can start classifying when it's done. In the meantime, have a look around!
-
-		# TODO XXX set the username on the user as soon as possible after parsing begins (and probably after creating the actual user) so that
-
-		# TODO XXX when done add user with email and username (gleaned from emails) to the database, and set in session model.session.user and refresh
-		# id = model.id()
-		# user =
-		# 	id: id
-		# 	date: +new Date
-		# 	email: data.email
-		# 	username: 'TODO'
-		#	token: xoauthString
-		# model.set 'users.' + id, user
+			next()
 
 
 ready (model) ->
@@ -64,11 +42,16 @@ ready (model) ->
 		email = emailModel.get()?.trim()
 		if email
 			model.set '_connectStarted', true
+			# If only the username was typed, make it a proper email.
+			if email.indexOf '@' isnt -1
+				email += '@redstar.com'
 			$.post '/login', email: email, (redirect) ->
-				window.location.href = redirect or '/'	# TODO XXX try without '/' redirect. What can be done to make _user refresh?
+				window.location.href = redirect or '/profile'
+
 
 
 require './home'
+require './profile'
 require './contact'
 require './search'
 require './tags'

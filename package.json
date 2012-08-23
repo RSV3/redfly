@@ -13,7 +13,7 @@
 		"racer-db-mongo": "0.3.11",
 		"stylus": "0.28.2",
 		"nib": "0.7.0",
-		"nodemailer": "0.3.20",
+		"nodemailer": "0.3.22",
 		"oauth-gmail": "0.0.1",
 		"imap": "0.3.2",
 		"mailparser": "0.2.27"

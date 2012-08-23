@@ -8,6 +8,9 @@ get '/contact/:id', (page, model, {id}) ->
 
 		page.render 'contact'
 
+get '/classify', (page, model) ->
+	# TODO XXX
+
 
 ready (model) ->
 	contact = model.at '_contact'
@@ -20,5 +23,5 @@ ready (model) ->
 			notes.unshift
 				text: note
 				date: +new Date	# TODO XXX
-				author: 178	# TODO XXX
+				author: '178'	# TODO XXX
 			currentNote.set ''
