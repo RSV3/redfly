@@ -1,13 +1,9 @@
-MVP:
-- use oauth for imap AND redfly authentication
-- gmail oauth
-- email pull/scan, just get contact names (consider only using emails sent to and recieved from an email)
-- tagging/commentup
--  POSSIBLY: search and newsfeed
-
 - does rapportive have an api? Another way to get a picture form email?
 
 
+ideas:
+- make a cool graph of contacts, neo4j would be great for this. Also a visualization of tags
+- privacy: allow anonymous usage, perhaps even obscure contact names
 
 
 

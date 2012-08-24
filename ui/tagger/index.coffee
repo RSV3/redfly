@@ -22,7 +22,7 @@ exports.create = (model, dom) ->
 	tags = contact.at 'tags'
 
 	model.fn '_availableTags', 'contacts', (contacts) ->
-		return ['asdfadfasdf', 'qwer']
+		return ['An example tag', 'Yet another example tag!']
 
 	model.on 'set', '_currentTag', ->
 		field = $(dom.element('new-tag'))

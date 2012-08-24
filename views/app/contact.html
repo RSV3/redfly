@@ -6,18 +6,16 @@
 				<!-- TODO picture not be placeholder -->
 				<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
 				<h1 class="name">{_contact.name}</h1>
-				{#if _knows}
+				{#if _history}
 					<div>
-						<p>You emailed {firstName(_contact)} for the first time on {date(_knows.first_email.date)}.
-						<br>
-						The email subject was <em>"{_knows.first_email.subject}"</em>.</p>
-						<p>You've mailed him or her <strong>{_knows.count}</strong> times.</p>
+						<p>You emailed {firstName(_contact)} with the email subject <em>"{_history.first_email.subject}"</em>.</p>
+						<p>You've mailed him or her <strong>{_history.count}</strong> times.</p>
 					</div>
 				{/}
 				<ui:tagger contact="{_contact}">
 			</div>
 			<div class="row-fluid">
-				{#if _knows}
+				{#if _history}
 					<form x-bind="submit: add">
 						<textarea placeholder="Cool story, bro." rows="3">{_currentNote}</textarea>
 						<button class="btn" type="submit" disabled="{not(_currentNote)}">Add Note</button>
@@ -26,16 +24,16 @@
 				{#each _contact.notes}
 					<blockquote>
 						<p>{unescaped linebreaks(.text)}</p>
-						<small>{.author} | {date(.date)}</small>
+						<small>{date(.date)}</small>
 					</blockquote>
 				{else}
 					<span>No notes about this contact yet.</span>
 				{/}
 			</div>
 			{{#if step}}
-				<div class="row-fluid">
-					<div>{firstName(_contact)} is {{step}} out of {{total}} contacts you made this week.</div>
-					<div><a href="/classify/{{step}}" class="btn btn-primary" x-bind="click: next">Next</a></div>
+				<div class="row-fluid" style="margin-top: 40px">
+					<div style="font-size: 18px; display: inline-block;">{firstName(_contact)} is  #{{step}} out of {{total}} contacts you made this week.</div>
+					<div style="display: inline-block; margin-left: 15px; margin-bottom: 13px;"><a href="/classify/{{nextStep}}" class="btn btn-primary btn-large" x-bind="click: next">Next</a></div>
 				</div>
 			{{/}}
 		</div>

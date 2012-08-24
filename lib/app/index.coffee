@@ -12,9 +12,9 @@ view.fn 'date', (date) ->
 
 
 get '*', (page, model, params, next) ->
-	model.subscribe model.query('contacts').feed(), (err, contacts) ->
-		throw err if err
-		model.ref '_recentContacts', contacts
+	# model.subscribe model.query('contacts').feed(), (err, contacts) ->
+	# 	throw err if err
+	# 	model.ref '_recentContacts', contacts
 
 		# TODO hack to get around sessions not working
 		userId = model.session?.user

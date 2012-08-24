@@ -45,8 +45,6 @@ server.connect (err) ->
 	server.openBox '[Gmail]/All Mail', true, (err, box) ->
 		throw err if err
 
-		# criteria = [['FROM', user.email]]
-		# TODO XXX for testing
 		criteria = [['FROM', 'annie@redstar.com']]
 		if previous = user.last_parse_date
 			criteria.unshift ['SINCE', previous]

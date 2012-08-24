@@ -3,10 +3,15 @@ _ = require 'underscore'
 
 
 view.fn 'firstName', ({name}) ->
+	# TODO laaaaaame...
+	if not name
+		''
 	name[...name.indexOf(' ')]
 
 view.fn 'linebreaks', (text) ->
-	text.replace /\n/g, '<br>'
+	# Was throwing a type error for some reason.
+	if text
+		text.replace /\n/g, '<br>'
 
 
 get '/contact/:email', (page, model, {email}) ->
@@ -16,21 +21,29 @@ get '/contact/:email', (page, model, {email}) ->
 
 get '/classify/:step?', (page, model, {step}) ->
 	step or= 1
-	user = model.at('_user').get()
-	model.subscribe model.query('contacts').knownTo(user.id), (err, contacts) ->
-		contacts.filter {where: {added_by: {equals: null}}}	# TODO XXX might need where:
-		total = contacts.get().length
-		# contacts.filter {date: {gt: }}	# TODO make sure they're only from the last week
-		contacts.sort(['knows.' + user.id + '.count', 'desc']).one()
+	step = 0 + step
+	userModel = model.at('_user')
+	user = userModel.get()
+	userModel.set 'classifyIndex', step
+
+	total = user.classify.length
+	if step > total
+		page.redirect '/'
+
+	model.subscribe model.query('contacts').findById(user.classify[step - 1]), (err, contact) ->
+		throw err if err
+
 		context =
 			step: step
+			nextStep: step + 1
 			total: total
-		common page, model, contacts, context
+		common page, model, user, contact, context
 
-common = (page, model, contact, context) ->
+common = (page, model, user, contact, context) ->
 	model.ref '_contact', contact
-	if id = model.at('_user').get()?.id
-		model.ref '_knows', contact.at('knows.' + id)
+
+	model.subscribe model.query('history').forConnection(user.id, contact.get().id), (err, history) ->
+		model.ref '_history', history
 
 	context ?= {}
 	page.render 'contact', context
