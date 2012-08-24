@@ -22,7 +22,7 @@ module.exports = (user, notifications) ->
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					throw err if err
 
-					TODO XXX testing
+					# TODO XXX testing
 					# criteria = [['FROM', 'annie@redstar.com']]
 					criteria = [['FROM', user.email]]
 					if previous = user.last_parse_date
