@@ -1,6 +1,9 @@
 require('coffee-script');
 require('longjohn');
 
+_ = require('underscore');
+_.str = require('underscore.string');
+
 require('./config');
 
 console.info('App starting in ' + process.env.APP_ENV + ' environment');

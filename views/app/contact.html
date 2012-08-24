@@ -3,25 +3,40 @@
 		<div class="contact">
 			<div class="row-fluid top">
 				<!-- TODO try as class="img-polaroid" with new bootstrap and change styl file. Corners become no longer rounded -->
+				<!-- TODO picture not be placeholder -->
 				<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
 				<h1 class="name">{_contact.name}</h1>
+				{#if _knows}
+					<div>
+						<p>You emailed {firstName(_contact)} for the first time on {date(_knows.first_email.date)}.
+						<br>
+						The email subject was <em>"{_knows.first_email.subject}"</em>.</p>
+						<p>You've mailed him or her <strong>{_knows.count}</strong> times.</p>
+					</div>
+				{/}
 				<ui:tagger contact="{_contact}">
 			</div>
 			<div class="row-fluid">
-				<form x-bind="submit: add">
-					<!-- TODO formatting (newlines) are lost on submit. Or perhaps just not rendered. -->
-					<textarea placeholder="Cool story, bro." rows="3">{_currentNote}</textarea>
-					<!-- TODO make this button only appear if there's text in the textaea -->
-					<button class="btn" type="submit">Add Note</button>
-				</form>
+				{#if _knows}
+					<form x-bind="submit: add">
+						<textarea placeholder="Cool story, bro." rows="3">{_currentNote}</textarea>
+						<button class="btn" type="submit" disabled="{not(_currentNote)}">Add Note</button>
+					</form>
+				{/}
 				{#each _contact.notes}
 					<blockquote>
-						<p>{.text}</p>
+						<p>{unescaped linebreaks(.text)}</p>
 						<small>{.author} | {date(.date)}</small>
 					</blockquote>
 				{else}
 					<span>No notes about this contact yet.</span>
 				{/}
 			</div>
+			{{#if step}}
+				<div class="row-fluid">
+					<div>{firstName(_contact)} is {{step}} out of {{total}} contacts you made this week.</div>
+					<div><a href="/classify/{{step}}" class="btn btn-primary" x-bind="click: next">Next</a></div>
+				</div>
+			{{/}}
 		</div>
 	</app:content>

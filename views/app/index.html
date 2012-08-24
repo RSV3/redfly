@@ -83,26 +83,16 @@
 			<div class="span3">
 				<div class="sidebar-nav well">
 					<!-- <h2>Recent Contacts</h2> -->
-					<div class="well">
-
-							<h3>{_recentContact.name}</h3>
-							<p>Added by {_recentContact.added_by} on {date(_recentContact.date_added)}</p>
-
-							<ui:tagger contact="{_recentContact}">
-
-							<a class="btn" href="#">View</a>
-
-<!--
- 						{#each _recentContacts as :contact}
+					{#each _recentContacts as :contact}
+						<div class="well">
 							<h3>{.name}</h3>
 							<p>Added by {.added_by} on {.date_added}</p>
 
 							<ui:tagger contact="{:contact}">
 
 							<a class="btn" href="#">View</a>
-						{/}
- -->					
 						</div><!--/span-->
+					{/}
 				</div><!--/.well -->
 			</div><!--/span-->
 			<div class="span9">

@@ -1,3 +1,4 @@
+_ = require 'underscore'
 moment = require 'moment'
 derby = require 'derby'
 
@@ -11,13 +12,9 @@ view.fn 'date', (date) ->
 
 
 get '*', (page, model, params, next) ->
-	# TODO XXX
-	# model.subscribe 'contacts', (err, contacts) ->
-	# 	throw err if err
-	# 	model.ref '_recentContacts', model.sort('contacts', 'date')
-	model.subscribe 'contacts.178', (err, contact) ->
+	model.subscribe model.query('contacts').feed(), (err, contacts) ->
 		throw err if err
-		model.ref '_recentContact', contact
+		model.ref '_recentContacts', contacts
 
 		# TODO hack to get around sessions not working
 		userId = model.session?.user
@@ -37,13 +34,16 @@ get '*', (page, model, params, next) ->
 
 
 ready (model) ->
+	# Make sure that underscore.string is loaded in to underscore on the client. Probably not the perfect place to do this.
+	_ = require 'underscore'
+	_.str = require 'underscore.string'
+
 	@connect = ->
 		emailModel = model.at '_email'
-		email = emailModel.get()?.trim().toLowerCase()
-		if email
+		if email = _.str.trim(emailModel.get()).toLowerCase()
 			model.set '_connectStarted', true
 			# If only the username was typed, make it a proper email.
-			if email.indexOf('@') is -1
+			if not _.str.contains email, '@'
 				email += '@redstar.com'
 			$.post '/login', email: email, (redirect) ->
 				window.location.href = redirect or '/profile'

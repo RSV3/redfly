@@ -36,41 +36,57 @@ myapp = store.io.of('/myapp/loader').on 'connection', (socket) ->
 			user = userModel.get()
 			notifications =
 				foundName: (name) ->
-					userModel.set 'name', name
+					if not user.name
+						userModel.set 'name', name
 				foundTotal: (total) ->
 					socket.emit 'start', total
 				completedEmail: ->
 					socket.emit 'update'
-				done: (newContacts) ->
-					step = require 'step'
-					step ->
-							for newContact in newContacts
-								model.fetch model.query('contacts').findByEmail(newContact.email), @parallel()
-						, (err, contactModels...) ->
+				done: (data) ->
+					newContacts = []
+					for email of data
+						{contact, history}  = data[email]
+
+						model.fetch model.query('contacts').findByEmail(email), (err, contactModel) ->
 							throw err if err
-							contact = contactModel.get()
-							# If the contact doesn't exist yet, just go ahead and add it!
-							if not contact
-								newContact.id = model.id()
-								model.set 'contacts.' + newContact.id, newContact
-							# If the contact does exist, merge our new data into it.
+							existingContact = contactModel.get()
+							if not existingContact
+								contact.id = model.id()
+								model.set 'contacts.' + contact.id, contact
+								history.id = model.id()
+								model.set 'history.' + history.id, history
+
+								contact.count = history.count
+								newContacts.push contact
 							else
-								knowsModel = model.at contactModel.path() + '.knows.' + user.id
-								knows = newContact.knows[user.id]
-								if not knowsModel.get()
-									knowsModel.set knows
-								else
-									knowsModel.incr 'count', knows.count
-								# Sometimes the contact's name and email are the same, in the system because they were emailed without an a name
+								# Sometimes the contact's name and email are the same in the system because they were emailed without an a name
 								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
-								if not contact.name?.trim() or
-										((contact.name.indexOf('@') isnt -1) and (newContact.name.indexOf('@') isnt -1))
-									contactModel.set 'name', newContact.name
+								if _.str.contains contact.name, '@'
+									contactModel.set 'name', parsedContact.name
+								if not _.contains existingContact.knows user.id
+									contactModel.push 'knows', user.id
 
+								model.fetch model.query('history').forConnection(user.id, existingContact.id), (err, historyModel) ->
+									throw err if err
+									# TODO XXX testing
+									if not historyModel.get()
+										throw Error('no associated model')
+									if historyModel.get()
+										historyModel.incr 'count', history.count
 
-					userModel.set 'last_parse_date', +new Date
-					# Callback to the 'parse' event, to tell the frontend parsing indicator we're all done here.
-					fn()
+					# TODO XXX set this higher
+					setTimeout ->
+						userModel.set 'last_parse_date', +new Date
+						# If there were new contacts, determine most correspondence (up to 3) and send a nudge email.
+						if newContacts.length isnt 0
+							newContacts = _.sortBy newContacts, (contact) ->
+								contact.count
+							newContacts = newContacts[...3]
+							mail = require('../mail')(expressApp)
+							mail.sendNudge user, newContacts
+						# Callback to the 'parse' event, to tell the frontend loading indicator we're all done here.
+						fn()
+					, 3000
 			require('../parser')(user, notifications)
 
 
@@ -80,38 +96,49 @@ store.query.expose 'users', 'findByEmail', (email) ->
 store.query.expose 'contacts', 'findByEmail', (email) ->
 	@where('email').equals(email).one()
 
-store.query.expose 'contacts', 'addedBy', (user) ->
-	_ = require 'underscore'
-	# Arguement can be a user object or just and ID.	# Maybe also allow a Derby model?
-	if _.isObject user
-		user = user.id
-	@where('added_by').equals(user)
+store.query.expose 'history', 'forConnection', (userId, contactId) ->
+	@where('user').equals(userId).where('contact').equals(contactId)
+
+store.query.expose 'contacts', 'addedBy', (userId) ->
+	@where('added_by').equals(userId)
+
+store.query.expose 'contacts', 'feed', ->
+	@where('added_date').exists().sort(['date', 'desc']).limit(3)
+
+# store.query.expose 'contacts', 'knownTo', (user) ->
+# 	if user is Object(user)
+# 		user = user.id
+# 	@where('knows.id').equals('user')
+
 
 
 # TODO XXX comment out
-# model = store.createModel()
-# model.set 'users.178.email', 'kbaranowski@redstar.com'
-# model.set 'users.178.name', 'Krzysztof Baranowski'
-# model.set 'contacts.178.name', 'John Resig'
-# model.set 'contacts.178.email', 'john@name.com'
-# model.set 'contacts.178.date', +new Date
-# model.set 'contacts.178.added_by', '178'
-# model.set 'contacts.178.date_added', +new Date
-# model.set 'contacts.178.knows.178',
-# 		first_email:
-# 			date: +new Date
-# 			subject: 'Poopty Peupty pants'
-# 		count: 47
-# model.push 'contacts.178.tags', 'Sweet Tag Bro'
-# model.push 'contacts.178.tags', 'VC'
-# model.push 'contacts.178.notes',
-# 	date: +new Date
-# 	text: 'Lorem ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
-# 	author: '178'
-# model.push 'contacts.178.notes',
-# 	date: +new Date
-# 	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
-# 	author: '178'
+model = store.createModel()
+model.set 'users.178.email', 'kbaranowski@redstar.com'
+model.set 'users.178.name', 'Krzysztof Baranowski'
+model.set 'contacts.178.name', 'John Resig'
+model.set 'contacts.178.email', 'john@name.com'
+model.set 'contacts.178.date', +new Date
+model.set 'contacts.178.added_by', '178'
+model.set 'contacts.178.date_added', +new Date
+model.set 'contacts.178.knows.178',
+model.set 'history.178',
+				user: '178'
+				contact: '178'
+				first_email:
+					date: +new Date
+					subject: 'Poopty Peupty pants'
+				count: 47
+model.push 'contacts.178.tags', 'Sweet Tag Bro'
+model.push 'contacts.178.tags', 'VC'
+model.push 'contacts.178.notes',
+	date: +new Date
+	text: 'Lorem ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+	author: '178'
+model.push 'contacts.178.notes',
+	date: +new Date
+	text: 'asdf ipsum dolor ist asdf asdfadf dasf adsf adsf adsf asdfads fads fads'
+	author: '178'
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
@@ -152,10 +179,10 @@ expressApp.configure ->
 		# 	pass: redisToGo.auth.split(':')[1]
 	expressApp.use store.modelMiddleware()
 
-	# expressApp.use (req, res, next) ->	# TODO Bring this back if it still applies.
-	# 	if process.env.AUTO_AUTH
-	# 		req.session.user = '178'
-	# 	next()
+	expressApp.use (req, res, next) ->
+		if process.env.AUTO_AUTH
+			req.session.user = '178'
+		next()
 	expressApp.use app.router()
 	expressApp.use expressApp.router
 

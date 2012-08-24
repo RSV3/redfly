@@ -13,7 +13,7 @@ get '/profile', (page, model, params, next) ->
 
 common = (page, model, params) ->
 	profileUser = model.at('_profileUser').get()
-	model.subscribe model.query('contacts').addedBy(profileUser), (err, contacts) ->
+	model.subscribe model.query('contacts').addedBy(profileUser.id), (err, contacts) ->
 		model.ref '_contacts', contacts
 		model.fn '_total', '_contacts', (contacts) ->
 			contacts?.length or 0

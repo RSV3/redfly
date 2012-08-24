@@ -8,8 +8,7 @@
 				<p>You've added {_total} contact{#unless equal(_total, 1)}s{/} so far.</p>
 				<ul>
 					{#each _contacts}
-						<li><a href="/contacts/{.id}">{.name}</a></li>
-						{.}
+						<li><a href="/contact/{.email}">{.name}</a></li>
 					{/}
 				</ul>
 				<br>
