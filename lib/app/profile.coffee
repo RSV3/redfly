@@ -44,7 +44,7 @@ ready (model) ->
 		currentModel = model.at '_loadercurrent'
 		totalModel = model.at '_loadertotal'
 
-		socket = io.connect 'http://redfly-test.herokuapp.com:5000/myapp/loader' # TODO XXX make be not localhost (autodiscovery?), search for other calls like this
+		socket = io.connect 'http://localhost:5000/myapp/loader' # TODO XXX make be not localhost (autodiscovery?), search for other calls like this
 		socket.emit 'parse', user.id, ->
 			loading.effect 'bounce'
 			loading.pnotify type: 'success', closer: true
