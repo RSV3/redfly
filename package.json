@@ -25,7 +25,7 @@
 		"socket.io-client": "0.9.10",
 		"ember": "1.0.0-pre.m1",
 		"convoy": "0.3.2",
-		"convoy-stylus": "0.1.0",
+		"convoy-stylus": "0.1.1",
 		"html5-manifest": "1.0.0"
 	},
 	"scripts": {

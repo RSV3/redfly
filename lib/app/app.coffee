@@ -4,14 +4,14 @@ require 'html5-manifest'
 require 'ember'
 App = Ember.Application.create()
 
-views = '../../views/app'
+views = '../../views/app'	# TODO XXX why doesn't '+' work in require statements
 
 
 # TODO XXX here on down is demo code!!!!!!!
 
 Contacts.UserView = Ember.View.extend(
 	contact: null
-	template: require(views + "/user_template")
+	template: require("../../views/app/user_template")
 	classNames: ["user"]
 )
 contact = Ember.Object.create(

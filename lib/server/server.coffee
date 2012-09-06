@@ -23,19 +23,26 @@ pipeline = convoy
 		packager: 'javascript'
 		compilers:
 			'.hbr': require('ember/packager').HandlebarsCompiler
+			'.js':  convoy.plugins.JavaScriptCompiler
 			'.coffee': convoy.plugins.CoffeeScriptCompiler
-		main: './app/main.js'
+		main: root + '/lib/app/app'
 		minify: minify
+		# Bug fix.
+		finalizers: [ (asset, context, done) ->
+				asset.body = asset.body.replace '!g[k] || !(g[key].require) || !(g[k].define))', '!g[k] || !(g[k].require) || !(g[k].define)) '
+				done()
+			]
 	'vendor.js':
 		packager: 'javascript'
 		main: root + '/resources/vendor'
 		minify: minify
 	'app.css':
-		packager: 'css'
-		main: './app/main.css'
+		packager: require 'convoy-stylus'
+		main: root + '/resources/styles'
+	# TODO XXX copy? is anyhting requesting at index.html? What if the app comes from other routes? HOW DOES ROUTING WORK
 	'index.html':
 		packager: 'copy'
-		root: root + '/app/index.html'
+		root: root + '/views/index.html'
 	'app.manifest':
 		packager: require('html5-manifest/packager')
 
@@ -57,10 +64,10 @@ app.configure ->
 	# app.use express.logger('dev')
 	# app.use express.profiler()
 	app.use express.favicon(root + '/resources/favicon.ico')
-	app.use gzippo.staticGzip(path.join(root, 'public'))
+	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
+	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
 	app.use express.compress()
 	app.use pipeline.middleware()
-	# app.use express.static(path.join(root, 'public')) TODO XXX delete if gzippo works
 
 	app.use express.bodyParser()
 	app.use express.methodOverride()
@@ -87,9 +94,10 @@ app.configure ->
 		next new util.NotFound
 	app.use (err, req, res, next) ->
 		if err instanceof util.NotFound
-			res.statusCode = 404;
-			res.locals.title = 'Page Not Found :('
-			res.render 'error/not_found'
+			res.send 404, 'Page not found'
+			# res.statusCode = 404;
+			# res.locals.title = 'Page Not Found :('
+			# res.render 'error/not_found'
 		else if err instanceof util.AccessDenied
 			res.send 403, 'Access denied'
 			# res.statusCode = 403
