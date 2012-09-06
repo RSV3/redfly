@@ -1,4 +1,6 @@
 _ = require 'underscore'
+_s = require 'underscore.string'
+validators = require('validator').validators
 moment = require 'moment'
 derby = require 'derby'
 
@@ -34,16 +36,12 @@ get '*', (page, model, params, next) ->
 
 
 ready (model) ->
-	# Make sure that underscore.string is loaded in to underscore on the client. Probably not the perfect place to do this.
-	_ = require 'underscore'
-	_.str = require 'underscore.string'
-
 	@connect = ->
 		emailModel = model.at '_email'
-		if email = _.str.trim(emailModel.get()).toLowerCase()
+		if email = _s.trim(emailModel.get()).toLowerCase()
 			model.set '_connectStarted', true
 			# If only the username was typed, make it a proper email.
-			if not _.str.contains email, '@'
+			if not validators.isEmail email
 				email += '@redstar.com'
 			$.post '/login', email: email, (redirect) ->
 				window.location.href = redirect or '/profile'

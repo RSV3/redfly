@@ -1,4 +1,5 @@
-_ = require 'underscore'	
+_ = require 'underscore'
+_s = require 'underscore.string'
 
 # Called on both the server and browser before rendering.
 # exports.init = (model) ->
@@ -34,8 +35,8 @@ exports.create = (model, dom) ->
 
 	@add = (event, element) ->
 		currentTag = model.at '_currentTag'
-		if tag = _.str.trim currentTag.get()
-			if not _.contains tags.get(), tag
+		if tag = _s.trim currentTag.get()
+			if not tag in tags.get()
 				tags.push tag
 			currentTag.set ''
 

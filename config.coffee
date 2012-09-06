@@ -26,10 +26,14 @@ config =
 		NODE_ENV: 'production'
 		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com'
 
+		MINIFY: true
+
 
 	production:
 		HOST: 'redfly-prod.herokuapp.com'	# 'www.redfly.com'
 		NODE_ENV: 'production'
+
+		MINIFY: true
 
 
 

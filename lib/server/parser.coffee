@@ -1,5 +1,7 @@
 module.exports = (user, notifications) ->
-	_ = require 'underscore'	
+	_ = require 'underscore'
+	_s = require 'underscore.string'
+	validators = require('validator').validators
 	
 	request = require 'request'
 	request.post
@@ -47,19 +49,14 @@ module.exports = (user, notifications) ->
 						fetch.on 'message', (msg) ->
 							msg.on 'end', ->
 								for to in mimelib.parseAddresses msg.headers.to?[0]
-									email = _.str.trim to.address.toLowerCase()
-									name = _.str.trim(to.name) or email	# If the name is blank, use the email instead.
+									email = _s.trim to.address.toLowerCase()
+									name = _s.trim(to.name) or email	# If the name is blank, use the email instead.
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-									if email and (_.str.contains email, '@') and
-											(email isnt user.email) and
-											(not _.str.contains email, '@redstar.com') and
-											(not _.str.contains email, '@nevershopalone.com') and
-											(not _.str.contains email, '@gosprout.com') and
-											(not _.str.contains email, '@vinely.com') and
-											(not _.str.contains email, '@vine.ly')
+									blacklist = []	# TODO XXX load blacklisted email from the database
+									if (validators.isEmail email) and (email isnt user.email) and (email not in blacklist)
 										if datum = data[email]
 											contact = datum.contact
-											if _.str.contains contact.name, '@'
+											if validators.isEmail contact.name
 												contact.name = name
 											datum.history.count++
 										else

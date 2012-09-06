@@ -1,4 +1,5 @@
 _ = require 'underscore'
+_s = require 'underscore.string'
 {get, ready, view} = require './index'
 
 
@@ -56,7 +57,7 @@ ready (model) ->
 
 	@add = ->
 		currentNote = model.at '_currentNote'
-		if note = _.str.trim currentNote.get()
+		if note = _s.trim currentNote.get()
 			notes.unshift
 				text: note
 				date: +new Date
@@ -75,5 +76,6 @@ ready (model) ->
 # else
 # 	model.subscribe 'contacts.' + id, (err, contact) ->
 # 		throw err if err
-# if _.str.contains id, '@'
+# Use isEmail validator: validators = require('validator').validators
+# if '@' in id
 # 	email = id
