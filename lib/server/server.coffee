@@ -15,36 +15,44 @@ app = express()
 server = http.createServer(app)
 
 root = path.dirname path.dirname __dirname
-minify = if process.env.MINIFY then true else false
+optimize = if process.env.OPTIMIZE then true else false
 
 pipeline = convoy
 	watch: true
 	'app.js':
+		main: root + '/lib/app/app'
 		packager: 'javascript'
 		compilers:
 			'.hbr': require('ember/packager').HandlebarsCompiler
 			'.js':  convoy.plugins.JavaScriptCompiler
 			'.coffee': convoy.plugins.CoffeeScriptCompiler
-		main: root + '/lib/app/app'
-		minify: minify
-		# Bug fix.
-		finalizers: [ (asset, context, done) ->
-				asset.body = asset.body.replace '!g[k] || !(g[key].require) || !(g[k].define))', '!g[k] || !(g[k].require) || !(g[k].define)) '
-				done()
-			]
-	'vendor.js':
-		packager: 'javascript'
-		main: root + '/resources/vendor'
-		minify: minify
+		minify: optimize
+		autocache: not optimize
 	'app.css':
+		main: root + '/styles/styles'
 		packager: require 'convoy-stylus'
-		main: root + '/resources/styles'
+		postprocessors: [ (asset, context, done) ->
+			bootstrap = root + '/styles/bootstrap.less'
+			fs = require 'fs'
+			fs.readFile bootstrap, 'utf8', (err, body) ->
+				return done(err) if err
+				less = require 'less'
+				options = {}
+				options.filename = bootstrap
+				new less.Parser(options).parse body, (err, tree) ->
+					return done(err) if err
+					assset.body = tree.toCSS(compress: optimize) + asset.body	# 'compress' option won't be necessary once Convoy minifies css
+					done()
+		]
+		minify: optimize	# Convoy doesn't minify css yet.
+		autocache: not optimize
 	# TODO XXX copy? is anyhting requesting at index.html? What if the app comes from other routes? HOW DOES ROUTING WORK
 	'index.html':
-		packager: 'copy'
 		root: root + '/views/index.html'
+		packager: 'copy'
+		autocache: not optimize
 	'app.manifest':
-		packager: require('html5-manifest/packager')
+		packager: require 'html5-manifest/packager'
 
 
 app.configure ->
@@ -53,7 +61,7 @@ app.configure ->
 	# Mail template rendering.
 	app.set 'views', root + '/mail'
 	app.set 'view engine', 'jade'
-	app.locals.pretty = not minify
+	app.locals.pretty = not optimize
 
 	app.use (req, res, next) ->
 		if req.headers.host isnt process.env.HOST
