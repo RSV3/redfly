@@ -3,6 +3,7 @@ path = require 'path'
 express = require 'express'
 gzippo = require 'gzippo'
 convoy = require 'convoy'
+less = require 'less'
 io = require 'socket.io'
 RedisStore = require('connect-redis')(express)
 _ = require 'underscore'
@@ -32,23 +33,23 @@ pipeline = convoy
 		main: root + '/styles'
 		packager: require 'convoy-stylus'
 		postprocessors: [ (asset, context, done) ->
-			base = root + '/styles/base.less'
+			basePath = root + '/styles/base.less'
 			fs = require 'fs'
-			fs.readFile base, 'utf8', (err, body) ->
+			fs.readFile basePath, 'utf8', (err, body) ->
 				return done(err) if err
-				less = require 'less'
 				options = {}
-				options.filename = base
+				options.filename = basePath
+				options.paths = [path.dirname(basePath)]
 				new less.Parser(options).parse body, (err, tree) ->
 					return done(err) if err
-					assset.body = tree.toCSS(compress: optimize) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
+					asset.body = tree.toCSS(compress: optimize) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
 					done()
 		]
 		minify: optimize	# Convoy doesn't minify css yet.
 		autocache: not optimize
 	# TODO XXX copy? is anyhting requesting at index.html? What if the app comes from other routes? HOW DOES ROUTING WORK
 	'index.html':
-		root: root + '/views'
+		root: root + '/views/index.html'
 		packager: 'copy'
 		autocache: not optimize
 	'app.manifest':
