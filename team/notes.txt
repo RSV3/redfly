@@ -1,10 +1,19 @@
 - does rapportive have an api? Another way to get a picture form email?
 
-
 ideas:
 - make a cool graph of contacts, neo4j would be great for this. Also a visualization of tags
 - privacy: allow anonymous usage, perhaps even obscure contact names
 
+Adding notes triggers e-mails to others
+
+Redstar own tags - germs/ideas
+- about them
+- about us
+
+
+Similar/Potential Competitors
+
+http://www.quora.com/Who-are-Gists-competitors
 
 
 	- parse linked in for useful past jobs for auto tagging
