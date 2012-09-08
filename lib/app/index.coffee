@@ -1,56 +1,31 @@
-_ = require 'underscore'
-_s = require 'underscore.string'
-validators = require('validator').validators
-moment = require 'moment'
-derby = require 'derby'
+require 'html5-manifest'
 
-{get, view, ready} = derby.createApp module
+require '../vendor'
 
-derby.use(require '../../ui')
+require 'ember'
+App = Ember.Application.create()
 
-
-view.fn 'date', (date) ->
-	moment(date).format('MMMM Do, YYYY')
+views = '../../views/templates'	# TODO XXX why doesn't '+' work in require statements
 
 
-get '*', (page, model, params, next) ->
-	# model.subscribe model.query('contacts').feed(), (err, contacts) ->
-	# 	throw err if err
-	# 	model.ref '_recentContacts', contacts
+# TODO XXX here on down is demo code!!!!!!!
 
-		# TODO hack to get around sessions not working
-		userId = model.session?.user
-		try 
-			# $ will only be available on the client, exception otherwise
-			asdf = $
-			userId = $.cookie 'user'
-		catch err
-		if userId
-			model.subscribe 'users.' + userId, (err, user) ->
-				throw err if err
-				model.ref '_user', user
+App.UserView = Ember.View.extend(
+	contact: null
+	template: require("../../views/templates/user_template")
+	classNames: ["user"]
+)
+contact = Ember.Object.create(
+	firstName: "Charles"
+	lastName: "Jolley"
+	fullName: (->
+		[@get("firstName"), @get("lastName")].join " ")
+	.property("firstName", "lastName")
+)
+userView = App.UserView.create()
+userView.append()
+userView.set "contact", contact
 
-				next()
-		else
-			next()
-
-
-ready (model) ->
-	@connect = ->
-		emailModel = model.at '_email'
-		if email = _s.trim(emailModel.get()).toLowerCase()
-			model.set '_connectStarted', true
-			# If only the username was typed, make it a proper email.
-			if not validators.isEmail email
-				email += '@redstar.com'
-			$.post '/login', email: email, (redirect) ->
-				window.location.href = redirect or '/profile'
-
-
-
-require './home'
-require './profile'
-require './contact'
-require './search'
-require './tags'
-require './report'
+# TODO XXX do I want a loading indicator or not? See if it actually shows up first
+# cleanup loading UI
+$("h1.loading").remove()

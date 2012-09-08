@@ -1,4 +1,4 @@
-- Install Node.js 0.8.5
+- Install Node.js 0.8.7
 
 - Clone project from github.
 	git clone git@github.com:RSV3/redfly.git

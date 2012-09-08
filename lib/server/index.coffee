@@ -20,7 +20,7 @@ optimize = if process.env.OPTIMIZE then true else false
 pipeline = convoy
 	watch: true
 	'app.js':
-		main: root + '/lib/app/app'
+		main: root + '/lib/app'
 		packager: 'javascript'
 		compilers:
 			'.hbr': require('ember/packager').HandlebarsCompiler
@@ -29,26 +29,26 @@ pipeline = convoy
 		minify: optimize
 		autocache: not optimize
 	'app.css':
-		main: root + '/styles/styles'
+		main: root + '/styles'
 		packager: require 'convoy-stylus'
 		postprocessors: [ (asset, context, done) ->
-			bootstrap = root + '/styles/bootstrap.less'
+			base = root + '/styles/base.less'
 			fs = require 'fs'
-			fs.readFile bootstrap, 'utf8', (err, body) ->
+			fs.readFile base, 'utf8', (err, body) ->
 				return done(err) if err
 				less = require 'less'
 				options = {}
-				options.filename = bootstrap
+				options.filename = base
 				new less.Parser(options).parse body, (err, tree) ->
 					return done(err) if err
-					assset.body = tree.toCSS(compress: optimize) + asset.body	# 'compress' option won't be necessary once Convoy minifies css
+					assset.body = tree.toCSS(compress: optimize) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
 					done()
 		]
 		minify: optimize	# Convoy doesn't minify css yet.
 		autocache: not optimize
 	# TODO XXX copy? is anyhting requesting at index.html? What if the app comes from other routes? HOW DOES ROUTING WORK
 	'index.html':
-		root: root + '/views/index.html'
+		root: root + '/views'
 		packager: 'copy'
 		autocache: not optimize
 	'app.manifest':
@@ -71,7 +71,7 @@ app.configure ->
 		next()
 	# app.use express.logger('dev')
 	# app.use express.profiler()
-	app.use express.favicon(root + '/resources/favicon.ico')
+	app.use express.favicon(root + '/favicon.ico')
 	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
 	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
 	app.use express.compress()
