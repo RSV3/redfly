@@ -4,7 +4,6 @@ express = require 'express'
 gzippo = require 'gzippo'
 convoy = require 'convoy'
 less = require 'less'
-io = require 'socket.io'
 RedisStore = require('connect-redis')(express)
 _ = require 'underscore'
 

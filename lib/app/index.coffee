@@ -7,6 +7,9 @@ App = Ember.Application.create()
 
 views = '../../views/templates'	# TODO XXX why doesn't '+' work in require statements
 
+$ ->
+	$('.search-query').addClear top: 6
+
 
 # TODO XXX here on down is demo code!!!!!!!
 
