@@ -1,8 +1,8 @@
 require 'html5-manifest'
-
 require '../vendor'
 
 require 'ember'
+
 App = Ember.Application.create()
 
 views = '../../views/templates'	# TODO XXX why doesn't '+' work in require statements
