@@ -13,10 +13,10 @@
 					<!-- a :self path alias is automatically created per component -->
 					{#unless :self.hideReconnect}
 						&ndash; <a x-bind="click:connect">Reconnect</a>
-					{/}
+					{/unless}
 				{else}
 					Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
-				{/}
+				{/if}
 			</p>
-		{/}
+		{/unless}
 	</div>

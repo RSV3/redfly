@@ -21,6 +21,3 @@ get '/', (page, model) ->
 	# 	console.log history.get()
 
 
-ready (model) ->
-	@toggle = ->
-		model.set '_showConnect', true
