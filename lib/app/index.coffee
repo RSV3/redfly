@@ -1,7 +1,7 @@
 require 'html5-manifest'
 require '../vendor'
 
-require 'ember'
+# require 'ember'	# TODO
 
 
 # io = require 'socket.io-client' # TODO
@@ -81,10 +81,10 @@ App.ApplicationController = Ember.Controller.extend
 App.HomeView = Ember.View.extend
 	templateName: 'home'
 	# template: require '../../views/templates/home'
+	showConnect: false
 	toggle: ->
 		App.homeController.set 'showConnect', true
-App.HomeController = Ember.Controller.extend
-	showConnect: false
+# App.HomeController = Ember.Controller.extend
 
 App.ContactView = Ember.View.extend
 	templateName: 'contact'
