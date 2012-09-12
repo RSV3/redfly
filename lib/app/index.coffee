@@ -3,9 +3,21 @@ require '../vendor'
 
 # require 'ember'	# TODO
 
+_ = require 'underscore'
+_s = require 'underscore.string'
+# validators = require('validator').validators	# TODO 'net' not found?
+validators = {}
+validators.isEmail = (email) ->
+	_s.contains email, '@'
 
-# io = require 'socket.io-client' # TODO
+
+# io = require 'socket.io-client' # TODO convoy fails
 socket = io.connect document.location.href
+
+socket.on 'login', (id) ->
+	App.user = App.User.find id
+socket.on 'logout', ->
+	App.user = null
 
 
 # path = require 'path'
@@ -15,8 +27,13 @@ socket = io.connect document.location.href
 
 
 
-App = Ember.Application.create()
+window.App = Ember.Application.create()
 
+Handlebars.registerHelper 'date', (property, options) ->
+	value = Ember.Handlebars.getPath @, property, options
+	# moment = require 'moment'
+	# moment(date).format('MMMM Do, YYYY')
+	'a date!'	# TODO XXX
 
 
 
@@ -53,10 +70,34 @@ App.Contact = Ember.Object.extend
 App.Mail = Ember.Object.extend
 	id: 178
 	date: new Date
-	user: 178
-	contact: 178
+	sender: 178
+	recipient: 178
 	subject: 'Poopty Peupty pants'
 	dateSent: new Date
+
+
+
+
+
+
+
+
+App.connect = Ember.Object.create
+	email: null
+	started: false
+	start: ->
+		if email = _s.trim @get('email')
+			@set 'started', true
+			# If only the username was typed make it a proper email.
+			if not validators.isEmail email
+				email += '@redstar.com'
+			socket.emit 'login', email, (redirect) ->
+				if redirect
+					return window.location.href = redirect
+				App.get('router').send 'showProfile'	# TODO XXX set this up with the current user?
+
+# App.user = App.User.create()
+App.user = null
 
 
 
@@ -71,20 +112,19 @@ App.ApplicationView = Ember.View.extend
 		$('.search-query').addClear top: 6
 
 		# TODO XXX do I want a loading indicator or not? See if it actually shows up first
-		$("h1.loading").remove()
-	_user: App.User.create()
-App.ApplicationController = Ember.Controller.extend
-	email: null
-	connectStarted: false
+		$('h1.loading').remove()
+App.ApplicationController = Ember.Controller.extend()
+
+
 
 
 App.HomeView = Ember.View.extend
 	templateName: 'home'
 	# template: require '../../views/templates/home'
-	showConnect: false
 	toggle: ->
-		App.homeController.set 'showConnect', true
-# App.HomeController = Ember.Controller.extend
+		@get('controller').set 'showConnect', true
+App.HomeController = Ember.Controller.extend
+	showConnect: false
 
 App.ContactView = Ember.View.extend
 	templateName: 'contact'
@@ -106,9 +146,14 @@ App.Router = Ember.Router.extend
 			route: '/'
 			connectOutlets: (router) ->
 				router.get('applicationController').connectOutlet 'home'
-		# 	linkHome: Ember.Route.transitionTo 'index'
-		# 	linkTags: Ember.Route.transitionTo 'tags'
-		# 	linkReport: Ember.Route.transitionTo 'contact'
+		# 	goHome: Ember.Route.transitionTo 'index'
+		# 	goTags: Ember.Route.transitionTo 'tags'
+		# 	goReport: Ember.Route.transitionTo 'contact'
+
+		# profile: Ember.Route.extend
+		# 	route: '/contact/:contact_id'
+		# 	connectOutlets: (router, contact) ->
+		# 		router.get('applicationController').connectOutlet 'contact', contact
 
 		# tags: Ember.Route.extend
 		# 	route: '/tags'

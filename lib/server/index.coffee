@@ -17,6 +17,91 @@ server = http.createServer(app)
 root = path.dirname path.dirname __dirname
 optimize = if process.env.OPTIMIZE then true else false
 
+
+
+
+
+
+
+# TODO all this login logout stuff maybe move it to another file too, like in poverup
+login = (id, socket) ->
+	socket.set 'user', id
+	socket.emit 'login', id
+	# req.session.user = id # Won't work because no req, and a response cycle has to be completing
+
+logout = (socket) ->
+	socket.set 'user', null
+	socket.emit 'logout'
+	# req.session.destroy()	# Won't work because no req, and a response cycle has to be completing
+
+
+
+# app.get '/authorized', (req, res) ->
+# 	model = req.getModel()
+# 	data = model.session.authorizeData
+# 	delete model.session.authorizeData
+
+# 	oauth = require 'oauth-gmail'
+# 	client = oauth.createClient()
+# 	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+# 		throw err if err
+
+# 		# Create the user and log him in.
+# 		id = model.id()
+# 		user =
+# 			id: id
+# 			date: +new Date
+# 			email: data.email
+# 			oauth:
+# 				token: result.accessToken
+# 				secret: result.accessTokenSecret
+# 		model.set 'users.' + id, user
+# 		login req, id, res
+
+# 		res.redirect('/profile?signup=true')
+
+
+
+io = require('socket.io').listen server
+
+# Heroku doesn't support websockets, force long polling.
+io.configure ->
+	io.set 'transports', ['xhr-polling']
+	io.set 'polling duration', 10
+
+
+
+
+models = require '../models'
+
+
+io.sockets.on 'connection', (socket) ->
+	socket.on 'login', (email, fn) ->
+		# If the user has never logged in before, redirect to gmail oauth page. Otherwise, log in.
+		models.User.findOne email: email, (err, user) ->
+			throw err if err
+
+			# TODO do authentication, either openID or: if user and user.password is req.body.password
+			if user
+				login user.id, socket
+				fn()
+			else
+				oauth = require 'oauth-gmail'
+				client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+				client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+					throw err if err
+					# model.session.authorizeData = email: email, request: result	# TODO XXX XXX how to save to session
+					fn result.authorizeUrl
+	socket.on 'logout', (fn) ->
+		logout socket
+		fn()
+
+
+
+
+
+
+
 pipeline = convoy
 	watch: true
 	'app.js':
@@ -35,7 +120,7 @@ pipeline = convoy
 			basePath = root + '/styles/base.less'
 			fs = require 'fs'
 			fs.readFile basePath, 'utf8', (err, body) ->
-				return done(err) if err
+				return done err if err
 				options = {}
 				options.filename = basePath
 				options.paths = [path.dirname(basePath)]
@@ -122,74 +207,6 @@ app.configure 'production', ->
 		res.send 500, 'Error'
 		# res.statusCode = 500
 		# res.render 'error/error'
-
-
-
-# TODO XXX all this login logout stuff. Maybe move it to another file too, like in poverup
-# login = (req, id, res) ->
-# 	req.getModel().session.user = id
-# 	# TODO session/cookie hack, get rid of 'res' param
-# 	res.cookie 'user', id
-
-# logout = (req) ->
-# 	delete req.getModel().session.user # TODO XXX try logging out
-# 	# req.getModel().session.destroy()	# TODO see if destorying the session is okay (derby puts some stuff there), or if this even works. Try conssole.dir req.getModel().session and see if there's a destroy method.
-
-# app.post '/login', (req, res) ->
-# 	# If the user has never logged in before, redirect to gmail oauth page. Otherwise, log in.
-# 	model = req.getModel()
-# 	email = req.body.email
-# 	model.fetch model.query('users').findByEmail(email), (err, userModel) ->
-# 		throw err if err
-# 		user = userModel.get()
-# 		# TODO do authentication, either openID or: if user and user.password is req.body.password
-# 		if user
-# 			login req, user.id, res
-# 			res.send()
-# 		else
-# 			oauth = require 'oauth-gmail'
-# 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
-# 			client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
-# 				throw err if err
-# 				model.session.authorizeData = email: email, request: result
-# 				res.send result.authorizeUrl
-
-# app.get '/logout', (req, res) ->
-# 	logout req
-# 	res.redirect '/'
-
-# app.get '/authorized', (req, res) ->
-# 	model = req.getModel()
-# 	data = model.session.authorizeData
-# 	delete model.session.authorizeData
-
-# 	oauth = require 'oauth-gmail'
-# 	client = oauth.createClient()
-# 	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
-# 		throw err if err
-
-# 		# Create the user and log him in.
-# 		id = model.id()
-# 		user =
-# 			id: id
-# 			date: +new Date
-# 			email: data.email
-# 			oauth:
-# 				token: result.accessToken
-# 				secret: result.accessTokenSecret
-# 		model.set 'users.' + id, user
-# 		login req, id, res
-
-# 		res.redirect('/profile?signup=true')
-
-
-
-io = require('socket.io').listen server
-
-# Heroku doesn't support websockets, force long polling.
-io.configure ->
-	io.set 'transports', ['xhr-polling']
-	io.set 'polling duration', 10
 
 
 server.listen app.get('port'), ->
