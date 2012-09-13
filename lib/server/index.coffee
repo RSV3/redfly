@@ -36,29 +36,7 @@ logout = (socket) ->
 
 
 
-# app.get '/authorized', (req, res) ->
-# 	model = req.getModel()
-# 	data = model.session.authorizeData
-# 	delete model.session.authorizeData
 
-# 	oauth = require 'oauth-gmail'
-# 	client = oauth.createClient()
-# 	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
-# 		throw err if err
-
-# 		# Create the user and log him in.
-# 		id = model.id()
-# 		user =
-# 			id: id
-# 			date: +new Date
-# 			email: data.email
-# 			oauth:
-# 				token: result.accessToken
-# 				secret: result.accessTokenSecret
-# 		model.set 'users.' + id, user
-# 		login req, id, res
-
-# 		res.redirect('/profile?signup=true')
 
 
 
@@ -84,26 +62,75 @@ io.sockets.on 'connection', (socket) ->
 			# TODO do authentication, either openID or: if user and user.password is req.body.password
 			if user
 				login user.id, socket
-				fn()
+				return fn()
 			else
-				oauth = require 'oauth-gmail'
-				client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
-				client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+
+				# TODO XXX testing
+				user = new models.User
+				user.email = 'bobface13@asdf.com'
+				user.name = 'bob bobson'
+				user.oauth =
+					token: 'asdf'
+					secret: 'asdf'
+				user.save (err) ->
 					throw err if err
-					# model.session.authorizeData = email: email, request: result	# TODO XXX XXX how to save to session
-					fn result.authorizeUrl
+					login user.id, socket
+					return fn()
+
+				# oauth = require 'oauth-gmail'
+				# client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+				# client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+				# 	throw err if err
+				# 	# model.session.authorizeData = email: email, request: result	# TODO XXX XXX how to save to session
+				# 	return fn result.authorizeUrl
 	socket.on 'logout', (fn) ->
 		logout socket
-		fn()
+		return fn()
 
-
-
-
-
+	socket.on 'db', (data, fn) ->
+		model = models[data.type]
+		op = data.op
+		if op is 'find'
+			if id = data.id
+				model.findById id, (err, doc) ->
+					throw err if err
+					return fn doc
+			else if ids = data.ids
+				model.find '_id': $in: ids, (err, docs) ->
+					throw err if err
+					return fn docs
+			else if query = data.query
+				model.find query, (err, docs) ->
+					throw err if err
+					return fn docs
+			else
+				model.find (err, docs) ->
+					throw err if err
+					return fn docs
+		else if op is 'create'
+			model.create data.details, (err, docs...) ->
+				throw err if err
+				return if docs.length is 1 then fn docs.get(0) else fn docs
+		else if op is 'save'
+			# TODO use model.save() to get validators and middleware
+			throw new Error 'unimplemented'
+		else if op is 'delete'
+			if id = data.id
+				model.findByIdAndRemove id, (err) ->
+					throw err if err
+					return fn()
+			else if ids = data.ids
+				# TODO Remove each one and call return fn() when they're ALL done
+				throw new Error 'unimplemented'
+			else
+				throw new Error
+		else
+			throw new Error
 
 
 pipeline = convoy
 	watch: true
+
 	'app.js':
 		main: root + '/lib/app'
 		packager: 'javascript'
@@ -131,7 +158,6 @@ pipeline = convoy
 		]
 		minify: optimize	# Convoy doesn't minify css yet.
 		autocache: not optimize
-	# TODO XXX copy? is anyhting requesting at index.html? What if the app comes from other routes? HOW DOES ROUTING WORK
 	'index.html':
 		root: root + '/views/index.html'
 		packager: 'copy'
@@ -207,6 +233,33 @@ app.configure 'production', ->
 		res.send 500, 'Error'
 		# res.statusCode = 500
 		# res.render 'error/error'
+
+
+
+# app.get '/authorized', (req, res) ->
+# 	model = req.getModel()
+# 	data = model.session.authorizeData
+# 	delete model.session.authorizeData
+
+# 	oauth = require 'oauth-gmail'
+# 	client = oauth.createClient()
+# 	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+# 		throw err if err
+
+# 		# Create the user and log him in.
+# 		id = model.id()
+# 		user =
+# 			id: id
+# 			date: +new Date
+# 			email: data.email
+# 			oauth:
+# 				token: result.accessToken
+# 				secret: result.accessTokenSecret
+# 		model.set 'users.' + id, user
+# 		login req, id, res
+
+# 		res.redirect('/profile?signup=true')
+
 
 
 server.listen app.get('port'), ->

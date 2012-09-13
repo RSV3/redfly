@@ -1,24 +1,10 @@
-_ = require 'underscore'
-_s = require 'underscore.string'
-{get, ready, view} = require './index'
-
-
 view.fn 'firstName', ({name}) ->
 	# TODO laaaaaame...
 	if not name
 		''
 	name[...name.indexOf(' ')]
 
-view.fn 'linebreaks', (text) ->
-	# Was throwing a type error for some reason.
-	if text
-		text.replace /\n/g, '<br>'
 
-
-get '/contact/:email', (page, model, {email}) ->
-	model.subscribe model.query('contacts').findByEmail(email), (err, contact) ->
-		throw err if err
-		common page, model, contact
 
 get '/classify/:step?', (page, model, {step}) ->
 	step or= 1
@@ -69,13 +55,3 @@ ready (model) ->
 		contact.set 'added_by', user.get().id
 		# TODO XXX prolly won't work for making the link trigger. If it does, try without!
 		next()
-
-
-
-# The 'id' parameter can be a document id or an email. Emails make more meaningful forward-facing links.
-# else
-# 	model.subscribe 'contacts.' + id, (err, contact) ->
-# 		throw err if err
-# Use isEmail validator: validators = require('validator').validators
-# if '@' in id
-# 	email = id

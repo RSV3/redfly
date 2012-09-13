@@ -13,6 +13,9 @@ UserSchema = new Schema
 	date: type: Date, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, required: 1, trim: 1
+	oauth:
+		token: type: String, required: 1
+		secret: type: String, required: 1
 
 ContactSchema = new Schema
 	date: type: Date, default: Date.now

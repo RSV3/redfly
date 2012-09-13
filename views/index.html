@@ -32,9 +32,9 @@
 						<div class="nav-collapse collapse">
 							<ul class="nav">
 								<!-- TODO make the active class="active" tab switch: page('home', 'active') https://github.com/ghempton/ember-router-example -->
-								<!-- TODO XXX
-									LINKS HERE
-								-->
+								<li><a {{action goHome href=true}}>Home</a></li>
+								<li><a {{action goTags href=true}}>Tags</a></li>
+								<li><a {{action goReport href=true}}>Report a bug</a></li>
 								<form class="navbar-search pull-left">
 									<input type="text" class="search-query" placeholder="Search">
 								</form>
@@ -130,15 +130,46 @@
 					{{/unless}}
 				</div>
 			</div>
-		</script>		
+		</script>
+
+		<script type="text/x-handlebars" data-template-name="profile">
+			<div class="profile">
+				<div class="row-fluid">
+					<h1 class="name">{{name}}</h1>
+					<p>Signed up on {{date date}}</p>
+					<br>
+					<p>You've added {{total}} contact{{#if_gt total compare=1}}s{{/if_gt}} so far.</p>
+					<ul>
+						{{#each contact in _contacts}}	<!-- TODO XXX get contacts -->
+							<li><a {{action goContact contact href=true}}>{{contact.name}}</a></li>
+						{{/each}}
+					</ul>
+					<br>
+					<p><em>...more metrics and feedback to come!</em></p>
+				</div>
+			</div>
+
+			<!-- TODO XXX <ui:loader> -->
+		</script>
 
 		<script type="text/x-handlebars" data-template-name="contact">
-			asdfasdf
-		</script>		
 
-		<!-- <script type="text/x-handlebars" data-template-name="application">
+		</script>
 
-		</script> -->
+		<script type="text/x-handlebars" data-template-name="tags">
+			<div class="report">
+				<div class="row-fluid">
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-handlebars" data-template-name="report">
+			<div class="report">
+				<div class="row-fluid">
+				</div>
+			</div>
+ 		</script>
+
 
 		<script src="/socket.io/socket.io.js"></script>	<!-- TODO temporary until i can require socket.io-client -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>	<!-- TODO XXX testing, testing.. -->

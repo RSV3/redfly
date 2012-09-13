@@ -1,18 +1,7 @@
 {get, ready, view} = require './index'
 
 
-get '/profile/:id', (page, model, params, next) ->
-	model.subscribe 'users.' + params.id, (err, user) ->
-		throw err if err
-		model.ref '_profileUser', user
-		common page, model, params
-
-get '/profile', (page, model, params, next) ->
-	model.ref '_profileUser', model.at '_user'
-	common page, model, params
-
 common = (page, model, params) ->
-	profileUser = model.at('_profileUser').get()
 	model.subscribe model.query('contacts').addedBy(profileUser.id), (err, contacts) ->
 		model.ref '_contacts', contacts
 		model.fn '_total', '_contacts', (contacts) ->

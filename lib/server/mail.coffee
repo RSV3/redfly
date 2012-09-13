@@ -24,11 +24,10 @@ module.exports = (app) ->
 	sendNudge: (user, contacts) ->
 		names = (contact.name for contact in contacts)
 		firstNames = (name[...name.indexOf(' ')] for name in names)
-		# TODO handle the 1 and 2 conctacs cases
-		firstNameString = firstNames[0] + ', ' + firstNames[1] + ', and ' + firstNames[2]
+		_s = require 'underscore.string'
 		send 'nudge',
 				to: user.to
-				subject: 'Tell me more about ' + firstNameString + '...'
+				subject: 'Tell me more about ' + _s.toSentenceSerial firstNames + '...'
 			,
 			title: 'Hi ' + user.name + '!'
 			names: names
