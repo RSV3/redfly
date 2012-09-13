@@ -10,8 +10,7 @@ module.exports = (Ember, App) ->
 		didInsertElement: ->
 			# TODO maybe do this without css selector if possible
 			$('.search-query').addClear top: 6
-	App.ApplicationController = Ember.Controller.extend
-		# recentContacts: App.Contacts.find()
+	App.ApplicationController = Ember.Controller.extend() #recentContacts: App.Contacts.find()
 
 
 	App.HomeView = Ember.View.extend

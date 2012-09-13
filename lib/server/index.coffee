@@ -71,10 +71,9 @@ app.configure ->
 	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
 	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
 	app.use express.compress()
-	app.use require('./pipeline')(root, optimize)
 
-	app.use express.bodyParser()
-	app.use express.methodOverride()
+	# app.use express.bodyParser()
+	# app.use express.methodOverride()
 
 	app.use express.cookieParser('cat on a keyboard in space')
 	app.use express.session store: new RedisStore do ->
@@ -84,12 +83,14 @@ app.configure ->
 		port: redisToGo.port
 		pass: redisToGo.auth.split(':')[1]
 
-	app.use (req, res, next) ->
-		if autoUser = process.env.AUTO_AUTH
-			req.session.user = autoUser
-		next()
+	# app.use (req, res, next) ->
+	# 	if autoUser = process.env.AUTO_AUTH
+	# 		req.session.user = autoUser
+	# 	next()
 
 	app.use app.router
+
+	app.use require('./pipeline')(root, optimize)
 
 	# TODO XXX how do 404 etc (error) pages work with ember? If I do them
 	# on the server then keep this, change view root to not be mail, change
