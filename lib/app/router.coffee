@@ -19,13 +19,11 @@ module.exports = (Ember, App) ->
 				route: '/profile'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'profile', App.user
-				goContact: Ember.Route.transitionTo 'contact'
 
 			profile: Ember.Route.extend
 				route: '/profile/:user_id'
 				connectOutlets: (router, user) ->
 					router.get('applicationController').connectOutlet 'profile', user
-				goContact: Ember.Route.transitionTo 'contact'
 
 			contact: Ember.Route.extend
 				route: '/contact/:identity'
@@ -57,5 +55,6 @@ module.exports = (Ember, App) ->
 
 		goHome: Ember.Route.transitionTo 'home'
 		goUserProfile: Ember.Route.transitionTo 'userProfile'
+		goContact: Ember.Route.transitionTo 'contact'
 		goTags: Ember.Route.transitionTo 'tags'
 		goReport: Ember.Route.transitionTo 'report'

@@ -11,7 +11,7 @@ module.exports = (Ember, App) ->
 			# TODO maybe do this without css selector if possible
 			$('.search-query').addClear top: 6
 	App.ApplicationController = Ember.Controller.extend
-		recentContacts: null
+		# recentContacts: App.Contacts.find()
 
 
 	App.HomeView = Ember.View.extend
@@ -31,8 +31,10 @@ module.exports = (Ember, App) ->
 		templateName: 'profile'
 		# template: require '../../views/templates/profile'
 	App.ProfileController = Ember.ObjectController.extend
-		total: ->
-			# @get('')
+		contacts: (-> App.Contact.find addedBy: @._id)
+			.property()
+		total: (-> @get('contacts').get 'length')
+			.property('contacts')
 
 	App.TagsView = Ember.View.extend
 		templateName: 'tags'

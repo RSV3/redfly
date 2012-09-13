@@ -60,7 +60,7 @@
 										<span class="caret"></span>
 									</a>
 									<ul class="dropdown-menu">
-										<li><a href="/profile">Profile</a></li>
+										<li><a {{action goUserProfile href=true}}>Profile</a></li>
 										<li class="divider"></li>
 										<li><a href="/logout">Log Out</a></li>
 									</ul>
@@ -74,19 +74,19 @@
 			<div class="container">
 				<div class="row">
 					<div class="span3">
-						<div class="sidebar-nav well">
-							<!-- <h2>Recent Contacts</h2> -->
-							{{#each contact in recentContacts}}
-								<div class="well">
-									<h3>{{contact.name}}</h3>
-									<p>Added by {{contact.addedBy}} on {{contact.dateAdded}}</p>
+						<ul data-spy="affix" class="nav nav-list recent">
+							<li class="nav-header title">Recent Contacts</li>
+							{{#each recentContacts}}
+								<li>
+									<a {{action goContact this href=true}}><i class="icon-chevron-right"></i></a>
+									
+									<h3>{{name}}</h3>
+									<p>Added by {{addedBy}} on {{dateAdded}}</p>
 
-									<!-- TODO XXX <ui:tagger contact="contact"> -->
-
-									<a class="btn" href="#">View</a>
-								</div>
+									<!-- TODO XXX <ui:tagger contact="this"> -->
+ 								</li>
 							{{/each}}
-						</div>
+						</ul>
 					</div>
 					<div class="span9">
 
@@ -144,14 +144,14 @@
 					<h1 class="name">{{name}}</h1>
 					<p>Signed up on {{date date}}</p>
 					<br>
-					<p>You've added {{total}} contact{{#if_gt total compare=1}}s{{/if_gt}} so far.</p>
+					<p>You've added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
 					<ul>
-						{{#each contact in _contacts}}	<!-- TODO XXX get contacts -->
-							<li><a {{action goContact contact href=true}}>{{contact.name}}</a></li>
+						{{#each contacts}}
+							<li><a {{action goContact this href=true}}>{{name}}</a></li>
 						{{/each}}
 					</ul>
 					<br>
-					<p><em>...more metrics and feedback to come!</em></p>
+					<p><em>...more metrics to come!</em></p>
 				</div>
 			</div>
 

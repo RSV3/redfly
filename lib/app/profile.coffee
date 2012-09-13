@@ -4,26 +4,11 @@
 
 
 common = (page, model, params) ->
-	model.subscribe model.query('contacts').addedBy(profileUser.id), (err, contacts) ->
-		model.ref '_contacts', contacts
-		model.fn '_total', '_contacts', (contacts) ->
-			contacts?.length or 0
-
 		# if params.query.signup
 		# 	model.set '_showLoader', true
 
 		page.render 'profile'
 
-
-getParameterByName = (name) ->
-	name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
-	regexS = "[\\?&]" + name + "=([^&#]*)"
-	regex = new RegExp(regexS)
-	results = regex.exec(window.location.search)
-	unless results?
-		""
-	else
-		decodeURIComponent results[1].replace(/\+/g, " ")
 
 ready (model) ->
 	# TODO this should all be in loader/index.coffee, but for some reason the create callback isn't firing

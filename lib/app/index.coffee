@@ -13,7 +13,7 @@ Handlebars.registerHelper 'date', (property, options) ->
 	value = Ember.Handlebars.getPath @, property, options
 	# moment = require 'moment'
 	# moment(date).format('MMMM Do, YYYY')
-	'Just a moment ago'	# TODO XXX
+	'just a moment ago.'	# TODO XXX
 
 App.user = null
 App.connect = Ember.Object.create
@@ -36,7 +36,7 @@ App.connect = Ember.Object.create
 			socket.emit 'login', email, (redirect) ->
 				if redirect
 					return window.location.href = redirect
-				App.get('router').send 'goUserProfile'	# TODO XXX set this up with the current user?
+				App.get('router').send 'goUserProfile'
 
 
 App.adapter = require('./adapter')(DS, socket)
