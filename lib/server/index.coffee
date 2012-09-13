@@ -2,10 +2,7 @@ http = require 'http'
 path = require 'path'
 express = require 'express'
 gzippo = require 'gzippo'
-convoy = require 'convoy'
-less = require 'less'
 RedisStore = require('connect-redis')(express)
-_ = require 'underscore'
 
 util = require '../util'
 
@@ -16,9 +13,6 @@ server = http.createServer(app)
 
 root = path.dirname path.dirname __dirname
 optimize = if process.env.OPTIMIZE then true else false
-
-
-
 
 
 
@@ -50,120 +44,11 @@ io.configure ->
 
 
 
-models = require '../models'
 
 
-io.sockets.on 'connection', (socket) ->
-	socket.on 'login', (email, fn) ->
-		# If the user has never logged in before, redirect to gmail oauth page. Otherwise, log in.
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-
-			# TODO do authentication, either openID or: if user and user.password is req.body.password
-			if user
-				login user.id, socket
-				return fn()
-			else
-
-				# TODO XXX testing
-				user = new models.User
-				user.email = 'bobface13@asdf.com'
-				user.name = 'bob bobson'
-				user.oauth =
-					token: 'asdf'
-					secret: 'asdf'
-				user.save (err) ->
-					throw err if err
-					login user.id, socket
-					return fn()
-
-				# oauth = require 'oauth-gmail'
-				# client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
-				# client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
-				# 	throw err if err
-				# 	# model.session.authorizeData = email: email, request: result	# TODO XXX XXX how to save to session
-				# 	return fn result.authorizeUrl
-	socket.on 'logout', (fn) ->
-		logout socket
-		return fn()
-
-	socket.on 'db', (data, fn) ->
-		model = models[data.type]
-		op = data.op
-		if op is 'find'
-			if id = data.id
-				model.findById id, (err, doc) ->
-					throw err if err
-					return fn doc
-			else if ids = data.ids
-				model.find '_id': $in: ids, (err, docs) ->
-					throw err if err
-					return fn docs
-			else if query = data.query
-				model.find query, (err, docs) ->
-					throw err if err
-					return fn docs
-			else
-				model.find (err, docs) ->
-					throw err if err
-					return fn docs
-		else if op is 'create'
-			model.create data.details, (err, docs...) ->
-				throw err if err
-				return if docs.length is 1 then fn docs.get(0) else fn docs
-		else if op is 'save'
-			# TODO use model.save() to get validators and middleware
-			throw new Error 'unimplemented'
-		else if op is 'delete'
-			if id = data.id
-				model.findByIdAndRemove id, (err) ->
-					throw err if err
-					return fn()
-			else if ids = data.ids
-				# TODO Remove each one and call return fn() when they're ALL done
-				throw new Error 'unimplemented'
-			else
-				throw new Error
-		else
-			throw new Error
+require('./services')(io, login, logout)
 
 
-pipeline = convoy
-	watch: true
-
-	'app.js':
-		main: root + '/lib/app'
-		packager: 'javascript'
-		compilers:
-			'.hbr': require('ember/packager').HandlebarsCompiler
-			'.js':  convoy.plugins.JavaScriptCompiler
-			'.coffee': convoy.plugins.CoffeeScriptCompiler
-		minify: optimize
-		autocache: not optimize
-	'app.css':
-		main: root + '/styles'
-		packager: require 'convoy-stylus'
-		postprocessors: [ (asset, context, done) ->
-			basePath = root + '/styles/base.less'
-			fs = require 'fs'
-			fs.readFile basePath, 'utf8', (err, body) ->
-				return done err if err
-				options = {}
-				options.filename = basePath
-				options.paths = [path.dirname(basePath)]
-				new less.Parser(options).parse body, (err, tree) ->
-					return done(err) if err
-					asset.body = tree.toCSS(compress: optimize) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
-					done()
-		]
-		minify: optimize	# Convoy doesn't minify css yet.
-		autocache: not optimize
-	'index.html':
-		root: root + '/views/index.html'
-		packager: 'copy'
-		autocache: not optimize
-	'app.manifest':
-		packager: require 'html5-manifest/packager'
 
 
 app.configure ->
@@ -186,7 +71,7 @@ app.configure ->
 	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
 	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
 	app.use express.compress()
-	app.use pipeline.middleware()
+	app.use require('./pipeline')(root, optimize)
 
 	app.use express.bodyParser()
 	app.use express.methodOverride()
@@ -236,6 +121,7 @@ app.configure 'production', ->
 
 
 
+# TODO XXX
 # app.get '/authorized', (req, res) ->
 # 	model = req.getModel()
 # 	data = model.session.authorizeData
