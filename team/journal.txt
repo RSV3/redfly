@@ -1,3 +1,19 @@
+Needed Features (ember/angular/knockout/derby research):
+  - speedy loading with browser push/pop states (ideally only refreshing parts of the page that it has to), or more generally avoiding roundtrips to the server
+  - bindings(auto-updating) in the view template
+  - auto-persistance of view bindgings into a database
+  - which is more appropriate for a "one-page" web application. While we won't always be making one-page web apps, the principles involved in making one (lots of rendering and route-handling on the client-side, etc) are great to have available
+    - template composition
+  - the ability to respond to events (user/dom events of course, also know when a PARTICULAR MODEL is changed so I can respond. Derby didn't allow this and it made using js plugins difficult)
+  - realtime between clients of the app via bindings (probably can't get this without derby)
+  - the ability to use any templating engine
+
+
+
+
+
+--------------------------------- xoath attempts ---------------------------------
+
 user =
 	id: '178'
 	email: 'kbaranowski@redstar.com'
