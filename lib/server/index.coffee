@@ -139,6 +139,7 @@ io.set 'authorization', (data, accept) ->
 		return accept null, true
 
 io.sockets.on 'connection', (socket) ->
+	# Support to sync socket data with the session.
 	# socket.on 'set value', (val) ->
 	# 	session.reload ->
 	# 		session.value = val
