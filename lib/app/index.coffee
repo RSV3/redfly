@@ -24,7 +24,8 @@ App.authenticate = (id) ->
 		console.log 'no-arg authenticate'
 		# TODO XXX lookup over websocket, set to null if none
 
-App.user = null	# TODO XXX Also actually having this line is unessary, and possibly harmful. Wait, maybe necessary, what about unknownproperty. Does App.user have to be an ember object?
+App.name = null	# TODO XXX quick hack because subproperties of user can't be bound to. App.user will probably have to be some sort of shell
+App.user = null
 App.connect = Ember.Object.create	# TODO make this not be shared between login and signup since they're different now. Maybe still grey out both buttons.
 	email: ''
 	started: false
@@ -46,9 +47,20 @@ begin = (fn) ->
 		fn email
 
 App.auth =
+	signup: ->
+		begin (email) ->
+			socket.emit 'signup', email, (authorizeUrl) ->
+				# if not authorizeUrl
+				# 	# TODO give an error message if there's already a user with that email.
+				App.connect.set 'email', ''
+				App.connect.set 'started', false				
+				window.location.href = authorizeUrl
+
 	login: ->
 		begin (email) ->
 			socket.emit 'login', email, (id) ->
+				# if not id
+				# 	# TODO give an error message if the user wasn't found.
 				App.authenticate id
 				App.connect.set 'email', ''
 				App.connect.set 'started', false
@@ -58,13 +70,6 @@ App.auth =
 		socket.emit 'logout', ->
 			App.authenticate null
 			App.get('router').send 'home'
-
-	signup: ->
-		begin (email) ->
-			socket.emit 'signup', email, (authorizeUrl) ->
-				App.connect.set 'email', ''
-				App.connect.set 'started', false				
-				window.location.href = authorizeUrl
 
 
 

@@ -3,6 +3,19 @@ module.exports = (socket, session) ->
 	models = require './models'
 
 
+	socket.on 'signup', (email, fn) ->
+		models.User.findOne email: email, (err, user) ->
+			throw err if err
+			if not user
+				oauth = require 'oauth-gmail'
+				client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+				client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+					throw err if err
+					session.authorizeData = email: email, request: result
+					session.save()
+					return fn result.authorizeUrl
+			fn()
+
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
@@ -16,15 +29,6 @@ module.exports = (socket, session) ->
 	socket.on 'logout', (fn) ->
 		session.destroy() # TODO This might not work right because of the way socket connections and sessions are 1:1
 		return fn()
-
-	socket.on 'signup', (email, fn) ->
-		oauth = require 'oauth-gmail'
-		client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
-		client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
-			throw err if err
-			session.authorizeData = email: email, request: result
-			session.save()
-			return fn result.authorizeUrl
 
 	socket.on 'db', (data, fn) ->
 		model = models[data.type]

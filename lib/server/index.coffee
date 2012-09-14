@@ -53,6 +53,7 @@ app.configure ->
 		key: key
 		store: store
 
+	# TODO
 	# app.use (req, res, next) ->
 	# 	if autoUser = process.env.AUTO_AUTH
 	# 		req.session.user = autoUser
