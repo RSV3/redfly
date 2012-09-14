@@ -7,36 +7,33 @@ window.App = Ember.Application.create()
 # io = require 'socket.io-client' # TODO convoy fails
 socket = io.connect document.location.href
 
-require('./services')(socket, App)
-
 Handlebars.registerHelper 'date', (property, options) ->
 	value = Ember.Handlebars.getPath @, property, options
 	# moment = require 'moment'
 	# moment(date).format('MMMM Do, YYYY')
 	'just a moment ago.'	# TODO XXX
 
-App.user = null
+
+
+App.auth = (id) ->
+	if id
+		App.set 'user', App.User.find id
+	else if id is null
+		App.set 'user', null
+	else
+		# TODO XXX lookup over websocket, set to null if none
+
+App.user = null	# TODO XXX Also actually having this line is unessary, and possibly harmful. Wait, maybe necessary, what about unknownproperty. Does App.user have to be an ember object?
 App.connect = Ember.Object.create
-	email: null
+	email: ''
 	started: false
-	start: ->
-		_s = require 'underscore.string'
-		if email = _s.trim @get('email')
-			@set 'started', true
-			# If only the username was typed make it a proper email.
+# TODO XXX TRY WITHOUT ALL OF THIS AFTER AUTH IS WORKING
 
-			# validators = require('validator').validators	# TODO 'net' not found?
-			validators = {}
-			validators.isEmail = (email) ->
-				_s = require 'underscore.string'
-				_s.contains email, '@'
+App.auth()
 
-			if not validators.isEmail email
-				email += '@redstar.com'
-			socket.emit 'login', email, (redirect) ->
-				if redirect
-					return window.location.href = redirect
-				App.get('router').send 'goUserProfile'
+
+
+
 
 
 App.adapter = require('./adapter')(DS, socket)
@@ -46,6 +43,6 @@ App.store = DS.Store.create
 
 require('./models')(DS, App)
 require('./controllers')(Ember, App)
-require('./router')(Ember, App)
+require('./router')(Ember, App, socket)
 
 App.initialize()

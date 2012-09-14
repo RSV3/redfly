@@ -6,6 +6,8 @@ RedisStore = require('connect-redis')(express)
 
 util = require '../util'
 
+require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
+
 
 
 app = express()
@@ -14,41 +16,13 @@ server = http.createServer(app)
 root = path.dirname path.dirname __dirname
 optimize = if process.env.OPTIMIZE then true else false
 
-
-
-
-# TODO all this login logout stuff maybe move it to another file too, like in poverup
-login = (id, socket) ->
-	socket.set 'user', id
-	socket.emit 'login', id
-	# req.session.user = id # Won't work because no req, and a response cycle has to be completing
-
-logout = (socket) ->
-	socket.set 'user', null
-	socket.emit 'logout'
-	# req.session.destroy()	# Won't work because no req, and a response cycle has to be completing
-
-
-
-
-
-
-
-io = require('socket.io').listen server
-
-# Heroku doesn't support websockets, force long polling.
-io.configure ->
-	io.set 'transports', ['xhr-polling']
-	io.set 'polling duration', 10
-
-
-
-
-
-
-require('./services')(io, login, logout)
-
-
+key = 'express.sid'
+store = new RedisStore do ->
+	parse = require('url').parse
+	redisToGo = parse process.env.REDISTOGO_URL
+	host: redisToGo.hostname
+	port: redisToGo.port
+	pass: redisToGo.auth.split(':')[1]
 
 
 app.configure ->
@@ -72,16 +46,12 @@ app.configure ->
 	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
 	app.use express.compress()
 
-	# app.use express.bodyParser()
-	# app.use express.methodOverride()
-
-	app.use express.cookieParser('cat on a keyboard in space')
-	app.use express.session store: new RedisStore do ->
-		parse = require('url').parse
-		redisToGo = parse process.env.REDISTOGO_URL
-		host: redisToGo.hostname
-		port: redisToGo.port
-		pass: redisToGo.auth.split(':')[1]
+	app.use express.bodyParser()
+	app.use express.methodOverride()
+	app.use express.cookieParser 'cat on a keyboard in space'
+	app.use express.session
+		key: key
+		store: store
 
 	# app.use (req, res, next) ->
 	# 	if autoUser = process.env.AUTO_AUTH
@@ -121,32 +91,57 @@ app.configure 'production', ->
 		# res.render 'error/error'
 
 
+app.get '/authorized', (req, res) ->
+	data = req.session.authorizeData
+	delete req.session.authorizeData
 
-# TODO XXX
-# app.get '/authorized', (req, res) ->
-# 	model = req.getModel()
-# 	data = model.session.authorizeData
-# 	delete model.session.authorizeData
+	oauth = require 'oauth-gmail'
+	client = oauth.createClient()
+	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+		throw err if err
 
-# 	oauth = require 'oauth-gmail'
-# 	client = oauth.createClient()
-# 	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
-# 		throw err if err
+		# Create the user and log him in.
+		models = require './models'
+		user = new models.User
+		user.email = data.email
+		user.oauth =
+			token: result.accessToken
+			secret: result.accessTokenSecret
+		user.save (err) ->
+			throw err if err
 
-# 		# Create the user and log him in.
-# 		id = model.id()
-# 		user =
-# 			id: id
-# 			date: +new Date
-# 			email: data.email
-# 			oauth:
-# 				token: result.accessToken
-# 				secret: result.accessTokenSecret
-# 		model.set 'users.' + id, user
-# 		login req, id, res
+			req.session.user = user.id
+			res.redirect('/load')
 
-# 		res.redirect('/profile?signup=true')
 
+io = require('socket.io').listen server
+
+# Heroku doesn't support websockets, force long polling.
+io.configure ->
+	io.set 'transports', ['xhr-polling']
+	io.set 'polling duration', 10
+
+io.set 'authorization', (data, accept) ->
+	if not data.headers.cookie
+		return accept 'No cookie transmitted.', false
+	cookie = require 'cookie'
+	data.cookie = cookie.parse data.headers.cookie
+	data.sessionId = data.cookie[key].substring(2, 26)
+
+	store.load data.sessionId, (err, session) ->
+		throw err if err
+		throw new Error 'No session.' if not session
+
+		data.session = session
+		return accept null, true
+
+io.sockets.on 'connection', (socket) ->
+	# socket.on 'set value', (val) ->
+	# 	session.reload ->
+	# 		session.value = val
+	# 		session.touch().save()
+
+	require('./api')(socket, socket.handshake.session)
 
 
 server.listen app.get('port'), ->

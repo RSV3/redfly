@@ -42,17 +42,17 @@
 						</div>
 						<div class="pull-right">
 							{{#unless App.user}}
-								<form class="navbar-form" {{action "start" on="submit" target="App.connect"}}>
+								<form class="navbar-form" {{action goLogin on="submit"}}>
 									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.connect.email"}}
 									<!-- <input type="password" class="input-small" placeholder="Password"> -->
 									<!-- <label class="checkbox">
 										<input type="checkbox"> Remember me
 									</label> -->
-									<button type="submit" class="btn" {{bindAttr disabled="App.connect.started"}}>Log In</button>
+									<button type="submit" class="btn" {{action disabled="App.connect.started"}}>Log In</button>
 								</form>
 							{{else}}
 								<div class="btn-group">
-									<a class="btn" href="#">
+									<a class="btn" {{action goUserProfile href=true}}>
 										<i class="icon-user"></i> 
 										{{App.user.name}}
 									</a>
@@ -62,7 +62,7 @@
 									<ul class="dropdown-menu">
 										<li><a {{action goUserProfile href=true}}>Profile</a></li>
 										<li class="divider"></li>
-										<li><a href="/logout">Log Out</a></li>
+										<li><a {{action goLogout href=true}}>Log Out</a></li>
 									</ul>
 								</div>
 							{{/unless}}
@@ -123,7 +123,7 @@
 						{{#unless showConnect}}
 							<a class="btn btn-primary btn-large" {{action "toggle" target="parentView"}}>Connect through email</a>
 						{{else}}
-							<form class="well" {{action "start" on="submit" target="App.connect"}}>
+							<form class="well" {{action goLogin on="submit"}}>
 								{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.connect.email"}}
 								<!-- <input type="password" placeholder="Password"> -->
 								<span class="help-block">Type your Redstar email (or your Gmail if you don't have one).</span>
@@ -178,9 +178,9 @@
 
 
 		<script src="/socket.io/socket.io.js"></script>	<!-- TODO temporary until i can require socket.io-client -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>	<!-- TODO XXX testing, testing.. -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>	<!-- TODO XXX testing, testing.. -->
 		<script src="http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js"></script>	<!-- TODO XXX testing, testing.. -->
-		<script src="http://cloud.github.com/downloads/emberjs/ember.js/ember-1.0.pre.min.js"></script>	<!-- TODO XXX testing, testing.. -->
+		<script src="http://cloud.github.com/downloads/emberjs/ember.js/ember-1.0.pre.js"></script>	<!-- TODO XXX testing, testing.. -->
 
 		<script src="./app.js"></script>
 		<!-- TODO -->
