@@ -1,12 +1,5 @@
 # TODO XXX
 
-view.fn 'firstName', ({name}) ->
-	# TODO laaaaaame...
-	if not name
-		''
-	name[...name.indexOf(' ')]
-
-
 
 get '/classify/:step?', (page, model, {step}) ->
 	step or= 1

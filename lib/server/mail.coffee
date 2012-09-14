@@ -26,8 +26,8 @@ module.exports = (app) ->
 		firstNames = (name[...name.indexOf(' ')] for name in names)
 		_s = require 'underscore.string'
 		send 'nudge',
-				to: user.to
-				subject: 'Tell me more about ' + _s.toSentenceSerial firstNames + '...'
+				to: user.email
+				subject: 'Tell me more about ' + firstNames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
 			,
 			title: 'Hi ' + user.name + '!'
 			names: names

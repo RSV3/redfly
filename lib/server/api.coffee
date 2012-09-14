@@ -8,7 +8,7 @@ module.exports = (app, socket) ->
 	socket.on 'session', (variable, fn) ->
 		fn session[variable]
 
-	socket.on 'db', (data, fn) ->
+	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -101,9 +101,34 @@ module.exports = (app, socket) ->
 					socket.emit 'parse.start', total
 				completedEmail: ->
 					socket.emit 'parse.update'
-				done: (mails) ->
+				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
 					newContacts = []
-					for mail in mails
+
+					moar = ->	# TODO can i define this below 'sift'?
+						# If there were new contacts, determine those with the most correspondence and send a nudge email.
+						if newContacts.length isnt 0
+							newContacts = _.sortBy newContacts, (contact) ->
+								_.reduce mails, (mail, total) ->
+										if contact.email is mail.recipientEmail
+											return total - 1	# Negative totals to reverse the order!
+										return total
+									, 0
+							newContacts = newContacts[...5]								
+
+							user.classifyIndex = user.classify.toObject().length - 1	# TODO necessary toObject?
+							user.classify.push newContacts...
+
+							mail = require('./mail')(app)
+							mail.sendNudge user, newContacts
+
+						user.dateParsedLast = Date.now()
+						user.save (err) ->
+							throw err if err
+
+						fn()
+
+					sift = (index = 0) ->
+						mail = mails[index]
 						mail.sender = user
 
 						models.Contact.findOne email: mail.recipientEmail, (err, contact) ->
@@ -131,26 +156,11 @@ module.exports = (app, socket) ->
 								models.Mail.create mail, (err, doc) ->
 									throw err if err
 
-					# If there were new contacts, determine those with the most correspondence and send a nudge email.
-					if newContacts.length isnt 0
-						newContacts = _.sortBy newContacts, (contact) ->
-							_.reduce mails, (mail, total) ->
-									if contact.email is mail.recipientEmail
-										return total - 1	# Negative totals to reverse the order!
-									return total
-								, 0
+									index++
+									if index < mails.length
+										return sift index	# Wee recursion!
+									moar()
 
-						user.classifyIndex = user.classify.toObject().length - 1	# TODO necessary toObject?
-						user.classify.push newContacts
-
-						newContacts = newContacts[...5]
-						mail = require('./mail')(app)
-						mail.sendNudge user, newContacts
-
-					user.dateParsedLast = Date.now()
-					user.save (err) ->
-						throw err if err
-
-					fn()
+					sift()
 
 			require('./parser')(user, notifications)

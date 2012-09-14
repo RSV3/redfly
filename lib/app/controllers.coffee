@@ -1,7 +1,7 @@
 module.exports = (Ember, App) ->
 	# path = require 'path'
 	# views = path.dirname(path.dirname(__dirname)) + '/views/templates'
-	# views = '../../views/templates'	# TODO XXX why doesn't '+' work in require statements
+	# views = '../../views/templates'
 
 
 	App.ApplicationView = Ember.View.extend
@@ -10,7 +10,7 @@ module.exports = (Ember, App) ->
 		didInsertElement: ->
 			# TODO maybe do this without css selector if possible
 			$('.search-query').addClear top: 6
-	App.ApplicationController = Ember.Controller.extend() #recentContacts: App.Contacts.find()
+	App.ApplicationController = Ember.Controller.extend() #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
 
 
 	App.HomeView = Ember.View.extend
@@ -24,7 +24,11 @@ module.exports = (Ember, App) ->
 	App.ContactView = Ember.View.extend
 		templateName: 'contact'
 		# template: require '../../views/templates/contact'
-	App.ContactController = Ember.ObjectController.extend()
+	App.ContactController = Ember.ObjectController.extend
+		firstName: (->
+				name = @get('name')
+				name[...name.indexOf(' ')]
+			).property('name')
 
 	App.ProfileView = Ember.View.extend
 		templateName: 'profile'

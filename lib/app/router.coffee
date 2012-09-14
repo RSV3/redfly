@@ -30,12 +30,14 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router, contact) ->
 					router.get('applicationController').connectOutlet 'contact', contact
 				serialize: (router, context) ->
-					identity: context.get 'email'
+					# identity: context.get 'email'
+					# TODO XXX
+					identity: '123456'
 				deserialize: (router, params) ->
 					# The 'identity' parameter can be a document id or an email. Emails make more meaningful forward-facing links.
 					identity = params.identity
 					if validators.isEmail identity
-						return App.Contact.find(email: identity).objectAt 0
+						return App.Contact.find(email: identity)	# TODO XXX .objectAt 0
 					App.Contact.find identity
 
 			tags: Ember.Route.extend
@@ -52,11 +54,10 @@ module.exports = (Ember, App, socket) ->
 			load: Ember.Route.extend
 				route: '/load'	# This state only has a public url so the http-based authorize flow can hook in.
 				enter: (manager) ->
-					socket.emit 'session', 'user', (id) ->	# TODO XXX hack, just use App.user id when possible
+					socket.emit 'session', 'user', (id) ->	# TODO XXX hack
 						socket.emit 'parse', id, ->
-						# TODO XXX do the loader
-					App.authenticate()	# TODO XXX might need to go to userProfile after authorization happens; then this can't be a route
-				redirectsTo: 'userProfile'
+							# TODO XXX do the loader
+				redirectsTo: 'userProfile'	# Free authentication because this the user comes only arrvies at this route from off the app.
 
 
 			goHome: Ember.Route.transitionTo 'home'

@@ -159,7 +159,38 @@
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="contact">
-
+			<div class="contact">
+				<div class="row-fluid top">
+					<!-- TODO try as class="img-polaroid" with new bootstrap and change styl file. Corners become no longer rounded -->
+					<!-- TODO picture not be placeholder -->
+					<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
+					<h1 class="name">{{name}}</h1>
+					{{#if _history}}
+						<div>
+							<p>You emailed {{firstName}} with the email subject <em>"{{_history.first_email.subject}}"</em>.</p>
+							<p>You've mailed him or her <strong>{{_history.count}}</strong> times.</p>
+						</div>
+					{{/if}}
+					<ui:tagger contact="{{_contact}}">	<!-- TODO XXX tagger -->
+				</div>
+				<div class="row-fluid">
+					{{#if _history}}
+						<form x-bind="submit: add">
+							<textarea placeholder="Cool story, bro." rows="3">{{currentNote}}</textarea>
+							<button class="btn" type="submit">Add Note</button>
+							<!-- TODO XXX disabled="{{currentNoteEmpty}}" -->
+						</form>
+					{{/if}}
+					{{#each notes}}
+						<blockquote>
+							<p>{{nl2br body}}</p>
+							<small>{{date date}}</small>
+						</blockquote>
+					{{else}}
+						<span>No notes about this contact yet.</span>
+					{{/each}}
+				</div>
+			</div>
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="tags">

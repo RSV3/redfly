@@ -50,8 +50,9 @@ module.exports = (user, notifications) ->
 									email = _s.trim to.address.toLowerCase()	# TODO I have to do this right? Probably.
 									name = _s.trim(to.name) or email	# If the name is blank use the email instead.
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-									blacklist = []	# TODO XXX load blacklisted email from the database
-									if (validators.isEmail email) and (email isnt user.email) and (email not in blacklist)
+									blacklist = []	# TODO load blacklisted email from the database {and (email not in blacklist)} does that work?
+									# TODO remove the 'in redstar' bit in the line below. Does 'not in ' work?
+									if (validators.isEmail email) and (email isnt user.email) and (email.indexOf('redstar') is -1)
 										mails.push
 											subject: msg.headers.subject?[0]
 											dateSent: new Date msg.headers.date?[0]

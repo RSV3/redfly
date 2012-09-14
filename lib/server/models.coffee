@@ -23,7 +23,7 @@ UserSchema = new Schema
 ContactSchema = new Schema
 	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
-	name: type: String, trim: 1
+	name: type: String, required: 1, trim: 1
 	addedBy: type: Types.ObjectId, ref: 'User'
 	dateAdded: type: Date
 	knows: [ type: Types.ObjectId, ref: 'User' ]
