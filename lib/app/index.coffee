@@ -17,16 +17,15 @@ Handlebars.registerHelper 'date', (property, options) ->
 
 App.authenticate = (id) ->
 	if id
-		App.set 'user', App.User.find id
+		App.userController.set 'content', App.User.find id
 	else if id is null
-		App.set 'user', null
+		App.userController.set 'content', null
 	else
 		socket.emit 'session', (session) ->
 			if id = session.user
-				App.set 'user', App.User.find id
+				App.userController.set 'content', App.User.find id
 
-App.name = null	# TODO XXX quick hack because subproperties of user can't be bound to. App.user will probably have to be some sort of shell
-App.user = null
+App.userController = Ember.ObjectController.create()
 App.connect = Ember.Object.create	# TODO make this not be shared between login and signup since they're different now. Maybe still grey out both buttons.
 	email: ''
 	started: false

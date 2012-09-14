@@ -41,7 +41,7 @@
 							</ul>
 						</div>
 						<div class="pull-right">
-							{{#unless App.user}}
+							{{#unless App.userController.content}}
 								<form class="navbar-form" {{action "login" on="submit" target="App.auth"}}>
 									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.connect.email"}}
 									<!-- <input type="password" class="input-small" placeholder="Password"> -->
@@ -53,8 +53,8 @@
 							{{else}}
 								<div class="btn-group">
 									<a class="btn" {{action goUserProfile href=true}}>
-										<i class="icon-user"></i> 
-										{{App.name}}
+										<i class="icon-user"></i>
+										{{App.userController.name}}
 									</a>
 									<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
 										<span class="caret"></span>
@@ -119,7 +119,7 @@
 					<p class="lead">You'll be able to view the curated contacts of other team members and they'll be able to view yours. <strong>With great power comes great something something</strong>.</p>
 				</div><!--/row-fluid-->
 				<div class="row-fluid signup">
-					{{#unless App.user}}
+					{{#unless App.userController.content}}
 						{{#unless showConnect}}
 							<a class="btn btn-primary btn-large" {{action "toggle" target="parentView"}}>Connect through email</a>
 						{{else}}
