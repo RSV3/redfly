@@ -32,7 +32,7 @@ module.exports = (Ember, App) ->
 	App.ProfileController = Ember.ObjectController.extend
 		contacts: (-> App.Contact.find addedBy: @._id)
 			.property()
-		total: (-> @contacts.get 'length')
+		total: (-> @get('contacts').get 'length')
 			.property('contacts')
 
 	App.TagsView = Ember.View.extend
