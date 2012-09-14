@@ -21,8 +21,8 @@ App.authenticate = (id) ->
 	else if id is null
 		App.set 'user', null
 	else
-		socket.emit 'session', 'user', (id) ->
-			if id
+		socket.emit 'session', (session) ->
+			if id = session.user
 				App.set 'user', App.User.find id
 
 App.name = null	# TODO XXX quick hack because subproperties of user can't be bound to. App.user will probably have to be some sort of shell

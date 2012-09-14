@@ -5,8 +5,8 @@ module.exports = (app, socket) ->
 
 	session = socket.handshake.session
 
-	socket.on 'session', (variable, fn) ->
-		fn session[variable]
+	socket.on 'session', (fn) ->
+		fn session
 
 	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
 		model = models[data.type]
@@ -104,7 +104,7 @@ module.exports = (app, socket) ->
 				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
 					newContacts = []
 
-					moar = ->	# TODO can i define this below 'sift'?
+					moar = ->	# TODO can i define this below 'sift'? Actually just put it in 'sift' and try to make it a self-calling function
 						# If there were new contacts, determine those with the most correspondence and send a nudge email.
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
