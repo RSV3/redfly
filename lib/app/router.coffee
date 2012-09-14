@@ -49,9 +49,14 @@ module.exports = (Ember, App, socket) ->
 					router.get('applicationController').connectOutlet 'report'
 
 
-			# load: Ember.Route.extend
-			# 	route: '/load'	# Public url exists solely so the http-based authorize flow can hook in.
-			# TODO XXX start the loader and redirect out to the profile immediately. Load the user with App.authenticate(),
+			load: Ember.Route.extend
+				route: '/load'	# This state only has a public url so the http-based authorize flow can hook in.
+				enter: (manager) ->
+					socket.emit 'session', 'user', (id) ->	# TODO XXX hack, just use App.user id when possible
+						socket.emit 'parse', id, ->
+						# TODO XXX do the loader
+					App.authenticate()	# TODO XXX might need to go to userProfile after authorization happens; then this can't be a route
+				redirectsTo: 'userProfile'
 
 
 			goHome: Ember.Route.transitionTo 'home'

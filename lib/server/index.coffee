@@ -92,6 +92,7 @@ app.configure 'production', ->
 		# res.render 'error/error'
 
 
+
 app.get '/authorized', (req, res) ->
 	data = req.session.authorizeData
 	delete req.session.authorizeData
@@ -112,7 +113,8 @@ app.get '/authorized', (req, res) ->
 			throw err if err
 
 			req.session.user = user.id
-			res.redirect('/load')
+			res.redirect('/#/load')	# TODO exposes url creation strategy
+
 
 
 io = require('socket.io').listen server
@@ -142,7 +144,7 @@ io.sockets.on 'connection', (socket) ->
 	# 		session.value = val
 	# 		session.touch().save()
 
-	require('./api')(socket, socket.handshake.session)
+	require('./api')(app, socket)
 
 
 server.listen app.get('port'), ->

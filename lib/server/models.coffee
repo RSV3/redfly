@@ -9,15 +9,19 @@ Types = Schema.Types
 
 
 UserSchema = new Schema
-	date: type: Date, default: Date.now
+	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
-	name: type: String, required: 1, trim: 1
+	name: type: String, trim: 1	# TODO I'd like to make this required but the parsing process finds the user's name later. It's probably fine.
 	oauth:
 		token: type: String, required: 1
 		secret: type: String, required: 1
+	# TODO maybe make these below part of a 'meta' field
+	dateParsedLast: type: Date
+	classifyIndex: type: Number, required: 1, default: 0
+	classify: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
-	date: type: Date, default: Date.now
+	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1
 	addedBy: type: Types.ObjectId, ref: 'User'
@@ -27,21 +31,21 @@ ContactSchema = new Schema
 	notes: [ type: Types.ObjectId, ref: 'Note' ]
 
 TagSchema = new Schema
-	date: type: Date, default: Date.now
+	date: type: Date, required: 1, default: Date.now
 	creator: type: Types.ObjectId, ref: 'User', required: 1
 	body: type: String, required: 1, trim: 1
 
 NoteSchema = new Schema
-	date: type: Date, default: Date.now
+	date: type: Date, required: 1, default: Date.now
 	author: type: Types.ObjectId, ref: 'User', required: 1
 	body: type: String, required: 1, trim: 1
 
 MailSchema = new Schema
-	date: type: Date, default: Date.now
+	date: type: Date, required: 1, default: Date.now
 	sender: type: Types.ObjectId, ref: 'User', required: 1
 	recipient: type: Types.ObjectId, ref: 'Contact', required: 1
 	subject: type: String
-	dateSent: type: Date, required: 1
+	dateSent: type: Date
 
 
 exports.User = mongoose.model 'User', UserSchema

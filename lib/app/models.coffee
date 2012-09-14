@@ -5,6 +5,8 @@ module.exports = (DS, App) ->
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
+		classifyIndex: DS.attr 'number'
+		classify: DS.hasMany 'App.Contact'
 
 	App.Contact = DS.Model.extend
 		primaryKey: '_id'

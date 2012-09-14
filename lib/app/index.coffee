@@ -21,8 +21,9 @@ App.authenticate = (id) ->
 	else if id is null
 		App.set 'user', null
 	else
-		console.log 'no-arg authenticate'
-		# TODO XXX lookup over websocket, set to null if none
+		socket.emit 'session', 'user', (id) ->
+			if id
+				App.set 'user', App.User.find id
 
 App.name = null	# TODO XXX quick hack because subproperties of user can't be bound to. App.user will probably have to be some sort of shell
 App.user = null
@@ -52,24 +53,21 @@ App.auth =
 			socket.emit 'signup', email, (authorizeUrl) ->
 				# if not authorizeUrl
 				# 	# TODO give an error message if there's already a user with that email.
-				App.connect.set 'email', ''
-				App.connect.set 'started', false				
 				window.location.href = authorizeUrl
-
 	login: ->
 		begin (email) ->
 			socket.emit 'login', email, (id) ->
 				# if not id
 				# 	# TODO give an error message if the user wasn't found.
 				App.authenticate id
-				App.connect.set 'email', ''
-				App.connect.set 'started', false
 				App.get('router').send 'goUserProfile'
-
 	logout: ->
 		socket.emit 'logout', ->
+			App.connect.set 'email', ''
+			App.connect.set 'started', false
+
 			App.authenticate null
-			App.get('router').send 'home'
+			App.get('router').send 'goHome'
 
 
 

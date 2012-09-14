@@ -1,18 +1,9 @@
 # TODO XXX
 
-{get, ready, view} = require './index'
-
-
-common = (page, model, params) ->
 		# if params.query.signup
 		# 	model.set '_showLoader', true
 
-		page.render 'profile'
 
-
-ready (model) ->
-	# TODO this should all be in loader/index.coffee, but for some reason the create callback isn't firing
-	if getParameterByName 'signup'
 
 		user = model.at('_user').get()
 		loading = null
@@ -24,12 +15,12 @@ ready (model) ->
 		socket.emit 'parse', user.id, ->
 			loading.effect 'bounce'
 			loading.pnotify type: 'success', closer: true
-		socket.on 'start', (total) ->
+		socket.on 'parse.start', (total) ->
 			currentModel.set 0
 			totalModel.set total
 			loading = $.pnotify loadingOptions
 
-			socket.on 'update', ->
+			socket.on 'parse.update', ->
 				currentModel.incr()
 
 		model.fn '_loaderpercent', '_loadercurrent', '_loadertotal', (current, total) ->
