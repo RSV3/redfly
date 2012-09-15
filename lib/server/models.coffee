@@ -17,7 +17,7 @@ UserSchema = new Schema
 		secret: type: String, required: 1
 	# TODO maybe make these below part of a 'meta' field
 	dateParsedLast: type: Date
-	classifyIndex: type: Number, required: 1, default: 0
+	classifyIndex: type: Number, required: 1, default: 0, min: 0
 	classify: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema

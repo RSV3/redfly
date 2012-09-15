@@ -4,7 +4,7 @@ express = require 'express'
 gzippo = require 'gzippo'
 RedisStore = require('connect-redis')(express)
 
-util = require '../util'
+util = require './util'
 
 require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
 

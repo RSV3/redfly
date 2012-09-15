@@ -42,13 +42,13 @@
 						</div>
 						<div class="pull-right">
 							{{#unless App.userController.content}}
-								<form class="navbar-form" {{action "login" on="submit" target="App.auth"}}>
-									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.connect.email"}}
+								<form class="navbar-form" {{action doLogin on="submit"}}>
+									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.userController.loginIdentity"}}
 									<!-- <input type="password" class="input-small" placeholder="Password"> -->
 									<!-- <label class="checkbox">
 										<input type="checkbox"> Remember me
 									</label> -->
-									<button type="submit" class="btn" {{bindAttr disabled="App.connect.started"}}>Log In</button>
+									<button type="submit" class="btn">Log In</button>
 								</form>
 							{{else}}
 								<div class="btn-group">
@@ -62,7 +62,7 @@
 									<ul class="dropdown-menu">
 										<li><a {{action goUserProfile href=true}}>Profile</a></li>
 										<li class="divider"></li>
-										<li><a {{action "logout" on="submit" target="App.auth"}}>Log Out</a></li>
+										<li><a {{action doLogout}}>Log Out</a></li>
 									</ul>
 								</div>
 							{{/unless}}
@@ -123,14 +123,14 @@
 						{{#unless showConnect}}
 							<a class="btn btn-primary btn-large" {{action "toggle" target="parentView"}}>Connect through email</a>
 						{{else}}
-							<form class="well" {{action "signup" on="submit" target="App.auth"}}>
-								{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.connect.email"}}
+							<form class="well" {{action doSignup on="submit"}}>
+								{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.userController.signupIdentity"}}
 								<!-- <input type="password" placeholder="Password"> -->
 								<span class="help-block">Type your Redstar email (or your Gmail if you don't have one).</span>
 								<!-- <label class="checkbox">
 									<input type="checkbox"> Check me out
 								</label> -->
-								<button type="submit" class="btn" {{bindAttr disabled="App.connect.started"}}>Sign Up</button>
+								<button type="submit" class="btn">Sign Up</button>
 							</form>
 						{{/unless}}
 					{{/unless}}

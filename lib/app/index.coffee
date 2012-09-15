@@ -14,61 +14,21 @@ Handlebars.registerHelper 'date', (property, options) ->
 	'just a moment ago.'	# TODO XXX
 
 
-
-App.authenticate = (id) ->
-	if id
-		App.userController.set 'content', App.User.find id
-	else if id is null
-		App.userController.set 'content', null
-	else
-		socket.emit 'session', (session) ->
-			if id = session.user
-				App.userController.set 'content', App.User.find id
-
-App.userController = Ember.ObjectController.create()
-App.connect = Ember.Object.create	# TODO make this not be shared between login and signup since they're different now. Maybe still grey out both buttons.
-	email: ''
-	started: false
-
-begin = (fn) ->
-	_s = require 'underscore.string'
-	if email = _s.trim App.connect.get 'email'
-		App.connect.set 'started', true
-
-		# validators = require('validator').validators	# TODO 'net' not found?
-		validators = {}
-		validators.isEmail = (email) ->
-			_s = require 'underscore.string'
-			_s.contains email, '@'
-
-		# If only the username was typed make it a proper email.
-		if not validators.isEmail email
-			email += '@redstar.com'
-		fn email
+App.userController = Ember.ObjectController.create
+	loginIdentity: null
+	signupIdentity: null
 
 App.auth =
-	signup: ->
-		begin (email) ->
-			socket.emit 'signup', email, (authorizeUrl) ->
-				# if not authorizeUrl
-				# 	# TODO give an error message if there's already a user with that email.
-				window.location.href = authorizeUrl
-	login: ->
-		begin (email) ->
-			socket.emit 'login', email, (id) ->
-				# if not id
-				# 	# TODO give an error message if the user wasn't found.
-				App.authenticate id
-				App.get('router').send 'goUserProfile'
+	login: (id) ->
+		App.userController.set 'content', App.User.find id
 	logout: ->
-		socket.emit 'logout', ->
-			App.connect.set 'email', ''
-			App.connect.set 'started', false
-
-			App.authenticate null
-			App.get('router').send 'goHome'
-
-
+		App.userController.set 'content', null
+	sync: ->
+		socket.emit 'session', (session) ->
+			if id = session.user
+				@login id
+			else
+				@logout()
 
 
 App.adapter = require('./adapter')(DS, socket)
@@ -80,6 +40,6 @@ require('./models')(DS, App)
 require('./controllers')(Ember, App)
 require('./router')(Ember, App, socket)
 
-App.authenticate()
+App.auth.sync()
 
 App.initialize()

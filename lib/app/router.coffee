@@ -7,6 +7,9 @@ validators.isEmail = (email) ->
 
 
 module.exports = (Ember, App, socket) ->
+	_s = require 'underscore.string'
+	util = require './util'
+
 
 	App.Router = Ember.Router.extend
 		root: Ember.Route.extend
@@ -66,7 +69,31 @@ module.exports = (Ember, App, socket) ->
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'
 
+
+			doSignup: (router, context) ->
+				if identity = _s.trim App.userController.get 'signupIdentity'
+					App.userController.set 'signupIdentity', null
+					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
+						# if not authorizeUrl
+						# 	# TODO give an error message if there's already a user with that email.
+						window.location.href = authorizeUrl				
+
+			doLogin: (router, context) ->
+				if identity = _s.trim App.userController.get 'loginIdentity'
+					App.userController.set 'loginIdentity', null
+					socket.emit 'login', util.identity(identity), (id) ->
+						# if not id
+						# 	# TODO give an error message if the user wasn't found.
+						App.auth.login id
+						router.transitionTo 'userProfile'
+
+			doLogout: (router, context) ->
+				socket.emit 'logout', ->
+					App.auth.logout()
+					router.transitionTo 'home'
+
+
 		# location: 'history'	# TODO Also rework server/index to serve index.html on any route (where currently "next new util.NotFound") WITHOUT
 								# REDIRECTING (preserve the route for ember) and make all 3 error pages be part of ember somehow. Keep the server
-								# error page however. Can I capture ember errors and serve a special page?
+								# error page however. Can I capture ember errors and serve a special page? Replace all instances of /#
 		enableLogging: true	# TODO

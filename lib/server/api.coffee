@@ -79,7 +79,7 @@ module.exports = (app, socket) ->
 			return fn user.id
 
 	socket.on 'logout', (fn) ->
-		session.destroy() # TODO This might not work right because of the way socket connections and sessions are 1:1
+		session.destroy()
 		fn()
 
 
@@ -113,9 +113,9 @@ module.exports = (app, socket) ->
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
-							newContacts = newContacts[...5]								
+							newContacts = newContacts[...5]
 
-							user.classifyIndex = user.classify.toObject().length - 1	# TODO necessary toObject?
+							user.classifyIndex = user.classify.toObject().length	# TODO necessary toObject?
 							user.classify.push newContacts...
 
 							mail = require('./mail')(app)
@@ -129,7 +129,6 @@ module.exports = (app, socket) ->
 
 					sift = (index = 0) ->
 						mail = mails[index]
-						mail.sender = user
 
 						models.Contact.findOne email: mail.recipientEmail, (err, contact) ->
 							throw err if err
@@ -152,6 +151,7 @@ module.exports = (app, socket) ->
 							contact.save (err) ->
 								throw err if err
 
+								mail.sender = user
 								mail.recipient = contact
 								models.Mail.create mail, (err, doc) ->
 									throw err if err

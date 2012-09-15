@@ -1,5 +1,5 @@
 module.exports = (app) ->
-	util = require '../util'
+	util = require './util'
 
 
 	send = (template, options, locals) ->
