@@ -53,7 +53,7 @@ app.configure ->
 		key: key
 		store: store
 
-	# TODO
+	# TODO this is probably still useful! Just make the lookup smarkter, and change config-local
 	# app.use (req, res, next) ->
 	# 	if autoUser = process.env.AUTO_AUTH
 	# 		req.session.user = autoUser
@@ -129,23 +129,18 @@ io.set 'authorization', (data, accept) ->
 		return accept 'No cookie transmitted.', false
 	cookie = require 'cookie'
 	data.cookie = cookie.parse data.headers.cookie
-	data.sessionId = data.cookie[key].substring(2, 26)
+	data.sessionId = data.cookie[key].substring 2, 26
 
 	store.load data.sessionId, (err, session) ->
 		throw err if err
-		throw new Error 'No session.' if not session
+		throw new Error 'No session.' if not session	# TODO this can happen if page is idle for a while Probably create a new session here.
 
 		data.session = session
 		return accept null, true
 
 io.sockets.on 'connection', (socket) ->
-	# Support to sync socket data with the session.
-	# socket.on 'set value', (val) ->
-	# 	session.reload ->
-	# 		session.value = val
-	# 		session.touch().save()
-
 	require('./api')(app, socket)
+
 
 
 server.listen app.get('port'), ->

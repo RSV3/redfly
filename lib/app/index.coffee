@@ -14,17 +14,15 @@ Handlebars.registerHelper 'date', (property, options) ->
 	'just a moment ago.'	# TODO XXX
 
 
-App.userController = Ember.ObjectController.create
-	loginIdentity: null
-	signupIdentity: null
+App.user = Ember.ObjectProxy.create()
 
 App.auth =
 	login: (id) ->
-		App.userController.set 'content', App.User.find id
+		App.user.set 'content', App.User.find id
 	logout: ->
-		App.userController.set 'content', null
+		App.user.set 'content', null
 	sync: ->
-		socket.emit 'session', (session) ->
+		socket.emit 'session', (session) =>
 			if id = session.user
 				@login id
 			else

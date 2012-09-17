@@ -1,11 +1,17 @@
-_ = require 'underscore'
-_s = require 'underscore.string'
+x-as="new-tag"
 
-# Called on both the server and browser before rendering.
-# exports.init = (model) ->
 
-# Called after the component is created and has been added to the DOM. Only runs in the browser.
-exports.create = (model, dom) ->
+- components
+  - make focus() call in tagger not be tied to css selectors use, x-bind="click: focus"
+
+
+
+- make sure clicking anywhere gives the new tag thing focus
+- make sure all attrs on newTagView are rendered
+- does currentTag need to be an ember object to get updated? Prolly not.
+
+
+
 	# TODO XXX I never tested this, comment it back in and remove the other _availableTags below
 	# model.fn '_availableTags', 'contacts', 'contacts.178.tags', (contacts, tags) ->
 	# 	# Model.fn must be pure function so I can't use underscore to do this, and even coffeescipt lexical scoping sometimes causes errors.
@@ -18,27 +24,4 @@ exports.create = (model, dom) ->
 	# 	return availableTags
 
 	#TODO input size isn't changing when typeahead preselect gets entered
-
-	contact = model.at 'contact'
-	tags = contact.at 'tags'
-
-	model.fn '_availableTags', 'contacts', (contacts) ->
-		return ['An example tag', 'Yet another example tag!']
-
-	model.on 'set', '_currentTag', ->
-		field = $(dom.element('new-tag'))
-		field.attr 'size', 1 + field.val().length
-
-	$ ->
-		$('.tagger').click ->
-			$(this).find('.new-tag').focus()	
-
-	@add = (event, element) ->
-		currentTag = model.at '_currentTag'
-		if tag = _s.trim currentTag.get()
-			if not tag in tags.get()
-				tags.push tag
-			currentTag.set ''
-
-	@remove = (event, element) ->
-		model.at(element).remove()
+	

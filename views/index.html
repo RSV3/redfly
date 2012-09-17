@@ -7,6 +7,7 @@
 		<meta name="description" content="">
 		<meta name="viewport" content="width=device-width">
 
+		<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="./app.css">
 		
 		<script src="/modernizr.boilerplate.js"></script>
@@ -41,9 +42,9 @@
 							</ul>
 						</div>
 						<div class="pull-right">
-							{{#unless App.userController.content}}
+							{{#unless App.user.content}}
 								<form class="navbar-form" {{action doLogin on="submit"}}>
-									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.userController.loginIdentity"}}
+									{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
 									<!-- <input type="password" class="input-small" placeholder="Password"> -->
 									<!-- <label class="checkbox">
 										<input type="checkbox"> Remember me
@@ -54,7 +55,7 @@
 								<div class="btn-group">
 									<a class="btn" {{action goUserProfile href=true}}>
 										<i class="icon-user"></i>
-										{{App.userController.name}}
+										{{App.user.name}}
 									</a>
 									<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
 										<span class="caret"></span>
@@ -71,7 +72,7 @@
 				</div>
 			</div>
 
-			<div class="container">
+			<div class="container main">
 				<div class="row">
 					<div class="span3">
 						<ul data-spy="affix" class="nav nav-list recent">
@@ -105,107 +106,112 @@
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="home">
-			<div class="home">
-				<div class="row-fluid title">
-					<h1><span class="red">Red</span>fly</h1>
-					<h2>Institutional Memory for Redstar</h2>
-					<br>
-					<div class="version">v0.2</div>
-				</div><!--/row-fluid-->
-				<div class="row-fluid">
-					<p class="lead">Redfly provides collaborative people tracking for teams.</p>
-					<p class="lead">By connecting to your email it can find people that you communicate with and help you intelligently tag them.</p>
-					<p class="lead">Every week you will recieve an update containing new correspondants so you can review the collected info and add your own notes.</p>
-					<p class="lead">You'll be able to view the curated contacts of other team members and they'll be able to view yours. <strong>With great power comes great something something</strong>.</p>
-				</div><!--/row-fluid-->
-				<div class="row-fluid signup">
-					{{#unless App.userController.content}}
-						{{#unless showConnect}}
-							<a class="btn btn-primary btn-large" {{action "toggle" target="parentView"}}>Connect through email</a>
-						{{else}}
-							<form class="well" {{action doSignup on="submit"}}>
-								{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.userController.signupIdentity"}}
-								<!-- <input type="password" placeholder="Password"> -->
-								<span class="help-block">Type your Redstar email (or your Gmail if you don't have one).</span>
-								<!-- <label class="checkbox">
-									<input type="checkbox"> Check me out
-								</label> -->
-								<button type="submit" class="btn">Sign Up</button>
-							</form>
-						{{/unless}}
+			<div class="row-fluid title">
+				<h1><span class="red">Red</span>fly</h1>
+				<h2>Institutional Memory for Redstar</h2>
+				<br>
+				<div class="version">v0.2</div>
+			</div><!--/row-fluid-->
+			<div class="row-fluid">
+				<p class="lead">Redfly provides collaborative people tracking for teams.</p>
+				<p class="lead">By connecting to your email it can find people that you communicate with and help you intelligently tag them.</p>
+				<p class="lead">Every week you will recieve an update containing new correspondants so you can review the collected info and add your own notes.</p>
+				<p class="lead">You'll be able to view the curated contacts of other team members and they'll be able to view yours. <strong>Remember, with great power comes great something something.</strong></p>
+			</div><!--/row-fluid-->
+			<div class="row-fluid signup">
+				{{#unless App.user.content}}
+					{{#unless showConnect}}
+						<a class="btn btn-primary btn-large" {{action toggle target="parentView"}}>Connect through email</a>
+					{{else}}
+						<form class="well span4" {{action doSignup on="submit"}}>
+							{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.user.signupIdentity"}}
+							<!-- <input type="password" placeholder="Password"> -->
+							<span class="help-block">Type your Redstar email (or your Gmail if you don't have one).</span>
+							<!-- <label class="checkbox">
+								<input type="checkbox"> Check me out
+							</label> -->
+							<button type="submit" class="btn">Sign Up</button>
+						</form>
 					{{/unless}}
-				</div>
+				{{/unless}}
 			</div>
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="profile">
-			<div class="profile">
-				<div class="row-fluid">
-					<h1 class="name">{{name}}</h1>
-					<p>Signed up on {{date date}}</p>
-					<br>
-					<p>You've added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
-					<ul>
-						{{#each contacts}}
-							<li><a {{action goContact this href=true}}>{{name}}</a></li>
-						{{/each}}
-					</ul>
-					<br>
-					<p><em>...more metrics to come!</em></p>
-				</div>
+			<div class="row-fluid">
+				<h1 class="name">{{name}}</h1>
+				<p>Signed up on {{date date}}</p>
+				<br>
+				<p>You've added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
+				<ul>
+					{{#each contacts}}
+						<li><a {{action goContact this href=true}}>{{name}}</a></li>
+					{{/each}}
+				</ul>
+				<br>
+				<p><em>...more metrics to come!</em></p>
 			</div>
 
 			<!-- TODO XXX <ui:loader> -->
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="contact">
-			<div class="contact">
-				<div class="row-fluid top">
-					<!-- TODO try as class="img-polaroid" with new bootstrap and change styl file. Corners become no longer rounded -->
-					<!-- TODO picture not be placeholder -->
-					<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
-					<h1 class="name">{{name}}</h1>
-					{{#if _history}}
-						<div>
-							<p>You emailed {{firstName}} with the email subject <em>"{{_history.first_email.subject}}"</em>.</p>
-							<p>You've mailed him or her <strong>{{_history.count}}</strong> times.</p>
-						</div>
-					{{/if}}
-					<ui:tagger contact="{{_contact}}">	<!-- TODO XXX tagger -->
-				</div>
-				<div class="row-fluid">
-					{{#if _history}}
-						<form x-bind="submit: add">
-							<!-- TODO make this be "about firstName" not "your friend" -->
-							<textarea placeholder="Write something noteworthy about your friend. Tell a story, describe a secret talent, whatever!" rows="3">{{currentNote}}</textarea>
-							<button class="btn" type="submit">Add Note</button>
-							<!-- TODO XXX disabled="{{currentNoteEmpty}}" -->
-						</form>
-					{{/if}}
-					{{#each notes}}
-						<blockquote>
-							<p>{{nl2br body}}</p>
-							<small>{{date date}}</small>
-						</blockquote>
-					{{else}}
-						<span>No notes about this contact yet.</span>
-					{{/each}}
-				</div>
+			<div class="row-fluid top">
+				<!-- TODO try as class="img-polaroid" with new bootstrap and change styl file. Corners become no longer rounded -->
+				<!-- TODO picture not be placeholder -->
+				<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
+				<h1 class="name">{{name}}</h1>
+				{{#if _history}}
+					<div>
+						<p>You emailed {{firstName}} with the email subject <em>"{{_history.first_email.subject}}"</em>.</p>
+						<p>You've mailed him or her <strong>{{_history.count}}</strong> times.</p>
+					</div>
+				{{/if}}
+				<ui:tagger contact="{{_contact}}">	<!-- TODO XXX tagger -->
+			</div>
+			<div class="row-fluid">
+				{{#if _history}}
+					<form x-bind="submit: add">
+						<!-- TODO make this be "about firstName" not "your friend" -->
+						<textarea placeholder="Write something noteworthy about your friend. Tell a story, describe a secret talent, whatever!" rows="3">{{currentNote}}</textarea>
+						<button class="btn" type="submit">Add Note</button>
+						<!-- TODO XXX disabled="{{currentNoteEmpty}}" -->
+					</form>
+				{{/if}}
+				{{#each notes}}
+					<blockquote>
+						<p>{{nl2br body}}</p>
+						<small>{{date date}}</small>
+					</blockquote>
+				{{else}}
+					<span>No notes about this contact yet.</span>
+				{{/each}}
 			</div>
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="tags">
-			<div class="report">
-				<div class="row-fluid">
-				</div>
+			<div class="row-fluid">
 			</div>
 		</script>
 
 		<script type="text/x-handlebars" data-template-name="report">
-			<div class="report">
-				<div class="row-fluid">
-				</div>
+			<div class="row-fluid">
 			</div>
+ 		</script>
+
+
+		<script type="text/x-handlebars" data-template-name="tagger">
+			{{#each this}}
+				{{view tagView contentBinding="this"}}
+					<span class="name">
+						{{body}}
+					</span>
+					<a class="close" {{action remove}}>&times;</a>
+				</span>
+			{{/each}}
+			<form class="new-tag-form" {{action add}}>
+				{{view newTagView class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" valueBinding="currentTag"}}
+			</form>
  		</script>
 
 

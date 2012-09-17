@@ -21,7 +21,7 @@ module.exports = (Ember, App, socket) ->
 			userProfile: Ember.Route.extend
 				route: '/profile'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'profile', App.userController
+					router.get('applicationController').connectOutlet 'profile', App.user
 
 			profile: Ember.Route.extend
 				route: '/profile/:user_id'
@@ -55,7 +55,7 @@ module.exports = (Ember, App, socket) ->
 
 
 			load: Ember.Route.extend
-				route: '/load'	# This state only has a public url so the http-based authorize flow can hook in.
+				route: '/load'	# Public url so the http-based authorize flow can hook in.
 				enter: (manager) ->
 					socket.emit 'session', (session) ->	# TODO XXX hack
 						socket.emit 'parse', session.user, ->
@@ -71,16 +71,16 @@ module.exports = (Ember, App, socket) ->
 
 
 			doSignup: (router, context) ->
-				if identity = _s.trim App.userController.get 'signupIdentity'
-					App.userController.set 'signupIdentity', null
+				if identity = _s.trim App.user.get 'signupIdentity'
+					App.user.set 'signupIdentity', null
 					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
 						# if not authorizeUrl
 						# 	# TODO give an error message if there's already a user with that email.
 						window.location.href = authorizeUrl				
 
 			doLogin: (router, context) ->
-				if identity = _s.trim App.userController.get 'loginIdentity'
-					App.userController.set 'loginIdentity', null
+				if identity = _s.trim App.user.get 'loginIdentity'
+					App.user.set 'loginIdentity', null
 					socket.emit 'login', util.identity(identity), (id) ->
 						# if not id
 						# 	# TODO give an error message if the user wasn't found.

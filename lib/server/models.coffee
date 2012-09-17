@@ -27,8 +27,6 @@ ContactSchema = new Schema
 	addedBy: type: Types.ObjectId, ref: 'User'
 	dateAdded: type: Date
 	knows: [ type: Types.ObjectId, ref: 'User' ]
-	tags: [ type: Types.ObjectId, ref: 'Tag' ]
-	notes: [ type: Types.ObjectId, ref: 'Note' ]
 
 TagSchema = new Schema
 	date: type: Date, required: 1, default: Date.now

@@ -1,5 +1,14 @@
-TODO XXX
+TODO XXX how to have classify be it's own "state" AND reuse contact tempalte?
 
+
+
+			MAYBE HAVE THE 'ADD CONTACT' BUTTON BE A SKIP TEMPORARILY BUTTON UNTIL YOU DO SOMEHING
+
+			USE BOOTSTRAP http://twitter.github.com/bootstrap/components.html#pagination paingation aligned links.
+			- have the 'back' and 'skip forever' buttons be small, and Add contact be big
+
+			handle the state where someone already added your contact. Have a helptul notification in the upper right that explains? Make the ADD
+			CONTACT button just be a next button if contact.addedBy is set
 
 
 				{{#if step}}
