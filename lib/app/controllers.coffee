@@ -32,17 +32,17 @@ module.exports = (Ember, App) ->
 		firstName: (->
 				name = @get('name')
 				name[...name.indexOf(' ')]
-			).property('name')
+			).property 'name'
 
 	App.ProfileView = Ember.View.extend
 		templateName: 'profile'
 		classNames: ['profile']
 		# template: require '../../views/templates/profile'
 	App.ProfileController = Ember.ObjectController.extend
-		contacts: (-> App.Contact.find addedBy: @._id)
+		contacts: (-> App.Contact.find addedBy: @._id)	# TODO XXX why is this a computed property, it doesn't change in response to anything on cont.
 			.property()
 		total: (-> @get('contacts').get 'length')	# TODO not working
-			.property('contacts')
+			.property 'contacts' 
 
 	App.TagsView = Ember.View.extend
 		templateName: 'tags'
@@ -57,6 +57,10 @@ module.exports = (Ember, App) ->
 	App.ReportController = Ember.Controller.extend()
 
 
+	# TODO
+	# - make sure clicking anywhere gives the new tag thing focus
+	# - make sure all attrs on newTagView are rendered
+	# - does currentTag need to be an ember object to get updated? Prolly not.
 	App.TaggerView = Ember.View.extend
 		templateName: 'tagger'
 		classNames: ['tagger']
@@ -88,9 +92,14 @@ module.exports = (Ember, App) ->
 			attributeBindings: ['data-source']
 			data-source: @get('controller').get 'availableTags'
 			change: (event) ->
-				event.target.attr 'size', 1 + @currentTag.length
+				event.target.attr 'size', 1 + @currentTag.length	# TODO is input size changing when typeahead preselect gets entered
 	App.TaggerController = Ember.ArrayController.extend
 		availableTags: ['An example tag', 'Yet another example tag!']	# TODO
-
+		availableTags: (->
+				allTags = App.Tag.find()	# TODO XXX distinct tags
+				_.reject allTags, (otherTag) ->
+					for tag in @get('content')
+						tag.body is otherTag.body
+			).property 'content'
 
 
