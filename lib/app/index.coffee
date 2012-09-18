@@ -14,7 +14,9 @@ Handlebars.registerHelper 'date', (property, options) ->
 	'just a moment ago.'	# TODO XXX
 
 
-App.user = Ember.ObjectProxy.create()
+App.user = Ember.ObjectProxy.create
+	loginIdentity: null
+	signupIdentity: null
 
 App.auth =
 	login: (id) ->

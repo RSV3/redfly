@@ -63,7 +63,7 @@
 									<ul class="dropdown-menu">
 										<li><a {{action goUserProfile href=true}}>Profile</a></li>
 										<li class="divider"></li>
-										<li><a {{action doLogout}}>Log Out</a></li>
+										<li><a href="#" {{action doLogout}}>Log Out</a></li>
 									</ul>
 								</div>
 							{{/unless}}
@@ -72,8 +72,8 @@
 				</div>
 			</div>
 
-			<div class="container main">
-				<div class="row">
+			<div class="container">
+				<div class="row main">
 					<div class="span3">
 						<ul data-spy="affix" class="nav nav-list recent">
 							<li class="nav-header title">Recent Contacts</li>
@@ -217,16 +217,16 @@
 				<div id="loadingStarted">
 					{{#if_eq state compare="start"}}
 						Connecting to your email...
-					{{/if}}
+					{{/if_eq}}
 					{{#if_eq state compare="parsing"}}
 						<div>{{current}} of {{total}}</div>
 						<div class="progress progress-striped active">
 							<div class="bar" style="width: {{percent}}%;"></div>
 						</div>
-					{{/if}}
+					{{/if_eq}}
 					{{#if_eq state compare="done"}}
 						All done! <a {{action goClassify}}>Start classifying</a>, dude.
-					{{/if}}
+					{{/if_eq}}
 				</div>
 			</div>
 

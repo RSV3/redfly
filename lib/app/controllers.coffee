@@ -11,8 +11,7 @@ module.exports = (Ember, App) ->
 	App.ApplicationView = Ember.View.extend
 		templateName: 'application'
 		didInsertElement: ->
-			# TODO maybe do this without css selector if possible
-			@$('.search-query').addClear top: 6
+			$('.search-query').addClear top: 6 # TODO It would be nice if this were the scoped jquery object @$ but it weirdly doesn't have plugins.
 	App.ApplicationController = Ember.Controller.extend() #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
 
 
@@ -27,15 +26,21 @@ module.exports = (Ember, App) ->
 		templateName: 'contact'
 		classNames: ['contact']
 	App.ContactController = Ember.ObjectController.extend
-		notes: App.Note.find(author: @_id)
-		tags: App.Tag.find(creator: @_id)
+		notes: (-> App.Note.find author: @_id)
+			.property()
+		tags: (-> App.Tag.find creator: @_id)
+			.property()
 		firstName: (->
 				name = @get('name')
 				name[...name.indexOf(' ')]
 			).property 'name'
-		history: Ember.Object.create
-			content: App.Mail.find(sender: App.user._id, recipient: @_id, sort: 'date', limit: 1)[0]	# TODO does @ here refer to the contactController?
-			count: App.Mail.find(sender: App.user._id, recipient: @_id).length	# TODO does @ here refer to the contactController?
+		history: Ember.Object.extend
+			content: (->
+					App.Mail.find(sender: App.user._id, recipient: @_id, sort: 'date', limit: 1)[0]	# TODO does @ here refer to the contactController?
+				).property()
+			count: (->
+					App.Mail.find(sender: App.user._id, recipient: @_id).length	# TODO does @ here refer to the contactController?
+				).property()
 		add: ->
 			if note = _s.trim @get('currentNote')
 				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
@@ -50,7 +55,7 @@ module.exports = (Ember, App) ->
 		templateName: 'profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		contacts: (-> App.Contact.find addedBy: @_id)	# TODO XXX why is this a computed property, it doesn't change in response to anything on cont.
+		contacts: (-> App.Contact.find addedBy: @_id)
 			.property()
 		total: (-> @get('contacts').get 'length')	# TODO not working
 			.property 'contacts' 
@@ -66,7 +71,7 @@ module.exports = (Ember, App) ->
 	App.ReportController = Ember.Controller.extend()
 
 
-	# TODO
+	# TODO XXX
 	# - make sure clicking anywhere gives the new tag thing focus
 	# - make sure all attrs on newTagView are rendered
 	# - does currentTag need to be an ember object to get updated? Prolly not.
@@ -99,11 +104,11 @@ module.exports = (Ember, App) ->
 				$().addClass 'animated rotateOutDownLeft'
 		newTagView: Ember.TextField.extend
 			attributeBindings: ['data-source']
-			data-source: @get('controller').get 'availableTags'
+			'data-source': (-> @parentView.get('controller').get 'availableTags').property()
 			change: (event) ->
 				event.target.attr 'size', 1 + @currentTag.length	# TODO is input size changing when typeahead preselect gets entered
 	App.TaggerController = Ember.ArrayController.extend
-		availableTags: ['An example tag', 'Yet another example tag!']	# TODO
+		# availableTags: ['An example tag', 'Yet another example tag!']	# TODO
 		availableTags: (->
 				allTags = App.Tag.find()	# TODO XXX distinct tags
 				_.reject allTags, (otherTag) ->
@@ -117,6 +122,25 @@ module.exports = (Ember, App) ->
 
 		didInsertElement: ->
 			@$('#signupMessage').modal()
+			@set 'loading', $.pnotify
+				title: 'Email parsing status',
+				text: '<div id="loading"></div>'
+				type: 'info'
+				# nonblock: true
+				hide: false
+				closer: false
+				sticker: false
+				icon: 'icon-envelope'
+				animate_speed: 700
+				opacity: 0.9
+				animation:
+					effect_in: 'drop'
+					options_in: direction: 'up'
+					effect_out: 'drop'
+					options_out: direction: 'right'
+				before_open: (pnotify) ->
+					pnotify.css top: '60px'
+					$('#loadingStarted').appendTo '#loading'
 
 			socket.emit 'parse', App.user._id, ->
 				@get('loading').effect 'bounce'
@@ -138,26 +162,6 @@ module.exports = (Ember, App) ->
 			parsing: Ember.State.create()
 			done: Ember.State.create()
 
-		loading: $.pnotify
-			title: 'Email parsing status',
-			text: '<div id="loading"></div>'
-			type: 'info'
-			# nonblock: true
-			hide: false
-			closer: false
-			sticker: false
-			icon: 'icon-envelope'
-			animate_speed: 700
-			opacity: 0.9
-			animation:
-				effect_in: 'drop'
-				options_in: direction: 'up'
-				effect_out: 'drop'
-				options_out: direction: 'right'
-			before_open: (pnotify) ->
-				pnotify.css top: '60px'
-				$('#loadingStarted').appendTo '#loading'
-
 		percent: (->
 				current = @get 'current'
 				total = @get 'total'
@@ -166,7 +170,7 @@ module.exports = (Ember, App) ->
 				Math.round (current / total) * 100
 			).property 'current', 'total'
 
-		stateBinding: @get 'manager.currentState.name'	# TODO will this work?
+		stateBinding: 'manager.currentState.name'	# TODO will this work?
 
 
 	# TODO define 'connected' and 'canConnect' like derby does.
