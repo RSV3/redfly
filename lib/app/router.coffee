@@ -18,11 +18,6 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'home'
 
-			userProfile: Ember.Route.extend
-				route: '/profile'
-				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'profile', App.user
-
 			profile: Ember.Route.extend
 				route: '/profile/:user_id'
 				connectOutlets: (router, user) ->
@@ -37,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 					# TODO XXX
 					identity: '123456'
 				deserialize: (router, params) ->
-					# The 'identity' parameter can be a document id or an email. Emails make more meaningful forward-facing links.
+					# Dynamic segment can be a document id or an email. Emails make more meaningful forward-facing links.
 					identity = params.identity
 					if validators.isEmail identity
 						return App.Contact.find(email: identity)	# TODO XXX .objectAt 0
@@ -54,6 +49,17 @@ module.exports = (Ember, App, socket) ->
 					router.get('applicationController').connectOutlet 'report'
 
 
+			userProfile: Ember.Route.extend
+				route: '/profile'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'profile', App.user
+
+			classify: Ember.Route.extend
+				route: '/classify'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'classify', App.user # TODO is there going to be a template for classify or reuse profile??
+
+
 			load: Ember.Route.extend
 				route: '/load'	# Public url so the http-based authorize flow can hook in.
 				enter: (manager) ->
@@ -64,10 +70,12 @@ module.exports = (Ember, App, socket) ->
 
 
 			goHome: Ember.Route.transitionTo 'home'
-			goUserProfile: Ember.Route.transitionTo 'userProfile'
 			goContact: Ember.Route.transitionTo 'contact'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'
+
+			goUserProfile: Ember.Route.transitionTo 'userProfile'
+			goClassify: Ember.Route.transitionTo 'classify'
 
 
 			doSignup: (router, context) ->

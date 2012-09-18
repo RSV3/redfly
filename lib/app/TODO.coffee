@@ -5,23 +5,27 @@
 
 
 
+		done = false
+
+
 		user = model.at('_user').get()
 		loading = null
 
 		currentModel = model.at '_loadercurrent'
 		totalModel = model.at '_loadertotal'
 
-		socket = io.connect 'http://localhost:5000/myapp/loader' # TODO XXX make be not localhost (autodiscovery?), search for other calls like this
-		socket.emit 'parse', user.id, ->
+		socket.emit 'parse', user._id, ->
 			loading.effect 'bounce'
 			loading.pnotify type: 'success', closer: true
-		socket.on 'parse.start', (total) ->
+			App.User.find _id: App.user._id	# Classify queue has been determined and saved on the server, refresh by querying the store.
+		socket.on 'parse.total', (total) ->
 			currentModel.set 0
 			totalModel.set total
 			loading = $.pnotify loadingOptions
-
-			socket.on 'parse.update', ->
-				currentModel.incr()
+		socket.on 'parse.name', ->
+			App.User.find _id: App.user._id	# We just figured out the logged-in user's name, refesh by querying the store.
+		socket.on 'parse.update', ->
+			currentModel.incr()
 
 		model.fn '_loaderpercent', '_loadercurrent', '_loadertotal', (current, total) ->
 			if not current or not total

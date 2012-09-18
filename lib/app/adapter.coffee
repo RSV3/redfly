@@ -27,7 +27,7 @@ module.exports = (DS, socket) ->
 
 		createRecords: (store, type, array) ->
 			socket.emit 'db', op: 'create', type: getTypeName(type), details: array.mapProperty('data'), (data) ->
-				store.didCreateRecords type, array, data # TODO must be in the same order
+				store.didCreateRecords type, array, data
 
 		updateRecord: (store, type, model) ->
 			socket.emit 'db', op: 'save', type: getTypeName(type), details: model.get('data'), (data) ->
@@ -35,7 +35,7 @@ module.exports = (DS, socket) ->
 
 		udpateRecords: (store, type, array) ->
 			socket.emit 'db', op: 'save', type: getTypeName(type), details: array.mapProperty('data'), (data) ->
-				store.didUpdateRecords type, array, data # TODO must be in the same order
+				store.didUpdateRecords type, array, data
 
 		deleteRecord: (store, type, model) ->
 			socket.emit 'db', op: 'remove', type: getTypeName(type), id: model.get('_id'), ->

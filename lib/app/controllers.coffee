@@ -103,3 +103,27 @@ module.exports = (Ember, App) ->
 			).property 'content'
 
 
+	App.LoaderView = Ember.View.extend
+		templateName: 'loader'
+
+
+
+	# TODO define 'connected' and 'canConnect' like derby does.
+	App.ConnectionView = Ember.View.extend	# TODO probably inline this in appview
+		templateName: 'connection'
+		classNames: ['connection']
+		connect: ->
+			# Hide the reconnect link for a second after clicking it.
+			@set 'hideReconnect', true
+			setTimeout (->
+				@set 'hideReconnect', false
+			), 1000
+			model.socket.socket.connect()	# TODO get socket
+		reload: ->
+			window.location.reload()
+
+
+
+
+
+

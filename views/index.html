@@ -214,6 +214,50 @@
 			</form>
  		</script>
 
+		<script type="text/x-handlebars" data-template-name="loader">
+			<div class="hide">
+				<div id="loadingStarted">
+					{{#unless done}}
+						<div>{{_loadercurrent}} of {{_loadertotal}}</div>
+						<div class="progress progress-striped active">
+							<div class="bar" style="width: {{_loaderpercent}}%;"></div>
+						</div>
+					{{else}}
+						All done! <a {{action cleanUpThisTHingAndGoToClassify}}>Start classifying</a>, dude.
+					{{/}}
+				</div>
+			</div>
+
+			<div id="signupMessage" class="modal fade hide" tabindex="-1" role="dialog">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h3>You're all set!</h3>
+				</div>
+				<div class="modal-body">
+					<p>You've successfully connected and your email is being parsed at this very moment, when Redfly is done you'll be able to classify the contacts it finds. Parsing progress is displayed in the corner, in the meantime check out your profile!</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+ 		</script>
+
+
+		<script type="text/x-handlebars" data-template-name="connection">
+			{{#unless connected}}
+				<p class="alert">
+					{{#if canConnect}}
+						Offline 
+						{{#unless hideReconnect}}
+							&ndash; <a x-bind="click:connect">Reconnect</a>
+						{{/unless}}
+					{{else}}
+						Unable to reconnect &ndash; <a {{action reload}}>Reload</a>
+					{{/if}}
+				</p>
+			{{/unless}}
+		</script>
+
 
 		<script src="/socket.io/socket.io.js"></script>	<!-- TODO temporary until i can require socket.io-client -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>	<!-- TODO XXX testing, testing.. -->

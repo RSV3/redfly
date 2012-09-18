@@ -17,7 +17,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn doc
 				else if ids = data.ids
-					model.find '_id': $in: ids, (err, docs) ->
+					model.find _id: $in: ids, (err, docs) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
@@ -97,8 +97,9 @@ module.exports = (app, socket) ->
 						user.name = name
 						user.save (err) ->
 							throw err if err
+							socket.emit 'parse.name'
 				foundTotal: (total) ->
-					socket.emit 'parse.start', total
+					socket.emit 'parse.total', total
 				completedEmail: ->
 					socket.emit 'parse.update'
 				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
