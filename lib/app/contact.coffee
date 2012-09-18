@@ -21,29 +21,11 @@ get '/classify/:step?', (page, model, {step}) ->
 			total: total
 		common page, model, user, contact, context
 
-common = (page, model, user, contact, context) ->
-	model.ref '_contact', contact
-
-	model.subscribe model.query('history').forConnection(user.id, contact.get().id), (err, history) ->
-		model.ref '_history', history
-
-	context ?= {}
-	page.render 'contact', context
-
 
 ready (model) ->
 	user = model.at '_user'
 	contact = model.at '_contact'
 	notes = contact.at 'notes'
-
-	@add = ->
-		currentNote = model.at '_currentNote'
-		if note = _s.trim currentNote.get()
-			notes.unshift
-				text: note
-				date: +new Date
-				author: user.get().id
-			currentNote.set ''
 
 	@next = (event, element, next) ->
 		contact.set 'date_added', +new Date

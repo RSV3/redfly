@@ -63,10 +63,12 @@ module.exports = (Ember, App, socket) ->
 			load: Ember.Route.extend
 				route: '/load'	# Public url so the http-based authorize flow can hook in.
 				enter: (manager) ->
-					socket.emit 'session', (session) ->	# TODO XXX hack
-						socket.emit 'parse', session.user, ->
-							# TODO XXX do the loader
-				redirectsTo: 'userProfile'	# Free authentication because this the user comes only arrvies at this route from off the app.
+					view = App.LoaderView.create()
+					view.append()
+					# socket.emit 'session', (session) ->	# TODO XXX hack
+					# 	socket.emit 'parse', session.user, ->
+					# 		# TODO XXX do the loader
+				redirectsTo: 'userProfile'	# Free authentication because this the user only arrvies at this route from off the app.
 
 
 			goHome: Ember.Route.transitionTo 'home'

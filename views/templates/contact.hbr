@@ -11,6 +11,8 @@ TODO XXX how to have classify be it's own "state" AND reuse contact tempalte?
 			CONTACT button just be a next button if contact.addedBy is set
 
 
+			get rid of all "style" here
+
 				{{#if step}}
 					<div class="row-fluid" style="margin-top: 40px">
 						<div style="font-size: 18px; display: inline-block;">{{firstName(_contact)}} is  #{{step}} out of {{total}} contacts you made this week.</div>

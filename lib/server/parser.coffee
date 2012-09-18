@@ -44,6 +44,7 @@ module.exports = (user, notifications) ->
 						fetch = server.fetch results,
 							request:
 								headers: ['from', 'to', 'subject', 'date']
+						
 						fetch.on 'message', (msg) ->
 							msg.on 'end', ->
 								for to in mimelib.parseAddresses msg.headers.to?[0]
