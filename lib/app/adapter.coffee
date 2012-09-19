@@ -14,12 +14,17 @@ module.exports = (DS, socket) ->
 				store.load type, ids, data
 
 		findQuery: (store, type, query, array) ->
+			# TODO remove
+			console.log 'asdfadf'
+			console.log query
+			if not query.conditions
+				query = conditions: query
 			socket.emit 'db', op: 'find', type: getTypeName(type), query: query, (data) ->
 				array.load data
 
 		findAll: (store, type) ->
 			socket.emit 'db', op: 'find', type: getTypeName(type), (data) ->
-				store.load type, data
+				store.loadMany type, data
 
 		createRecord: (store, type, model) ->
 			# TO-DO figure out what 'unsavedData' etc are for

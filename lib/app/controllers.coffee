@@ -35,28 +35,44 @@ module.exports = (Ember, App) ->
 				App.store.commit()
 				# @get('controller.notes').unshiftObject newNote # TODO XXX
 				@set 'controller.currentNote', null
-		newNoteView: Ember.TextField.extend
+		newNoteView: Ember.TextArea.extend
 			attributeBindings: ['placeholder', 'rows']
 			placeholder: (->
-					'Write something noteworthy about ' + @get('controller.firstName') + '. Tell a story, describe a secret talent, whatever!'
+					'Tell a story about ' + @get('controller.firstName') + ', describe a secret talent, whatever!'
 				).property 'controller.firstName'
 			rows: 3
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: ''
-		notes: (-> App.Note.find contact: @.get('_id'))
-			.property()
-		tags: (-> App.Tag.find contact: @.get('_id'))
-			.property()
+		notes: (->
+				# TODO XXX
+				App.Note.find contact: @get('_id')
+				# App.Note.find()
+				# App.store.filter App.Note, (data) =>
+				# 	data.contact is @get('_id')
+			).property()
+		tags: (->
+				App.Tag.find contact: @get('_id')
+			).property()
 		firstName: (->
 				name = @get('name')
 				# name[...name.indexOf(' ')]	# TODO, breaks router for some reason?
 				return name
 			).property 'name'
-		history: (->
-				App.Mail.find(sender: App.user._id, recipient: @get('_id'), sort: 'date', limit: 1)[0]	# TODO does @ here refer to the contactController?
+		history: (->	
+				App.Mail.find(
+					conditions:
+						sender: App.user.get('_id')
+						recipient: @get('_id')
+					options:
+						sort: 'date'
+						limit: 1
+				)	# TODO XXX doesn't quite work, fix, replace #eaches and add .objectAt 0
 			).property()
 		historyCount: (->
-				App.Mail.find(sender: App.user._id, recipient: @get('_id')).get('length')	# TODO does @ here refer to the contactController?
+				App.Mail.find(
+					sender: App.user.get('_id')
+					recipient: @get('_id')
+				).get 'length'
 			).property()
 		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'
 
@@ -64,7 +80,8 @@ module.exports = (Ember, App) ->
 		templateName: 'profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		contacts: (-> App.Contact.find addedBy: @get('_id'))
+		# contacts: (-> App.Contact.find addedBy: @get('_id'))	# TODO XXX XXX
+		contacts: (-> App.Contact.find())
 			.property()
 		total: (-> @get('contacts.length'))	# TODO not working
 			.property 'contacts' 
@@ -121,6 +138,7 @@ module.exports = (Ember, App) ->
 				@$().addClass 'animated rotateOutDownLeft'
 				tag.deleteRecord()
 		newTagView: Ember.TextField.extend
+			currentTag: ''	# TO-DO necessary?
 			attributeBindings: ['data-source']
 			'data-source': (-> @get 'parentView.availableTags').property('parentView.availableTags')
 			currentTagChanged: (->
@@ -153,10 +171,10 @@ module.exports = (Ember, App) ->
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'
 
-			socket.emit 'parse', App.user._id, ->
+			socket.emit 'parse', App.user.get('_id'), ->
 				@get('loading').effect 'bounce'
 				@get('loading').pnotify type: 'success', closer: true
-				App.User.find _id: App.user._id	# Classify queue has been determined and saved on the server, refresh by querying the store.
+				App.User.find _id: App.user.get('_id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
 				@get('manager').transitionTo 'done'
 
 			socket.on 'parse.total', (total) ->
@@ -164,7 +182,7 @@ module.exports = (Ember, App) ->
 				@set 'total', total
 				@get('manager').transitionTo 'started'
 			socket.on 'parse.name', ->
-				App.User.find _id: App.user._id	# We just figured out the logged-in user's name, refesh by querying the store.
+				App.User.find _id: App.user.get('_id')	# We just figured out the logged-in user's name, refesh by querying the store.
 			socket.on 'parse.update', ->
 				@incrementProperty 'current'
 

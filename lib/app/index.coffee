@@ -11,7 +11,7 @@ Handlebars.registerHelper 'date', (property, options) ->
 	value = Ember.Handlebars.getPath @, property, options
 	# moment = require 'moment'
 	# moment(date).format('MMMM Do, YYYY')
-	'just a moment ago.'	# TODO XXX
+	'Janseptuary 37, 2012'	# TODO XXX
 
 
 App.user = Ember.ObjectProxy.create
@@ -23,12 +23,6 @@ App.auth =
 		App.user.set 'content', App.User.find id
 	logout: ->
 		App.user.set 'content', null
-	sync: ->
-		socket.emit 'session', (session) =>
-			if id = session.user
-				@login id
-			else
-				@logout()
 
 
 App.adapter = require('./adapter')(DS, socket)
@@ -40,6 +34,11 @@ require('./models')(DS, App)
 require('./controllers')(Ember, App)
 require('./router')(Ember, App, socket)
 
-App.auth.sync()
 
-App.initialize()
+socket.emit 'session', (session) ->
+	if id = session.user
+		App.auth.login id
+	else
+		App.auth.logout()
+
+	App.initialize()

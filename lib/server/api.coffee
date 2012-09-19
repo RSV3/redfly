@@ -21,7 +21,12 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
-					model.find query, (err, docs) ->
+					model.find query.conditions, null, query.options, (err, docs) ->
+
+						console.log 'dfdfddf'	# TODO remove
+						console.log query
+						console.log docs
+
 						throw err if err
 						return fn docs
 				else
@@ -34,7 +39,6 @@ module.exports = (app, socket) ->
 
 					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters
 					for own prop, val of record
-						console.log prop
 						if prop.indexOf('_id') isnt -1
 							console.log 'true'
 							record[prop.split('_')[0]] = val

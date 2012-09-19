@@ -159,26 +159,26 @@
 				<!-- TODO picture not be placeholder -->
 				<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
 				<h1 class="name">{{name}}</h1>
-				{{#if history}}
+				{{#each history}}
 					<div>
 						<p>You emailed {{firstName}} for the first time on {{date history.date}}.
 						<br>
 						The email subject was <em>"{{history.subject}}"</em>.</p>
 						<p>You've mailed him or her <strong>{{historyCount}}</strong> times.</p>
 					</div>
-				{{/if}}
+				{{/each}}
 				{{view App.TaggerView contactBinding="this"}}
 			</div>
 			<div class="row-fluid">
-				{{#unless history}}	<!-- TODO XXX change back to #if and matching -->
+				{{#each history}}
 					<form {{action add on="submit" target="parentView"}}>
 						{{view view.newNoteView valueBinding="currentNote"}}
 						<button class="btn" type="submit" {{bindAttr disabled="canAdd"}}>Add Note</button>
 					</form>
-				{{/unless}}
+				{{/each}}
 				{{#each notes}}
 					<blockquote>
-						<p>{{nl2br body}}</p>
+						<p>{{body}}</p>	<!-- TODO do nl2br with bindings -->
 						<small>{{author.name}} | {{date date}}</small>
 					</blockquote>
 				{{else}}
@@ -200,12 +200,12 @@
 
 		<script type="text/x-handlebars" data-template-name="tagger">
 			{{#each contact.tags}}
-				{{view view.tagView tagBinding="this"}}
+				{{#view view.tagView tagBinding="this"}}
 					<span class="name">
 						{{body}}
 					</span>
 					<a class="close" {{action remove target="parentView"}}>&times;</a>
-				</span>
+				{{/view}}
 			{{/each}}
 			<form class="new-tag-form" {{action add on="submit" target="parentView"}}>
 				{{view view.newTagView class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" valueBinding="currentTag"}}
@@ -262,9 +262,9 @@
 
 
 		<script src="/socket.io/socket.io.js"></script>	<!-- TODO temporary until i can require socket.io-client -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>	<!-- TODO XXX testing, testing.. -->
-		<script src="http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js"></script>	<!-- TODO XXX testing, testing.. -->
-		<script src="http://cloud.github.com/downloads/emberjs/ember.js/ember-1.0.pre.js"></script>	<!-- TODO XXX testing, testing.. -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>	<!-- TODO testing, testing.. -->
+		<script src="http://cloud.github.com/downloads/wycats/handlebars.js/handlebars-1.0.0.beta.6.js"></script>	<!-- TODO testing, testing.. -->
+		<script src="http://cloud.github.com/downloads/emberjs/ember.js/ember-1.0.pre.js"></script>	<!-- TODO testing, testing.. -->
 
 		<script src="./app.js"></script>
 		<!-- TODO -->
