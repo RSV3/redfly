@@ -66,9 +66,6 @@ module.exports = (Ember, App, socket) ->
 				enter: (manager) ->
 					view = App.LoaderView.create()
 					view.append()
-					# socket.emit 'session', (session) ->	# TODO XXX hack
-					# 	socket.emit 'parse', session.user, ->
-					# 		# TODO XXX do the loader
 				redirectsTo: 'userProfile'	# Free authentication because this the user only arrvies at this route from off the app.
 
 

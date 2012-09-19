@@ -174,6 +174,7 @@ module.exports = (app, socket) ->
 										return sift index	# Wee recursion!
 									moar()
 
-					sift()
+					if mails.length isnt 0
+						sift()
 
 			require('./parser')(user, notifications)

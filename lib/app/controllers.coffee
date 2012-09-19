@@ -1,4 +1,4 @@
-module.exports = (Ember, App) ->
+module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
@@ -115,12 +115,12 @@ module.exports = (Ember, App) ->
 			@get('newTagView').$().focus()
 		add: (event) ->
 			if tag = _s.trim @get('newTagView.currentTag')
-				existingTag = _.find @get('contact.tags'), (otherTag) ->
+				existingTag = _.find @get('content.tags'), (otherTag) ->
 					tag is otherTag
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user
-						contact: @get 'contact'
+						contact: @get 'content'
 						body: tag
 					App.store.commit()
 					# @get('content.tags').pushObject newTag # TODO XXX XXX
@@ -133,10 +133,11 @@ module.exports = (Ember, App) ->
 		tagView: Ember.View.extend
 			tagName: 'span'
 			remove: ->
-				tag = @get 'tag'
-				# @parentView.get('contact.tags').removeObject tag # TO-DO unnecessary right? Ember-data will remove the tag from the view?
-				@$().addClass 'animated rotateOutDownLeft'
+				tag = @get 'content'
+				# @parentView.get('content.tags').removeObject tag # TO-DO unnecessary right? Ember-data will remove the tag from the view?
+				# TODO  @$().addClass 'animated rotateOutDownLeft'
 				tag.deleteRecord()
+				App.store.commit()
 		newTagView: Ember.TextField.extend
 			currentTag: ''	# TO-DO necessary?
 			attributeBindings: ['data-source']
@@ -150,7 +151,7 @@ module.exports = (Ember, App) ->
 		templateName: 'loader'
 
 		didInsertElement: ->
-			@$('#signupMessage').modal()
+			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible
 			@set 'loading', $.pnotify
 				title: 'Email parsing status',
 				text: '<div id="loading"></div>'
@@ -167,29 +168,25 @@ module.exports = (Ember, App) ->
 					options_in: direction: 'up'
 					effect_out: 'drop'
 					options_out: direction: 'right'
-				before_open: (pnotify) ->
+				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'
+			@set 'state', 'connecting'
 
-			socket.emit 'parse', App.user.get('_id'), ->
+			socket.emit 'parse', App.user.get('_id'), =>
 				@get('loading').effect 'bounce'
 				@get('loading').pnotify type: 'success', closer: true
 				App.User.find _id: App.user.get('_id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
-				@get('manager').transitionTo 'done'
+				@set 'state', 'done'
 
-			socket.on 'parse.total', (total) ->
+			socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'total', total
-				@get('manager').transitionTo 'started'
-			socket.on 'parse.name', ->
+				@set 'state', 'parsing'
+			socket.on 'parse.name', =>
 				App.User.find _id: App.user.get('_id')	# We just figured out the logged-in user's name, refesh by querying the store.
-			socket.on 'parse.update', ->
+			socket.on 'parse.update', =>
 				@incrementProperty 'current'
-
-		manager: Ember.StateManager.create
-			start: Ember.State.create()
-			parsing: Ember.State.create()
-			done: Ember.State.create()
 
 		percent: (->
 				current = @get 'current'
@@ -198,8 +195,6 @@ module.exports = (Ember, App) ->
 					return 0
 				Math.round (current / total) * 100
 			).property 'current', 'total'
-
-		stateBinding: 'manager.currentState.name'	# TODO will this work?
 
 
 	# TO-DO define 'connected' and 'canConnect' like derby does.

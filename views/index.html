@@ -84,7 +84,7 @@
 									<h3>{{name}}</h3>
 									<p>Added by {{addedBy}} on {{dateAdded}}</p>
 
-									{{view App.TaggerView contactBinding="this"}}
+									{{view App.TaggerView contentBinding="this"}}
  								</li>
 							{{/each}}
 						</ul>
@@ -167,7 +167,7 @@
 						<p>You've mailed him or her <strong>{{historyCount}}</strong> times.</p>
 					</div>
 				{{/each}}
-				{{view App.TaggerView contactBinding="this"}}
+				{{view App.TaggerView contentBinding="this"}}
 			</div>
 			<div class="row-fluid">
 				{{#each history}}
@@ -199,14 +199,12 @@
 
 
 		<script type="text/x-handlebars" data-template-name="tagger">
-			{{#each contact.tags}}
-				{{#view view.tagView tagBinding="this"}}
-					<span class="name">
-						{{body}}
-					</span>
-					<a class="close" {{action remove target="parentView"}}>&times;</a>
-				{{/view}}
-			{{/each}}
+			{{#collection contentBinding="tags" itemViewPath="tagView"}}
+				<span class="name">
+					{{body}}
+				</span>
+				<a class="close" {{action remove}}>&times;</a>
+			{{/collection}}
 			<form class="new-tag-form" {{action add on="submit" target="parentView"}}>
 				{{view view.newTagView class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" valueBinding="currentTag"}}
 			</form>
@@ -215,7 +213,7 @@
 		<script type="text/x-handlebars" data-template-name="loader">
 			<div class="hide">
 				<div id="loadingStarted">
-					{{#if_eq state compare="start"}}
+					{{#if_eq state compare="connecting"}}
 						Connecting to your email...
 					{{/if_eq}}
 					{{#if_eq state compare="parsing"}}

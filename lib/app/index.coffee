@@ -31,7 +31,7 @@ App.store = DS.Store.create
 	adapter: App.adapter
 
 require('./models')(DS, App)
-require('./controllers')(Ember, App)
+require('./controllers')(Ember, App, socket)
 require('./router')(Ember, App, socket)
 
 
