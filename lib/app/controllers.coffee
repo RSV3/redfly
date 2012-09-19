@@ -2,6 +2,7 @@ module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
+	# TO-DO
 	# path = require 'path'
 	# views = path.dirname(path.dirname(__dirname)) + '/views/templates'
 	# views = '../../views/templates'
@@ -38,19 +39,11 @@ module.exports = (Ember, App) ->
 			attributeBindings: ['placeholder', 'rows']
 			placeholder: (->
 					'Write something noteworthy about ' + @get('controller.firstName') + '. Tell a story, describe a secret talent, whatever!'
-				).property 'firstName'
+				).property 'controller.firstName'
 			rows: 3
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: ''
-		notes: (-> 
-				asdf = App.Note.find contact: @.get('_id')
-				console.log asdf
-				for d in asdf
-					console.log d
-					console.log body
-					console.log author
-				return asdf
-			)
+		notes: (-> App.Note.find contact: @.get('_id'))
 			.property()
 		tags: (-> App.Tag.find contact: @.get('_id'))
 			.property()
