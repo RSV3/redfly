@@ -25,39 +25,55 @@ module.exports = (Ember, App) ->
 	App.ContactView = Ember.View.extend
 		templateName: 'contact'
 		classNames: ['contact']
+		add: ->
+			if note = _s.trim @get('controller.currentNote')
+				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
+					author: App.user
+					contact: @get 'controller.content'
+					body: note
+				App.store.commit()
+				# @get('controller.notes').unshiftObject newNote # TODO XXX
+				@set 'controller.currentNote', null
+		newNoteView: Ember.TextField.extend
+			attributeBindings: ['placeholder', 'rows']
+			placeholder: (->
+					'Write something noteworthy about ' + @get('controller.firstName') + '. Tell a story, describe a secret talent, whatever!'
+				).property 'firstName'
+			rows: 3
 	App.ContactController = Ember.ObjectController.extend
-		notes: (-> App.Note.find author: @_id)
+		currentNote: ''
+		notes: (-> 
+				asdf = App.Note.find contact: @.get('_id')
+				console.log asdf
+				for d in asdf
+					console.log d
+					console.log body
+					console.log author
+				return asdf
+			)
 			.property()
-		tags: (-> App.Tag.find creator: @_id)
+		tags: (-> App.Tag.find contact: @.get('_id'))
 			.property()
 		firstName: (->
 				name = @get('name')
-				name[...name.indexOf(' ')]
+				# name[...name.indexOf(' ')]	# TODO, breaks router for some reason?
+				return name
 			).property 'name'
-		history: Ember.Object.extend
-			content: (->
-					App.Mail.find(sender: App.user._id, recipient: @_id, sort: 'date', limit: 1)[0]	# TODO does @ here refer to the contactController?
-				).property()
-			count: (->
-					App.Mail.find(sender: App.user._id, recipient: @_id).length	# TODO does @ here refer to the contactController?
-				).property()
-		add: ->
-			if note = _s.trim @get('currentNote')
-				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
-					author: App.user	# TODO this probably won't work, try .get 'content'
-					body: note
-				App.store.commit()
-				@get('controller.notes').unshiftObject newTag
-				@set 'currentNote', null
-		canAdd: (-> not _s.isBlank @get('currentNote')).property 'currentNote'
+		history: (->
+				App.Mail.find(sender: App.user._id, recipient: @get('_id'), sort: 'date', limit: 1)[0]	# TODO does @ here refer to the contactController?
+			).property()
+		historyCount: (->
+				App.Mail.find(sender: App.user._id, recipient: @get('_id')).get('length')	# TODO does @ here refer to the contactController?
+			).property()
+		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'
 
 	App.ProfileView = Ember.View.extend
 		templateName: 'profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		contacts: (-> App.Contact.find addedBy: @_id)
+		contacts: (-> App.Contact.find addedBy: @get('_id'))
 			.property()
-		total: (-> @get('contacts').get 'length')	# TODO not working
+		total: (-> @get('contacts.length'))	# TODO not working
 			.property 'contacts' 
 
 	App.TagsView = Ember.View.extend
@@ -78,46 +94,48 @@ module.exports = (Ember, App) ->
 	App.TaggerView = Ember.View.extend
 		templateName: 'tagger'
 		classNames: ['tagger']
+		availableTags: ['An example tag', 'Yet another example tag!']	# TODO XXX XXX
+		# availableTags: (->
+		# 		allTags = App.Tag.find()	# TODO XXX distinct tags
+		# 		_.reject allTags, (otherTag) ->
+		# 			for tag in @get 'contact.tags'
+		# 				tag.body is otherTag.body
+		# 	).property 'contact.tags'
 		click: (event) ->
-			@$().focus()	# TODO this is wrong, get newTagView and focus on it
+			@get('newTagView').$().focus()
 		add: (event) ->
-			if tag = _s.trim @newTagView.get('currentTag')
-				existingTag = _.find @get('controller'), (otherTag) ->	# TODO controller.content?
+			if tag = _s.trim @get('newTagView.currentTag')
+				existingTag = _.find @get('contact.tags'), (otherTag) ->
 					tag is otherTag
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
-						creator: App.user	# TODO this probably won't work, try .get 'content'
+						creator: App.user
+						contact: @get 'contact'
 						body: tag
 					App.store.commit()
-					@get('controller').pushObject newTag
-					# TODO find the element of the tag and: $().addClass 'animated bounceIn'
+					# @get('content.tags').pushObject newTag # TODO XXX XXX
+					# TODO find the element of the tag and: @$().addClass 'animated bounceIn'
 				else
 					# TODO find the element of the tag and play the appropriate animation
 					# probably make it play faster, like a mac system componenet bounce
-					# existingTag.$().addClass 'animated pulse'
-				@newTagView.set 'currentTag', null
+					# existingTag/@$().addClass 'animated pulse'
+				@set 'newTagView.currentTag', null
 		tagView: Ember.View.extend
 			tagName: 'span'
 			remove: ->
-				tag = @get 'content'
-				@parentView.get('controller').removeObject tag
-				$().addClass 'animated rotateOutDownLeft'
+				tag = @get 'tag'
+				# @parentView.get('contact.tags').removeObject tag # TO-DO unnecessary right? Ember-data will remove the tag from the view?
+				@$().addClass 'animated rotateOutDownLeft'
+				tag.deleteRecord()
 		newTagView: Ember.TextField.extend
 			attributeBindings: ['data-source']
-			'data-source': (-> @parentView.get('controller').get 'availableTags').property()
-			change: (event) ->
-				event.target.attr 'size', 1 + @currentTag.length	# TODO is input size changing when typeahead preselect gets entered
-	App.TaggerController = Ember.ArrayController.extend
-		# availableTags: ['An example tag', 'Yet another example tag!']	# TODO
-		availableTags: (->
-				allTags = App.Tag.find()	# TODO XXX distinct tags
-				_.reject allTags, (otherTag) ->
-					for tag in @get('content')
-						tag.body is otherTag.body
-			).property 'content'
+			'data-source': (-> @get 'parentView.availableTags').property('parentView.availableTags')
+			currentTagChanged: (->
+					@$().attr 'size', 1 + @get('currentTag.length') # TODO is input size changing when typeahead preselect gets entered
+				).observes 'currentTag'
 
 
-	App.LoaderView = Ember.View.extend
+	App.LoaderView = Ember.View.extend	# TO-DO does this have to be on the App object?
 		templateName: 'loader'
 
 		didInsertElement: ->
@@ -140,7 +158,7 @@ module.exports = (Ember, App) ->
 					options_out: direction: 'right'
 				before_open: (pnotify) ->
 					pnotify.css top: '60px'
-					$('#loadingStarted').appendTo '#loading'
+					@$('#loadingStarted').appendTo '#loading'
 
 			socket.emit 'parse', App.user._id, ->
 				@get('loading').effect 'bounce'
@@ -173,8 +191,8 @@ module.exports = (Ember, App) ->
 		stateBinding: 'manager.currentState.name'	# TODO will this work?
 
 
-	# TODO define 'connected' and 'canConnect' like derby does.
-	App.ConnectionView = Ember.View.extend	# TODO probably inline this in appview
+	# TO-DO define 'connected' and 'canConnect' like derby does.
+	App.ConnectionView = Ember.View.extend	# TO-DO probably inline this in appview # TO-DO does this have to be on the App object?
 		templateName: 'connection'
 		classNames: ['connection']
 		connect: ->

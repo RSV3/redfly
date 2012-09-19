@@ -22,26 +22,29 @@ module.exports = (DS, socket) ->
 				store.load type, data
 
 		createRecord: (store, type, model) ->
-			socket.emit 'db', op: 'create', type: getTypeName(type), details: model.get('data'), (data) ->
+			# TO-DO figure out what 'unsavedData' etc are for
+			socket.emit 'db', op: 'create', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didCreateRecord model, data
 
-		createRecords: (store, type, array) ->
-			socket.emit 'db', op: 'create', type: getTypeName(type), details: array.mapProperty('data'), (data) ->
-				store.didCreateRecords type, array, data
+		# createRecords: (store, type, array) ->
+		# 	socket.emit 'db', op: 'create', type: getTypeName(type), record: array.mapProperty('data'), (data) ->
+		# 		store.didCreateRecords type, array, data
 
 		updateRecord: (store, type, model) ->
-			socket.emit 'db', op: 'save', type: getTypeName(type), details: model.get('data'), (data) ->
+			# TO-DO figure out what model.get(data) looks like
+			throw new Error 'untested'
+			socket.emit 'db', op: 'save', type: getTypeName(type), record: model.get('data'), (data) ->
 				store.didUpdateRecord model, data
 
-		udpateRecords: (store, type, array) ->
-			socket.emit 'db', op: 'save', type: getTypeName(type), details: array.mapProperty('data'), (data) ->
-				store.didUpdateRecords type, array, data
+		# udpateRecords: (store, type, array) ->
+		# 	socket.emit 'db', op: 'save', type: getTypeName(type), record: array.mapProperty('data'), (data) ->
+		# 		store.didUpdateRecords type, array, data
 
 		deleteRecord: (store, type, model) ->
 			socket.emit 'db', op: 'remove', type: getTypeName(type), id: model.get('_id'), ->
 				store.didDeleteRecord model
 
-		deleteRecords: (store, type, array) ->
-			socket.emit 'db', op: 'remove', type: getTypeName(type), ids: model.get('_id'), ->
-				store.didDeleteRecords array
+		# deleteRecords: (store, type, array) ->
+		# 	socket.emit 'db', op: 'remove', type: getTypeName(type), ids: model.get('_id'), ->
+		# 		store.didDeleteRecords array
 				

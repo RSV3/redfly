@@ -31,11 +31,13 @@ ContactSchema = new Schema
 TagSchema = new Schema
 	date: type: Date, required: 1, default: Date.now
 	creator: type: Types.ObjectId, ref: 'User', required: 1
+	contact: type: Types.ObjectId, ref: 'Contact', required: 1
 	body: type: String, required: 1, trim: 1
 
 NoteSchema = new Schema
 	date: type: Date, required: 1, default: Date.now
 	author: type: Types.ObjectId, ref: 'User', required: 1
+	contact: type: Types.ObjectId, ref: 'Contact', required: 1
 	body: type: String, required: 1, trim: 1
 
 MailSchema = new Schema

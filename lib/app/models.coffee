@@ -24,12 +24,14 @@ module.exports = (DS, App) ->
 		primaryKey: '_id'
 		date: DS.attr 'date'
 		creator: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend
 		primaryKey: '_id'
 		date: DS.attr 'date'
 		author: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 
 	App.Mail = DS.Model.extend

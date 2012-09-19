@@ -29,13 +29,21 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 			when 'create'
-				details = data.details
-				if not _.isArray details
-					model.create details, (err, doc) ->
+				record = data.record
+				if not _.isArray record
+
+					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters
+					for own prop, val of record
+						console.log prop
+						if prop.indexOf('_id') isnt -1
+							console.log 'true'
+							record[prop.split('_')[0]] = val
+
+					model.create record, (err, doc) ->
 						throw err if err
 						return fn doc
 				else
-					model.create details, (err, docs...) ->
+					model.create record, (err, docs...) ->
 						throw err if err
 						return fn docs
 			when 'save'

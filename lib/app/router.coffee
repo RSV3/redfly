@@ -24,19 +24,20 @@ module.exports = (Ember, App, socket) ->
 					router.get('applicationController').connectOutlet 'profile', user
 
 			contact: Ember.Route.extend
-				route: '/contact/:identity'
+				# TODO bring back all email serialization, also:
+				# http://stackoverflow.com/questions/12064765/initialization-with-serialize-deserialize-ember-js
+				# route: '/contact/:identity'
+				route: '/contact/:contact_id'
 				connectOutlets: (router, contact) ->
 					router.get('applicationController').connectOutlet 'contact', contact
-				serialize: (router, context) ->
-					# identity: context.get 'email'
-					# TODO XXX
-					identity: '123456'
-				deserialize: (router, params) ->
-					# Dynamic segment can be a document id or an email. Emails make more meaningful forward-facing links.
-					identity = params.identity
-					if validators.isEmail identity
-						return App.Contact.find(email: identity)	# TODO XXX .objectAt 0
-					App.Contact.find identity
+				# serialize: (router, context) ->
+				# 	identity: context.get 'email'
+				# deserialize: (router, params) ->
+				# 	# Dynamic segment can be a document id or an email. Emails make more meaningful forward-facing links.
+				# 	identity = params.identity
+				# 	if validators.isEmail identity
+				# 		return App.Contact.find(email: identity)	# TODO XXX .objectAt 0
+				# 	App.Contact.find identity
 
 			tags: Ember.Route.extend
 				route: '/tags'

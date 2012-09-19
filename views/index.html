@@ -84,7 +84,7 @@
 									<h3>{{name}}</h3>
 									<p>Added by {{addedBy}} on {{dateAdded}}</p>
 
-									{{view App.TaggerView contentBinding="tags"}}
+									{{view App.TaggerView contactBinding="this"}}
  								</li>
 							{{/each}}
 						</ul>
@@ -159,27 +159,27 @@
 				<!-- TODO picture not be placeholder -->
 				<img class="thumbnail" height="160" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
 				<h1 class="name">{{name}}</h1>
-				{{#if history.content}}
+				{{#if history}}
 					<div>
 						<p>You emailed {{firstName}} for the first time on {{date history.date}}.
 						<br>
 						The email subject was <em>"{{history.subject}}"</em>.</p>
-						<p>You've mailed him or her <strong>{{history.count}}</strong> times.</p>
+						<p>You've mailed him or her <strong>{{historyCount}}</strong> times.</p>
 					</div>
 				{{/if}}
-				{{view App.TaggerView contentBinding="tags"}}
+				{{view App.TaggerView contactBinding="this"}}
 			</div>
 			<div class="row-fluid">
-				{{#if history.content}}
-					<form {{action add on="submit"}}>
-						{{view Ember.TextField placeholder="Write something noteworthy {{firstName}}. Tell a story, describe a secret talent, whatever!" rows="3" valueBinding="currentNote"}}
+				{{#unless history}}	<!-- TODO XXX change back to #if and matching -->
+					<form {{action add on="submit" target="parentView"}}>
+						{{view view.newNoteView valueBinding="currentNote"}}
 						<button class="btn" type="submit" {{bindAttr disabled="canAdd"}}>Add Note</button>
 					</form>
-				{{/if}}
+				{{/unless}}
 				{{#each notes}}
 					<blockquote>
 						<p>{{nl2br body}}</p>
-						<small>{{author}} | {{date date}}</small>
+						<small>{{author.name}} | {{date date}}</small>
 					</blockquote>
 				{{else}}
 					<span>No notes about this contact yet.</span>
@@ -199,16 +199,16 @@
 
 
 		<script type="text/x-handlebars" data-template-name="tagger">
-			{{#each this}}
-				{{view tagView contentBinding="this"}}
+			{{#each contact.tags}}
+				{{view view.tagView tagBinding="this"}}
 					<span class="name">
 						{{body}}
 					</span>
-					<a class="close" {{action remove}}>&times;</a>
+					<a class="close" {{action remove target="parentView"}}>&times;</a>
 				</span>
 			{{/each}}
-			<form class="new-tag-form" {{action add}}>
-				{{view newTagView class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" valueBinding="currentTag"}}
+			<form class="new-tag-form" {{action add on="submit" target="parentView"}}>
+				{{view view.newTagView class="new-tag" size="1" autocomplete="off" data-provide="typeahead" data-items="6" valueBinding="currentTag"}}
 			</form>
  		</script>
 
@@ -251,10 +251,10 @@
 					{{#if canConnect}}
 						Offline 
 						{{#unless hideReconnect}}
-							&ndash; <a {{action connect}}>Reconnect</a>
+							&ndash; <a {{action connect target="parentView"}}>Reconnect</a>
 						{{/unless}}
 					{{else}}
-						Unable to reconnect &ndash; <a {{action reload}}>Reload</a>
+						Unable to reconnect &ndash; <a {{action reload target="parentView"}}>Reload</a>
 					{{/if}}
 				</p>
 			{{/unless}}
