@@ -55,8 +55,8 @@ app.configure ->
 
 	# TODO this is probably still useful! Just make the lookup smarkter, and change config-local
 	# app.use (req, res, next) ->
-	# 	if autoUser = process.env.AUTO_AUTH
-	# 		req.session.user = autoUser
+	# 	if user = process.env.AUTO_AUTH
+	# 		req.session.user = user
 	# 	next()
 
 	app.use app.router

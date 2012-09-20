@@ -161,28 +161,28 @@
 				<h1 class="name">{{name}}</h1>
 				{{#each history}}
 					<div>
-						<p>You emailed {{firstName}} for the first time on {{date history.date}}.
+						<p>You emailed {{../nickname}} for the first time on {{date date}}.
 						<br>
-						The email subject was <em>"{{history.subject}}"</em>.</p>
-						<p>You've mailed him or her <strong>{{historyCount}}</strong> times.</p>
+						The email subject was <em>"{{subject}}"</em>.</p>
+						<p>You've sent <strong>{{../historyCount}}</strong> emails.</p>
 					</div>
 				{{/each}}
 				{{view App.TaggerView contentBinding="this"}}
 			</div>
 			<div class="row-fluid">
 				{{#each history}}
-					<form {{action add on="submit" target="parentView"}}>
-						{{view view.newNoteView valueBinding="currentNote"}}
+					<form {{action add on="submit" target="controller"}}>
+						{{view view.newNoteView valueBinding="controller.currentNote"}}
 						<button class="btn" type="submit" {{bindAttr disabled="canAdd"}}>Add Note</button>
 					</form>
 				{{/each}}
 				{{#each notes}}
 					<blockquote>
-						<p>{{body}}</p>	<!-- TODO do nl2br with bindings -->
-						<small>{{author.name}} | {{date date}}</small>
+						<p>{{body}}</p>	<!-- TO-DO do nl2br with bindings -->
+						<small>{{author.name}} | {{date date}}</small> <!-- XXX TODO why no name -->
 					</blockquote>
 				{{else}}
-					<span>No notes about this contact yet.</span>
+					<span>{{emptyNotesText}}</span>
 				{{/each}}
 			</div>
 		</script>
@@ -213,18 +213,18 @@
 		<script type="text/x-handlebars" data-template-name="loader">
 			<div class="hide">
 				<div id="loadingStarted">
-					{{#if_eq state compare="connecting"}}
-						Connecting to your email...
-					{{/if_eq}}
-					{{#if_eq state compare="parsing"}}
+					{{#if stateConnecting}}
+						Makin' pals with gmail...
+					{{/if}}
+					{{#if stateParsing}}
 						<div>{{current}} of {{total}}</div>
 						<div class="progress progress-striped active">
-							<div class="bar" style="width: {{percent}}%;"></div>
+							<div class="bar" {{bindAttr style="percent"}}></div>
 						</div>
-					{{/if_eq}}
-					{{#if_eq state compare="done"}}
-						All done! <a {{action goClassify}}>Start classifying</a>, dude.
-					{{/if_eq}}
+					{{/if}}
+					{{#if stateDone}}
+						All done! <a href="#" {{action goClassify}}>Start classifying</a>, dude.
+					{{/if}}
 				</div>
 			</div>
 

@@ -23,11 +23,12 @@ module.exports = (app) ->
 
 	sendNudge: (user, contacts) ->
 		names = (contact.name for contact in contacts)
-		firstNames = (name[...name.indexOf(' ')] for name in names)
+		tools = require '../util'
+		nicknames = (tools.nickname(name) for name in names)
 		_s = require 'underscore.string'
 		send 'nudge',
 				to: user.email
-				subject: 'Tell me more about ' + firstNames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
+				subject: 'Tell me more about ' + nicknames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
 			,
 			title: 'Hi ' + user.name + '!'
 			names: names

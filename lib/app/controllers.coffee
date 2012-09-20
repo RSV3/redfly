@@ -26,39 +26,15 @@ module.exports = (Ember, App, socket) ->
 	App.ContactView = Ember.View.extend
 		templateName: 'contact'
 		classNames: ['contact']
-		add: ->
-			if note = _s.trim @get('controller.currentNote')
-				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
-					author: App.user
-					contact: @get 'controller.content'
-					body: note
-				App.store.commit()
-				# @get('controller.notes').unshiftObject newNote # TODO XXX
-				@set 'controller.currentNote', null
 		newNoteView: Ember.TextArea.extend
 			attributeBindings: ['placeholder', 'rows']
 			placeholder: (->
-					'Tell a story about ' + @get('controller.firstName') + ', describe a secret talent, whatever!'
-				).property 'controller.firstName'
+					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
+				).property 'controller.nickname'
 			rows: 3
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: ''
-		notes: (->
-				# TODO XXX
-				App.Note.find contact: @get('_id')
-				# App.Note.find()
-				# App.store.filter App.Note, (data) =>
-				# 	data.contact is @get('_id')
-			).property()
-		tags: (->
-				App.Tag.find contact: @get('_id')
-			).property()
-		firstName: (->
-				name = @get('name')
-				# name[...name.indexOf(' ')]	# TODO, breaks router for some reason?
-				return name
-			).property 'name'
-		history: (->	
+		history: (->
 				App.Mail.find(
 					conditions:
 						sender: App.user.get('_id')
@@ -66,15 +42,35 @@ module.exports = (Ember, App, socket) ->
 					options:
 						sort: 'date'
 						limit: 1
-				)	# TODO XXX doesn't quite work, fix, replace #eaches and add .objectAt 0
+				)	# TODO replace #eaches and add .objectAt 0
 			).property()
-		historyCount: (->
-				App.Mail.find(
+		histories: (->
+				App.Mail.find
 					sender: App.user.get('_id')
 					recipient: @get('_id')
-				).get 'length'
 			).property()
-		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'
+		historyCount: (->
+				@get 'histories.length'
+			).property('histories.@each')
+		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'	# TO-DO why doesn't this work.
+		emptyNotesText: (->
+				dieRoll = Math.random()
+				if dieRoll < 0.9
+					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
+					return 'No notes about this contact yet.'
+				('...and that\'s why you ' +
+					' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms"> always leave a note!</a>'
+					).htmlSafe()
+			).property()
+		add: ->
+			if note = _s.trim @get('currentNote')
+				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
+					author: App.user
+					contact: @get 'content'
+					body: note
+				App.store.commit()
+				@get('notes').unshiftObject newNote
+				@set 'currentNote', ''
 
 	App.ProfileView = Ember.View.extend
 		templateName: 'profile'
@@ -83,8 +79,8 @@ module.exports = (Ember, App, socket) ->
 		# contacts: (-> App.Contact.find addedBy: @get('_id'))	# TODO XXX XXX
 		contacts: (-> App.Contact.find())
 			.property()
-		total: (-> @get('contacts.length'))	# TODO not working
-			.property 'contacts' 
+		total: (-> @get('contacts.length'))
+			.property 'contacts.@each' 
 
 	App.TagsView = Ember.View.extend
 		templateName: 'tags'
@@ -115,7 +111,7 @@ module.exports = (Ember, App, socket) ->
 			@get('newTagView').$().focus()
 		add: (event) ->
 			if tag = _s.trim @get('newTagView.currentTag')
-				existingTag = _.find @get('content.tags'), (otherTag) ->
+				existingTag = _.find @get('content.tags'), (otherTag) =>	# TODO is fat-arrow necessary?
 					tag is otherTag
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
@@ -171,18 +167,20 @@ module.exports = (Ember, App, socket) ->
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'
-			@set 'state', 'connecting'
+			@set 'stateConnecting', true
 
 			socket.emit 'parse', App.user.get('_id'), =>
 				@get('loading').effect 'bounce'
 				@get('loading').pnotify type: 'success', closer: true
 				App.User.find _id: App.user.get('_id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
-				@set 'state', 'done'
+				@set 'stateDone', true
+				@set 'stateParsing', false
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'total', total
-				@set 'state', 'parsing'
+				@set 'stateParsing', true
+				@set 'stateConnecting', false
 			socket.on 'parse.name', =>
 				App.User.find _id: App.user.get('_id')	# We just figured out the logged-in user's name, refesh by querying the store.
 			socket.on 'parse.update', =>
@@ -191,10 +189,12 @@ module.exports = (Ember, App, socket) ->
 		percent: (->
 				current = @get 'current'
 				total = @get 'total'
-				if not current or not total
-					return 0
-				Math.round (current / total) * 100
+				percentage = 0
+				if current and total
+					percentage = Math.round (current / total) * 100
+				'width: ' + percentage + '%;'
 			).property 'current', 'total'
+
 
 
 	# TO-DO define 'connected' and 'canConnect' like derby does.

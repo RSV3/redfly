@@ -33,7 +33,7 @@ module.exports = (root, optimize) ->
 						asset.body = tree.toCSS(compress: optimize) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
 						done()
 			]
-			minify: optimize	# Convoy doesn't minify css yet.
+			minify: optimize	# Doesn't do anything, convoy doesn't minify css yet.
 			autocache: not optimize
 
 		'index.html':

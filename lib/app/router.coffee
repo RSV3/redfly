@@ -64,9 +64,10 @@ module.exports = (Ember, App, socket) ->
 			load: Ember.Route.extend
 				route: '/load'	# Public url so the http-based authorize flow can hook in.
 				enter: (manager) ->
+					# TO-DO probably set a session variable or something to ensure loading doesn't happen twice by back button or anything.
 					view = App.LoaderView.create()
 					view.append()
-				redirectsTo: 'userProfile'	# Free authentication because this the user only arrvies at this route from off the app.
+				redirectsTo: 'userProfile'
 
 
 			goHome: Ember.Route.transitionTo 'home'

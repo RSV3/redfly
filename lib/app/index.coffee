@@ -8,10 +8,11 @@ window.App = Ember.Application.create()
 socket = io.connect document.location.href
 
 Handlebars.registerHelper 'date', (property, options) ->
-	value = Ember.Handlebars.getPath @, property, options
+	value = Ember.Handlebars.getPath @, property, options	# TODO
+	return value
 	# moment = require 'moment'
 	# moment(date).format('MMMM Do, YYYY')
-	'Janseptuary 37, 2012'	# TODO XXX
+	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
 
 
 App.user = Ember.ObjectProxy.create

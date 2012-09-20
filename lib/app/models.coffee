@@ -1,5 +1,4 @@
 module.exports = (DS, App) ->
-
 	App.User = DS.Model.extend
 		primaryKey: '_id'
 		date: DS.attr 'date'
@@ -19,6 +18,36 @@ module.exports = (DS, App) ->
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
+		nickname: (->
+				util = require '../util'
+				util.nickname @get('name')
+			).property 'name'
+		tags: (->
+				mutable = []
+				@get('rawTags').forEach (tag) ->
+					mutable.push tag
+				mutable
+			).property 'rawTags', 'rawTags.@each', 'rawTags.isLoaded'
+		rawTags: (->
+				App.Tag.find contact: @get('_id')
+			).property()
+		notes: (->
+				mutable = []
+				@get('rawNotes').forEach (note) ->
+					mutable.push note
+				mutable
+			).property 'rawNotes', 'rawNotes.@each', 'rawNotes.isLoaded'
+		rawNotes: (->
+				# TODO XXX
+				App.Note.find
+					conditions:
+						contact: @get('_id')
+					options:
+						sort: '-date'	# TODO XXX why aren't these sorted appropriately
+				# App.Note.find()
+				# App.store.filter App.Note, (data) =>
+				# 	data.contact is @get('_id')
+			).property()
 
 	App.Tag = DS.Model.extend
 		primaryKey: '_id'
