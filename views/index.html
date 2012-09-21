@@ -36,9 +36,25 @@
 								<li><a {{action goHome href=true}}>Home</a></li>
 								<li><a {{action goTags href=true}}>Tags</a></li>
 								<li><a {{action goReport href=true}}>Report a bug</a></li>
-								<form class="navbar-search pull-left">
-									<input type="text" class="search-query" placeholder="Search">
-								</form>
+								<li class="dropdown">
+									<form class="navbar-search pull-left">
+										{{view Ember.TextField class="search-query" placeholder="Search" valueBinding="search"}}
+									</form>
+									{{#if results}}
+										<ul class="dropdown-menu search-results">
+											{{#each results}}
+												<li>
+													<a {{action goContact this href=true}}>
+														{{name}}
+													</a>
+												</li>
+											{{/each}}
+											<!-- TODO have a "no results" if nothing matches -->
+											<!-- TODO <li class="divider"></li>
+											<li>asdf</li> -->
+										</ul>
+									{{/if}}
+								</li>
 							</ul>
 						</div>
 						<div class="pull-right">

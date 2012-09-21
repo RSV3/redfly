@@ -13,7 +13,17 @@ module.exports = (Ember, App, socket) ->
 		templateName: 'application'
 		didInsertElement: ->
 			$('.search-query').addClear top: 6 # TODO It would be nice if this were the scoped jquery object @$ but it weirdly doesn't have plugins.
-	App.ApplicationController = Ember.Controller.extend() #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
+	App.ApplicationController = Ember.Controller.extend #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
+		searchChanged: (->
+				search = _s.trim @get('search')
+				if not search
+					@set 'results', null
+				else
+					socket.emit 'search', search, (results) =>
+						@set 'results', App.Contact.find _id: $in: results
+					# TODO
+					# @set 'results', App.Contact.find(email: $regex: )
+			).observes 'search'
 
 
 	App.HomeView = Ember.View.extend

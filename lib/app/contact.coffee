@@ -20,4 +20,3 @@ get '/classify/:step?', (page, model, {step}) ->
 			nextStep: step + 1
 			total: total
 		common page, model, user, contact, context
-\
