@@ -12,7 +12,7 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationView = Ember.View.extend
 		templateName: 'application'
 		didInsertElement: ->
-			$('.search-query').addClear top: 6 # TODO It would be nice if this were the scoped jquery object @$ but it weirdly doesn't have plugins.
+			# TOD addclear
 	App.ApplicationController = Ember.Controller.extend #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
 		searchChanged: (->
 				search = _s.trim @get('search')
@@ -65,12 +65,13 @@ module.exports = (Ember, App, socket) ->
 		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'	# TO-DO why doesn't this work.
 		emptyNotesText: (->
 				dieRoll = Math.random()
-				if dieRoll < 0.9
+				if dieRoll < 0.6
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
 					return 'No notes about this contact yet.'
 				('...and that\'s why you ' +
-					' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms"> always leave a note!</a>'
-					).htmlSafe()
+					' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
+					 'always leave a note!</a>'
+				).htmlSafe()
 			).property()
 		add: ->
 			if note = _s.trim @get('currentNote')

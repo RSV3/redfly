@@ -97,6 +97,10 @@ module.exports = (app, socket) ->
 			ids = _.map contacts, (contact) ->
 				contact.id
 			return fn ids
+		# TODO XXX XXX
+		# models.Contact.find email: new RegExp(search), (err, contacts) ->	# TO-DO only return the IDs for efficiency
+		# 	throw err if err
+
 
 	socket.on 'parse', (id, fn) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
