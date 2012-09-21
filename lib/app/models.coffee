@@ -27,27 +27,36 @@ module.exports = (DS, App) ->
 				@get('rawTags').forEach (tag) ->
 					mutable.push tag
 				mutable
-			).property 'rawTags', 'rawTags.@each', 'rawTags.isLoaded'
+			).property 'rawTags.@each', 'rawTags.isLoaded'
 		rawTags: (->
-				App.Tag.find contact: @get('_id')
-			).property()
+				if @get '_id'
+					App.Tag.find contact: @get('_id')
+				else
+					[]
+			).property('isLoaded')
 		notes: (->
 				mutable = []
 				@get('rawNotes').forEach (note) ->
 					mutable.push note
 				mutable
-			).property 'rawNotes', 'rawNotes.@each', 'rawNotes.isLoaded'
+			).property 'rawNotes.@each', 'rawNotes.isLoaded'
 		rawNotes: (->
+				if @get '_id'
+					App.Note.find
+						conditions:
+							contact: @get('_id')
+						options:
+							sort: '-date'	# TODO XXX why aren't these sorted appropriately
+				else
+					[]
 				# TODO XXX
-				App.Note.find
-					conditions:
-						contact: @get('_id')
-					options:
-						sort: '-date'	# TODO XXX why aren't these sorted appropriately
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>
 				# 	data.contact is @get('_id')
-			).property()
+			).property('isLoaded')
+
+	# DS.attr.transforms.tags = 
+	# 	to: ->
 
 	App.Tag = DS.Model.extend
 		primaryKey: '_id'

@@ -14,6 +14,10 @@ module.exports = (DS, socket) ->
 				store.load type, ids, data
 
 		findQuery: (store, type, query, array) ->
+			# TODO 
+			console.log 'asdf'
+			console.log type
+			console.log query
 			if not query.conditions
 				query = conditions: query
 			socket.emit 'db', op: 'find', type: getTypeName(type), query: query, (data) ->
