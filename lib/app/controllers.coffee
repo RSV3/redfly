@@ -72,6 +72,22 @@ module.exports = (Ember, App, socket) ->
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', ''
 
+		classifying: (->
+				window.document.location.href.indexOf('classify') isnt -1
+			).property()
+		next: ->
+			if not @get 'dateAdded'
+				@set 'dateAdded', new Date
+				@set 'addedBy', App.user
+			App.user.set 'classifyIndex', (App.user.get('classifyIndex') or 0) + 1 # TODO
+
+			index = App.user.get 'classifyIndex'
+			contact = App.user.get('classify').objectAt index
+
+			@set 'content', contact
+
+
+
 	App.ProfileView = Ember.View.extend
 		templateName: 'profile'
 		classNames: ['profile']
@@ -93,54 +109,61 @@ module.exports = (Ember, App, socket) ->
 	App.ReportController = Ember.Controller.extend()
 
 
-	# TODO XXX
-	# - make sure clicking anywhere gives the new tag thing focus
-	# - make sure all attrs on newTagView are rendered
-	# - does currentTag need to be an ember object to get updated? Prolly not.
 	App.TaggerView = Ember.View.extend
 		templateName: 'tagger'
 		classNames: ['tagger']
-		availableTags: ['An example tag', 'Yet another example tag!']	# TODO XXX XXX
-		# availableTags: (->
-		# 		allTags = App.Tag.find()	# TODO XXX distinct tags
-		# 		_.reject allTags, (otherTag) ->
-		# 			for tag in @get 'contact.tags'
-		# 				tag.body is otherTag.body
-		# 	).property 'contact.tags'
 		click: (event) ->
-			@get('newTagView').$().focus()
+			# @get('newTagView').$().focus() # TO-DO
+			@$('.new-tag').focus()
 		add: (event) ->
 			if tag = _s.trim @get('newTagView.currentTag')
-				existingTag = _.find @get('content.tags'), (otherTag) =>	# TODO is fat-arrow necessary?
+				existingTag = _.find @get('contact.tags'), (otherTag) =>	# TODO is fat-arrow necessary?
 					tag is otherTag
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user
-						contact: @get 'content'
+						contact: @get 'contact'
 						body: tag
 					App.store.commit()
-					# @get('content.tags').pushObject newTag # TODO XXX XXX
+					@get('contact.tags').pushObject newTag
 					# TODO find the element of the tag and: @$().addClass 'animated bounceIn'
 				else
 					# TODO find the element of the tag and play the appropriate animation
-					# probably make it play faster, like a mac system componenet bounce
+					# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
 					# existingTag/@$().addClass 'animated pulse'
-				@set 'newTagView.currentTag', null
+				@set 'newTagView.currentTag', ''
 		tagView: Ember.View.extend
 			tagName: 'span'
-			remove: ->
-				tag = @get 'content'
-				# @parentView.get('content.tags').removeObject tag # TO-DO unnecessary right? Ember-data will remove the tag from the view?
-				# TODO  @$().addClass 'animated rotateOutDownLeft'
+			classNames: ['tag']
+			delete: (event) ->
+				tag = @get 'context'
+				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
+				setTimeout =>
+						@get('parentView.contact.tags').removeObject tag # This would be unnecessary except 'tags' is currently a copy.
+					, 1000
 				tag.deleteRecord()
 				App.store.commit()
 		newTagView: Ember.TextField.extend
-			currentTag: ''	# TO-DO necessary?
-			attributeBindings: ['data-source']
-			'data-source': (-> @get 'parentView.availableTags').property('parentView.availableTags')
+			classNames: ['new-tag-field']
+			currentTag: ''
 			currentTagChanged: (->
+					console.log '4444'	# TOOD XXX
+					@set 'currentTag', tag.toLowerCase()
 					@$().attr 'size', 1 + @get('currentTag.length') # TODO is input size changing when typeahead preselect gets entered
 				).observes 'currentTag'
+			attributeBindings: ['data-source', 'data-provide', 'data-items', 'size', 'autocomplete']
+			'data-source': (->
+					# allTags = App.Tag.find()	# TODO XXX distinct tags
+					# _.reject allTags, (otherTag) ->
+					# 	for tag in @get 'parentView.contact.tags'
+					# 		tag.body is otherTag.body
+					quoted = _.map ['vc', 'mentor', 'physician', 'entrepreneur'], (item) -> '"' + item + '"'
+					'[' + quoted + ']'
+				).property 'parentView.contact.tags.@each'
+			'data-provide': 'typeahead'
+			'data-items': 6
+			size: 1
+			autocomplete: 'off'
 
 
 	App.LoaderView = Ember.View.extend	# TO-DO does this have to be on the App object?

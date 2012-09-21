@@ -20,15 +20,4 @@ get '/classify/:step?', (page, model, {step}) ->
 			nextStep: step + 1
 			total: total
 		common page, model, user, contact, context
-
-
-ready (model) ->
-	user = model.at '_user'
-	contact = model.at '_contact'
-	notes = contact.at 'notes'
-
-	@next = (event, element, next) ->
-		contact.set 'date_added', +new Date
-		contact.set 'added_by', user.get().id
-		# TODO XXX prolly won't work for making the link trigger. If it does, try without!
-		next()
+\

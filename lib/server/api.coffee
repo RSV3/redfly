@@ -22,11 +22,6 @@ module.exports = (app, socket) ->
 						return fn docs
 				else if query = data.query
 					model.find query.conditions, null, query.options, (err, docs) ->
-
-						console.log 'dfdfddf'	# TODO remove
-						console.log query
-						console.log docs
-
 						throw err if err
 						return fn docs
 				else
@@ -52,8 +47,9 @@ module.exports = (app, socket) ->
 						return fn docs
 			when 'save'
 				# TODO use model.save() to get validators and middleware
-				throw new Error 'unimplemented'
-			when 'delete'
+				# throw new Error 'unimplemented'
+				asdf = 5
+			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
 						throw err if err
@@ -93,9 +89,6 @@ module.exports = (app, socket) ->
 	socket.on 'logout', (fn) ->
 		session.destroy()
 		fn()
-
-
-
 
 
 	socket.on 'parse', (id, fn) ->

@@ -16,6 +16,7 @@ Handlebars.registerHelper 'date', (property, options) ->
 
 
 App.user = Ember.ObjectProxy.create
+	# TO-DO make these be on Application and Home views, respesctively
 	loginIdentity: null
 	signupIdentity: null
 
@@ -42,4 +43,7 @@ socket.emit 'session', (session) ->
 	else
 		App.auth.logout()
 
-	App.initialize()
+	# TODO XXX XXX worst hack of all time
+	setTimeout ->
+		App.initialize()
+	, 500

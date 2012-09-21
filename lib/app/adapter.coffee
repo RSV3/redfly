@@ -14,9 +14,6 @@ module.exports = (DS, socket) ->
 				store.load type, ids, data
 
 		findQuery: (store, type, query, array) ->
-			# TODO remove
-			console.log 'asdfadf'
-			console.log query
 			if not query.conditions
 				query = conditions: query
 			socket.emit 'db', op: 'find', type: getTypeName(type), query: query, (data) ->
@@ -36,9 +33,10 @@ module.exports = (DS, socket) ->
 		# 		store.didCreateRecords type, array, data
 
 		updateRecord: (store, type, model) ->
+			# TODO XXX
 			# TO-DO figure out what model.get(data) looks like
-			throw new Error 'untested'
-			socket.emit 'db', op: 'save', type: getTypeName(type), record: model.get('data'), (data) ->
+			# throw new Error 'untested'
+			socket.emit 'db', op: 'save', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didUpdateRecord model, data
 
 		# udpateRecords: (store, type, array) ->
@@ -46,7 +44,7 @@ module.exports = (DS, socket) ->
 		# 		store.didUpdateRecords type, array, data
 
 		deleteRecord: (store, type, model) ->
-			socket.emit 'db', op: 'remove', type: getTypeName(type), id: model.get('_id'), ->
+			socket.emit 'db', op: 'remove', type: getTypeName(type), id: model.get('id'), ->
 				store.didDeleteRecord model
 
 		# deleteRecords: (store, type, array) ->

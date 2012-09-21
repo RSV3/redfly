@@ -8,11 +8,4 @@
 			CONTACT button just be a next button if contact.addedBy is set
 
 
-			get rid of all "style" here
-
-				{{#if step}}
-					<div class="row-fluid" style="margin-top: 40px">
-						<div style="font-size: 18px; display: inline-block;">{{firstName(_contact)}} is  #{{step}} out of {{total}} contacts you made this week.</div>
-						<div style="display: inline-block; margin-left: 15px; margin-bottom: 13px;"><a href="/classify/{{nextStep}}" class="btn btn-primary btn-large" x-bind="click: next">Next</a></div>
-					</div>
-				{{/if}}
+			

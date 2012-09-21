@@ -17,14 +17,14 @@ UserSchema = new Schema
 		secret: type: String, required: 1
 	# TODO maybe make these below part of a 'meta' field
 	dateParsedLast: type: Date
-	classifyIndex: type: Number, required: 1, default: 0, min: 0
+	classifyIndex: type: Number, required: 1, default: 0, min: 0	# TODO maybe make this a nested object, if mongoose will allow the nested COntact
 	classify: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
 	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, required: 1, trim: 1
-	addedBy: type: Types.ObjectId, ref: 'User'
+	addedBy: type: Types.ObjectId, ref: 'User'	# TODO maybe make this a nested object, if mongoose will allow nested User
 	dateAdded: type: Date
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 
@@ -32,7 +32,7 @@ TagSchema = new Schema
 	date: type: Date, required: 1, default: Date.now
 	creator: type: Types.ObjectId, ref: 'User', required: 1
 	contact: type: Types.ObjectId, ref: 'Contact', required: 1
-	body: type: String, required: 1, trim: 1
+	body: type: String, required: 1, trim: 1, lowercase: 1
 
 NoteSchema = new Schema
 	date: type: Date, required: 1, default: Date.now

@@ -58,7 +58,13 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'classify', App.user # TODO is there going to be a template for classify or reuse profile??
+					# index = App.user.get 'classifyIndex' # TODO
+					index = 0
+					App.user.get 'classify'
+					setTimeout ->	# TODO jesusssss...
+						contact = App.user.get('classify').objectAt index
+						router.get('applicationController').connectOutlet 'contact', contact
+					, 500
 
 
 			load: Ember.Route.extend
