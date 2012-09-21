@@ -32,7 +32,7 @@ module.exports = (app, socket) ->
 				record = data.record
 				if not _.isArray record
 
-					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters
+					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters 
 					for own prop, val of record
 						if prop.indexOf('_id') isnt -1
 							console.log 'true'
