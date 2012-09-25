@@ -11,7 +11,14 @@ module.exports = (root, optimize) ->
 			main: root + '/lib/app'
 			packager: 'javascript'
 			compilers:
-				'.hbr': require('ember/packager').HandlebarsCompiler
+				'.hbr':
+					(asset, context, done) ->
+						fs = require 'fs'
+						fs.readFile asset.path, 'utf8', (err, data) ->
+							return done err if err
+							data = data.replace(/(\r\n|\n|\r)/g, '')
+							asset.body = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+							done()
 				'.js':  convoy.plugins.JavaScriptCompiler
 				'.coffee': convoy.plugins.CoffeeScriptCompiler
 			minify: optimize

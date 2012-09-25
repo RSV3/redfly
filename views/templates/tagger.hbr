@@ -1,0 +1,11 @@
+{{#each tags}}
+	{{#view view.tagView}}
+		<span class="body">
+			{{body}}
+		</span>
+		<a class="close" {{action delete target="view"}}>&times;</a>
+	{{/view}}
+{{/each}}
+<form class="new-tag-form" {{action add on="submit" target="view"}}>
+	{{view view.newTagView class="new-tag" valueBinding="view.newTagView.currentTag"}}
+</form>

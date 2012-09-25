@@ -1,0 +1,29 @@
+<div class="hide">
+	<div id="loadingStarted">
+		{{#if stateConnecting}}
+			Makin&apos; pals with gmail...
+		{{/if}}
+		{{#if stateParsing}}
+			<div>{{current}} of {{total}}</div>
+			<div class="progress progress-striped active">
+				<div class="bar" {{bindAttr style="percent"}}></div>
+			</div>
+		{{/if}}
+		{{#if stateDone}}
+			All done! <a href="#" {{action goClassify}}>Start classifying</a>, dude.
+		{{/if}}
+	</div>
+</div>
+
+<div id="signupMessage" class="modal fade hide" tabindex="-1" role="dialog">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+		<h3>You&apos;re all set!</h3>
+	</div>
+	<div class="modal-body">
+		<p>You&apos;ve successfully connected your email, when parsing is complete you&apos;ll be able to classify to contacts Redfly finds.</p>
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal">Close</button>
+	</div>
+</div>

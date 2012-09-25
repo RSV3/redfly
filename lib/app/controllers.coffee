@@ -10,7 +10,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ApplicationView = Ember.View.extend
-		templateName: 'application'
+		template: require '../../views/templates/application'
 		didInsertElement: ->
 			# TOD addclear
 	App.ApplicationController = Ember.Controller.extend #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
@@ -27,14 +27,14 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.HomeView = Ember.View.extend
-		templateName: 'home'
+		template: require '../../views/templates/home'
 		classNames: ['home']
 		toggle: ->
 			@get('controller').set 'showConnect', true
 	App.HomeController = Ember.Controller.extend()
 
 	App.ContactView = Ember.View.extend
-		templateName: 'contact'
+		template: require '../../views/templates/contact'
 		classNames: ['contact']
 		newNoteView: Ember.TextArea.extend
 			attributeBindings: ['placeholder', 'rows']
@@ -61,11 +61,10 @@ module.exports = (Ember, App, socket) ->
 			).property()
 		historyCount: (->
 				@get 'histories.length'
-			).property('histories.@each')
+			).property 'histories.@each'
 		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'	# TO-DO why doesn't this work.
 		emptyNotesText: (->
-				dieRoll = Math.random()
-				if dieRoll < 0.6
+				if Math.random() < 0.6
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
 					return 'No notes about this contact yet.'
 				('...and that\'s why you ' +
@@ -100,7 +99,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ProfileView = Ember.View.extend
-		templateName: 'profile'
+		template: require '../../views/templates/profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
 		# contacts: (-> App.Contact.find addedBy: @get('_id'))	# TODO XXX XXX
@@ -110,18 +109,18 @@ module.exports = (Ember, App, socket) ->
 			.property 'contacts.@each' 
 
 	App.TagsView = Ember.View.extend
-		templateName: 'tags'
+		template: require '../../views/templates/tags'
 		classNames: ['tags']
 	App.TagsController = Ember.ArrayController.extend()
 
 	App.ReportView = Ember.View.extend
-		templateName: 'report'
+		template: require '../../views/templates/report'
 		classNames: ['report']
 	App.ReportController = Ember.Controller.extend()
 
 
 	App.TaggerView = Ember.View.extend
-		templateName: 'tagger'
+		template: require '../../views/templates/tagger'
 		classNames: ['tagger']
 		click: (event) ->
 			# @get('newTagView').$().focus() # TO-DO
@@ -178,7 +177,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.LoaderView = Ember.View.extend	# TO-DO does this have to be on the App object?
-		templateName: 'loader'
+		template: require '../../views/templates/loader'
 
 		didInsertElement: ->
 			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible
@@ -233,7 +232,7 @@ module.exports = (Ember, App, socket) ->
 
 	# TO-DO define 'connected' and 'canConnect' like derby does.
 	App.ConnectionView = Ember.View.extend	# TO-DO probably inline this in appview # TO-DO does this have to be on the App object?
-		templateName: 'connection'
+		template: require '../../views/templates/connection'
 		classNames: ['connection']
 		connect: ->
 			# Hide the reconnect link for a second after clicking it.

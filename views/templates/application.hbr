@@ -1,0 +1,105 @@
+<!--[if lt IE 7]>
+	<p class="chromeframe">Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+<![endif]-->
+
+<!-- TODO do connection alert if possible -->
+<!-- <ui:connectionAlert> -->
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</a>
+			<a class="brand" {{action goHome href=true}}>Redfly</a>
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<!-- TODO make the active class="active" tab switch: page(home, active) https://github.com/ghempton/ember-router-example -->
+					<li><a {{action goHome href=true}}>Home</a></li>
+					<li><a {{action goTags href=true}}>Tags</a></li>
+					<li><a {{action goReport href=true}}>Report a bug</a></li>
+					<li class="dropdown">
+						<form class="navbar-search pull-left">
+							{{view Ember.TextField class="search-query" placeholder="Search" valueBinding="search"}}
+						</form>
+						{{#if results}}
+							<ul class="dropdown-menu search-results">
+								{{#each results}}
+									<li>
+										<a {{action goContact this href=true}}>
+											{{name}}
+										</a>
+									</li>
+								{{/each}}
+								<!-- TODO have a "no results" if nothing matches -->
+								<!-- TODO <li class="divider"></li>
+								<li>asdf</li> -->
+							</ul>
+						{{/if}}
+					</li>
+				</ul>
+			</div>
+			<div class="pull-right">
+				{{#unless App.user.content}}
+					<form class="navbar-form" {{action doLogin on="submit"}}>
+						{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
+						<!-- <input type="password" class="input-small" placeholder="Password"> -->
+						<!-- <label class="checkbox">
+							<input type="checkbox"> Remember me
+						</label> -->
+						<button type="submit" class="btn">Log In</button>
+					</form>
+				{{else}}
+					<div class="btn-group">
+						<a class="btn" {{action goUserProfile href=true}}>
+							<i class="icon-user"></i>
+							{{App.user.name}}
+						</a>
+						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+							<span class="caret"></span>
+						</a>
+						<ul class="dropdown-menu">
+							<li><a {{action goUserProfile href=true}}>Profile</a></li>
+							<li class="divider"></li>
+							<li><a href="#" {{action doLogout}}>Log Out</a></li>
+						</ul>
+					</div>
+				{{/unless}}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="span3">
+			<ul data-spy="affix" class="nav nav-list recent">
+				<li class="nav-header title">Recent Contacts</li>
+				{{#each recentContacts}}
+					<li>
+						<a {{action goContact this href=true}}><i class="icon-chevron-right"></i></a>
+						
+						<h3>{{name}}</h3>
+						<p>Added by {{addedBy}} on {{dateAdded}}</p>
+
+						{{view App.TaggerView contactBinding="this"}}
+						</li>
+				{{/each}}
+			</ul>
+		</div>
+		<div class="span9">
+
+
+			{{outlet}}
+
+
+		</div>
+	</div>
+
+	<hr class="footer-line">
+	<footer>
+		<p>&copy; Redstar 2012</p>
+	</footer>
+</div>
