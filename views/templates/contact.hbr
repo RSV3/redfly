@@ -17,13 +17,14 @@
 	{{#each history}}
 		<form {{action add on="submit" target="controller"}}>
 			{{view view.newNoteView valueBinding="controller.currentNote"}}
-			<button class="btn" type="submit" {{bindAttr disabled="canAdd"}}>Add Note</button>
+			<button class="btn" type="submit" {{bindAttr disabled="canAdd"}}><i class="icon-comment">&nbsp;</i>Add Note</button>
 		</form>
 	{{/each}}
 	{{#each notes}}
 		<blockquote>
 			<p>{{body}}</p>	<!-- TO-DO do nl2br with bindings -->
 			<small>{{author.name}} | {{date date}}</small> <!-- XXX TODO why no name -->
+			<!-- TODO <i class="icon-edit"></i><i class="icon-trash"></i> -->
 		</blockquote>
 	{{else}}
 		<span>{{emptyNotesText}}</span>
