@@ -20,7 +20,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'results', null
 				else
 					socket.emit 'search', search, (results) =>
-						@set 'results', App.Contact.find _id: $in: results
+						@set 'results', App.Contact.find id: $in: results
 					# TODO
 					# @set 'results', App.Contact.find(email: $regex: )
 			).observes 'search'
@@ -47,22 +47,24 @@ module.exports = (Ember, App, socket) ->
 		history: (->
 				App.Mail.find(
 					conditions:
-						sender: App.user.get('_id')
-						recipient: @get('_id')
+						sender: App.user.get 'id'
+						recipient: @get 'id'
 					options:
 						sort: 'date'
 						limit: 1
 				)	# TODO replace #eaches and add .objectAt 0
-			).property()
+			).property 'content'
 		histories: (->
 				App.Mail.find
-					sender: App.user.get('_id')
-					recipient: @get('_id')
-			).property()
+					sender: App.user.get 'id'
+					recipient: @get 'id'
+			).property 'content'
 		historyCount: (->
 				@get 'histories.length'
 			).property 'histories.@each'
-		canAdd: (-> _s.isBlank(@get('currentNote'))).property 'currentNote'	# TO-DO why doesn't this work.
+		canAdd: (->
+				not _s.isBlank @get('currentNote')
+			).property 'currentNote'	# TO-DO why doesn't this work.
 		emptyNotesText: (->
 				if Math.random() < 0.6
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
@@ -71,7 +73,7 @@ module.exports = (Ember, App, socket) ->
 					' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
 					 'always leave a note!</a>'
 				).htmlSafe()
-			).property()
+			).property().volatile()
 		add: ->
 			if note = _s.trim @get('currentNote')
 				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
@@ -84,7 +86,7 @@ module.exports = (Ember, App, socket) ->
 
 		classifying: (->
 				window.document.location.href.indexOf('classify') isnt -1
-			).property()
+			).property().volatile()
 		next: ->
 			if not @get 'dateAdded'
 				@set 'dateAdded', new Date
@@ -102,9 +104,9 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../views/templates/profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		# contacts: (-> App.Contact.find addedBy: @get('_id'))	# TODO XXX XXX
+		# contacts: (-> App.Contact.find addedBy: @get('id'))	# TODO XXX XXX
 		contacts: (-> App.Contact.find())
-			.property()
+			.property().volatile()
 		total: (-> @get('contacts.length'))
 			.property 'contacts.@each' 
 
@@ -169,7 +171,7 @@ module.exports = (Ember, App, socket) ->
 					# 		tag.body is otherTag.body
 					quoted = _.map ['vc', 'mentor', 'physician', 'entrepreneur'], (item) -> '"' + item + '"'
 					'[' + quoted + ']'
-				).property 'parentView.contact.tags.@each'
+				).property('parentView.contact.tags.@each').volatile()
 			'data-provide': 'typeahead'
 			'data-items': 6
 			size: 1
@@ -202,10 +204,10 @@ module.exports = (Ember, App, socket) ->
 					@$('#loadingStarted').appendTo '#loading'
 			@set 'stateConnecting', true
 
-			socket.emit 'parse', App.user.get('_id'), =>
+			socket.emit 'parse', App.user.get('id'), =>
 				@get('loading').effect 'bounce'
 				@get('loading').pnotify type: 'success', closer: true
-				App.User.find _id: App.user.get('_id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
+				App.User.find id: App.user.get('id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
 				@set 'stateDone', true
 				@set 'stateParsing', false
 
@@ -215,7 +217,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateParsing', true
 				@set 'stateConnecting', false
 			socket.on 'parse.name', =>
-				App.User.find _id: App.user.get('_id')	# We just figured out the logged-in user's name, refesh by querying the store.
+				App.User.find id: App.user.get('id')	# We just figured out the logged-in user's name, refesh by querying the store.
 			socket.on 'parse.update', =>
 				@incrementProperty 'current'
 

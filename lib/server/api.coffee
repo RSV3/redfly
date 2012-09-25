@@ -17,7 +17,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn doc
 				else if ids = data.ids
-					model.find _id: $in: ids, (err, docs) ->
+					model.find id: $in: ids, (err, docs) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
@@ -32,10 +32,10 @@ module.exports = (app, socket) ->
 				record = data.record
 				if not _.isArray record
 
-					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters 
+					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
+					# override .toObject, or is that for something else?
 					for own prop, val of record
-						if prop.indexOf('_id') isnt -1
-							console.log 'true'
+						if prop.indexOf('id') isnt -1
 							record[prop.split('_')[0]] = val
 
 					model.create record, (err, doc) ->

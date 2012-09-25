@@ -9,7 +9,6 @@ Types = Schema.Types
 
 
 UserSchema = new Schema
-	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1	# TODO I'd like to make this required but the parsing process finds the user's name later. It's probably fine.
 	oauth:
@@ -21,7 +20,6 @@ UserSchema = new Schema
 	classify: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
-	date: type: Date, required: 1, default: Date.now
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, required: 1, trim: 1
 	addedBy: type: Types.ObjectId, ref: 'User'	# TODO maybe make this a nested object, if mongoose will allow nested User
@@ -29,23 +27,34 @@ ContactSchema = new Schema
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 
 TagSchema = new Schema
-	date: type: Date, required: 1, default: Date.now
 	creator: type: Types.ObjectId, ref: 'User', required: 1
 	contact: type: Types.ObjectId, ref: 'Contact', required: 1
 	body: type: String, required: 1, trim: 1, lowercase: 1
 
 NoteSchema = new Schema
-	date: type: Date, required: 1, default: Date.now
 	author: type: Types.ObjectId, ref: 'User', required: 1
 	contact: type: Types.ObjectId, ref: 'Contact', required: 1
 	body: type: String, required: 1, trim: 1
 
 MailSchema = new Schema
-	date: type: Date, required: 1, default: Date.now
 	sender: type: Types.ObjectId, ref: 'User', required: 1
 	recipient: type: Types.ObjectId, ref: 'Contact', required: 1
 	subject: type: String
 	dateSent: type: Date
+
+
+common = (schema) ->
+	schema.add
+		date: type: Date, required: 1, default: Date.now
+		
+	schema.set 'toJSON', getters: true	# To make 'id' included in json serialization for the API.
+
+
+UserSchema.plugin common
+ContactSchema.plugin common
+TagSchema.plugin common
+NoteSchema.plugin common
+MailSchema.plugin common
 
 
 exports.User = mongoose.model 'User', UserSchema

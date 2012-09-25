@@ -1,6 +1,5 @@
 module.exports = (DS, App) ->
 	App.User = DS.Model.extend
-		primaryKey: '_id'
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
@@ -8,7 +7,6 @@ module.exports = (DS, App) ->
 		classify: DS.hasMany 'App.Contact'
 
 	App.Contact = DS.Model.extend
-		primaryKey: '_id'
 		date: DS.attr 'date'
 		name: DS.attr 'string'
 		email: DS.attr 'string'
@@ -29,11 +27,11 @@ module.exports = (DS, App) ->
 				mutable
 			).property 'rawTags.@each', 'rawTags.isLoaded'
 		rawTags: (->
-				if @get '_id'
-					App.Tag.find contact: @get('_id')
+				if @get 'id'
+					App.Tag.find contact: @get('id')
 				else
 					[]
-			).property('isLoaded')
+			).property()
 		notes: (->
 				mutable = []
 				@get('rawNotes').forEach (note) ->
@@ -41,10 +39,10 @@ module.exports = (DS, App) ->
 				mutable
 			).property 'rawNotes.@each', 'rawNotes.isLoaded'
 		rawNotes: (->
-				if @get '_id'
+				if @get 'id'
 					App.Note.find
 						conditions:
-							contact: @get('_id')
+							contact: @get('id')
 						options:
 							sort: '-date'	# TODO XXX why aren't these sorted appropriately
 				else
@@ -52,28 +50,25 @@ module.exports = (DS, App) ->
 				# TODO XXX
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>
-				# 	data.contact is @get('_id')
-			).property('isLoaded')
+				# 	data.contact is @get('id')
+			).property()
 
 	# DS.attr.transforms.tags = 
 	# 	to: ->
 
 	App.Tag = DS.Model.extend
-		primaryKey: '_id'
 		date: DS.attr 'date'
 		creator: DS.belongsTo 'App.User'
 		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend
-		primaryKey: '_id'
 		date: DS.attr 'date'
 		author: DS.belongsTo 'App.User'
 		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 
 	App.Mail = DS.Model.extend
-		primaryKey: '_id'
 		date: DS.attr 'date'
 		sender: DS.belongsTo 'App.User'
 		recipient: DS.belongsTo 'App.Contact'

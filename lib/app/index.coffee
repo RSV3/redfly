@@ -8,7 +8,7 @@ window.App = Ember.Application.create()
 socket = io.connect document.location.href
 
 Handlebars.registerHelper 'date', (property, options) ->
-	value = Ember.Handlebars.getPath @, property, options	# TODO
+	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
 	return value
 	# moment = require 'moment'
 	# moment(date).format('MMMM Do, YYYY')
@@ -43,7 +43,4 @@ socket.emit 'session', (session) ->
 	else
 		App.auth.logout()
 
-	# TODO XXX XXX worst hack of all time
-	setTimeout ->
-		App.initialize()
-	, 500
+	App.initialize()

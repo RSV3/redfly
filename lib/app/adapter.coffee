@@ -48,6 +48,6 @@ module.exports = (DS, socket) ->
 				store.didDeleteRecord model
 
 		# deleteRecords: (store, type, array) ->
-		# 	socket.emit 'db', op: 'remove', type: getTypeName(type), ids: model.get('_id'), ->
+		# 	socket.emit 'db', op: 'remove', type: getTypeName(type), ids: model.get('id'), ->
 		# 		store.didDeleteRecords array
 				
