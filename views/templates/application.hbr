@@ -85,13 +85,13 @@
 				{{#each feed}}
 					{{#view view.feedItemView}}
 						{{#if typeInitialContact}}
-							<a {{action goContact this href=true}}><span class="lead">{{name}}</span></a>
+							<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
 							<!-- <i class="icon-chevron-right"></i> -->
 							<p>Added by {{addedBy.name}} on {{dateAdded}}</p>
 							{{view App.TaggerView contactBinding="this"}}
 						{{/if}}
 						{{#if typeContact}}
-							<a {{action goContact this href=true}}><span class="lead">{{name}}</span></a>
+							<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
 							<!-- <i class="icon-chevron-right"></i> -->
 							<p>Was just added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>!</p>
 							{{view App.TaggerView contactBinding="this"}}
