@@ -21,7 +21,7 @@ UserSchema = new Schema
 
 ContactSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
-	name: type: String, required: 1, trim: 1
+	name: type: String, trim: 1
 	addedBy: type: Types.ObjectId, ref: 'User'	# TODO maybe make this a nested object, if mongoose will allow nested User
 	dateAdded: type: Date
 	knows: [ type: Types.ObjectId, ref: 'User' ]

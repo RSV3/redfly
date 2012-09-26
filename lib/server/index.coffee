@@ -43,7 +43,7 @@ app.configure ->
 	# app.use express.profiler()
 	app.use express.favicon(root + '/favicon.ico')
 	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
-	app.use express.static(path.join(root, 'public'))	# TODO XXX delete when gzippo works
+	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
 
 	app.use express.bodyParser()
@@ -63,7 +63,7 @@ app.configure ->
 
 	app.use require('./pipeline')(root, optimize)
 
-	# TODO XXX how do 404 etc (error) pages work with ember? If I do them
+	# TODO how do 404 etc (error) pages work with ember? If I do them
 	# on the server then keep this, change view root to not be mail, change
 	# mail functions appropriately, grab pages from poverup and consolidate
 	app.use (req, res, next) ->

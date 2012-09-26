@@ -33,7 +33,7 @@ module.exports = (DS, socket) ->
 		# 		store.didCreateRecords type, array, data
 
 		updateRecord: (store, type, model) ->
-			# TODO XXX
+			# TODO
 			# TO-DO figure out what model.get(data) looks like
 			# throw new Error 'untested'
 			socket.emit 'db', op: 'save', type: getTypeName(type), record: model.get('data').record, (data) ->

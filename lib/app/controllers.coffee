@@ -175,7 +175,7 @@ module.exports = (Ember, App, socket) ->
 				).observes 'currentTag'
 			attributeBindings: ['data-source', 'data-provide', 'data-items', 'size', 'autocomplete']
 			'data-source': (->
-					# allTags = App.Tag.find()	# TODO XXX distinct tags
+					# allTags = App.Tag.find()	# TODO distinct tags
 					# _.reject allTags, (otherTag) ->
 					# 	for tag in @get 'parentView.tags'
 					# 		tag.body is otherTag.body

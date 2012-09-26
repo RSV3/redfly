@@ -1,7 +1,7 @@
 <div class="row-fluid top">
 		<!-- TODO picture not be placeholder -->
 		<img class="img-polaroid span3" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
-		<h1 class="name">{{name}}</h1>
+		<h1>{{name}}</h1>
 		{{#each history}}
 			<div>
 				<p>You emailed {{../nickname}} for the first time on {{date date}}.
