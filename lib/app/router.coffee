@@ -61,7 +61,7 @@ module.exports = (Ember, App, socket) ->
 					# index = App.user.get 'classifyIndex' # TODO
 					index = 0
 					App.user.get 'classify'
-					setTimeout ->	# TODO jesusssss...
+					setTimeout ->	# TODO XXX XXX jesusssss...
 						contact = App.user.get('classify').objectAt index
 						router.get('applicationController').connectOutlet 'contact', contact
 					, 500

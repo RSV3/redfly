@@ -124,20 +124,30 @@ module.exports = (Ember, App, socket) ->
 	App.TaggerView = Ember.View.extend
 		template: require '../../views/templates/tagger'
 		classNames: ['tagger']
+		tags: (->
+				mutable = []
+				@get('rawTags').forEach (tag) ->
+					mutable.push tag
+				mutable
+			).property 'rawTags.@each', 'rawTags.isLoaded'
+		rawTags: (->
+				App.Tag.find contact: @get('contact.id'), category: @get('category')
+			).property()
 		click: (event) ->
 			# @get('newTagView').$().focus() # TO-DO
 			@$('.new-tag').focus()
 		add: (event) ->
 			if tag = _s.trim @get('newTagView.currentTag')
-				existingTag = _.find @get('contact.tags'), (otherTag) =>	# TODO is fat-arrow necessary?
-					tag is otherTag
+				existingTag = _.find @get('tags'), (otherTag) =>	# TODO is fat-arrow necessary?
+					tag is otherTag	# TODO this doesn't work, but this should: tag is otherTag.get('body')
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user
 						contact: @get 'contact'
+						category: @get('category') or 'industry'
 						body: tag
 					App.store.commit()
-					@get('contact.tags').pushObject newTag
+					@get('tags').pushObject newTag
 					# TODO find the element of the tag and: @$().addClass 'animated bounceIn'
 				else
 					# TODO find the element of the tag and play the appropriate animation
@@ -151,7 +161,7 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
 				setTimeout =>
-						@get('parentView.contact.tags').removeObject tag # This would be unnecessary except 'tags' is currently a copy.
+						@get('parentView.tags').removeObject tag # Timing for animation. This would be unnecessary except 'tags' is currently a copy.
 					, 1000
 				tag.deleteRecord()
 				App.store.commit()
@@ -167,11 +177,11 @@ module.exports = (Ember, App, socket) ->
 			'data-source': (->
 					# allTags = App.Tag.find()	# TODO XXX distinct tags
 					# _.reject allTags, (otherTag) ->
-					# 	for tag in @get 'parentView.contact.tags'
+					# 	for tag in @get 'parentView.tags'
 					# 		tag.body is otherTag.body
 					quoted = _.map ['vc', 'mentor', 'physician', 'entrepreneur'], (item) -> '"' + item + '"'
 					'[' + quoted + ']'
-				).property('parentView.contact.tags.@each').volatile()
+				).property('parentView.tags.@each').volatile()
 			'data-provide': 'typeahead'
 			'data-items': 6
 			size: 1

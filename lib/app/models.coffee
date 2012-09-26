@@ -20,18 +20,6 @@ module.exports = (DS, App) ->
 				util = require '../util'
 				util.nickname @get('name')
 			).property 'name'
-		tags: (->
-				mutable = []
-				@get('rawTags').forEach (tag) ->
-					mutable.push tag
-				mutable
-			).property 'rawTags.@each', 'rawTags.isLoaded'
-		rawTags: (->
-				if @get 'id'
-					App.Tag.find contact: @get('id')
-				else
-					[]
-			).property()
 		notes: (->
 				mutable = []
 				@get('rawNotes').forEach (note) ->
@@ -39,27 +27,22 @@ module.exports = (DS, App) ->
 				mutable
 			).property 'rawNotes.@each', 'rawNotes.isLoaded'
 		rawNotes: (->
-				if @get 'id'
-					App.Note.find
-						conditions:
-							contact: @get('id')
-						options:
-							sort: '-date'	# TODO XXX why aren't these sorted appropriately
-				else
-					[]
+				App.Note.find
+					conditions:
+						contact: @get('id')
+					options:
+						sort: '-date'	# TODO XXX why aren't these sorted appropriately
 				# TODO XXX
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>
 				# 	data.contact is @get('id')
 			).property()
 
-	# DS.attr.transforms.tags = 
-	# 	to: ->
-
 	App.Tag = DS.Model.extend
 		date: DS.attr 'date'
 		creator: DS.belongsTo 'App.User'
 		contact: DS.belongsTo 'App.Contact'
+		category: DS.attr 'string'
 		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend

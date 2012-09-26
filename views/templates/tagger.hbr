@@ -1,4 +1,4 @@
-{{#each tags}}
+{{#each view.tags}}
 	{{#view view.tagView}}
 		<i class="icon-tag"></i>
 		<span class="body">
