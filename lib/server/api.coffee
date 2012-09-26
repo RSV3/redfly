@@ -40,14 +40,52 @@ module.exports = (app, socket) ->
 
 					model.create record, (err, doc) ->
 						throw err if err
+
+
+						# TODO horrible hack
+						setTimeout ->
+								if (model is models.Tag) or (model is models.Note)
+									socket.broadcast.emit 'feed',
+										type: data.type
+										id: doc.id
+									# Later TODO remove this								
+									socket.emit 'feed',
+										type: data.type
+										id: doc.id
+							, 500
+
+
 						return fn doc
 				else
 					model.create record, (err, docs...) ->
 						throw err if err
 						return fn docs
 			when 'save'
-				# TODO use model.save() to get validators and middleware
-				throw new Error 'unimplemented'
+				if id = data.id
+					model.findById id, (err, doc) ->
+						throw err if err
+						_.extend doc, data
+
+
+						if (model is models.Contact) and ('dateAdded' in doc.modifiedPaths())
+							socket.broadcast.emit 'feed',
+								type: data.type
+								id: doc.id
+							# Later TODO remove this
+							socket.emit 'feed',
+								type: data.type
+								id: doc.id
+
+
+						# Important to do updates through the 'save' call so middleware and validators happen.
+						doc.save (err) ->
+							throw err if err
+							return fn doc
+				else if ids = data.ids
+					# TODO
+					throw new Error 'unimplemented'
+				else
+					throw new Error
 			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->

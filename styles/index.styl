@@ -7,8 +7,57 @@
 
 
 
+// Bootstrap variables.
+baseFontSize = 14px
+
+
+
+// Global variables.
+lightBorder = 1px solid #EEE
+mediumBorder = 1px solid #C6C6C6
+
+
+
+// Global styles.
 .lead strong
 	font-weight normal
+
+
+
+// Mixins.
+tagger(fontSize)
+	taggerMargin = fontSize * 0.28
+	closePadding = fontSize * 0.25
+	.tagger
+		line-height fontSize * 1.42
+		.tag
+			color #666
+			margin taggerMargin 0 0 taggerMargin
+			display inline-block
+			background-color #DEE7F8
+			border 1px solid #CAD8F3
+
+			big = fontSize
+			little = fontSize / 4		
+			border-radius big little little big
+
+			padding-left fontSize * 0.75
+			.body
+				margin-right taggerMargin
+			.close
+				float none
+				font-size inherit
+				border-left 1px dotted #1323d6
+				padding 0 closePadding 0 closePadding
+		.new-tag-form
+			margin taggerMargin 0 0 taggerMargin
+			height fontSize * 2
+			display inline
+			.new-tag
+				border none
+				box-shadow none
+				width auto
+				margin 0
 
 
 
@@ -20,10 +69,19 @@ body
 	display block
 .navbar-form .btn
 	margin-left 4px
-.recent .nav-header
-	text-align center
-// TODO necessary? Also affix isn't working
-// 	height 620px    
+.feed
+	fontSize = baseFontSize / 1.4
+	font-size fontSize
+	tagger fontSize
+	background-color white
+	min-height 620px
+	.nav-header
+		text-align center
+	.feed-item
+		border-bottom lightBorder
+		padding-bottom 10px
+		.lead
+			font-size fontSize * 1.8
 
 
 
@@ -49,12 +107,16 @@ body
 	.top
 		padding-bottom 30px
 		margin-bottom 30px
-		border-bottom 1px solid #EEE
+		border-bottom lightBorder
 		// > .name
 		// 	font-size 40px
 		// 	margin-bottom 15px
 		.img-polaroid
 			margin-right 20px
+	tagger baseFontSize
+	.tagger
+		min-height 82px
+		border mediumBorder	
 	textarea
 		display block
 		width 410px	// TO-DO
@@ -86,31 +148,3 @@ body
 		line-height 21px
 		padding 0 12px
 
-.tagger
-	min-height 82px
-	border 1px solid #C6C6C6
-	.tag
-		color #666
-		margin 4px 0 0 4px
-		display inline-block
-		background-color #DEE7F8
-		border 1px solid #CAD8F3
-		border-radius 16px 4px 4px 16px
-		padding-left 8px
-		.body
-			margin-right 4px
-		.close
-			float none
-			font-size inherit
-			border-left 1px dotted #1323d6
-			padding-left 3px
-			padding-right 3px
-	.new-tag-form
-		margin 4px 0 0 4px
-		height 25px
-		display inline
-		.new-tag
-			border none
-			box-shadow none
-			width auto
-			margin 0

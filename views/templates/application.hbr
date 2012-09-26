@@ -78,19 +78,31 @@
 <div class="container">
 	<div class="row">
 		<div class="span3">
-			<ul data-spy="affix" class="nav nav-list recent">
-				<li class="nav-header title">Recent Contacts</li>
-				{{#each recentContacts}}
-					<li>
-						<a {{action goContact this href=true}}><i class="icon-chevron-right"></i></a>
-						
-						<h3>{{name}}</h3>
-						<p>Added by {{addedBy}} on {{dateAdded}}</p>
-
-						{{view App.TaggerView contactBinding="this"}}
-						</li>
+			<div class="well feed" data-spy="affix">
+				<div class="nav-header">Activity Feed</div>
+				{{#each feed}}
+					{{#view view.feedItemView}}
+						{{#if typeInitialContact}}
+							<a {{action goContact this href=true}}><span class="lead">{{name}}</span></a>
+							<!-- <i class="icon-chevron-right"></i> -->
+							<p>Added by {{addedBy.name}} on {{dateAdded}}</p>
+							{{view App.TaggerView contactBinding="this"}}
+						{{/if}}
+						{{#if typeContact}}
+							<a {{action goContact this href=true}}><span class="lead">{{name}}</span></a>
+							<!-- <i class="icon-chevron-right"></i> -->
+							<p>Was just added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>!</p>
+							{{view App.TaggerView contactBinding="this"}}
+						{{/if}}
+						{{#if typeTag}}
+							<a {{action goProfile creator href=true}}>{{creator.name}}</a> added the tag <em>"{{body}}"</em> to <a {{action goContact contact href=true}}>{{contact.name}}</a>.
+						{{/if}}
+						{{#if typeNote}}
+							<a {{action goProfile author href=true}}>{{author.name}}</a> wrote a note about <a {{action goContact contact href=true}}>{{contact.name}}</a>: "{{preview}}"
+						{{/if}}
+					{{/view}}
 				{{/each}}
-			</ul>
+			</div>
 		</div>
 		<div class="span9">
 

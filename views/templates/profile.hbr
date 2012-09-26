@@ -1,6 +1,6 @@
 <div class="row-fluid">
 	<h1 class="name">{{name}}</h1>
-	<p>Signed up on {{date date}}</p>
+	<p>Signed up on {{date}}</p>
 	<br>
 	<p>You&apos;ve added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
 	<ul>

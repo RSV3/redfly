@@ -12,8 +12,41 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationView = Ember.View.extend
 		template: require '../../views/templates/application'
 		didInsertElement: ->
-			# TOD addclear
-	App.ApplicationController = Ember.Controller.extend #recentContacts: App.Contacts.find() @where('added_date').exists(1).sort(['date', 'desc']).limit(3)
+			# TODO addclear
+
+			socket.on 'feed', (data) =>
+				item = Ember.ObjectProxy.create
+					content: App.get(data.type).find data.id
+				item['type' + data.type] = true
+				setTimeout (->
+							console.log item.get 'body'
+							console.log item.get 'creator'
+							# console.log item.get('creator').get 'name'
+							# setTimeout (-> console.log(item.get('creator').get('name')) ), 1000
+						), 1000
+				@get('controller.feed').unshiftObject item
+		feedItemView: Ember.View.extend
+			classNames: ['feed-item']
+			didInsertElement: ->
+				@$().addClass 'animated flipInX'
+	App.ApplicationController = Ember.Controller.extend
+		feed: (->
+				mutable = []
+				@get('_initialContacts').forEach (contact) ->
+					item = Ember.ObjectProxy.create content: contact
+					item['typeInitialContact'] = true
+					mutable.push item
+				mutable
+			).property '_initialContacts.@each', '_initialContacts.isLoaded'
+		_initialContacts: (->
+				App.Contact.find
+					# TODO XXX XXX but test first
+					# conditions:
+					# 	dateAdded: $exists: true
+					options:
+						sort: '-date'
+						limit: 3
+			).property()
 		searchChanged: (->
 				search = _s.trim @get('search')
 				if not search
@@ -42,6 +75,12 @@ module.exports = (Ember, App, socket) ->
 					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
 				).property 'controller.nickname'
 			rows: 3
+		noteView: Ember.View.extend
+			tagName: 'blockquote'
+			didInsertElement: ->
+				if @get 'controller.animate'
+					@set 'controller.animate', false
+					@$().addClass 'animated flipInX'
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: ''
 		history: (->
@@ -66,7 +105,7 @@ module.exports = (Ember, App, socket) ->
 				not _s.isBlank @get('currentNote')
 			).property 'currentNote'	# TO-DO why doesn't this work.
 		emptyNotesText: (->
-				if Math.random() < 0.8
+				if Math.random() < 0.9
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
 					return 'No notes about this contact yet.'
 				('...and that\'s why you ' +
@@ -81,6 +120,7 @@ module.exports = (Ember, App, socket) ->
 					contact: @get 'content'
 					body: note
 				App.store.commit()
+				@set 'animate', true
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', ''
 
@@ -91,6 +131,7 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'dateAdded'
 				@set 'dateAdded', new Date
 				@set 'addedBy', App.user
+			# TODO XXX save. Make sure that adapter/api work
 			App.user.set 'classifyIndex', (App.user.get('classifyIndex') or 0) + 1 # TODO
 
 			index = App.user.get 'classifyIndex'
@@ -126,11 +167,11 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['tagger']
 		tags: (->
 				mutable = []
-				@get('rawTags').forEach (tag) ->
+				@get('_rawTags').forEach (tag) ->
 					mutable.push tag
 				mutable
-			).property 'rawTags.@each', 'rawTags.isLoaded'
-		rawTags: (->
+			).property '_rawTags.@each', '_rawTags.isLoaded'
+		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 			).property()
 		click: (event) ->
@@ -147,8 +188,8 @@ module.exports = (Ember, App, socket) ->
 						category: @get('category') or 'industry'
 						body: tag
 					App.store.commit()
+					@set 'animate', true
 					@get('tags').pushObject newTag
-					# TODO find the element of the tag and: @$().addClass 'animated bounceIn'
 				else
 					# TODO find the element of the tag and play the appropriate animation
 					# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
@@ -165,6 +206,13 @@ module.exports = (Ember, App, socket) ->
 					, 1000
 				tag.deleteRecord()
 				App.store.commit()
+			didInsertElement: ->
+				if @get 'parentView.animate'
+					@set 'parentView.animate', false
+					@$().addClass 'animated bounceIn'
+			willDestroyElement: ->
+				# TO-DO do this and change the icky code in 'add': http://stackoverflow.com/questions/9925171/deferring-removal-of-a-view-so-it-can-be-animated
+				# @$().addClass 'animated rotateOutDownLeft'
 		newTagView: Ember.TextField.extend
 			classNames: ['new-tag-field']
 			currentTag: ''

@@ -4,9 +4,11 @@
 		<h1>{{name}}</h1>
 		{{#each history}}
 			<div>
-				<p>You emailed {{../nickname}} for the first time on {{date date}}.
-				<br>
-				The email subject was <em>"{{subject}}"</em>.</p>
+				<p>
+					You emailed {{../nickname}} for the first time on {{dateSent}}.
+					<br>
+					The email subject was <em>"{{subject}}"</em>.
+				</p>
 				<p>You&apos;ve sent <strong>{{../historyCount}}</strong> emails.</p>
 			</div>
 		{{/each}}
@@ -43,11 +45,11 @@
 	<div class="row-fluid span6">
 		<p class="lead">Notes</p>
 		{{#each notes}}
-			<blockquote>
+			{{#view view.noteView}}
 				<p>{{body}}</p>	<!-- TO-DO do nl2br with bindings -->
-				<small>{{author.name}} | {{date date}}</small> <!-- XXX TODO why no name -->
+				<small>{{author.name}} | {{date}}</small> <!-- TODO why no name -->
 				<!-- TODO <i class="icon-edit"></i><i class="icon-trash"></i> -->
-			</blockquote>
+			{{/view}}
 		{{else}}
 			<span>{{emptyNotesText}}</span>
 		{{/each}}

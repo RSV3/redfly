@@ -77,6 +77,7 @@ module.exports = (Ember, App, socket) ->
 
 
 			goHome: Ember.Route.transitionTo 'home'
+			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'

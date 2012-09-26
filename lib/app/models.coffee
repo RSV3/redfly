@@ -22,16 +22,16 @@ module.exports = (DS, App) ->
 			).property 'name'
 		notes: (->
 				mutable = []
-				@get('rawNotes').forEach (note) ->
+				@get('_rawNotes').forEach (note) ->
 					mutable.push note
 				mutable
-			).property 'rawNotes.@each', 'rawNotes.isLoaded'
-		rawNotes: (->
+			).property '_rawNotes.@each', '_rawNotes.isLoaded'
+		_rawNotes: (->
 				App.Note.find
 					conditions:
 						contact: @get('id')
 					options:
-						sort: '-date'	# TODO why aren't these sorted appropriately. Sort param is being ignored entirely, comes back in natural order (which happens to be insertion order)
+						sort: '-date'	# TODO why aren't these sorted appropriately. Sort param is being ignored entirely, comes back in natural order (which happens to be insertion order). Fix all other sorts too.
 				# TODO
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>
@@ -50,6 +50,13 @@ module.exports = (DS, App) ->
 		author: DS.belongsTo 'App.User'
 		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
+		preview: (->
+				maxLength = 80
+				preview = @get('body')[..maxLength]
+				if preview.length is maxLength
+					preview += '...'
+				preview
+			).property 'body'
 
 	App.Mail = DS.Model.extend
 		date: DS.attr 'date'

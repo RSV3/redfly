@@ -14,7 +14,7 @@ module.exports = (DS, socket) ->
 				store.load type, ids, data
 
 		findQuery: (store, type, query, array) ->
-			if not query.conditions
+			if not query.conditions and not query.options
 				query = conditions: query
 			socket.emit 'db', op: 'find', type: getTypeName(type), query: query, (data) ->
 				array.load data
