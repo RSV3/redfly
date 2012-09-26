@@ -47,8 +47,7 @@ module.exports = (app, socket) ->
 						return fn docs
 			when 'save'
 				# TODO use model.save() to get validators and middleware
-				# throw new Error 'unimplemented'
-				asdf = 5
+				throw new Error 'unimplemented'
 			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
