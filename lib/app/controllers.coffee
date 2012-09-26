@@ -66,7 +66,7 @@ module.exports = (Ember, App, socket) ->
 				not _s.isBlank @get('currentNote')
 			).property 'currentNote'	# TO-DO why doesn't this work.
 		emptyNotesText: (->
-				if Math.random() < 0.6
+				if Math.random() < 0.8
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
 					return 'No notes about this contact yet.'
 				('...and that\'s why you ' +
