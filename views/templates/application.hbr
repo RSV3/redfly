@@ -19,7 +19,9 @@
 					<!-- TODO make the active class="active" tab switch: page(home, active) https://github.com/ghempton/ember-router-example -->
 					<li><a {{action goHome href=true}}>Home</a></li>
 					<li><a {{action goTags href=true}}>Tags</a></li>
-					<li><a {{action goReport href=true}}>Report a bug</a></li>
+					<li><a href="mailto:pharcosyle@gmail.com">Report a bug</a></li>
+					<!-- TODO -->
+					<!-- <li><a {{action goReport href=true}}>Report a bug</a></li> -->
 					<li class="dropdown">
 						<form class="navbar-search pull-left">
 							{{view Ember.TextField class="search-query" placeholder="Search" valueBinding="search"}}
