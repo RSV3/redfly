@@ -25,7 +25,7 @@ module.exports = (DS, App) ->
 				@get('_rawNotes').forEach (note) ->
 					mutable.push note
 				mutable
-			).property '_rawNotes.@each', '_rawNotes.isLoaded'
+			).property '_rawNotes.@each'
 		_rawNotes: (->
 				App.Note.find
 					conditions:

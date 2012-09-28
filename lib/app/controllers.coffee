@@ -1,6 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+	util = require '../util'
 
 	# TO-DO
 	# path = require 'path'
@@ -14,16 +15,19 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			# TODO addclear
 
+			$('.navbar-search i').popover()	# TO-DO make scoped @$ when possible
+
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create
 					content: App.get(data.type).find data.id
 				item['type' + data.type] = true
-				setTimeout (->
-							console.log item.get 'body'
-							console.log item.get 'creator'
-							# console.log item.get('creator').get 'name'
-							# setTimeout (-> console.log(item.get('creator').get('name')) ), 1000
-						), 1000
+				# TODO remove
+				# setTimeout (->
+				# 			console.log item.get 'body'
+				# 			console.log item.get 'creator'
+				# 			# console.log item.get('creator').get 'name'
+				# 			# setTimeout (-> console.log(item.get('creator').get('name')) ), 1000
+				# 		), 1000
 				@get('controller.feed').unshiftObject item
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
@@ -37,7 +41,7 @@ module.exports = (Ember, App, socket) ->
 					item['typeInitialContact'] = true
 					mutable.push item
 				mutable
-			).property '_initialContacts.@each', '_initialContacts.isLoaded'
+			).property '_initialContacts.@each'
 		_initialContacts: (->
 				App.Contact.find
 					# TODO XXX XXX but test first
@@ -47,16 +51,20 @@ module.exports = (Ember, App, socket) ->
 						sort: '-date'
 						limit: 3
 			).property()
+		results: Ember.ObjectProxy.create()
 		searchChanged: (->
-				search = _s.trim @get('search')
-				if not search
-					@set 'results', null
+				query = util.trim App.get('search')
+				if not query
+					@set 'results.content', null
 				else
-					socket.emit 'search', search, (results) =>
-						@set 'results', App.Contact.find id: $in: results
-					# TODO
-					# @set 'results', App.Contact.find(email: $regex: )
-			).observes 'search'
+					socket.emit 'search', query, (results) =>
+						@set 'results.content', {}
+						for type, ids of results
+							model = 'Contact'
+							if type is 'tag' or type is 'note'
+								model = _s.capitalize type
+							@set 'results.' + type, App[model].find _id: $in: ids # TO-DO this should probably be a call to findMany maybe
+			).observes 'App.search'
 
 
 	App.HomeView = Ember.View.extend
@@ -82,28 +90,34 @@ module.exports = (Ember, App, socket) ->
 					@set 'controller.animate', false
 					@$().addClass 'animated flipInX'
 	App.ContactController = Ember.ObjectController.extend
-		currentNote: ''
-		history: (->
-				App.Mail.find(
+		currentNote: null
+		firstHistory: (->
+				@get('_histories').objectAt 0
+			).property '_histories.@each'
+		historyCount: (->
+				@get '_histories.length'
+			).property '_histories.@each'
+		_histories: (->
+				App.Mail.find
 					conditions:
 						sender: App.user.get 'id'
 						recipient: @get 'id'
 					options:
 						sort: 'date'
-						limit: 1
-				)	# TODO replace #eaches and add .objectAt 0
 			).property 'content'
-		histories: (->
-				App.Mail.find
-					sender: App.user.get 'id'
-					recipient: @get 'id'
-			).property 'content'
-		historyCount: (->
-				@get 'histories.length'
-			).property 'histories.@each'
-		canAdd: (->
-				not _s.isBlank @get('currentNote')
-			).property 'currentNote'	# TO-DO why doesn't this work.
+		isKnown: (->
+				# TO-DO there has to be better way to do 'contains'
+				has = false
+				@get('knows').forEach (user) ->
+					if user.get('id') is App.user.get('id')
+						has = true
+				has
+			).property 'knows.@each'
+		disableAdd: (->
+				if util.trim @get('currentNote')
+					return false
+				return true
+			).property 'currentNote'
 		emptyNotesText: (->
 				if Math.random() < 0.9
 					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
@@ -114,7 +128,7 @@ module.exports = (Ember, App, socket) ->
 				).htmlSafe()
 			).property().volatile()
 		add: ->
-			if note = _s.trim @get('currentNote')
+			if note = util.trim @get('currentNote')
 				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
 					author: App.user
 					contact: @get 'content'
@@ -122,7 +136,7 @@ module.exports = (Ember, App, socket) ->
 				App.store.commit()
 				@set 'animate', true
 				@get('notes').unshiftObject newNote
-				@set 'currentNote', ''
+				@set 'currentNote', null
 
 		classifying: (->
 				window.document.location.href.indexOf('classify') isnt -1
@@ -147,9 +161,9 @@ module.exports = (Ember, App, socket) ->
 	App.ProfileController = Ember.ObjectController.extend
 		# contacts: (-> App.Contact.find addedBy: @get('id'))	# TODO XXX XXX
 		contacts: (-> App.Contact.find())
-			.property().volatile()
+			.property('content').volatile()
 		total: (-> @get('contacts.length'))
-			.property 'contacts.@each' 
+			.property 'contacts.@each'
 
 	App.TagsView = Ember.View.extend
 		template: require '../../views/templates/tags'
@@ -170,15 +184,15 @@ module.exports = (Ember, App, socket) ->
 				@get('_rawTags').forEach (tag) ->
 					mutable.push tag
 				mutable
-			).property '_rawTags.@each', '_rawTags.isLoaded'
+			).property '_rawTags.@each'
 		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
-			).property()
+			).property('contact')
 		click: (event) ->
-			# @get('newTagView').$().focus() # TO-DO
+			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
 			@$('.new-tag').focus()
 		add: (event) ->
-			if tag = _s.trim @get('newTagView.currentTag')
+			if tag = util.trim @get('currentTag')
 				existingTag = _.find @get('tags'), (otherTag) =>	# TODO is fat-arrow necessary?
 					tag is otherTag	# TODO this doesn't work, but this should: tag is otherTag.get('body')
 				if not existingTag
@@ -194,10 +208,12 @@ module.exports = (Ember, App, socket) ->
 					# TODO find the element of the tag and play the appropriate animation
 					# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
 					# existingTag/@$().addClass 'animated pulse'
-				@set 'newTagView.currentTag', ''
+				@set 'currentTag', null
 		tagView: Ember.View.extend
 			tagName: 'span'
 			classNames: ['tag']
+			search: ->
+				App.set 'search', 'tag:' + @get('context.body')
 			delete: (event) ->
 				tag = @get 'context'
 				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
@@ -215,25 +231,12 @@ module.exports = (Ember, App, socket) ->
 				# @$().addClass 'animated rotateOutDownLeft'
 		newTagView: Ember.TextField.extend
 			classNames: ['new-tag-field']
-			currentTag: ''
+			currentTagBinding: 'parentView.currentTag'
 			currentTagChanged: (->
-					console.log '4444'	# TOOD XXX
-					@set 'currentTag', tag.toLowerCase()
-					@$().attr 'size', 1 + @get('currentTag.length') # TODO is input size changing when typeahead preselect gets entered
+					if tag = @get('currentTag')
+						@set 'currentTag', tag.toLowerCase()
+					@$().attr 'size', 2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
 				).observes 'currentTag'
-			attributeBindings: ['data-source', 'data-provide', 'data-items', 'size', 'autocomplete']
-			'data-source': (->
-					# allTags = App.Tag.find()	# TODO distinct tags
-					# _.reject allTags, (otherTag) ->
-					# 	for tag in @get 'parentView.tags'
-					# 		tag.body is otherTag.body
-					quoted = _.map ['vc', 'mentor', 'physician', 'entrepreneur'], (item) -> '"' + item + '"'
-					'[' + quoted + ']'
-				).property('parentView.tags.@each').volatile()
-			'data-provide': 'typeahead'
-			'data-items': 6
-			size: 1
-			autocomplete: 'off'
 
 
 	App.LoaderView = Ember.View.extend	# TO-DO does this have to be on the App object?

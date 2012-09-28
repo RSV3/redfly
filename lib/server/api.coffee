@@ -1,5 +1,6 @@
 module.exports = (app, socket) ->
 	_ = require 'underscore'
+	_s = require 'underscore.string'
 	models = require './models'
 
 
@@ -17,7 +18,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn doc
 				else if ids = data.ids
-					model.find id: $in: ids, (err, docs) ->
+					model.find _id: $in: ids, (err, docs) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
@@ -128,16 +129,49 @@ module.exports = (app, socket) ->
 		fn()
 
 
-	socket.on 'search', (search, fn) ->
-		models.Contact.find email: new RegExp(search), (err, contacts) ->	# TO-DO only return the IDs for efficiency
-			throw err if err
-			ids = _.map contacts, (contact) ->
-				contact.id
-			return fn ids
-		# TODO XXX XXX
-		# models.Contact.find email: new RegExp(search), (err, contacts) ->	# TO-DO only return the IDs for efficiency
-		# 	throw err if err
+	socket.on 'search', (query, fn) ->
+		terms = _.uniq _.compact query.split(' ')
+		search = {}
+		availableTypes = ['name', 'email', 'tag', 'note']
+		for type in availableTypes
+			search[type] = []
+			for term in terms
+				compound = _.compact term.split ':'
+				if compound.length > 1
+					# TODO
+					search[type].push compound[1]
+					# if type is _.first compound
+					# 	search[type].push compound[1]
+				else
+					search[type].push term
+		step = require 'step'
+		step ->
+				for type in availableTypes
+					terms = search[type]
 
+					model = 'Contact'
+					field = type
+					if type is 'tag' or type is 'note'
+						model = _s.capitalize type
+						field = 'body'
+					step ->
+							for term in terms
+								conditions = {}
+								conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
+								models[model].find conditions, '_id', @parallel()	# Only return '_id' field for efficiency.
+								return undefined	# Step library is insane.
+						, @parallel()
+				return undefined	# Still insane? Yes? Fine.
+			, (err, docs...) ->
+				throw err if err
+
+				results = {}
+				availableTypes.forEach (type, index) ->
+					typeDocs = docs[index]
+					if not _.isEmpty typeDocs
+						results[type] = _.map typeDocs, (doc) ->
+							doc.id
+				return fn results
 
 	socket.on 'parse', (id, fn) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.

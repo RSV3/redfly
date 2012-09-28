@@ -2,7 +2,7 @@
 	<h1 class="name">{{name}}</h1>
 	<p>Signed up on {{date}}</p>
 	<br>
-	<p>You&apos;ve added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
+	<p>Added {{total}} contact{{#unless_eq total compare=1}}s{{/unless_eq}} so far.</p>
 	<ul>
 		{{#each contacts}}
 			<li><a {{action goContact this href=true}}>{{name}}</a></li>

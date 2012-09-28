@@ -2,11 +2,11 @@
 	{{#view view.tagView}}
 		<i class="icon-tag"></i>
 		<span class="body">
-			{{body}}
+			<a href="#" {{action search target="view"}}>{{body}}</a>
 		</span>
 		<a class="close" {{action delete target="view"}}>&times;</a>
 	{{/view}}
 {{/each}}
 <form class="new-tag-form" {{action add on="submit" target="view"}}>
-	{{view view.newTagView class="new-tag" valueBinding="view.newTagView.currentTag"}}
+	{{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
 </form>
