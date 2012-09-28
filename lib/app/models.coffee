@@ -3,15 +3,15 @@ module.exports = (DS, App) ->
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
-		classifyIndex: DS.attr 'number'
-		classify: DS.hasMany 'App.Contact'
+		classifyQueue: DS.hasMany('App.Contact', key: 'classify.queue')
+		classifyIndex: DS.attr('number', key: 'classify.index')
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
 		name: DS.attr 'string'
 		email: DS.attr 'string'
-		addedBy: DS.belongsTo 'App.User'
-		dateAdded: DS.attr 'date'
+		dateAdded: DS.attr('date', key: 'added.date')
+		addedBy: DS.belongsTo('App.User', key: 'added.by')
 		knows: DS.hasMany 'App.User'
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'

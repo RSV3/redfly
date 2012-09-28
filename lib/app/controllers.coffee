@@ -22,7 +22,7 @@ module.exports = (Ember, App, socket) ->
 					content: App.get(data.type).find data.id
 				item['type' + data.type] = true
 				# TODO remove
-				# setTimeout (->
+				# setTimeout (=>
 				# 			console.log item.get 'body'
 				# 			console.log item.get 'creator'
 				# 			# console.log item.get('creator').get 'name'
@@ -46,7 +46,7 @@ module.exports = (Ember, App, socket) ->
 				App.Contact.find
 					# TODO XXX XXX but test first
 					# conditions:
-					# 	dateAdded: $exists: true
+					# 	'added.date': $exists: true
 					options:
 						sort: '-date'
 						limit: 3
@@ -106,11 +106,12 @@ module.exports = (Ember, App, socket) ->
 						sort: 'date'
 			).property 'content'
 		isKnown: (->
-				# TO-DO there has to be better way to do 'contains'
+				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
 				has = false
-				@get('knows').forEach (user) ->
-					if user.get('id') is App.user.get('id')
-						has = true
+				if knowsed = @get('knows')
+					knowsed.forEach (user) ->
+						if user.get('id') is App.user.get('id')
+							has = true
 				has
 			).property 'knows.@each'
 		disableAdd: (->
@@ -138,28 +139,33 @@ module.exports = (Ember, App, socket) ->
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', null
 
-		classifying: (->
+		classifying: (->	# TODO hack
 				window.document.location.href.indexOf('classify') isnt -1
 			).property().volatile()
+		currentClassify: (->
+				App.user.get 'classifyIndex' + 1
+			).property('App.user.classifyIndex')
 		next: ->
 			if not @get 'dateAdded'
 				@set 'dateAdded', new Date
 				@set 'addedBy', App.user
-			# TODO XXX save. Make sure that adapter/api work
-			App.user.set 'classifyIndex', (App.user.get('classifyIndex') or 0) + 1 # TODO
 
 			index = App.user.get 'classifyIndex'
-			contact = App.user.get('classify').objectAt index
+			if index is (App.user.get('classifyQueue.length') - 1)
+				alert 'You\'re done! Stop hitting next!'
+			else
+				index = App.user.incrementProperty 'classifyIndex'
+				App.store.commit()
 
-			@set 'content', contact
-
+				contact = App.user.get('classifyQueue').objectAt index
+				@set 'content', contact
 
 
 	App.ProfileView = Ember.View.extend
 		template: require '../../views/templates/profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		# contacts: (-> App.Contact.find addedBy: @get('id'))	# TODO XXX XXX
+		# contacts: (-> App.Contact.find 'added.by': @get('id'))	# TODO XXX XXX
 		contacts: (-> App.Contact.find())
 			.property('content').volatile()
 		total: (-> @get('contacts.length'))
@@ -242,6 +248,10 @@ module.exports = (Ember, App, socket) ->
 	App.LoaderView = Ember.View.extend	# TO-DO does this have to be on the App object?
 		template: require '../../views/templates/loader'
 
+		# TODO hack. Actions target the view not the router for loaderview, probably becuause I added it manually
+		goClassify: ->
+			App.get('router').send 'goClassify'
+
 		didInsertElement: ->
 			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible
 			@set 'loading', $.pnotify
@@ -265,12 +275,17 @@ module.exports = (Ember, App, socket) ->
 					@$('#loadingStarted').appendTo '#loading'
 			@set 'stateConnecting', true
 
-			socket.emit 'parse', App.user.get('id'), =>
-				@get('loading').effect 'bounce'
-				@get('loading').pnotify type: 'success', closer: true
-				App.User.find id: App.user.get('id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
-				@set 'stateDone', true
-				@set 'stateParsing', false
+			socket.emit 'parse', App.user.get('id'), (message) =>
+				# TODO check if 'message' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
+				# temporary mesasure
+				if message
+					alert message + ' Is your internet connected? Did you mistyle your email?'
+				else
+					@get('loading').effect 'bounce'
+					@get('loading').pnotify type: 'success', closer: true
+					App.User.find id: App.user.get('id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
+					@set 'stateDone', true
+					@set 'stateParsing', false
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
@@ -300,7 +315,7 @@ module.exports = (Ember, App, socket) ->
 		connect: ->
 			# Hide the reconnect link for a second after clicking it.
 			@set 'hideReconnect', true
-			setTimeout (->
+			setTimeout (=>
 				@set 'hideReconnect', false
 			), 1000
 			model.socket.socket.connect()	# TODO get socket

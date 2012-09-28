@@ -10,7 +10,7 @@
 			</div>
 		{{/if}}
 		{{#if stateDone}}
-			All done! <a href="#" {{action goClassify href=true}}>Start classifying</a>, dude.
+			All done! <a {{action goClassify href=true}}>Start classifying</a>, dude.
 		{{/if}}
 	</div>
 </div>

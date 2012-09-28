@@ -18,7 +18,9 @@ module.exports = (user, notifications) ->
 				secure: true
 
 			server.connect (err) ->
-				throw err if err
+				if err
+					return notifications.error 'There was a problem connecting to gmail.'
+				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					throw err if err
 

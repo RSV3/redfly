@@ -10,6 +10,7 @@ module.exports = (app, socket) ->
 		fn session
 
 	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
+									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -45,6 +46,7 @@ module.exports = (app, socket) ->
 
 						# TODO horrible hack
 						setTimeout ->
+								# TODO only do this for contacts that have been added!
 								if (model is models.Tag) or (model is models.Note)
 									socket.broadcast.emit 'feed',
 										type: data.type
@@ -62,13 +64,14 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 			when 'save'
-				if id = data.id
-					model.findById id, (err, doc) ->
+				record = data.record
+				if not _.isArray record
+					model.findById record.id, (err, doc) ->
 						throw err if err
-						_.extend doc, data
+						_.extend doc, record
 
 
-						if (model is models.Contact) and ('dateAdded' in doc.modifiedPaths())
+						if (model is models.Contact) and ('added.date' in doc.modifiedPaths())
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -82,11 +85,8 @@ module.exports = (app, socket) ->
 						doc.save (err) ->
 							throw err if err
 							return fn doc
-				else if ids = data.ids
-					# TODO
-					throw new Error 'unimplemented'
 				else
-					throw new Error
+					throw new Error 'unimplemented'
 			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
@@ -108,7 +108,7 @@ module.exports = (app, socket) ->
 				return fn()
 			oauth = require 'oauth-gmail'
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
-			client.getRequestToken email, (err, result) ->  # TODO XXX try mistyping an email and see what happens
+			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
@@ -177,6 +177,9 @@ module.exports = (app, socket) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
 			throw err if err
+			# TODO temporary, in case this gets called and there's not logged in user
+			if not user
+				return fn()
 
 			notifications =
 				foundName: (name) ->
@@ -203,8 +206,9 @@ module.exports = (app, socket) ->
 									, 0
 							newContacts = newContacts[...5]
 
-							user.classifyIndex = user.classify.toObject().length	# TODO necessary toObject?
-							user.classify.push newContacts...
+							if user.classify
+								user.classify.index = user.classify.queue.toObject().length	# TODO necessary toObject?
+								user.classify.queue.push newContacts...
 
 							mail = require('./mail')(app)
 							mail.sendNudge user, newContacts
@@ -251,5 +255,8 @@ module.exports = (app, socket) ->
 
 					if mails.length isnt 0
 						sift()
+
+				error: (message) ->
+					fn message
 
 			require('./parser')(user, notifications)

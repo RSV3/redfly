@@ -10,20 +10,21 @@ Types = Schema.Types
 
 UserSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
-	name: type: String, trim: 1	# TODO I'd like to make this required but the parsing process finds the user's name later. It's probably fine.
+	name: type: String, trim: 1	# Would be required but the user's name isn't known at the time of signup.
 	oauth:
 		token: type: String, required: 1
 		secret: type: String, required: 1
-	# TODO maybe make these below part of a 'meta' field
 	dateParsedLast: type: Date
-	classifyIndex: type: Number, required: 1, default: 0, min: 0	# TODO maybe make this a nested object, if mongoose will allow the nested COntact
-	classify: [ type: Types.ObjectId, ref: 'Contact' ]
+	classify:
+		index: type: Number, required: 1, default: 0, min: 0
+		queue: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1
-	addedBy: type: Types.ObjectId, ref: 'User'	# TODO maybe make this a nested object, if mongoose will allow nested User
-	dateAdded: type: Date
+	added:
+		date: type: Date
+		by: type: Types.ObjectId, ref: 'User'
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 
 TagSchema = new Schema

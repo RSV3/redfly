@@ -24,7 +24,7 @@ module.exports = (DS, socket) ->
 				store.loadMany type, data
 
 		createRecord: (store, type, model) ->
-			# TO-DO figure out what 'unsavedData' etc are for
+			# TO-DO figure out what 'unsavedData' etc are for, and do the same for updateRecord and deleteRecord (though delete prolly just has an id)
 			socket.emit 'db', op: 'create', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didCreateRecord model, data
 
@@ -33,9 +33,6 @@ module.exports = (DS, socket) ->
 		# 		store.didCreateRecords type, array, data
 
 		updateRecord: (store, type, model) ->
-			# TODO
-			# TO-DO figure out what model.get(data) looks like
-			# throw new Error 'untested'
 			socket.emit 'db', op: 'save', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didUpdateRecord model, data
 

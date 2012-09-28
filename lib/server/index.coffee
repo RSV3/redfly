@@ -49,9 +49,7 @@ app.configure ->
 	app.use express.bodyParser()
 	app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
-	app.use express.session
-		key: key
-		store: store
+	app.use express.session(key: key, store: store)
 
 	# TODO this is probably still useful! Just make the lookup smarkter, and change config-local
 	# app.use (req, res, next) ->
