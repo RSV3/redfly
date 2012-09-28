@@ -25,8 +25,8 @@ module.exports = (user, notifications) ->
 					throw err if err
 
 					# TODO XXX XXX testing
-					criteria = [['FROM', 'annie@redstar.com']]
-					# criteria = [['FROM', user.email]]
+					# criteria = [['FROM', 'annie@redstar.com']]
+					criteria = [['FROM', user.email]]
 					# TODO XXX XXX testing
 					# if previous = user.dateParsedLast
 					# 	criteria.unshift ['SINCE', previous]
