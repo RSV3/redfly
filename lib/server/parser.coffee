@@ -19,6 +19,7 @@ module.exports = (user, notifications) ->
 
 			server.connect (err) ->
 				if err
+					console.warn err
 					return notifications.error 'There was a problem connecting to gmail.'
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->

@@ -279,7 +279,7 @@ module.exports = (Ember, App, socket) ->
 				# TODO check if 'message' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
 				# temporary mesasure
 				if message
-					alert message + ' Is your internet connected? Did you mistyle your email?'
+					alert message + ' Are you connected to the internet? Did you mistype your email?'
 				else
 					@get('loading').effect 'bounce'
 					@get('loading').pnotify type: 'success', closer: true

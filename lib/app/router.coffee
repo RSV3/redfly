@@ -30,6 +30,7 @@ module.exports = (Ember, App, socket) ->
 				route: '/contact/:contact_id'
 				connectOutlets: (router, contact) ->
 					router.get('applicationController').connectOutlet 'contact', contact
+				# TODO try just doing 'contact_email' instead
 				# serialize: (router, context) ->
 				# 	identity: context.get 'email'
 				# deserialize: (router, params) ->
