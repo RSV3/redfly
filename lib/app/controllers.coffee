@@ -283,7 +283,7 @@ module.exports = (Ember, App, socket) ->
 				else
 					@get('loading').effect 'bounce'
 					@get('loading').pnotify type: 'success', closer: true
-					App.User.find id: App.user.get('id')	# Classify queue has been determined and saved on the server, refresh by querying the store.
+					App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.
 					@set 'stateDone', true
 					@set 'stateParsing', false
 
@@ -293,7 +293,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateParsing', true
 				@set 'stateConnecting', false
 			socket.on 'parse.name', =>
-				App.User.find id: App.user.get('id')	# We just figured out the logged-in user's name, refesh by querying the store.
+				App.refresh App.user.get('content')	# We just figured out the logged-in user's name, refesh.
 			socket.on 'parse.update', =>
 				@incrementProperty 'current'
 

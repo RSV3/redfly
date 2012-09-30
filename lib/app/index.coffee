@@ -33,6 +33,9 @@ App.adapter = require('./adapter')(DS, socket)
 App.store = DS.Store.create
 	revision: 4
 	adapter: App.adapter
+	
+App.refresh = (record) ->
+	App.store.findQuery record.constructor, record.get('id')
 
 require('./models')(DS, App)
 require('./controllers')(Ember, App, socket)
