@@ -29,7 +29,7 @@ module.exports = (user, notifications) ->
 					criteria = [['FROM', 'annie@redstar.com']]
 					# criteria = [['FROM', user.email]]
 					# TODO XXX XXX testing
-					# if previous = user.dateParsedLast
+					# if previous = user.lastParsedDate
 					# 	criteria.unshift ['SINCE', previous]
 					server.search criteria, (err, results) ->
 						throw err if err
@@ -60,7 +60,7 @@ module.exports = (user, notifications) ->
 									if (validators.isEmail email) and (email isnt user.email) and (email.indexOf('redstar') is -1)
 										mails.push
 											subject: msg.headers.subject?[0]
-											dateSent: new Date msg.headers.date?[0]
+											sentDate: new Date msg.headers.date?[0]
 											recipientEmail: email
 											recipientName: name
 								notifications.completedEmail()

@@ -14,18 +14,16 @@ UserSchema = new Schema
 	oauth:
 		token: type: String, required: 1
 		secret: type: String, required: 1
-	dateParsedLast: type: Date
-	classify:
-		index: type: Number, required: 1, default: 0, min: 0
-		queue: [ type: Types.ObjectId, ref: 'Contact' ]
+	lastParsedDate: type: Date
+	classifyIndex: type: Number, required: 1, default: 0, min: 0
+	classifyQueue: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1
-	added:
-		date: type: Date
-		by: type: Types.ObjectId, ref: 'User'
 	knows: [ type: Types.ObjectId, ref: 'User' ]
+	addedDate: type: Date
+	addedBy: type: Types.ObjectId, ref: 'User'
 
 TagSchema = new Schema
 	creator: type: Types.ObjectId, ref: 'User', required: 1
@@ -42,7 +40,7 @@ MailSchema = new Schema
 	sender: type: Types.ObjectId, ref: 'User', required: 1
 	recipient: type: Types.ObjectId, ref: 'Contact', required: 1
 	subject: type: String
-	dateSent: type: Date
+	sentDate: type: Date
 
 
 common = (schema) ->

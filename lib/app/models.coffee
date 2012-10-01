@@ -3,16 +3,16 @@ module.exports = (DS, App) ->
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
-		classifyQueue: DS.hasMany('App.Contact', key: 'classify.queue')
-		classifyIndex: DS.attr('number', key: 'classify.index')
+		classifyQueue: DS.hasMany 'App.Contact'
+		classifyIndex: DS.attr 'number'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
 		name: DS.attr 'string'
 		email: DS.attr 'string'
-		dateAdded: DS.attr('date', key: 'added.date')
-		addedBy: DS.belongsTo('App.User', key: 'added.by')
 		knows: DS.hasMany 'App.User'
+		addedDate: DS.attr 'date'
+		addedBy: DS.belongsTo 'App.User'
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
@@ -63,4 +63,4 @@ module.exports = (DS, App) ->
 		sender: DS.belongsTo 'App.User'
 		recipient: DS.belongsTo 'App.Contact'
 		subject: DS.attr 'string'
-		dateSent: DS.attr 'date'
+		sentDate: DS.attr 'date'

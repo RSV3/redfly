@@ -71,7 +71,7 @@ module.exports = (app, socket) ->
 						_.extend doc, record
 
 
-						if (model is models.Contact) and ('added.date' in doc.modifiedPaths())
+						if (model is models.Contact) and ('addedDate' in doc.modifiedPaths())
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -206,14 +206,13 @@ module.exports = (app, socket) ->
 									, 0
 							newContacts = newContacts[...5]
 
-							if user.classify
-								user.classify.index = user.classify.queue.toObject().length	# TODO necessary toObject?
-								user.classify.queue.push newContacts...
+							user.classifyIndex = user.classifyQueue.toObject().length	# TODO necessary toObject?
+							user.classifyQueue.push newContacts...
 
 							mail = require('./mail')(app)
 							mail.sendNudge user, newContacts
 
-						user.dateParsedLast = Date.now()
+						user.lastParsedDate = Date.now()
 						user.save (err) ->
 							throw err if err
 

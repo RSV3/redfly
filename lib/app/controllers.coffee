@@ -46,7 +46,7 @@ module.exports = (Ember, App, socket) ->
 				App.Contact.find
 					# TODO XXX XXX but test first
 					# conditions:
-					# 	'added.date': $exists: true
+					# 	'addedDate': $exists: true
 					options:
 						sort: '-date'
 						limit: 3
@@ -146,8 +146,8 @@ module.exports = (Ember, App, socket) ->
 				App.user.get 'classifyIndex' + 1
 			).property('App.user.classifyIndex')
 		next: ->
-			if not @get 'dateAdded'
-				@set 'dateAdded', new Date
+			if not @get 'addedDate'
+				@set 'addedDate', new Date
 				@set 'addedBy', App.user
 
 			index = App.user.get 'classifyIndex'
@@ -165,7 +165,7 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../views/templates/profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		# contacts: (-> App.Contact.find 'added.by': @get('id'))	# TODO XXX XXX
+		# contacts: (-> App.Contact.find 'addedBy': @get('id'))	# TODO XXX XXX
 		contacts: (-> App.Contact.find())
 			.property('content').volatile()
 		total: (-> @get('contacts.length'))
