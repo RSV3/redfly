@@ -1,4 +1,5 @@
 module.exports = (user, notifications) ->
+	_ = require 'underscore'
 	_s = require 'underscore.string'
 	validators = require('validator').validators
 	
@@ -49,12 +50,14 @@ module.exports = (user, notifications) ->
 						fetch.on 'message', (msg) ->
 							msg.on 'end', ->
 								for to in mimelib.parseAddresses msg.headers.to?[0]
-									email = _s.trim to.address.toLowerCase()	# TODO I have to do this right? Probably.
+									email = _s.trim to.address.toLowerCase()
 									name = _s.trim(to.name) or email	# If the name is blank use the email instead.
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-									blacklist = []	# TODO load blacklisted email from the database {and (email not in blacklist)} does that work?
-									# TODO remove the 'in redstar' bit in the line below. Does 'not in ' work?
-									if (validators.isEmail email) and (email isnt user.email) and (email.indexOf('redstar') is -1)
+									blacklist = require './blacklist'
+									if (validators.isEmail email) and (email isnt user.email) and
+											(name not in blacklist.names) and
+											(email not in blacklist.emails) and
+											(_.last(email.split('@')) not in blacklist.domains)
 										mails.push
 											subject: msg.headers.subject?[0]
 											sentDate: new Date msg.headers.date?[0]
