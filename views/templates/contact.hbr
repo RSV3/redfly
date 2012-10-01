@@ -51,11 +51,3 @@
 		{{/each}}
 	</div>
 </div>
-
-<!-- TODO get rid of all "style" here -->
-{{#if classifying}}
-	<div class="row-fluid" style="margin-top: 40px">
-		<div style="font-size: 18px; display: inline-block;"> {{nickname}} is {{currentClassify}} out of {{App.user.classifyQueue.length}} contacts in your queue.</div>
-		<div style="display: inline-block; margin-left: 15px; margin-bottom: 13px;"><br><a class="btn btn-primary btn-large" {{action next target="controller"}}>Add and continue</a></div>
-	</div>
-{{/if}}

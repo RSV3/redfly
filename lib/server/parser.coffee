@@ -25,12 +25,9 @@ module.exports = (user, notifications) ->
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					throw err if err
 
-					# TODO XXX XXX testing
-					criteria = [['FROM', 'annie@redstar.com']]
-					# criteria = [['FROM', user.email]]
-					# TODO XXX XXX testing
-					# if previous = user.lastParsedDate
-					# 	criteria.unshift ['SINCE', previous]
+					criteria = [['FROM', user.email]]
+					if previous = user.lastParsedDate
+						criteria.unshift ['SINCE', previous]
 					server.search criteria, (err, results) ->
 						throw err if err
 

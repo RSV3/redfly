@@ -1,18 +1,18 @@
 module.exports = (DS, App) ->
 	App.User = DS.Model.extend
-		date: DS.attr 'date'
-		email: DS.attr 'string'
-		name: DS.attr 'string'
-		classifyQueue: DS.hasMany 'App.Contact'
-		classifyIndex: DS.attr 'number'
+		date: DS.attr('date', key: 'date')
+		email: DS.attr('string', key: 'email')
+		name: DS.attr('string', key: 'name')
+		classifyQueue: DS.hasMany('App.Contact', key: 'classifyQueue')
+		classifyIndex: DS.attr('number', key: 'classifyIndex')
 
 	App.Contact = DS.Model.extend
-		date: DS.attr 'date'
-		name: DS.attr 'string'
-		email: DS.attr 'string'
-		knows: DS.hasMany 'App.User'
-		addedDate: DS.attr 'date'
-		addedBy: DS.belongsTo 'App.User'
+		date: DS.attr('date', key: 'date')
+		name: DS.attr('string', key: 'name')
+		email: DS.attr('string', key: 'email')
+		knows: DS.hasMany('App.User', key: 'knows')
+		addedDate: DS.attr('date', key: 'addedDate')
+		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
@@ -27,6 +27,8 @@ module.exports = (DS, App) ->
 				mutable
 			).property '_rawNotes.@each'
 		_rawNotes: (->
+				# TODO have a check here to wait for isLoaded? See if this getting run before thid ID is there actually happens. This probably 
+				# isn't likely.
 				App.Note.find
 					conditions:
 						contact: @get('id')
@@ -39,17 +41,17 @@ module.exports = (DS, App) ->
 			).property()
 
 	App.Tag = DS.Model.extend
-		date: DS.attr 'date'
-		creator: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		category: DS.attr 'string'
-		body: DS.attr 'string'
+		date: DS.attr('date', key: 'date')
+		creator: DS.belongsTo('App.User', key: 'creator')
+		contact: DS.belongsTo('App.Contact', key: 'contact')
+		category: DS.attr('string', key: 'category')
+		body: DS.attr('string', key: 'body')
 
 	App.Note = DS.Model.extend
-		date: DS.attr 'date'
-		author: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		body: DS.attr 'string'
+		date: DS.attr('date', key: 'date')
+		author: DS.belongsTo('App.User', key: 'author')
+		contact: DS.belongsTo('App.Contact', key: 'contact')
+		body: DS.attr('string', key: 'body')
 		preview: (->
 				maxLength = 80
 				preview = @get('body')[..maxLength]
@@ -59,8 +61,8 @@ module.exports = (DS, App) ->
 			).property 'body'
 
 	App.Mail = DS.Model.extend
-		date: DS.attr 'date'
-		sender: DS.belongsTo 'App.User'
-		recipient: DS.belongsTo 'App.Contact'
-		subject: DS.attr 'string'
-		sentDate: DS.attr 'date'
+		date: DS.attr('date', key: 'date')
+		sender: DS.belongsTo('App.User', key: 'sender')
+		recipient: DS.belongsTo('App.Contact', key: 'recipient')
+		subject: DS.attr('string', key: 'subject')
+		sentDate: DS.attr('date', key: 'sentDate')

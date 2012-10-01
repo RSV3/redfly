@@ -59,15 +59,20 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					index = App.user.get 'classifyIndex'
-
-					proxy = Ember.ObjectProxy.create()
-					router.get('applicationController').connectOutlet 'contact', proxy
-					App.user.get 'classifyQueue'
-					setTimeout ->	# TODO XXX XXX jesusssss...
-						contact = App.user.get('classifyQueue').objectAt index
-						proxy.set 'content', contact
-					, 500
+					socket.emit 'classify', App.user.get('id'), (contactId) ->
+						if contactId
+							router.get('applicationController').connectOutlet 'classify', App.Contact.find contactId
+							router.get('classifyController').connectOutlet 'contact', App.Contact.find contactId
+						else
+							router.get('applicationController').connectOutlet 'classify'
+					# TODO bring back 
+					# index = App.user.get 'classifyIndex'
+					# if index < App.user.get('classifyQueue.length')
+					# 	contact = App.user.get('classifyQueue').objectAt index
+					# 	router.get('applicationController').connectOutlet 'classify', contact
+					# 	router.get('classifyController').connectOutlet 'contact', contact
+					# else
+					# 	router.get('applicationController').connectOutlet 'classify'
 
 
 			load: Ember.Route.extend

@@ -44,9 +44,8 @@ module.exports = (Ember, App, socket) ->
 			).property '_initialContacts.@each'
 		_initialContacts: (->
 				App.Contact.find
-					# TODO XXX XXX but test first
-					# conditions:
-					# 	'addedDate': $exists: true
+					conditions:
+						'addedDate': $exists: true
 					options:
 						sort: '-date'
 						limit: 3
@@ -98,9 +97,10 @@ module.exports = (Ember, App, socket) ->
 				@get '_histories.length'
 			).property '_histories.@each'
 		_histories: (->
+				# TODO maybe check to see if content is isLoaded and only run this query if so if @get 'content.isLoaded'
 				App.Mail.find
 					conditions:
-						sender: App.user.get 'id'
+						sender: App.user.get('id')
 						recipient: @get 'id'
 					options:
 						sort: 'date'
@@ -139,47 +139,48 @@ module.exports = (Ember, App, socket) ->
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', null
 
-		classifying: (->	# TODO hack
-				window.document.location.href.indexOf('classify') isnt -1
-			).property().volatile()
-		currentClassify: (->
-				App.user.get 'classifyIndex' + 1
-			).property('App.user.classifyIndex')
-		next: ->
-			if not @get 'addedDate'
-				@set 'addedDate', new Date
-				@set 'addedBy', App.user
-
-			index = App.user.get 'classifyIndex'
-			if index is (App.user.get('classifyQueue.length') - 1)
-				alert 'You\'re done! Stop hitting next!'
-			else
-				index = App.user.incrementProperty 'classifyIndex'
-				App.store.commit()
-
-				contact = App.user.get('classifyQueue').objectAt index
-				@set 'content', contact
-
-
 	App.ProfileView = Ember.View.extend
 		template: require '../../views/templates/profile'
 		classNames: ['profile']
 	App.ProfileController = Ember.ObjectController.extend
-		# contacts: (-> App.Contact.find 'addedBy': @get('id'))	# TODO XXX XXX
-		contacts: (-> App.Contact.find())
-			.property('content').volatile()
+		contacts: (-> App.Contact.find 'addedBy': @get('id'))
+			.property 'content'
 		total: (-> @get('contacts.length'))
 			.property 'contacts.@each'
 
 	App.TagsView = Ember.View.extend
 		template: require '../../views/templates/tags'
-		classNames: ['tags']
+		# classNames: ['tags']
 	App.TagsController = Ember.ArrayController.extend()
 
 	App.ReportView = Ember.View.extend
 		template: require '../../views/templates/report'
-		classNames: ['report']
+		# classNames: ['report']
 	App.ReportController = Ember.Controller.extend()
+
+	App.ClassifyView = Ember.View.extend
+		template: require '../../views/templates/classify'
+		# classNames: ['classify']
+	App.ClassifyController = Ember.ObjectController.extend
+		currentClassify: (->
+				App.user.get('classifyIndex') + 1
+			).property 'App.user.classifyIndex'	# TODO XXX maybe .content.classifyindex if this doesn't work?
+		next: ->
+			if not @get 'addedDate'
+				@set 'addedDate', new Date
+				@set 'addedBy', App.user
+				App.store.commit()
+
+			# TODO hack
+			socket.emit 'updateClassify', App.user.get('id')
+			# index = App.user.incrementProperty 'classifyIndex'
+			# App.store.commit()
+
+			# TODO hack
+			setTimeout ->
+					window.location.reload()
+				, 300
+			# App.get('router').send 'goClassify'
 
 
 	App.TaggerView = Ember.View.extend
@@ -192,6 +193,7 @@ module.exports = (Ember, App, socket) ->
 				mutable
 			).property '_rawTags.@each'
 		_rawTags: (->
+				# TODO have a check here to wait for contact.isLoaded? See if this getting run before the contact is there actually happens.
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 			).property('contact')
 		click: (event) ->
@@ -251,6 +253,9 @@ module.exports = (Ember, App, socket) ->
 		# TODO hack. Actions target the view not the router for loaderview, probably becuause I added it manually
 		goClassify: ->
 			App.get('router').send 'goClassify'
+			# TODO even worse hack!
+			window.location.reload()
+
 
 		didInsertElement: ->
 			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible
@@ -283,7 +288,7 @@ module.exports = (Ember, App, socket) ->
 				else
 					@get('loading').effect 'bounce'
 					@get('loading').pnotify type: 'success', closer: true
-					App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.
+					App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
 					@set 'stateDone', true
 					@set 'stateParsing', false
 
