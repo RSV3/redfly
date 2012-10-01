@@ -33,6 +33,14 @@ app.configure ->
 	app.set 'view engine', 'jade'
 	app.locals.pretty = not optimize
 
+	app.use (req, res, next) ->
+		console.log req.headers.host
+		console.log process.env.HOST
+		if req.headers.host isnt process.env.HOST
+			url = req.protocol + process.env.HOST + req.url
+			res.writeHead 301, Location: url
+			return res.end()
+		next()
 	# app.use express.logger('dev')
 	# app.use express.profiler()
 	app.use express.favicon(root + '/favicon.ico')
