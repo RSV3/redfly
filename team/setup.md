@@ -73,4 +73,4 @@ heroku addons:add sendgrid:starter --app redfly-prod
 heroku addons:add bonsai:test --app redfly-prod
 heroku addons:add mongolab:starter --app redfly-prod
 heroku addons:add memcachier:dev --app redfly-prod
-
+heroku addons:add deployhooks:email --recipient=kwan@redstar.com,KBaranowski@redstar.com --subject="{{app}} has new updates deployed" --body="{{user}} deployed new changes to Redfly Production.\n\nCheck it out at {{url}}.\n\nUpdated changes:\n\n{{git_log}}
