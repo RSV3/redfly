@@ -14,6 +14,16 @@ socket = io.connect document.location.href
 # 	# moment(date).format('MMMM Do, YYYY')
 # 	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
 
+Handlebars.registerHelper 'debug', (optionalValue) ->
+	console.log 'Current Context'
+	console.log '===================='
+	console.log @
+	if optionalValue
+		console.log 'Value'
+		console.log '===================='
+		console.log optionalValue
+
+
 
 App.user = Ember.ObjectProxy.create
 	# TO-DO make these be on Application and Home views, respesctively
