@@ -111,24 +111,11 @@ module.exports = (app, socket) ->
 			if user
 				return fn()
 			oauth = require 'oauth-gmail'
-
-			util = require './util'
-			util.mail
-				to: 'bski@mit.edu'
-				subject: 'asdf'
-				html: 'asdfasdf ' + JSON.stringify(process.env) + ' asdf ' + process.env.MONGOLAB_URI + '   ' + process.env.HOST
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
-
-				util.mail
-					to: 'bski@mit.edu'
-					subject: 'asdf2'
-					html: 'asdfasdf ' + result.authorizeUrl
-
-
 				return fn result.authorizeUrl
 
 	socket.on 'login', (email, fn) ->
