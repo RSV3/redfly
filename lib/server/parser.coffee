@@ -26,7 +26,7 @@ module.exports = (user, notifications) ->
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					throw err if err
 
-					criteria = [['FROM', 'annie@redstar.com']]
+					criteria = [['FROM', user.email]]
 					if previous = user.lastParsedDate
 						criteria.unshift ['SINCE', previous]
 					server.search criteria, (err, results) ->
@@ -54,7 +54,10 @@ module.exports = (user, notifications) ->
 									name = _s.trim(to.name) or email	# If the name is blank use the email instead.
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
 									blacklist = require './blacklist'
-									if (validators.isEmail email) and (email isnt user.email)
+									if (validators.isEmail email) and (email isnt user.email) and
+											(name not in blacklist.names) and
+											(email not in blacklist.emails) and
+											(_.last(email.split('@')) not in blacklist.domains)
 										mails.push
 											subject: msg.headers.subject?[0]
 											sentDate: new Date msg.headers.date?[0]
