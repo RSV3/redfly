@@ -53,11 +53,8 @@ module.exports = (DS, App) ->
 		contact: DS.belongsTo('App.Contact', key: 'contact')
 		body: DS.attr('string', key: 'body')
 		preview: (->
-				maxLength = 80
-				preview = @get('body')[..maxLength]
-				if preview.length is maxLength
-					preview += '...'
-				preview
+				_s = require 'underscore.string'
+				_s.prune @get('body'), 80
 			).property 'body'
 
 	App.Mail = DS.Model.extend
