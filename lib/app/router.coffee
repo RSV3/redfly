@@ -59,20 +59,14 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					socket.emit 'classify', App.user.get('id'), (contactId) ->
-						if contactId
-							router.get('applicationController').connectOutlet 'classify', App.Contact.find contactId
-							router.get('classifyController').connectOutlet 'contact', App.Contact.find contactId
-						else
-							router.get('applicationController').connectOutlet 'classify'
-					# TODO bring back 
-					# index = App.user.get 'classifyIndex'
-					# if index < App.user.get('classifyQueue.length')
-					# 	contact = App.user.get('classifyQueue').objectAt index
-					# 	router.get('applicationController').connectOutlet 'classify', contact
-					# 	router.get('classifyController').connectOutlet 'contact', contact
-					# else
-					# 	router.get('applicationController').connectOutlet 'classify'
+					index = App.user.get 'classifyIndex'
+					contact = App.user.get('classifyQueue').objectAt index
+					App.classify.set 'content', contact
+
+					router.get('applicationController').connectOutlet 'classify', App.classify
+					router.get('classifyController').connectOutlet 'contact', App.classify
+
+					App.store.findQuery App.Contact, {}	# TODO hack to refresh the contacts, not sure why user.classifyQueue doesn't get loaded
 
 
 			load: Ember.Route.extend
