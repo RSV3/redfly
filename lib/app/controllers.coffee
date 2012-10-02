@@ -21,18 +21,16 @@ module.exports = (Ember, App, socket) ->
 				item = Ember.ObjectProxy.create
 					content: App.get(data.type).find data.id
 				item['type' + data.type] = true
-				# TODO remove
-				# setTimeout (=>
-				# 			console.log item.get 'body'
-				# 			console.log item.get 'creator'
-				# 			# console.log item.get('creator').get 'name'
-				# 			# setTimeout (-> console.log(item.get('creator').get('name')) ), 1000
-				# 		), 1000
 				@get('controller.feed').unshiftObject item
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
+		searchView: Ember.TextField.extend
+			focusIn: ->
+				@set 'controller.searchFocused', true
+			focusOut: ->
+				@set 'controller.searchFocused', false
 	App.ApplicationController = Ember.Controller.extend
 		feed: (->
 				mutable = []
@@ -51,6 +49,10 @@ module.exports = (Ember, App, socket) ->
 						limit: 5
 			).property()
 		results: Ember.ObjectProxy.create()
+		showResults: (->
+				# TODO check the substructure of results to make sure there actually are some.
+				@get('searchFocused') and @get('results.content')
+			).property 'results.@each', 'searchFocused'
 		searchChanged: (->
 				query = util.trim App.get('search')
 				if not query
