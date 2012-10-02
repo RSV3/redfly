@@ -119,6 +119,10 @@ module.exports = (app, socket) ->
 			if user
 				return fn()
 			oauth = require 'oauth-gmail'
+			console.log '12341234'
+			console.dir process.env
+			console.log process.env.MONGOLAB_URI
+			console.log process.env.HOST
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
