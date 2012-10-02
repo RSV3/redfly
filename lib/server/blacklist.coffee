@@ -1,3 +1,12 @@
+exports.domains = [
+	'redstar.com',
+	'rsmedia.com',
+	'vinely.com',
+	'gosprout.com',
+	'loopit.com',
+	'nevershopalone.com',
+	'weunitetobuy.com'
+]
 exports.names = [
 	'Aaron Kolenda',
 	'Andrew Lau',
@@ -37,13 +46,4 @@ exports.names = [
 	'Tyler Infelise'
 ]
 exports.emails = [
-]
-exports.domains = [
-	'redstar.com',
-	'rsmedia.com',
-	'vinely.com',
-	'gosprout.com',
-	'loopit.com',
-	'nevershopalone.com',
-	'weunitetobuy.com'
 ]

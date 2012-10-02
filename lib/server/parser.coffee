@@ -55,9 +55,9 @@ module.exports = (user, notifications) ->
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
 									blacklist = require './blacklist'
 									if (validators.isEmail email) and (email isnt user.email) and
+											(_.last(email.split('@')) not in blacklist.domains) and
 											(name not in blacklist.names) and
-											(email not in blacklist.emails) and
-											(_.last(email.split('@')) not in blacklist.domains)
+											(email not in blacklist.emails)
 										mails.push
 											subject: msg.headers.subject?[0]
 											sentDate: new Date msg.headers.date?[0]
