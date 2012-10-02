@@ -31,6 +31,8 @@ App.user = Ember.ObjectProxy.create
 	signupIdentity: null
 
 App.search = null
+# TODO
+App.classify = Ember.ObjectProxy.create()
 
 App.auth =
 	login: (id) ->
@@ -55,9 +57,10 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		App.user.addObserver 'isLoaded', ->
-			# App.user.removeObserver 'isLoaded', @
+		initialize = ->
+			App.user.removeObserver 'isLoaded', initialize
 			App.initialize()
+		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
 		App.initialize()

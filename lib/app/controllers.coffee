@@ -171,16 +171,11 @@ module.exports = (Ember, App, socket) ->
 				@set 'addedBy', App.user
 				App.store.commit()
 
-			# TODO hack
-			socket.emit 'updateClassify', App.user.get('id')
-			# index = App.user.incrementProperty 'classifyIndex'
-			# App.store.commit()
+			index = App.user.incrementProperty 'classifyIndex'
+			App.store.commit()
 
-			# TODO hack
-			setTimeout ->
-					window.location.reload()
-				, 300
-			# App.get('router').send 'goClassify'
+			contact = App.user.get('classifyQueue').objectAt index
+			App.classify.set 'content', contact
 
 
 	App.TaggerView = Ember.View.extend
@@ -253,9 +248,6 @@ module.exports = (Ember, App, socket) ->
 		# TODO hack. Actions target the view not the router for loaderview, probably becuause I added it manually
 		goClassify: ->
 			App.get('router').send 'goClassify'
-			# TODO even worse hack!
-			window.location.reload()
-
 
 		didInsertElement: ->
 			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible

@@ -9,18 +9,6 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
-	# TODO hack
-	socket.on 'classify', (userId, fn) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			fn user.classifyQueue[user.classifyIndex]
-	socket.on 'updateClassify', (userId) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			user.classifyIndex++
-			user.save (err) ->
-				throw err if err
-
 	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
 									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
 		model = models[data.type]
