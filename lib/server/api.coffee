@@ -71,7 +71,7 @@ module.exports = (app, socket) ->
 						_.extend doc, record
 
 
-						if (model is models.Contact) and ('addedDate' in doc.modifiedPaths())
+						if (model is models.Contact) and ('added' in doc.modifiedPaths())
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -215,7 +215,7 @@ module.exports = (app, socket) ->
 							mail = require('./mail')(app)
 							mail.sendNudge user, newContacts
 
-						user.lastParsedDate = Date.now()
+						user.lastParsed = Date.now()
 						user.save (err) ->
 							throw err if err
 

@@ -11,7 +11,7 @@ module.exports = (DS, App) ->
 		name: DS.attr('string', key: 'name')
 		email: DS.attr('string', key: 'email')
 		knows: DS.hasMany('App.User', key: 'knows')
-		addedDate: DS.attr('date', key: 'addedDate')
+		added: DS.attr('date', key: 'added')
 		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
@@ -65,4 +65,4 @@ module.exports = (DS, App) ->
 		sender: DS.belongsTo('App.User', key: 'sender')
 		recipient: DS.belongsTo('App.Contact', key: 'recipient')
 		subject: DS.attr('string', key: 'subject')
-		sentDate: DS.attr('date', key: 'sentDate')
+		sent: DS.attr('date', key: 'sent')

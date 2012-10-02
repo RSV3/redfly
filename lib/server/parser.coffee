@@ -27,7 +27,7 @@ module.exports = (user, notifications) ->
 					throw err if err
 
 					criteria = [['FROM', user.email]]
-					if previous = user.lastParsedDate
+					if previous = user.lastParsed
 						criteria.unshift ['SINCE', previous]
 					server.search criteria, (err, results) ->
 						throw err if err
@@ -60,7 +60,7 @@ module.exports = (user, notifications) ->
 											(email not in blacklist.emails)
 										mails.push
 											subject: msg.headers.subject?[0]
-											sentDate: new Date msg.headers.date?[0]
+											sent: new Date msg.headers.date?[0]
 											recipientEmail: email
 											recipientName: name
 								notifications.completedEmail()

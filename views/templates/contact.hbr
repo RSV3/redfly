@@ -5,7 +5,7 @@
 	{{#if firstHistory}}
 		<div>
 			<p>
-				You emailed {{nickname}} for the first time on {{firstHistory.sentDate}}.
+				You emailed {{nickname}} for the first time on {{firstHistory.sent}}.
 				<br>
 				The email subject was <em>"{{firstHistory.subject}}"</em>.
 			</p>
