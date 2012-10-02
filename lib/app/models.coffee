@@ -33,7 +33,7 @@ module.exports = (DS, App) ->
 					conditions:
 						contact: @get('id')
 					options:
-						sort: '-date'	# TODO why aren't these sorted appropriately. Sort param is being ignored entirely, comes back in natural order (which happens to be insertion order). Fix all other sorts too.
+						sort: date: -1
 				# TODO
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>

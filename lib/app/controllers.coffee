@@ -45,9 +45,9 @@ module.exports = (Ember, App, socket) ->
 		_initialContacts: (->
 				App.Contact.find
 					conditions:
-						'addedDate': $exists: true
+						addedDate: $exists: true
 					options:
-						sort: '-date'
+						sort: addedDate: -1
 						limit: 3
 			).property()
 		results: Ember.ObjectProxy.create()
@@ -103,7 +103,7 @@ module.exports = (Ember, App, socket) ->
 						sender: App.user.get('id')
 						recipient: @get 'id'
 					options:
-						sort: 'date'
+						sort: date: 1
 			).property 'content'
 		isKnown: (->
 				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
