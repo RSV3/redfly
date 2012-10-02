@@ -14,6 +14,16 @@ socket = io.connect document.location.href
 # 	# moment(date).format('MMMM Do, YYYY')
 # 	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
 
+Handlebars.registerHelper 'debug', (optionalValue) ->
+	console.log 'Current Context'
+	console.log '===================='
+	console.log @
+	if optionalValue
+		console.log 'Value'
+		console.log '===================='
+		console.log optionalValue
+
+
 
 App.user = Ember.ObjectProxy.create
 	# TO-DO make these be on Application and Home views, respesctively
@@ -21,6 +31,8 @@ App.user = Ember.ObjectProxy.create
 	signupIdentity: null
 
 App.search = null
+# TODO
+App.classify = Ember.ObjectProxy.create()
 
 App.auth =
 	login: (id) ->
@@ -45,9 +57,10 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		App.user.addObserver 'isLoaded', ->
-			# App.user.removeObserver 'isLoaded', @
+		initialize = ->
+			App.user.removeObserver 'isLoaded', initialize
 			App.initialize()
+		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
 		App.initialize()

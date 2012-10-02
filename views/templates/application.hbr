@@ -24,10 +24,10 @@
 					<!-- <li><a {{action goReport href=true}}>Report a bug</a></li> -->
 					<li class="dropdown">
 						<form class="navbar-search pull-left" autocomplete="off" onsubmit="return false;">
-							{{view Ember.TextField class="search-query" placeholder="Search" valueBinding="App.search"}}
+							{{view view.searchView class="search-query" placeholder="Search" valueBinding="App.search"}}
 							<i class="icon-large icon-question-sign" rel="popover" data-placement="bottom" data-trigger="hover" data-title="Search" data-content="Use the search box to find contacts by name, email, affixed tag, etc. Multiple search terms should be separated by spaces. Searches are case-insensitive and may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  &quot;tag:mentor&quot;)."></i>
 						</form>
-						{{#if results.content}}
+						{{#if showResults}}
 							<ul class="dropdown-menu search-results">
 								{{#if results.name}}
 									<div class="nav-header">Names</div>

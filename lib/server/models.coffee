@@ -1,6 +1,6 @@
-mongoose = require 'mongoose'
 validators = require('validator').validators
 
+mongoose = require 'mongoose'
 mongoose.connect process.env.MONGOLAB_URI
 
 Schema = mongoose.Schema

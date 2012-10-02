@@ -9,18 +9,6 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
-	# TODO hack
-	socket.on 'classify', (userId, fn) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			fn user.classifyQueue[user.classifyIndex]
-	socket.on 'updateClassify', (userId) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			user.classifyIndex++
-			user.save (err) ->
-				throw err if err
-
 	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
 									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
 		model = models[data.type]
@@ -35,6 +23,10 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
+					# Sort criteria must be an integer for some reason.
+					if sortBy = query.options?.sort
+						for field, order of sortBy
+							sortBy[field] = parseInt order
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
 						return fn docs
@@ -46,7 +38,7 @@ module.exports = (app, socket) ->
 				record = data.record
 				if not _.isArray record
 
-					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
+					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
 					# override .toObject, or is that for something else?
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1

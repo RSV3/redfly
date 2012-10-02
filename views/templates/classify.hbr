@@ -1,4 +1,4 @@
-{{#if content}}
+{{#if content.id}}
 	
 	{{outlet}}
 
