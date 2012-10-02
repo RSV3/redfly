@@ -48,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 						addedDate: $exists: true
 					options:
 						sort: addedDate: -1
-						limit: 3
+						limit: 5
 			).property()
 		results: Ember.ObjectProxy.create()
 		searchChanged: (->
