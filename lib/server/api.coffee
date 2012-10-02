@@ -23,10 +23,6 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
-					# Sort criteria must be an integer for some reason.
-					if sortBy = query.options?.sort
-						for field, order of sortBy
-							sortBy[field] = parseInt order
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
 						return fn docs
