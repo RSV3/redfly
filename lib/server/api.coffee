@@ -209,7 +209,7 @@ module.exports = (app, socket) ->
 									, 0
 							newContacts = newContacts[...5]
 
-							user.classifyIndex = user.classifyQueue.toObject().length	# TODO necessary toObject?
+							user.classifyIndex = user.classifyQueue.length
 							user.classifyQueue.push newContacts...
 
 							mail = require('./mail')(app)
