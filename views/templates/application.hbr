@@ -123,7 +123,7 @@
 						{{#if typeInitialContact}}
 							<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
 							<!-- <i class="icon-chevron-right"></i> -->
-							<p>Added by {{addedBy.name}} on {{added}}</p>
+							<p>Added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a> on {{added}}</p>
 							{{view App.TaggerView contactBinding="this"}}
 						{{/if}}
 						{{#if typeContact}}

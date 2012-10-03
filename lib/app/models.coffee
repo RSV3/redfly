@@ -1,13 +1,11 @@
 module.exports = (DS, App) ->
-	_ = require 'underscore'
-
 
 	DS.attr.transforms.array =
 		from: (serialized) ->
-			serialized
+			Ember.ArrayProxy.create content: serialized
 		to: (deserialized) ->
 			throw new Error 'unimplemented'
-			# deserialized
+			# deserialized.toArray() order is not guaranteed
 
 
 	App.User = DS.Model.extend
@@ -37,11 +35,11 @@ module.exports = (DS, App) ->
 				tools.nickname @get('_primaryName'), @get('email')
 			).property '_primaryName', 'email'
 		email: (->
-				_.first @get('emails')
-			).property 'emails'
+				@get('emails.firstObject')
+			).property 'emails.@each'
 		_primaryName: (->
-				_.first @get('names')
-			).property 'names'
+				@get('names.firstObject')
+			).property 'names.@each'
 		notes: (->
 				mutable = []
 				@get('_rawNotes').forEach (note) ->

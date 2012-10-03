@@ -12,4 +12,6 @@ exports.nickname = (name, email) ->
 		if _s.contains name, ' '
 			return name[...name.indexOf(' ')]
 		return name
-	return _.first email.split('@')
+	if email
+		return _.first email.split('@')
+	return null
