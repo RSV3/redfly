@@ -25,8 +25,16 @@ module.exports = (app) ->
 		_ = require 'underscore'
 		_s = require 'underscore.string'
 		tools = require '../util'
-		names = (_.first(contact.names) for contact in contacts)
+
+		# TODO duplicates some logic in the client models. Maybe put said logic in a common place.
+		names = []
+		for contact in contacts
+			if name = _.first(contact.names)
+				names.push name
+			email = _.first(contact.emails)
+			names.push email[...email.lastIndexOf('.')]
 		nicknames = (tools.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
+		
 		send 'nudge',
 				to: user.email
 				subject: 'Tell me more about ' + nicknames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
