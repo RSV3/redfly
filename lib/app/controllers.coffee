@@ -30,7 +30,10 @@ module.exports = (Ember, App, socket) ->
 			focusIn: ->
 				@set 'controller.searchFocused', true
 			focusOut: ->
-				@set 'controller.searchFocused', false
+				# Without this focusOut fires first and the search results vanish just as the user clicks an item.
+				setTimeout =>
+						@set 'controller.searchFocused', false
+					, 0
 	App.ApplicationController = Ember.Controller.extend
 		feed: (->
 				mutable = []
@@ -219,6 +222,8 @@ module.exports = (Ember, App, socket) ->
 			classNames: ['tag']
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
+				$('.search-query').focus()
+				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'
 				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
