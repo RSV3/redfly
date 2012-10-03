@@ -219,7 +219,7 @@ module.exports = (app, socket) ->
 						user.save (err) ->
 							throw err if err
 
-						fn()
+							return fn()
 
 					sift = (index = 0) ->
 						mail = mails[index]

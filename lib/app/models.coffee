@@ -6,7 +6,8 @@ module.exports = (DS, App) ->
 		from: (serialized) ->
 			serialized
 		to: (deserialized) ->
-			deserialized
+			throw new Error 'unimplemented'
+			# deserialized
 
 
 	App.User = DS.Model.extend
