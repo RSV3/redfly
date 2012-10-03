@@ -43,9 +43,9 @@ module.exports = (Ember, App, socket) ->
 		_initialContacts: (->
 				App.Contact.find
 					conditions:
-						addedDate: $exists: true
+						added: $exists: true
 					options:
-						sort: addedDate: -1
+						sort: added: -1
 						limit: 5
 			).property()
 		results: Ember.ObjectProxy.create()
@@ -168,8 +168,8 @@ module.exports = (Ember, App, socket) ->
 				App.user.get('classifyIndex') + 1
 			).property 'App.user.classifyIndex'	# TODO XXX maybe .content.classifyindex if this doesn't work?
 		next: ->
-			if not @get 'addedDate'
-				@set 'addedDate', new Date
+			if not @get 'added'
+				@set 'added', new Date
 				@set 'addedBy', App.user
 				App.store.commit()
 

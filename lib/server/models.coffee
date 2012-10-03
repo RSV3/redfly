@@ -7,22 +7,21 @@ Schema = mongoose.Schema
 Types = Schema.Types
 
 
-
 UserSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1	# Would be required but the user's name isn't known at the time of signup.
 	oauth:
 		token: type: String, required: 1
 		secret: type: String, required: 1
-	lastParsedDate: type: Date
+	lastParsed: type: Date
 	classifyIndex: type: Number, required: 1, default: 0, min: 0
 	classifyQueue: [ type: Types.ObjectId, ref: 'Contact' ]
 
 ContactSchema = new Schema
-	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
-	name: type: String, trim: 1
+	emails: [ type: String ]
+	names: [ type: String ]
 	knows: [ type: Types.ObjectId, ref: 'User' ]
-	addedDate: type: Date
+	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
 
 TagSchema = new Schema
@@ -40,7 +39,7 @@ MailSchema = new Schema
 	sender: type: Types.ObjectId, ref: 'User', required: 1
 	recipient: type: Types.ObjectId, ref: 'Contact', required: 1
 	subject: type: String
-	sentDate: type: Date
+	sent: type: Date
 
 
 common = (schema) ->

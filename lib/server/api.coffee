@@ -23,10 +23,6 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn docs
 				else if query = data.query
-					# Sort criteria must be an integer for some reason.
-					if sortBy = query.options?.sort
-						for field, order of sortBy
-							sortBy[field] = parseInt order
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
 						return fn docs
@@ -75,7 +71,7 @@ module.exports = (app, socket) ->
 						_.extend doc, record
 
 
-						if (model is models.Contact) and ('addedDate' in doc.modifiedPaths())
+						if (model is models.Contact) and ('added' in doc.modifiedPaths())
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -167,7 +163,7 @@ module.exports = (app, socket) ->
 					terms = search[type]
 
 					model = 'Contact'
-					field = type
+					field = type + 's'
 					if type is 'tag' or type is 'note'
 						model = _s.capitalize type
 						field = 'body'
@@ -220,7 +216,7 @@ module.exports = (app, socket) ->
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
 								_.reduce mails, (mail, total) ->
-										if contact.email is mail.recipientEmail
+										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
@@ -232,36 +228,29 @@ module.exports = (app, socket) ->
 							mail = require('./mail')(app)
 							mail.sendNudge user, newContacts
 
-						user.lastParsedDate = Date.now()
+						user.lastParsed = Date.now()
 						user.save (err) ->
 							throw err if err
 
-						fn()
+							return fn()
 
 					sift = (index = 0) ->
 						mail = mails[index]
 
-						models.Contact.findOne email: mail.recipientEmail, (err, contact) ->
+						# Find an existing contact with one of the same emails or names.
+						models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 							throw err if err
-
 							if not contact
 								contact = new models.Contact
-								contact.email = mail.recipientEmail
-								contact.name = mail.recipientName
-								contact.knows.push user
+								contact.emails.addToSet mail.recipientEmail
+								if name = mail.recipientName
+									contact.names.addToSet name
 
 								newContacts.push contact
-							else
-								validators = require('validator').validators
-								# Sometimes the contact's name and email are the same in the system because they were emailed without an a name
-								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
-								if validators.isEmail contact.name
-									contact.name = mail.recipientName
-								contact.knows.addToSet user
+							contact.knows.addToSet user
 
 							contact.save (err) ->
 								throw err if err
-
 								mail.sender = user
 								mail.recipient = contact
 								models.Mail.create mail, (err, doc) ->
