@@ -19,17 +19,17 @@ module.exports = (app) ->
 		send 'welcome',
 			to: to
 			subject: 'Thank you for joining Redfly!'
-			# title is required
+			# Need to add 'title:' here
 
 	sendNudge: (user, contacts) ->
-		names = (contact.name for contact in contacts)
-		tools = require '../util'
-		nicknames = (tools.nickname(name) for name in names)
+		_ = require 'underscore'
 		_s = require 'underscore.string'
+		tools = require '../util'
+		names = (_.first(contact.names) for contact in contacts)
+		nicknames = (tools.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
 		send 'nudge',
 				to: user.email
 				subject: 'Tell me more about ' + nicknames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
 			,
 			title: 'Hi ' + user.name + '!'
 			names: names
-			

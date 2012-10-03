@@ -1,11 +1,8 @@
 exports.identity = (identity) ->
-	# validators = require('validator').validators	# TODO 'net' not found?
-	validators = {}
-	validators.isEmail = (email) ->
-		_s = require 'underscore.string'
-		_s.contains email, '@'
+	_s = require 'underscore.string'
+
 
 	# If only the username was typed make it a proper email.
-	if not validators.isEmail identity
+	if not _s.contains identity, '@'
 		identity += '@redstar.com'
 	return identity

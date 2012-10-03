@@ -21,7 +21,7 @@
 		<h3>You&apos;re all set!</h3>
 	</div>
 	<div class="modal-body">
-		<p>You&apos;ve successfully connected your email, when parsing is complete you&apos;ll be able to classify to contacts Redfly finds.</p>
+		<p>You&apos;ve successfully connected your email, when parsing is complete you&apos;ll be able to classify the people Redfly finds.</p>
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal">Close</button>
