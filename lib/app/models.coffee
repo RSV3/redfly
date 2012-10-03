@@ -1,4 +1,14 @@
 module.exports = (DS, App) ->
+	_ = require 'underscore'
+
+
+	DS.attr.transforms.array =
+		from: (serialized) ->
+			serialized
+		to: (deserialized) ->
+			deserialized
+
+
 	App.User = DS.Model.extend
 		date: DS.attr('date', key: 'date')
 		email: DS.attr('string', key: 'email')
@@ -8,18 +18,29 @@ module.exports = (DS, App) ->
 
 	App.Contact = DS.Model.extend
 		date: DS.attr('date', key: 'date')
-		name: DS.attr('string', key: 'name')
-		email: DS.attr('string', key: 'email')
+		names: DS.attr('array', key: 'names')
+		emails: DS.attr('array', key: 'emails')
 		knows: DS.hasMany('App.User', key: 'knows')
 		added: DS.attr('date', key: 'added')
 		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
+		name: (->
+				if name = @get('_primaryName')
+					return name
+				@get 'nickname'
+			).property '_primaryName', 'nickname'
 		nickname: (->
-				util = require '../util'
-				util.nickname @get('name')
-			).property 'name'
+				tools = require '../util'
+				tools.nickname @get('_primaryName'), @get('email')
+			).property '_primaryName', 'email'
+		email: (->
+				_.first @get('emails')
+			).property 'emails'
+		_primaryName: (->
+				_.first @get('names')
+			).property 'names'
 		notes: (->
 				mutable = []
 				@get('_rawNotes').forEach (note) ->

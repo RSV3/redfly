@@ -150,7 +150,7 @@ module.exports = (app, socket) ->
 					terms = search[type]
 
 					model = 'Contact'
-					field = type
+					field = type + 's'
 					if type is 'tag' or type is 'note'
 						model = _s.capitalize type
 						field = 'body'
@@ -203,7 +203,7 @@ module.exports = (app, socket) ->
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
 								_.reduce mails, (mail, total) ->
-										if contact.email is mail.recipientEmail
+										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
@@ -224,27 +224,20 @@ module.exports = (app, socket) ->
 					sift = (index = 0) ->
 						mail = mails[index]
 
-						models.Contact.findOne email: mail.recipientEmail, (err, contact) ->
+						# Find an existing contact with one of the same emails or names.
+						models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 							throw err if err
-
 							if not contact
 								contact = new models.Contact
-								contact.email = mail.recipientEmail
-								contact.name = mail.recipientName
-								contact.knows.push user
+								contact.emails.addToSet mail.recipientEmail
+								if name = mail.recipientName
+									contact.names.addToSet name
 
 								newContacts.push contact
-							else
-								validators = require('validator').validators
-								# Sometimes the contact's name and email are the same in the system because they were emailed without an a name
-								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
-								if validators.isEmail contact.name
-									contact.name = mail.recipientName
-								contact.knows.addToSet user
+							contact.knows.addToSet user
 
 							contact.save (err) ->
 								throw err if err
-
 								mail.sender = user
 								mail.recipient = contact
 								models.Mail.create mail, (err, doc) ->

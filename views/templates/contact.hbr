@@ -43,7 +43,7 @@
 		{{#each notes}}
 			{{#view view.noteView}}
 				<p>{{body}}</p>	<!-- TO-DO do nl2br with bindings -->
-				<small>{{author.name}} | {{date}}</small> <!-- TODO why no name -->
+				<small>{{author.name}} | {{date}}</small>
 				<!-- TODO <i class="icon-edit"></i><i class="icon-trash"></i> -->
 			{{/view}}
 		{{else}}
