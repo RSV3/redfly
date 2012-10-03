@@ -28,8 +28,10 @@ module.exports = (DS, App) ->
 		name: (->
 				if name = @get('_primaryName')
 					return name
-				@get 'nickname'
-			).property '_primaryName', 'nickname'
+				if email = @get('email')
+					return email[...email.lastIndexOf('.')]
+				null
+			).property '_primaryName', 'email'
 		nickname: (->
 				tools = require '../util'
 				tools.nickname @get('_primaryName'), @get('email')

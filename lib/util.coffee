@@ -14,4 +14,4 @@ exports.nickname = (name, email) ->
 		return name
 	if email
 		return _.first email.split('@')
-	return null
+	null
