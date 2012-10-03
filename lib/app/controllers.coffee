@@ -223,6 +223,7 @@ module.exports = (Ember, App, socket) ->
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
 				$('.search-query').focus()
+				# TODO ideally handle this in TaggerView.click
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'

@@ -29,7 +29,7 @@ module.exports = (Ember, App, socket) ->
 				# 	# Dynamic segment can be a document id or an email. Emails make more meaningful forward-facing links.
 				# 	identity = params.identity
 				# 	if validators.isEmail identity
-				# 		return App.Contact.find(email: identity).objectAt 0
+				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
 
 			tags: Ember.Route.extend
