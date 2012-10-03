@@ -1,6 +1,7 @@
 module.exports = (user, notifications) ->
-	_s = require 'underscore.string'
+	_ = require 'underscore'
 	validators = require('validator').validators
+	tools = require '../util'
 	
 	request = require 'request'
 	request.post
@@ -26,7 +27,7 @@ module.exports = (user, notifications) ->
 					throw err if err
 
 					criteria = [['FROM', user.email]]
-					if previous = user.lastParsedDate
+					if previous = user.lastParsed
 						criteria.unshift ['SINCE', previous]
 					server.search criteria, (err, results) ->
 						throw err if err
@@ -49,15 +50,19 @@ module.exports = (user, notifications) ->
 						fetch.on 'message', (msg) ->
 							msg.on 'end', ->
 								for to in mimelib.parseAddresses msg.headers.to?[0]
-									email = _s.trim to.address.toLowerCase()	# TODO I have to do this right? Probably.
-									name = _s.trim(to.name) or email	# If the name is blank use the email instead.
+									email = tools.trim to.address.toLowerCase()
+									name = tools.trim(to.name)
+									if (not name) or (validators.isEmail name)
+										name = null
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-									blacklist = []	# TODO load blacklisted email from the database {and (email not in blacklist)} does that work?
-									# TODO remove the 'in redstar' bit in the line below. Does 'not in ' work?
-									if (validators.isEmail email) and (email isnt user.email) and (email.indexOf('redstar') is -1)
+									blacklist = require './blacklist'
+									if (validators.isEmail email) and (email isnt user.email) and
+											(_.last(email.split('@')) not in blacklist.domains) and
+											(name not in blacklist.names) and
+											(email not in blacklist.emails)
 										mails.push
 											subject: msg.headers.subject?[0]
-											sentDate: new Date msg.headers.date?[0]
+											sent: new Date msg.headers.date?[0]
 											recipientEmail: email
 											recipientName: name
 								notifications.completedEmail()

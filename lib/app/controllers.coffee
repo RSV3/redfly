@@ -21,18 +21,16 @@ module.exports = (Ember, App, socket) ->
 				item = Ember.ObjectProxy.create
 					content: App.get(data.type).find data.id
 				item['type' + data.type] = true
-				# TODO remove
-				# setTimeout (=>
-				# 			console.log item.get 'body'
-				# 			console.log item.get 'creator'
-				# 			# console.log item.get('creator').get 'name'
-				# 			# setTimeout (-> console.log(item.get('creator').get('name')) ), 1000
-				# 		), 1000
 				@get('controller.feed').unshiftObject item
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
+		searchView: Ember.TextField.extend
+			focusIn: ->
+				@set 'controller.searchFocused', true
+			focusOut: ->
+				@set 'controller.searchFocused', false
 	App.ApplicationController = Ember.Controller.extend
 		feed: (->
 				mutable = []
@@ -45,12 +43,16 @@ module.exports = (Ember, App, socket) ->
 		_initialContacts: (->
 				App.Contact.find
 					conditions:
-						'addedDate': $exists: true
+						added: $exists: true
 					options:
-						sort: '-date'
-						limit: 3
+						sort: added: -1
+						limit: 5
 			).property()
 		results: Ember.ObjectProxy.create()
+		showResults: (->
+				# TODO check the substructure of results to make sure there actually are some.
+				@get('searchFocused') and @get('results.content')
+			).property 'results.@each', 'searchFocused'
 		searchChanged: (->
 				query = util.trim App.get('search')
 				if not query
@@ -103,7 +105,7 @@ module.exports = (Ember, App, socket) ->
 						sender: App.user.get('id')
 						recipient: @get 'id'
 					options:
-						sort: 'date'
+						sort: date: 1
 			).property 'content'
 		isKnown: (->
 				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
@@ -166,21 +168,16 @@ module.exports = (Ember, App, socket) ->
 				App.user.get('classifyIndex') + 1
 			).property 'App.user.classifyIndex'	# TODO XXX maybe .content.classifyindex if this doesn't work?
 		next: ->
-			if not @get 'addedDate'
-				@set 'addedDate', new Date
+			if not @get 'added'
+				@set 'added', new Date
 				@set 'addedBy', App.user
 				App.store.commit()
 
-			# TODO hack
-			socket.emit 'updateClassify', App.user.get('id')
-			# index = App.user.incrementProperty 'classifyIndex'
-			# App.store.commit()
+			index = App.user.incrementProperty 'classifyIndex'
+			App.store.commit()
 
-			# TODO hack
-			setTimeout ->
-					window.location.reload()
-				, 300
-			# App.get('router').send 'goClassify'
+			contact = App.user.get('classifyQueue').objectAt index
+			App.classify.set 'content', contact
 
 
 	App.TaggerView = Ember.View.extend
@@ -253,9 +250,6 @@ module.exports = (Ember, App, socket) ->
 		# TODO hack. Actions target the view not the router for loaderview, probably becuause I added it manually
 		goClassify: ->
 			App.get('router').send 'goClassify'
-			# TODO even worse hack!
-			window.location.reload()
-
 
 		didInsertElement: ->
 			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible

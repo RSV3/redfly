@@ -1,14 +1,6 @@
-# validators = require('validator').validators	# TODO 'net' not found?
-validators = {}
-validators.isEmail = (email) ->
-	_s = require 'underscore.string'
-	_s.contains email, '@'
-
-
-
 module.exports = (Ember, App, socket) ->
-	_s = require 'underscore.string'
 	util = require './util'
+	tools = require '../util'
 
 
 	App.Router = Ember.Router.extend
@@ -30,7 +22,7 @@ module.exports = (Ember, App, socket) ->
 				route: '/contact/:contact_id'
 				connectOutlets: (router, contact) ->
 					router.get('applicationController').connectOutlet 'contact', contact
-				# TODO try just doing 'contact_email' instead
+				# TODO try just doing 'contact_email' instead. Except that now it's 'emails'
 				# serialize: (router, context) ->
 				# 	identity: context.get 'email'
 				# deserialize: (router, params) ->
@@ -59,20 +51,14 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					socket.emit 'classify', App.user.get('id'), (contactId) ->
-						if contactId
-							router.get('applicationController').connectOutlet 'classify', App.Contact.find contactId
-							router.get('classifyController').connectOutlet 'contact', App.Contact.find contactId
-						else
-							router.get('applicationController').connectOutlet 'classify'
-					# TODO bring back 
-					# index = App.user.get 'classifyIndex'
-					# if index < App.user.get('classifyQueue.length')
-					# 	contact = App.user.get('classifyQueue').objectAt index
-					# 	router.get('applicationController').connectOutlet 'classify', contact
-					# 	router.get('classifyController').connectOutlet 'contact', contact
-					# else
-					# 	router.get('applicationController').connectOutlet 'classify'
+					index = App.user.get 'classifyIndex'
+					contact = App.user.get('classifyQueue').objectAt index
+					App.classify.set 'content', contact
+
+					router.get('applicationController').connectOutlet 'classify', App.classify
+					router.get('classifyController').connectOutlet 'contact', App.classify
+
+					App.store.findQuery App.Contact, {}	# TODO hack to refresh the contacts, not sure why user.classifyQueue doesn't get loaded
 
 
 			load: Ember.Route.extend
@@ -95,7 +81,7 @@ module.exports = (Ember, App, socket) ->
 
 
 			doSignup: (router, context) ->
-				if identity = _s.trim App.user.get 'signupIdentity'
+				if identity = tools.trim App.user.get 'signupIdentity'
 					App.user.set 'signupIdentity', null
 					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
 						# if not authorizeUrl
@@ -103,7 +89,7 @@ module.exports = (Ember, App, socket) ->
 						window.location.href = authorizeUrl				
 
 			doLogin: (router, context) ->
-				if identity = _s.trim App.user.get 'loginIdentity'
+				if identity = tools.trim App.user.get 'loginIdentity'
 					App.user.set 'loginIdentity', null
 					socket.emit 'login', util.identity(identity), (id) ->
 						# if not id

@@ -9,18 +9,6 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
-	# TODO hack
-	socket.on 'classify', (userId, fn) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			fn user.classifyQueue[user.classifyIndex]
-	socket.on 'updateClassify', (userId) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			user.classifyIndex++
-			user.save (err) ->
-				throw err if err
-
 	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
 									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
 		model = models[data.type]
@@ -46,7 +34,7 @@ module.exports = (app, socket) ->
 				record = data.record
 				if not _.isArray record
 
-					# TO-DO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
+					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
 					# override .toObject, or is that for something else?
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1
@@ -83,7 +71,7 @@ module.exports = (app, socket) ->
 						_.extend doc, record
 
 
-						if (model is models.Contact) and ('addedDate' in doc.modifiedPaths())
+						if (model is models.Contact) and ('added' in doc.modifiedPaths())
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -162,7 +150,7 @@ module.exports = (app, socket) ->
 					terms = search[type]
 
 					model = 'Contact'
-					field = type
+					field = type + 's'
 					if type is 'tag' or type is 'note'
 						model = _s.capitalize type
 						field = 'body'
@@ -215,7 +203,7 @@ module.exports = (app, socket) ->
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
 								_.reduce mails, (mail, total) ->
-										if contact.email is mail.recipientEmail
+										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
@@ -227,36 +215,29 @@ module.exports = (app, socket) ->
 							mail = require('./mail')(app)
 							mail.sendNudge user, newContacts
 
-						user.lastParsedDate = Date.now()
+						user.lastParsed = Date.now()
 						user.save (err) ->
 							throw err if err
 
-						fn()
+							return fn()
 
 					sift = (index = 0) ->
 						mail = mails[index]
 
-						models.Contact.findOne email: mail.recipientEmail, (err, contact) ->
+						# Find an existing contact with one of the same emails or names.
+						models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 							throw err if err
-
 							if not contact
 								contact = new models.Contact
-								contact.email = mail.recipientEmail
-								contact.name = mail.recipientName
-								contact.knows.push user
+								contact.emails.addToSet mail.recipientEmail
+								if name = mail.recipientName
+									contact.names.addToSet name
 
 								newContacts.push contact
-							else
-								validators = require('validator').validators
-								# Sometimes the contact's name and email are the same in the system because they were emailed without an a name
-								# explicitly set in the "to" field. Overwrite the old name if we have a better one this time around.
-								if validators.isEmail contact.name
-									contact.name = mail.recipientName
-								contact.knows.addToSet user
+							contact.knows.addToSet user
 
 							contact.save (err) ->
 								throw err if err
-
 								mail.sender = user
 								mail.recipient = contact
 								models.Mail.create mail, (err, doc) ->

@@ -1,4 +1,13 @@
 module.exports = (DS, App) ->
+
+	DS.attr.transforms.array =
+		from: (serialized) ->
+			Ember.ArrayProxy.create content: serialized
+		to: (deserialized) ->
+			throw new Error 'unimplemented'
+			# deserialized.toArray() order is not guaranteed
+
+
 	App.User = DS.Model.extend
 		date: DS.attr('date', key: 'date')
 		email: DS.attr('string', key: 'email')
@@ -8,18 +17,29 @@ module.exports = (DS, App) ->
 
 	App.Contact = DS.Model.extend
 		date: DS.attr('date', key: 'date')
-		name: DS.attr('string', key: 'name')
-		email: DS.attr('string', key: 'email')
+		names: DS.attr('array', key: 'names')
+		emails: DS.attr('array', key: 'emails')
 		knows: DS.hasMany('App.User', key: 'knows')
-		addedDate: DS.attr('date', key: 'addedDate')
+		added: DS.attr('date', key: 'added')
 		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		# TODO consider sideloading these?
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
+		name: (->
+				if name = @get('_primaryName')
+					return name
+				@get 'nickname'
+			).property '_primaryName', 'nickname'
 		nickname: (->
-				util = require '../util'
-				util.nickname @get('name')
-			).property 'name'
+				tools = require '../util'
+				tools.nickname @get('_primaryName'), @get('email')
+			).property '_primaryName', 'email'
+		email: (->
+				@get('emails.firstObject')
+			).property 'emails.@each'
+		_primaryName: (->
+				@get('names.firstObject')
+			).property 'names.@each'
 		notes: (->
 				mutable = []
 				@get('_rawNotes').forEach (note) ->
@@ -33,7 +53,7 @@ module.exports = (DS, App) ->
 					conditions:
 						contact: @get('id')
 					options:
-						sort: '-date'	# TODO why aren't these sorted appropriately. Sort param is being ignored entirely, comes back in natural order (which happens to be insertion order). Fix all other sorts too.
+						sort: date: -1
 				# TODO
 				# App.Note.find()
 				# App.store.filter App.Note, (data) =>
@@ -53,11 +73,8 @@ module.exports = (DS, App) ->
 		contact: DS.belongsTo('App.Contact', key: 'contact')
 		body: DS.attr('string', key: 'body')
 		preview: (->
-				maxLength = 80
-				preview = @get('body')[..maxLength]
-				if preview.length is maxLength
-					preview += '...'
-				preview
+				_s = require 'underscore.string'
+				_s.prune @get('body'), 80
 			).property 'body'
 
 	App.Mail = DS.Model.extend
@@ -65,4 +82,4 @@ module.exports = (DS, App) ->
 		sender: DS.belongsTo('App.User', key: 'sender')
 		recipient: DS.belongsTo('App.Contact', key: 'recipient')
 		subject: DS.attr('string', key: 'subject')
-		sentDate: DS.attr('date', key: 'sentDate')
+		sent: DS.attr('date', key: 'sent')

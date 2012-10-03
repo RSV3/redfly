@@ -1,4 +1,9 @@
 redfly
 ======
 
-contact intelligence for Redstar
+Contact Intelligence for Redstar
+
+
+References
+==========
+* http://semver.org/
