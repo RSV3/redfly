@@ -5,7 +5,7 @@ module.exports = (root, optimize) ->
 
 
 	pipeline = convoy
-		watch: true
+		watch: not optimize
 
 		'app.js':
 			main: root + '/lib/app'
