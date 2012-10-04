@@ -51,7 +51,6 @@ module.exports = (app, socket) ->
 									socket.broadcast.emit 'feed',
 										type: data.type
 										id: doc.id
-									# Later TODO remove this								
 									socket.emit 'feed',
 										type: data.type
 										id: doc.id
@@ -75,7 +74,6 @@ module.exports = (app, socket) ->
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
-							# Later TODO remove this
 							socket.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -93,8 +91,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn()
 				else if ids = data.ids
-					# TODO Remove each one and call return fn() when they're ALL done
-					throw new Error 'unimplemented'
+					throw new Error 'unimplemented'	# Remove each one and call return fn() when they're all done.
 				else
 					throw new Error
 			else
