@@ -59,9 +59,10 @@ module.exports = (app, socket) ->
 
 						return fn doc
 				else
-					model.create record, (err, docs...) ->
-						throw err if err
-						return fn docs
+					throw new Error 'unimplemented'
+					# model.create record, (err, docs...) ->
+					# 	throw err if err
+					# 	return fn docs
 			when 'save'
 				record = data.record
 				if not _.isArray record
