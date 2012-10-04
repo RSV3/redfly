@@ -188,7 +188,7 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyController = Ember.ObjectController.extend
 		currentClassify: (->
 				App.user.get('classifyIndex') + 1
-			).property 'App.user.classifyIndex'	# TODO XXX maybe .content.classifyindex if this doesn't work?
+			).property 'App.user.classifyIndex'
 		next: ->
 			if not @get 'added'
 				@set 'added', new Date
