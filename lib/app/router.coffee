@@ -83,19 +83,23 @@ module.exports = (Ember, App, socket) ->
 			doSignup: (router, context) ->
 				if identity = tools.trim App.user.get 'signupIdentity'
 					App.user.set 'signupIdentity', null
-					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
-						# if not authorizeUrl
-							
-						window.location.href = authorizeUrl				
+					socket.emit 'signup', util.identity(identity), (success, data) ->
+						if success
+							context.view.get('controller').set 'signupError', null
+							window.location.href = data
+						else
+							context.view.get('controller').set 'signupError', data
 
 			doLogin: (router, context) ->
 				if identity = tools.trim App.user.get 'loginIdentity'
 					App.user.set 'loginIdentity', null
-					socket.emit 'login', util.identity(identity), (id) ->
-						# if not id
-						# 	# TODO give an error message if the user wasn't found.
-						App.auth.login id
-						router.transitionTo 'userProfile'
+					socket.emit 'login', util.identity(identity), (success, data) ->
+						if success
+							context.view.get('controller').set 'loginError', null
+							App.auth.login data
+							router.transitionTo 'userProfile'
+						else
+							context.view.get('controller').set 'loginError', data
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->

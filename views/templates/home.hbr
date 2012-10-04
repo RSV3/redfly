@@ -15,12 +15,18 @@
 		{{#unless showConnect}}
 			<a class="btn btn-primary btn-large" {{action toggle target="view"}}>Connect through email</a>
 		{{else}}
-			<form class="well span4" {{action doSignup on="submit"}}>
+			<form class="well span5" {{action doSignup on="submit"}}>
 				<div class="input-prepend">
 					<span class="add-on"><i class="icon-envelope"></i></span>
 					{{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.user.signupIdentity"}}
 					<!-- <input type="password" placeholder="Password"> -->
 				</div>
+				{{#if signupError}}
+					<div class="alert alert-error">
+						<a class="close" data-dismiss="alert" href="#">&times;</a>
+						{{signupError}}
+					</div>
+				{{/if}}
 				<span class="help-block">Type your Redstar email (or your Gmail if you don&apos;t have one).</span>
 				<!-- <label class="checkbox">
 					<input type="checkbox"> Check me out

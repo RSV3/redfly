@@ -82,9 +82,16 @@
 			<div class="pull-right">
 				{{#unless App.user.content}}
 					<form class="navbar-form" {{action doLogin on="submit"}}>
-						<span class="input-prepend">
-							<span class="add-on"><i class="icon-envelope"></i></span>
-							{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
+						<span {{bindAttr class=":control-group loginError:error"}}>
+							{{#if loginError}}
+								<span class="help-inline">
+									{{loginError}}
+								</span>
+							{{/if}}
+							<span class="input-prepend">
+								<span class="add-on"><i class="icon-envelope"></i></span>
+								{{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
+							</span>
 						</span>
 						<!-- <input type="password" class="input-small" placeholder="Password"> -->
 						<!-- <label class="checkbox">

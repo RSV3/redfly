@@ -105,23 +105,23 @@ module.exports = (app, socket) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if user
-				return fn()
+				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
-				return fn result.authorizeUrl
+				return fn true, result.authorizeUrl
 
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if not user
-				return fn()
+				return fn false, 'Once more, with feeling!'
 			session.user = user.id
 			session.save()
-			return fn user.id
+			return fn true, user.id
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
