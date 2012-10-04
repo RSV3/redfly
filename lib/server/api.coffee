@@ -236,7 +236,7 @@ module.exports = (app, socket) ->
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
-							newContacts = newContacts[...5]
+							newContacts = newContacts[...10]
 
 							user.classifyIndex = user.classifyQueue.length
 							user.classifyQueue.push newContacts...
