@@ -123,30 +123,62 @@
 <div class="container">
 	<div class="row">
 		<div class="span3">
-			<div class="well feed" data-spy="affix">
-				<div class="nav-header">Activity Feed</div>
-				{{#each feed}}
-					{{#view view.feedItemView}}
-						{{#if typeInitialContact}}
-							<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
-							<!-- <i class="icon-chevron-right"></i> -->
-							<p>Added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a> on {{added}}</p>
-							{{view App.TaggerView contactBinding="this"}}
-						{{/if}}
-						{{#if typeContact}}
-							<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
-							<!-- <i class="icon-chevron-right"></i> -->
-							<p>Was just added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>!</p>
-							{{view App.TaggerView contactBinding="this"}}
-						{{/if}}
-						{{#if typeTag}}
-							<a {{action goProfile creator href=true}}>{{creator.name}}</a> added the tag <em>"{{body}}"</em> to <a {{action goContact contact href=true}}>{{contact.name}}</a>.
-						{{/if}}
-						{{#if typeNote}}
-							<a {{action goProfile author href=true}}>{{author.name}}</a> wrote a note about <a {{action goContact contact href=true}}>{{contact.name}}</a>: "{{preview}}"
-						{{/if}}
-					{{/view}}
-				{{/each}}
+			<div class="well activity" data-spy="affix">
+				{{#unless App.user.content}}
+					<div class="nav-header">This Week In Summary</div>
+					<div class="summary">
+						<div class="breadcrumb">
+							Contacts added
+							<span class="pull-right badge badge-info">{{contactsAdded}}</span>
+						</div>
+						<div class="breadcrumb">
+							Tags created
+							<span class="pull-right badge badge-info">{{tagsCreated}}</span>
+						</div>
+						<div class="breadcrumb">
+							Notes authored
+							<span class="pull-right badge badge-info">{{notesAuthored}}</span>
+						</div>
+						<div class="breadcrumb">
+							Most verbose tag
+							<div class="own-line">"{{mostVerboseTag}}"</div>
+						</div>
+						<div class="breadcrumb">
+							Most alarming email subject
+							<div class="own-line"><em>"Re: Do you remember eating this??"</em></div>
+						</div>
+						<div class="breadcrumb">
+							Most active user
+							<div class="own-line"><strong>{{mostActiveUser}}</strong></div>
+						</div>
+					</div>
+				{{else}}
+					<div class="nav-header">Activity Feed</div>
+					<div class="feed">
+					{{#each feed}}
+						{{#view view.feedItemView}}
+							{{#if typeInitialContact}}
+								<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
+								<!-- <i class="icon-chevron-right"></i> -->
+								<p>Added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a> on {{added}}</p>
+								{{view App.TaggerView contactBinding="this"}}
+							{{/if}}
+							{{#if typeContact}}
+								<a {{action goContact this href=true}}><h4>{{name}}</h4></a>
+								<!-- <i class="icon-chevron-right"></i> -->
+								<p>Was just added by <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>!</p>
+								{{view App.TaggerView contactBinding="this"}}
+							{{/if}}
+							{{#if typeTag}}
+								<a {{action goProfile creator href=true}}>{{creator.name}}</a> added the tag <em>"{{body}}"</em> to <a {{action goContact contact href=true}}>{{contact.name}}</a>.
+							{{/if}}
+							{{#if typeNote}}
+								<a {{action goProfile author href=true}}>{{author.name}}</a> wrote a note about <a {{action goContact contact href=true}}>{{contact.name}}</a>: "{{preview}}"
+							{{/if}}
+						{{/view}}
+					{{/each}}
+					</div>
+				{{/unless}}
 			</div>
 		</div>
 		<div class="span9">

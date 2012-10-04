@@ -128,6 +128,36 @@ module.exports = (app, socket) ->
 		fn()
 
 
+
+	moment = require 'moment'
+	oneWeekAgo = moment().subtract('days', 7).toDate()
+
+	summaryQuery = (model, field, cb) ->
+		models[model].where(field).gt(oneWeekAgo).count (err, count) ->
+			throw err if err
+			cb count
+
+	socket.on 'summary.contacts', (fn) ->
+		summaryQuery 'Contact', 'added', fn
+
+	socket.on 'summary.tags', (fn) ->
+		summaryQuery 'Tag', 'date', fn
+
+	socket.on 'summary.notes', (fn) ->
+		summaryQuery 'Note', 'date', fn
+
+	socket.on 'summary.verbose', (fn) ->
+		models.Tag.find().sort('date').select('body').exec (err, tags) ->
+			throw err if err
+			verbose = _.max tags, (tag) -> tag.body.length
+			fn verbose.body
+
+	socket.on 'summary.user', (fn) ->
+		# TODO use mapreduce to do this probably
+		fn 'Krzysztof Baranowski'
+
+
+
 	socket.on 'search', (query, fn) ->
 		terms = _.uniq _.compact query.split(' ')
 		search = {}
