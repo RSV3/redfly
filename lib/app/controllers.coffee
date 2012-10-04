@@ -167,6 +167,11 @@ module.exports = (Ember, App, socket) ->
 		total: (-> @get('contacts.length'))
 			.property 'contacts.@each'
 
+	App.ContactsView = Ember.View.extend
+		template: require '../../views/templates/contacts'
+		classNames: ['contacts']
+	App.ContactsController = Ember.ArrayController.extend()
+
 	App.TagsView = Ember.View.extend
 		template: require '../../views/templates/tags'
 		# classNames: ['tags']
@@ -179,7 +184,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ClassifyView = Ember.View.extend
 		template: require '../../views/templates/classify'
-		# classNames: ['classify']
+		classNames: ['classify']
 	App.ClassifyController = Ember.ObjectController.extend
 		currentClassify: (->
 				App.user.get('classifyIndex') + 1

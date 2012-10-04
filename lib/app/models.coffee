@@ -11,9 +11,15 @@ module.exports = (DS, App) ->
 	App.User = DS.Model.extend
 		date: DS.attr('date', key: 'date')
 		email: DS.attr('string', key: 'email')
-		name: DS.attr('string', key: 'name')
+		canonicalName: DS.attr('string', key: 'name')
 		classifyQueue: DS.hasMany('App.Contact', key: 'classifyQueue')
 		classifyIndex: DS.attr('number', key: 'classifyIndex')
+		name: (->
+				# TODO figure out a cleaner way to do entity equality
+				if App.user.get('id') is @get('id')
+					return 'You'
+				@get 'canonicalName'
+			).property 'canonicalName'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr('date', key: 'date')

@@ -32,6 +32,11 @@ module.exports = (Ember, App, socket) ->
 				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
 
+			contacts: Ember.Route.extend
+				route: '/contacts'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'contacts', App.Contact.find()
+
 			tags: Ember.Route.extend
 				route: '/tags'
 				connectOutlets: (router) ->
@@ -73,6 +78,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'home'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'
 

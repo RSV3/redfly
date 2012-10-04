@@ -1,17 +1,32 @@
 <div class="row-fluid top">
 	<!-- TODO picture not be placeholder -->
 	<img class="img-polaroid span3" src="https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg" alt="">
-	<h1>{{name}}</h1>
-	{{#if firstHistory}}
-		<div>
-			<p>
-				You emailed {{nickname}} for the first time on {{firstHistory.sent}}.
-				<br>
-				The email subject was <em>"{{firstHistory.subject}}"</em>.
-			</p>
-			<p>You&apos;ve sent <strong>{{historyCount}}</strong> emails.</p>
-		</div>
-	{{/if}}
+	<div class="span6">
+		<h1>{{name}}</h1>
+		<h4>{{email}}</h4>
+		{{#if firstHistory}}
+			<div>
+				<p>
+					You emailed {{nickname}} for the first time on {{firstHistory.sent}}.
+					<br>
+					The email subject was <em>"{{firstHistory.subject}}"</em>.
+				</p>
+				<p>You&apos;ve sent <strong>{{historyCount}}</strong> emails.</p>
+			</div>
+		{{/if}}
+	</div>
+	<div class="span3">
+		<h5>People who know {{nickname}}</h5>
+		<ul>
+			{{#each knows}}
+				<li>
+					<a {{action goProfile this href=true}}>
+						{{name}}
+					</a>
+				</li>
+			{{/each}}
+		</ul>
+	</div>
 </div>
 <div class="row-fluid">
 	<div class="row-fluid span6">
