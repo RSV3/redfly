@@ -85,7 +85,7 @@ module.exports = (Ember, App, socket) ->
 					App.user.set 'signupIdentity', null
 					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
 						# if not authorizeUrl
-						# 	# TODO give an error message if there's already a user with that email.
+							
 						window.location.href = authorizeUrl				
 
 			doLogin: (router, context) ->

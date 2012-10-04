@@ -117,7 +117,6 @@ module.exports = (app, socket) ->
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			# TODO do authentication, either openID or: if user and user.password is req.body.password
 			if not user
 				return fn()
 			session.user = user.id
