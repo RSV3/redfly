@@ -22,6 +22,19 @@ module.exports = (Ember, App, socket) ->
 					content: App.get(data.type).find data.id
 				item['type' + data.type] = true
 				@get('controller.feed').unshiftObject item
+
+			# TODO get these to update sometimes. Maybe create a pattern for the simple use case of using a socket to get and set one value.
+			socket.emit 'summary.contacts', (count) =>
+				@set 'controller.contactsAdded', count
+			socket.emit 'summary.tags', (count) =>
+				@set 'controller.tagsCreated', count
+			socket.emit 'summary.notes', (count) =>
+				@set 'controller.notesAuthored', count
+			socket.emit 'summary.verbose', (verbose) =>
+				@set 'controller.mostVerboseTag', verbose
+			socket.emit 'summary.user', (user) =>
+				@set 'controller.mostActiveUser', user
+
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
 			didInsertElement: ->
@@ -51,6 +64,7 @@ module.exports = (Ember, App, socket) ->
 						sort: added: -1
 						limit: 5
 			).property()
+
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
@@ -153,6 +167,11 @@ module.exports = (Ember, App, socket) ->
 		total: (-> @get('contacts.length'))
 			.property 'contacts.@each'
 
+	App.ContactsView = Ember.View.extend
+		template: require '../../views/templates/contacts'
+		classNames: ['contacts']
+	App.ContactsController = Ember.ArrayController.extend()
+
 	App.TagsView = Ember.View.extend
 		template: require '../../views/templates/tags'
 		# classNames: ['tags']
@@ -165,7 +184,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ClassifyView = Ember.View.extend
 		template: require '../../views/templates/classify'
-		# classNames: ['classify']
+		classNames: ['classify']
 	App.ClassifyController = Ember.ObjectController.extend
 		currentClassify: (->
 				App.user.get('classifyIndex') + 1
@@ -223,6 +242,7 @@ module.exports = (Ember, App, socket) ->
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
 				$('.search-query').focus()
+				# TODO ideally handle this in TaggerView.click
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'

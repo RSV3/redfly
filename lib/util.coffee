@@ -1,10 +1,17 @@
+_ = require 'underscore'
 _s = require 'underscore.string'
 
 
-exports.trim = (string) ->
+exports.trim = (string, characters...) ->
 	if (string is null) or (string is undefined)
 		return string
-	_s.trim string
+	if _.isEmpty characters
+		return _s.trim string
+	result = string
+	for item in characters
+		result = _s.trim result, item
+	result
+
 
 exports.nickname = (name, email) ->
 	_ = require 'underscore'
@@ -14,4 +21,4 @@ exports.nickname = (name, email) ->
 		return name
 	if email
 		return _.first email.split('@')
-	return null
+	null

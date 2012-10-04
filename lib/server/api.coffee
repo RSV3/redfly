@@ -105,28 +105,57 @@ module.exports = (app, socket) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if user
-				return fn()
+				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
-				return fn result.authorizeUrl
+				return fn true, result.authorizeUrl
 
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			# TODO do authentication, either openID or: if user and user.password is req.body.password
 			if not user
-				return fn()
+				return fn false, 'Once more, with feeling!'
 			session.user = user.id
 			session.save()
-			return fn user.id
+			return fn true, user.id
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
 		fn()
+
+
+
+	moment = require 'moment'
+	oneWeekAgo = moment().subtract('days', 7).toDate()
+
+	summaryQuery = (model, field, cb) ->
+		models[model].where(field).gt(oneWeekAgo).count (err, count) ->
+			throw err if err
+			cb count
+
+	socket.on 'summary.contacts', (fn) ->
+		summaryQuery 'Contact', 'added', fn
+
+	socket.on 'summary.tags', (fn) ->
+		summaryQuery 'Tag', 'date', fn
+
+	socket.on 'summary.notes', (fn) ->
+		summaryQuery 'Note', 'date', fn
+
+	socket.on 'summary.verbose', (fn) ->
+		models.Tag.find().sort('date').select('body').exec (err, tags) ->
+			throw err if err
+			verbose = _.max tags, (tag) -> tag.body.length
+			fn verbose.body
+
+	socket.on 'summary.user', (fn) ->
+		# TODO use mapreduce to do this probably
+		fn 'Krzysztof Baranowski'
+
 
 
 	socket.on 'search', (query, fn) ->
@@ -209,7 +238,7 @@ module.exports = (app, socket) ->
 									, 0
 							newContacts = newContacts[...5]
 
-							user.classifyIndex = user.classifyQueue.toObject().length	# TODO necessary toObject?
+							user.classifyIndex = user.classifyQueue.length
 							user.classifyQueue.push newContacts...
 
 							mail = require('./mail')(app)

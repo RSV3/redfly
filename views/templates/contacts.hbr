@@ -1,0 +1,25 @@
+<div class="row-fluid">
+	<h1>All Contacts</h1>
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th>Names</th>
+				<th>Emails</th>
+				<th>Added On</th>
+				<th>Added By</th>
+				<th>Known To</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each content}}
+				<tr {{action goContact this href=true}}>
+					<td>{{name}}</td>
+					<td>{{email}}</td>
+					<td>{{added}}</td>
+					<td>{{addecBy}}</td>
+					<td>{{knows.firstObject.name}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+</div>

@@ -29,8 +29,13 @@ module.exports = (Ember, App, socket) ->
 				# 	# Dynamic segment can be a document id or an email. Emails make more meaningful forward-facing links.
 				# 	identity = params.identity
 				# 	if validators.isEmail identity
-				# 		return App.Contact.find(email: identity).objectAt 0
+				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
+
+			contacts: Ember.Route.extend
+				route: '/contacts'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'contacts', App.Contact.find()
 
 			tags: Ember.Route.extend
 				route: '/tags'
@@ -73,6 +78,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'home'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'
 
@@ -83,19 +89,23 @@ module.exports = (Ember, App, socket) ->
 			doSignup: (router, context) ->
 				if identity = tools.trim App.user.get 'signupIdentity'
 					App.user.set 'signupIdentity', null
-					socket.emit 'signup', util.identity(identity), (authorizeUrl) ->
-						# if not authorizeUrl
-						# 	# TODO give an error message if there's already a user with that email.
-						window.location.href = authorizeUrl				
+					socket.emit 'signup', util.identity(identity), (success, data) ->
+						if success
+							context.view.get('controller').set 'signupError', null
+							window.location.href = data
+						else
+							context.view.get('controller').set 'signupError', data
 
 			doLogin: (router, context) ->
 				if identity = tools.trim App.user.get 'loginIdentity'
 					App.user.set 'loginIdentity', null
-					socket.emit 'login', util.identity(identity), (id) ->
-						# if not id
-						# 	# TODO give an error message if the user wasn't found.
-						App.auth.login id
-						router.transitionTo 'userProfile'
+					socket.emit 'login', util.identity(identity), (success, data) ->
+						if success
+							context.view.get('controller').set 'loginError', null
+							App.auth.login data
+							router.transitionTo 'userProfile'
+						else
+							context.view.get('controller').set 'loginError', data
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->

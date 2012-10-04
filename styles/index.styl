@@ -67,28 +67,32 @@ tagger(fontSize)
 body
 	padding-top 70px	// Make the container go all the way to the bottom of the topbar.
 
-searchMargin = 30px
-.navbar-search
-	margin-left searchMargin
-.search-results
-	margin-left searchMargin
-	display block
-.navbar-form .btn
-	margin-left 4px
-.feed
-	fontSize = baseFontSize / 1.4
-	font-size fontSize
-	tagger fontSize
+.navbar
+	searchMargin = 30px
+	.navbar-search
+		margin-left searchMargin
+	.search-results
+		margin-left searchMargin
+		display block
+	.navbar-form .btn
+		margin-left 4px
+.activity
 	background-color white
 	min-height 620px
 	.nav-header
 		text-align center
 		margin-bottom 15px
-	.feed-item
-		border-bottom lightBorder
-		padding-bottom 10px
-		h4
-			font-weight 300
+	.summary .own-line
+		margin-top 10px
+	.feed
+		fontSize = baseFontSize / 1.4
+		font-size fontSize
+		tagger fontSize
+		.feed-item
+			border-bottom lightBorder
+			padding-bottom 10px
+			h4
+				font-weight 300
 
 
 
@@ -115,12 +119,6 @@ searchMargin = 30px
 		padding-bottom 30px
 		margin-bottom 30px
 		border-bottom lightBorder
-		// > .name
-		// 	font-size 40px
-		// 	margin-bottom 15px
-		// TODO make this a span
-		.img-polaroid
-			margin-right 20px
 	tagger baseFontSize
 	.tagger
 		min-height 82px
@@ -134,6 +132,15 @@ searchMargin = 30px
 		small::before
 			content normal
 
+.contacts
+	td
+		cursor pointer
+
+.classify
+	.star
+		text-align center
+		font-size 200px
+		color #E3170D
 
 
 
