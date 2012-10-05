@@ -16,7 +16,7 @@
 					<td>{{name}}</td>
 					<td>{{email}}</td>
 					<td>{{added}}</td>
-					<td>{{addecBy}}</td>
+					<td>{{addedBy.name}}</td>
 					<td>{{knows.firstObject.name}}</td>
 				</tr>
 			{{/each}}

@@ -18,6 +18,7 @@
 				<ul class="nav">
 					<!-- TODO make the active class="active" tab switch: page(home, active) https://github.com/ghempton/ember-router-example -->
 					<li><a {{action goHome href=true}}>Home</a></li>
+					<li><a {{action goLeaderboard href=true}}>Users</a></li>
 					<li><a {{action goContacts href=true}}>Contacts</a></li>
 					<li><a {{action goTags href=true}}>Tags</a></li>
 					<li><a href="mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...">Report a bug</a></li>

@@ -37,6 +37,11 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'contacts', App.Contact.find()
 
+			leaderboard: Ember.Route.extend
+				route: '/leaderboard'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'leaderboard', App.User.find()
+
 			tags: Ember.Route.extend
 				route: '/tags'
 				connectOutlets: (router) ->
@@ -78,6 +83,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'home'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'

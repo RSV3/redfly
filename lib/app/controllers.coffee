@@ -4,6 +4,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/home')(Ember, App, socket)
 	require('./controllers/profile')(Ember, App, socket)
 	require('./controllers/contact')(Ember, App, socket)
+	require('./controllers/leaderboard')(Ember, App, socket)
 	require('./controllers/contacts')(Ember, App, socket)
 	require('./controllers/tags')(Ember, App, socket)
 	require('./controllers/report')(Ember, App, socket)
