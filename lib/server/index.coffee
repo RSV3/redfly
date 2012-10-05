@@ -14,7 +14,6 @@ app = express()
 server = http.createServer(app)
 
 root = path.dirname path.dirname __dirname
-optimize = if process.env.OPTIMIZE then true else false
 
 key = 'express.sid'
 store = new RedisStore do ->
@@ -31,7 +30,7 @@ app.configure ->
 	# Mail template rendering.
 	app.set 'views', root + '/mail'
 	app.set 'view engine', 'jade'
-	app.locals.pretty = not optimize
+	app.locals.pretty = process.env.DEBUG
 
 	app.use (req, res, next) ->
 		if req.headers.host isnt process.env.HOST
@@ -59,7 +58,7 @@ app.configure ->
 
 	app.use app.router
 
-	app.use require('./pipeline')(root, optimize)
+	app.use require('./pipeline')(root)
 
 	# TODO how do 404 etc (error) pages work with ember? If I do them
 	# on the server then keep this, change view root to not be mail, change

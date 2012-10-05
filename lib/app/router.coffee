@@ -4,6 +4,9 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.Router = Ember.Router.extend
+		# location: 'history'
+		enableLogging: true	# TODO
+
 		root: Ember.Route.extend
 			home: Ember.Route.extend
 				route: '/'
@@ -117,9 +120,3 @@ module.exports = (Ember, App, socket) ->
 				socket.emit 'logout', ->
 					App.auth.logout()
 					router.transitionTo 'home'
-
-
-		# location: 'history'	# TODO Also rework server/index to serve index.html on any route (where currently "next new util.NotFound") WITHOUT
-								# REDIRECTING (preserve the route for ember) and make all 3 error pages be part of ember somehow. Keep the server
-								# error page however. Can I capture ember errors and serve a special page? Replace all instances of /#
-		enableLogging: true	# TODO

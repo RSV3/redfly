@@ -14,11 +14,15 @@ config =
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 
+		DEBUG: true
+
 
 	test:
 		HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
 		NODE_ENV: 'development'
 		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com'
+
+		DEBUG: true
 
 
 	staging:
@@ -26,14 +30,14 @@ config =
 		NODE_ENV: 'production'
 		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com'
 
-		OPTIMIZE: true
+		DEBUG: false
 
 
 	production:
 		HOST: 'redfly-prod.herokuapp.com'	# 'www.redfly.com'
 		NODE_ENV: 'production'
 
-		OPTIMIZE: true
+		DEBUG: false
 
 
 
