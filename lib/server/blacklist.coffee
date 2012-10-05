@@ -38,7 +38,7 @@ exports.names = [
 	'Mark Goodman'
 	'Marshall Moutenot'
 	'Matt Beecher'
-	'miles grimshaw'
+	'Miles Grimshaw'
 	'Maura Robinson'
 	'Sam Sudore'
 	'Soham Patel'
