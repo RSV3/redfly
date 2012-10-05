@@ -15,7 +15,7 @@ module.exports = (Ember, App, socket) ->
 		_rawTags: (->
 				# TODO have a check here to wait for contact.isLoaded? See if this getting run before the contact is there actually happens.
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
-			).property('contact')
+			).property 'contact', 'category'
 		click: (event) ->
 			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
 			@$('.new-tag').focus()
