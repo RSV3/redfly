@@ -19,11 +19,10 @@
 		<script src="http://cloud.github.com/downloads/emberjs/ember.js/ember-1.0.pre.js"></script>	<!-- TODO testing, testing.. -->
 
 		<script src="./app.js"></script>
-		<!-- TODO -->
 		<script>
-			var appRoot = 'app';
+			var appRoot = 'app'; // Heroku.
 			if (document.location.href.indexOf('localhost') != -1)
-				appRoot = 'redfly';
+				appRoot = 'redfly'; // Developer machine.
 			require(appRoot + '/lib/app');
 		</script>
 
