@@ -3,6 +3,16 @@ module.exports = (Ember, App, socket) ->
 	tools = require '../util'
 
 
+	# Ember.Route.reopen
+	# 	enter: (router) ->
+	# 		@_super router
+	# 		# Pageviews correspond to leaf nodes, however there's nothing preventing us from tracking all sorts different actions with this
+	# 		# google analytics router hook.
+	# 		if @get('isLeafRoute')
+	# 			path = @absoluteRoute router
+	# 			_gaq.push ['_trackPageview', path]
+
+
 	App.Router = Ember.Router.extend
 		# location: 'history'
 		enableLogging: true	# TODO
