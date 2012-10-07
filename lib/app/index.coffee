@@ -31,7 +31,6 @@ App.user = Ember.ObjectProxy.create
 	signupIdentity: null
 
 App.search = null
-App.classify = Ember.ObjectProxy.create()	# TODO
 
 App.auth =
 	login: (id) ->

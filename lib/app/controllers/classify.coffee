@@ -2,6 +2,8 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ClassifyController = Ember.ObjectController.extend
+		contentBinding: 'App.router.contactController.content'
+
 		currentClassify: (->
 				App.user.get('classifyIndex') + 1
 			).property 'App.user.classifyIndex'
@@ -15,7 +17,7 @@ module.exports = (Ember, App, socket) ->
 			App.store.commit()
 
 			contact = App.user.get('classifyQueue').objectAt index
-			App.classify.set 'content', contact
+			@set 'content', contact
 
 
 	App.ClassifyView = Ember.View.extend
