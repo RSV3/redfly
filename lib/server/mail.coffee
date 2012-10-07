@@ -2,8 +2,7 @@ module.exports = (app) ->
 	util = require './util'
 
 
-	send = (template, options, locals) ->
-		locals ?= {}
+	send = (template, options, locals = {}) ->
 		locals.path = (url) ->
 			'http://' + process.env.HOST + url
 
