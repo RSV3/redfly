@@ -1,0 +1,187 @@
+//if lt IE 7
+	p.chromeframe
+		| Your browser is
+		em ancient!
+		a(href='http://browsehappy.com/') Upgrade your browser today
+		| or
+		a(href='http://www.google.com/chromeframe/?redirect=true') install Google Chrome Frame
+		| to better experience this site.
+
+// TODO do connection alert if possible
+// <ui:connectionAlert>
+
+.navbar.navbar-inverse.navbar-fixed-top
+	.navbar-inner
+		.container
+			a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+				span.icon-bar
+				span.icon-bar
+				span.icon-bar
+			| <a class="brand" {{action goHome href=true}}>Redfly</a>
+			.nav-collapse.collapse
+				ul.nav
+					li
+						| <a {{action goHome href=true}}>Home</a>
+					li
+						| <a {{action goLeaderboard href=true}}>Users</a>
+					li
+						| <a {{action goContacts href=true}}>Contacts</a>
+					li
+						| <a {{action goTags href=true}}>Tags</a>
+					li
+						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...') Report a bug
+					// <li><a {{action goReport href=true}}>Report a bug</a></li>
+					li.dropdown
+						form.navbar-search.pull-left(autocomplete='off', onsubmit='return false;')
+							| {{view view.searchView class="search-query" placeholder="Search" valueBinding="App.search"}}
+							i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Use the search box to find contacts by name, email, affixed tag, etc. Multiple search terms should be separated by spaces. Searches are case-insensitive and may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
+						| {{#if showResults}}
+						ul.dropdown-menu.search-results
+							| {{#if results.name}}
+							.nav-header Names
+							| {{#each results.name}}
+							li
+								| <a {{action goContact this href=true}}>{{name}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.email}}
+							.nav-header Emails
+							| {{#each results.email}}
+							li
+								| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.tag}}
+							.nav-header Matches in tags
+							| {{#each results.tag}}
+							li
+								| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.note}}
+							.nav-header Matches in notes
+							| {{#each results.note}}
+							li
+								| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							// TODO have a "no results" if nothing matches
+						| {{/if}}
+			.pull-right
+				| {{#unless App.user.content}}
+				| <form class="navbar-form" {{action doLogin on="submit"}}>
+				| <span {{bindAttr class=":control-group loginError:error"}}>
+				| {{#if loginError}}
+				span.help-inline
+					| {{loginError}}
+				| {{/if}}
+				span.input-prepend
+					span.add-on
+						i.icon-envelope
+					| {{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
+				| </span>
+				// <input type="password" class="input-small" placeholder="Password">
+				//
+					<label class="checkbox">
+					<input type="checkbox"> Remember me
+					</label> 
+				button.btn(type='submit') Log In
+				| </form>
+				| {{else}}
+				.btn-group
+					| <a class="btn" {{action goUserProfile href=true}}>
+					i.icon-user
+					| {{App.user.canonicalName}}
+					| </a>
+					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
+						span.caret
+					ul.dropdown-menu
+						li
+							| <a {{action goUserProfile href=true}}>Profile</a>
+						li.divider
+						li
+							| <a href="#" {{action doLogout}}>Log Out</a>
+				| {{/unless}}
+				
+.container
+	.row
+		.span3
+			.well.activity(data-spy='affix')
+				| {{#unless App.user.content}}
+				.nav-header This Week In Summary
+				.summary
+					.breadcrumb
+						| Contacts added
+						span.pull-right.badge.badge-info {{contactsAdded}}
+					.breadcrumb
+						| Tags created
+						span.pull-right.badge.badge-info {{tagsCreated}}
+					.breadcrumb
+						| Notes authored
+						span.pull-right.badge.badge-info {{notesAuthored}}
+					.breadcrumb
+						| Most verbose tag
+						.own-line "{{mostVerboseTag}}"
+					.breadcrumb
+						| Most alarming email subject
+						.own-line
+							em "Re: Do you remember eating this??"
+					.breadcrumb
+						| Most active user
+						.own-line
+							strong {{mostActiveUser}}
+				| {{else}}
+				.nav-header Activity Feed
+				.feed
+					| {{#each feed}}
+					| {{#view view.feedItemView}}
+					| {{#if typeInitialContact}}
+					| <a {{action goContact this href=true}}>
+					h4 {{name}}
+					| </a>
+					p
+						| Added by
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| on {{added}}
+					| {{view App.TaggerView contactBinding="this"}}
+					| {{/if}}
+					| {{#if typeContact}}
+					| <a {{action goContact this href=true}}>
+					h4 {{name}}
+					| </a>
+					p
+						| Was just added by
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| !
+					| {{view App.TaggerView contactBinding="this"}}
+					| {{/if}}
+					| {{#if typeTag}}
+					| <a {{action goProfile creator href=true}}>{{creator.name}}</a>
+					| added the tag
+					em "{{body}}"
+					| to
+					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| .
+					| {{/if}}
+					| {{#if typeNote}}
+					| <a {{action goProfile author href=true}}>{{author.name}}</a>
+					| wrote a note about
+					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| : "{{preview}}"
+					| {{/if}}
+					| {{/view}}
+					| {{/each}}
+				| {{/unless}}
+		.span9
+
+
+			| {{outlet}}
+
+
+	hr.footer-line
+	footer
+		p © Redstar 2012

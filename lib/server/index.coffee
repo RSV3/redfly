@@ -27,8 +27,7 @@ store = new RedisStore do ->
 app.configure ->
 	app.set 'port', process.env.PORT or 5000
 
-	# Mail template rendering.
-	app.set 'views', root + '/mail'
+	app.set 'views', root + '/views'
 	app.set 'view engine', 'jade'
 	app.locals.pretty = process.env.DEBUG
 
@@ -58,7 +57,7 @@ app.configure ->
 
 	app.use app.router
 
-	app.use require('./pipeline')(root)
+	app.use require('./pipeline')(root, app)
 
 	# TODO how do 404 etc (error) pages work with ember? If I do them
 	# on the server then keep this, change view root to not be mail, change

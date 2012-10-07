@@ -6,7 +6,7 @@ module.exports = (app) ->
 		locals.path = (url) ->
 			'http://' + process.env.HOST + url
 
-		app.render template, locals, (err, html) ->
+		app.render 'mail/' + template, locals, (err, html) ->
 			throw err if err
 
 			options.html = html

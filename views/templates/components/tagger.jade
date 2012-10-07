@@ -1,0 +1,12 @@
+| {{#each view.tags}}
+| {{#view view.tagView}}
+i.icon-tag
+span.body
+	| <a href="#" {{action search target="view"}}>{{body}}</a>
+| <a class="close" {{action delete target="view"}}>×</a>
+| {{/view}}
+| {{/each}}
+
+| <form class="new-tag-form" {{action add on="submit" target="view"}}>
+| {{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
+| </form>
