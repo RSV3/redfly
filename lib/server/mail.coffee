@@ -14,11 +14,11 @@ module.exports = (app) ->
 			util.mail options
 
 
-	sendWelcome: (to) ->
-		send 'welcome',
-			to: to
-			subject: 'Thank you for joining Redfly!'
-			# Need to add 'title:' here
+	# sendWelcome: (to) ->
+	# 	send 'welcome',
+	# 		to: to
+	# 		subject: 'Thank you for joining Redfly!'
+	# 		# Need to add 'title:' here
 
 	sendNudge: (user, contacts) ->
 		_ = require 'underscore'
