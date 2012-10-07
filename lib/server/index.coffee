@@ -49,11 +49,10 @@ app.configure ->
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
 
-	# TODO this is probably still useful! Just make the lookup smarkter, and change config-local
-	# app.use (req, res, next) ->
-	# 	if user = process.env.AUTO_AUTH
-	# 		req.session.user = user
-	# 	next()
+	app.use (req, res, next) ->
+		if user = process.env.AUTO_AUTH
+			req.session.user = user
+		next()
 
 	app.use app.router
 
