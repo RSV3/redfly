@@ -14,7 +14,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.Router = Ember.Router.extend
-		# location: 'history'
+		location: 'history'
 		enableLogging: true	# TODO
 
 		root: Ember.Route.extend

@@ -5,7 +5,7 @@ module.exports = (root, app) ->
 
 
 	pipeline = convoy
-		watch: process.env.DEBUG
+		watch: process.env.NODE_ENV is 'development'
 
 		'app.js':
 			main: root + '/lib/app'
@@ -20,8 +20,8 @@ module.exports = (root, app) ->
 							done()
 				'.js':  convoy.plugins.JavaScriptCompiler
 				'.coffee': convoy.plugins.CoffeeScriptCompiler
-			minify: not process.env.DEBUG
-			autocache: process.env.DEBUG
+			minify: process.env.NODE_ENV is 'production'
+			autocache: process.env.NODE_ENV is 'development'
 
 		'app.css':
 			main: root + '/styles'
@@ -35,20 +35,28 @@ module.exports = (root, app) ->
 						filename: basePath
 						paths: [path.dirname(basePath)]
 					new less.Parser(options).parse body, (err, tree) ->
-						return done(err) if err
-						asset.body = tree.toCSS(compress: not process.env.DEBUG) + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
+						return done err if err
+						asset.body = tree.toCSS(compress: process.env.NODE_ENV is 'production') + '\n' + asset.body	# 'compress' option won't be necessary once Convoy minifies css
 						done()
 			]
-			# minify: not process.env.DEBUG	# Doesn't do anything, convoy doesn't minify css yet.
-			autocache: process.env.DEBUG
+			# minify: process.env.NODE_ENV is 'production'	# Doesn't do anything, convoy doesn't minify css yet.
+			autocache: process.env.NODE_ENV is 'development'
 
-		'index.html':
-			root: root + '/views/index.html'
-			packager: 'copy'
-			autocache: process.env.DEBUG
+		# 'index.html':
+		# 	root: root + '/views/index.html'
+		# 	packager: 'copy'
+		# 	autocache: process.env.NODE_ENV is 'development'
 
 		'app.manifest':
 			packager: require 'html5-manifest/packager'
 
 
-	module.exports = pipeline.middleware()
+	# pipeline.catchall = (req, res, next) ->
+	# 	options =
+	# 		pipeline: pipeline
+	# 		path: '/index.html'
+	# 		getOnly: true
+	# 	require('convoy/lib/middleware').send req, res, options, next
+
+
+	module.exports = pipeline
