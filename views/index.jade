@@ -24,7 +24,7 @@ html(manifest='/app.manifest')
 		script(src='/app.js')
 		:coffeescript
 			root = '!{root}'
-			require(root + '/lib/app');
+			require root + '/lib/app'
 
 		//
 			script
