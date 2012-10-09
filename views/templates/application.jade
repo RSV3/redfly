@@ -20,14 +20,14 @@
 			| <a class="brand" {{action goHome href=true}}>Redfly</a>
 			.nav-collapse.collapse
 				ul.nav
-					li
-						| <a {{action goHome href=true}}>Home</a>
-					li
-						| <a {{action goLeaderboard href=true}}>Users</a>
-					li
-						| <a {{action goContacts href=true}}>Contacts</a>
-					li
-						| <a {{action goTags href=true}}>Tags</a>
+					li.
+						<a {{action goHome href=true}}>Home</a>
+					li.
+						<a {{action goLeaderboard href=true}}>Users</a>
+					li.
+						<a {{action goContacts href=true}}>Contacts</a>
+					li.
+						<a {{action goTags href=true}}>Tags</a>
 					li
 						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...') Report a bug
 					// <li><a {{action goReport href=true}}>Report a bug</a></li>
@@ -95,7 +95,7 @@
 				.btn-group
 					| <a class="btn" {{action goUserProfile href=true}}>
 					i.icon-user
-					| {{App.user.canonicalName}}
+					|  {{App.user.canonicalName}}
 					| </a>
 					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
