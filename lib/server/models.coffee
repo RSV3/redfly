@@ -7,6 +7,10 @@ Schema = mongoose.Schema
 Types = Schema.Types
 
 
+excludeSchema = new Schema
+	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
+	name: type: String, trim: 1
+
 UserSchema = new Schema
 	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1	# Would be required but the user's name isn't known at the time of signup.
@@ -16,6 +20,8 @@ UserSchema = new Schema
 	lastParsed: type: Date
 	classifyIndex: type: Number, required: 1, default: 0, min: 0
 	classifyQueue: [ type: Types.ObjectId, ref: 'Contact' ]
+	excludes: [excludeSchema]
+
 
 ContactSchema = new Schema
 	emails: [ type: String ]
@@ -49,7 +55,9 @@ common = (schema) ->
 	schema.set 'toJSON', getters: true	# To make 'id' included in json serialization for the API.
 
 
+excludeSchema.plugin common
 UserSchema.plugin common
+
 ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common

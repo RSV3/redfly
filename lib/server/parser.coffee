@@ -59,7 +59,9 @@ module.exports = (user, notifications) ->
 									if (validators.isEmail email) and (email isnt user.email) and
 											(_.last(email.split('@')) not in blacklist.domains) and
 											(name not in blacklist.names) and
-											(email not in blacklist.emails)
+											(email not in blacklist.emails) and
+											(name not in _.pluck(user.excludes, 'name')) and
+											(email not in _.pluck(user.excludes, 'email'))
 										mails.push
 											subject: msg.headers.subject?[0]
 											sent: new Date msg.headers.date?[0]

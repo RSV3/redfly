@@ -7,7 +7,7 @@ module.exports = (Ember, App, socket) ->
 		currentClassify: (->
 				App.user.get('classifyIndex') + 1
 			).property 'App.user.classifyIndex'
-		next: ->
+		add: ->
 			if not @get 'added'
 				@set 'added', new Date
 				@set 'addedBy', App.user
@@ -16,6 +16,22 @@ module.exports = (Ember, App, socket) ->
 			index = App.user.incrementProperty 'classifyIndex'
 			App.store.commit()
 
+			@_next index
+		skip: ->
+			exclude =
+				email: @get('email')
+			if name = @get('primaryName')
+				exclude.name = name
+			App.user.get('excludes').pushObject exclude
+
+			index = App.user.get 'classifyIndex'
+			App.user.get('classifyQueue').removeAt index
+			socket.emit 'removeQueueItemAndAddExclude', App.user.get('id'), index, exclude
+
+			App.store.commit()
+
+			@_next index
+		_next: (index) ->
 			contact = App.user.get('classifyQueue').objectAt index
 			@set 'content', contact
 

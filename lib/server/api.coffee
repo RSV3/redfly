@@ -282,3 +282,14 @@ module.exports = (app, socket) ->
 					fn message
 
 			require('./parser')(user, notifications)
+
+
+
+	# TODO Hack
+	socket.on 'removeQueueItemAndAddExclude', (userId, index, exclude) ->
+		models.User.findById userId, (err, user) ->
+			throw error if err
+			user.classifyQueue.splice index, 1
+			user.excludes.push exclude
+			user.save (err) ->
+				throw err if err

@@ -14,6 +14,7 @@ module.exports = (DS, App) ->
 		canonicalName: DS.attr('string', key: 'name')
 		classifyQueue: DS.hasMany('App.Contact', key: 'classifyQueue')
 		classifyIndex: DS.attr('number', key: 'classifyIndex')
+		excludes: DS.attr('array', key: 'excludes')
 		name: (->
 				# TODO figure out a cleaner way to do entity equality
 				if App.user.get('id') is @get('id')
@@ -32,20 +33,20 @@ module.exports = (DS, App) ->
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
 		name: (->
-				if name = @get('_primaryName')
+				if name = @get('primaryName')
 					return name
 				if email = @get('email')
 					return email[...email.lastIndexOf('.')]
 				null
-			).property '_primaryName', 'email'
+			).property 'primaryName', 'email'
 		nickname: (->
 				tools = require '../util'
-				tools.nickname @get('_primaryName'), @get('email')
-			).property '_primaryName', 'email'
+				tools.nickname @get('primaryName'), @get('email')
+			).property 'primaryName', 'email'
 		email: (->
 				@get('emails.firstObject')
 			).property 'emails.@each'
-		_primaryName: (->
+		primaryName: (->
 				@get('names.firstObject')
 			).property 'names.@each'
 		notes: (->
