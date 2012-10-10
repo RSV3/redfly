@@ -288,7 +288,7 @@ module.exports = (app, socket) ->
 	# TODO Hack
 	socket.on 'removeQueueItemAndAddExclude', (userId, index, exclude) ->
 		models.User.findById userId, (err, user) ->
-			throw error if err
+			throw err if err
 			user.classifyQueue.splice index, 1
 			user.excludes.push exclude
 			user.save (err) ->
