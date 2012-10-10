@@ -1,0 +1,20 @@
+.row-fluid
+	h1 All Contacts
+	table.table.table-hover
+		thead
+			tr
+				th Names
+				th Emails
+				th Added On
+				th Added By
+				th Known To
+		tbody
+			| {{#each content}}
+			| <tr {{action goContact this href=true}}>
+			td {{name}}
+			td {{email}}
+			td {{added}}
+			td {{addedBy.name}}
+			td {{knows.firstObject.name}}
+			| </tr>
+			| {{/each}}

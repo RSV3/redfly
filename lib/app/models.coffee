@@ -11,9 +11,15 @@ module.exports = (DS, App) ->
 	App.User = DS.Model.extend
 		date: DS.attr('date', key: 'date')
 		email: DS.attr('string', key: 'email')
-		name: DS.attr('string', key: 'name')
-		classifyQueue: DS.hasMany('App.Contact', key: 'classifyQueue')
-		classifyIndex: DS.attr('number', key: 'classifyIndex')
+		canonicalName: DS.attr('string', key: 'name')
+		queue: DS.hasMany('App.Contact', key: 'queue')
+		excludes: DS.attr('array', key: 'excludes')
+		name: (->
+				# TODO figure out a cleaner way to do entity equality
+				if App.user.get('id') is @get('id')
+					return 'You'
+				@get 'canonicalName'
+			).property 'canonicalName'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr('date', key: 'date')
@@ -26,18 +32,20 @@ module.exports = (DS, App) ->
 		# tags: DS.hasMany 'App.Tag'
 		# notes: DS.hasMany 'App.Note'
 		name: (->
-				if name = @get('_primaryName')
+				if name = @get('primaryName')
 					return name
-				@get 'nickname'
-			).property '_primaryName', 'nickname'
+				if email = @get('email')
+					return email[...email.lastIndexOf('.')]
+				null
+			).property 'primaryName', 'email'
 		nickname: (->
 				tools = require '../util'
-				tools.nickname @get('_primaryName'), @get('email')
-			).property '_primaryName', 'email'
+				tools.nickname @get('primaryName'), @get('email')
+			).property 'primaryName', 'email'
 		email: (->
 				@get('emails.firstObject')
 			).property 'emails.@each'
-		_primaryName: (->
+		primaryName: (->
 				@get('names.firstObject')
 			).property 'names.@each'
 		notes: (->

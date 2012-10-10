@@ -51,7 +51,6 @@ module.exports = (app, socket) ->
 									socket.broadcast.emit 'feed',
 										type: data.type
 										id: doc.id
-									# Later TODO remove this								
 									socket.emit 'feed',
 										type: data.type
 										id: doc.id
@@ -60,9 +59,10 @@ module.exports = (app, socket) ->
 
 						return fn doc
 				else
-					model.create record, (err, docs...) ->
-						throw err if err
-						return fn docs
+					throw new Error 'unimplemented'
+					# model.create record, (err, docs...) ->
+					# 	throw err if err
+					# 	return fn docs
 			when 'save'
 				record = data.record
 				if not _.isArray record
@@ -75,7 +75,6 @@ module.exports = (app, socket) ->
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
-							# Later TODO remove this
 							socket.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -93,8 +92,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn()
 				else if ids = data.ids
-					# TODO Remove each one and call return fn() when they're ALL done
-					throw new Error 'unimplemented'
+					throw new Error 'unimplemented'	# Remove each one and call return fn() when they're all done.
 				else
 					throw new Error
 			else
@@ -105,7 +103,7 @@ module.exports = (app, socket) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if user
-				return fn()
+				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
 
 			util = require './util'
@@ -118,28 +116,50 @@ module.exports = (app, socket) ->
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
-
-				util.mail
-					to: 'bski@mit.edu'
-					subject: 'asdf2'
-					html: 'asdfasdf ' + result.authorizeUrl
-
-
-				return fn result.authorizeUrl
+				return fn true, result.authorizeUrl
 
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			# TODO do authentication, either openID or: if user and user.password is req.body.password
 			if not user
-				return fn()
+				return fn false, 'Once more, with feeling!'
 			session.user = user.id
 			session.save()
-			return fn user.id
+			return fn true, user.id
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
 		fn()
+
+
+
+	moment = require 'moment'
+	oneWeekAgo = moment().subtract('days', 7).toDate()
+
+	summaryQuery = (model, field, cb) ->
+		models[model].where(field).gt(oneWeekAgo).count (err, count) ->
+			throw err if err
+			cb count
+
+	socket.on 'summary.contacts', (fn) ->
+		summaryQuery 'Contact', 'added', fn
+
+	socket.on 'summary.tags', (fn) ->
+		summaryQuery 'Tag', 'date', fn
+
+	socket.on 'summary.notes', (fn) ->
+		summaryQuery 'Note', 'date', fn
+
+	socket.on 'summary.verbose', (fn) ->
+		models.Tag.find().sort('date').select('body').exec (err, tags) ->
+			throw err if err
+			verbose = _.max tags, (tag) -> tag.body.length
+			fn verbose.body
+
+	socket.on 'summary.user', (fn) ->
+		# TODO use mapreduce to do this probably
+		fn 'Krzysztof Baranowski'
+
 
 
 	socket.on 'search', (query, fn) ->
@@ -215,20 +235,17 @@ module.exports = (app, socket) ->
 						# If there were new contacts, determine those with the most correspondence and send a nudge email.
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
-								_.reduce mails, (mail, total) ->
+								_.reduce mails, (total, mail) ->
 										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
-							newContacts = newContacts[...5]
-
-							user.classifyIndex = user.classifyQueue.toObject().length	# TODO necessary toObject?
-							user.classifyQueue.push newContacts...
+							user.queue.unshift newContacts...
 
 							mail = require('./mail')(app)
-							mail.sendNudge user, newContacts
+							mail.sendNudge user, newContacts[...10]
 
-						user.lastParsed = Date.now()
+						user.lastParsed = new Date
 						user.save (err) ->
 							throw err if err
 
@@ -268,3 +285,18 @@ module.exports = (app, socket) ->
 					fn message
 
 			require('./parser')(user, notifications)
+
+
+
+	# TODO Hack, but retain this logic
+	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
+		models.User.findById userId, (err, user) ->
+			throw err if err
+			user.queue.shift()
+			if exclude
+				existing = _.find user.excludes, (candidate) ->
+					(exclude.name is candidate.name) and (exclude.email is candidate.email)
+				if not existing
+					user.excludes.push exclude
+			user.save (err) ->
+				throw err if err

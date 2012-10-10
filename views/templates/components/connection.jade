@@ -1,0 +1,11 @@
+| {{#unless connected}}
+p.alert
+	| {{#if canConnect}}
+	| Offline
+	| {{#unless hideReconnect}}
+	| – <a {{action connect target="view"}}>Reconnect</a>
+	| {{/unless}}
+	| {{else}}
+	| Unable to reconnect – <a {{action reload target="view"}}>Reload</a>
+	| {{/if}}
+| {{/unless}}

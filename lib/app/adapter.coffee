@@ -24,7 +24,6 @@ module.exports = (DS, socket) ->
 				store.loadMany type, data
 
 		createRecord: (store, type, model) ->
-			# TO-DO figure out what 'unsavedData' etc are for, and do the same for updateRecord and deleteRecord (though delete prolly just has an id)
 			socket.emit 'db', op: 'create', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didCreateRecord model, data
 
