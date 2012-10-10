@@ -12,8 +12,7 @@ module.exports = (DS, App) ->
 		date: DS.attr('date', key: 'date')
 		email: DS.attr('string', key: 'email')
 		canonicalName: DS.attr('string', key: 'name')
-		classifyQueue: DS.hasMany('App.Contact', key: 'classifyQueue')
-		classifyIndex: DS.attr('number', key: 'classifyIndex')
+		queue: DS.hasMany('App.Contact', key: 'queue')
 		excludes: DS.attr('array', key: 'excludes')
 		name: (->
 				# TODO figure out a cleaner way to do entity equality

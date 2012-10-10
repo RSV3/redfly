@@ -229,20 +229,17 @@ module.exports = (app, socket) ->
 						# If there were new contacts, determine those with the most correspondence and send a nudge email.
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
-								_.reduce mails, (mail, total) ->
+								_.reduce mails, (total, mail) ->
 										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
-							newContacts = newContacts[...10]
-
-							user.classifyIndex = user.classifyQueue.length
-							user.classifyQueue.push newContacts...
+							user.queue.unshift newContacts...
 
 							mail = require('./mail')(app)
-							mail.sendNudge user, newContacts
+							mail.sendNudge user, newContacts[...10]
 
-						user.lastParsed = Date.now()
+						user.lastParsed = new Date
 						user.save (err) ->
 							throw err if err
 
@@ -285,11 +282,15 @@ module.exports = (app, socket) ->
 
 
 
-	# TODO Hack
-	socket.on 'removeQueueItemAndAddExclude', (userId, index, exclude) ->
+	# TODO Hack, but retain this logic
+	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
 		models.User.findById userId, (err, user) ->
 			throw err if err
-			user.classifyQueue.splice index, 1
-			user.excludes.push exclude
+			user.queue.shift()
+			if exclude
+				existing = _.find user.excludes, (candidate) ->
+					(exclude.name is candidate.name) and (exclude.email is candidate.email)
+				if not existing
+					user.excludes.push exclude
 			user.save (err) ->
 				throw err if err

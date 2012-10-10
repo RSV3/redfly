@@ -74,9 +74,7 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					index = App.user.get 'classifyIndex'
-					contact = App.user.get('classifyQueue').objectAt index
-
+					contact = App.user.get 'queue.firstObject'
 					router.get('applicationController').connectOutlet 'classify'
 					router.get('classifyController').connectOutlet 'contact', contact
 

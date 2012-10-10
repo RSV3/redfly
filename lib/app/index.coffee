@@ -26,8 +26,9 @@ Handlebars.registerHelper 'debug', (optionalValue) ->
 		console.log optionalValue
 
 
-
 App.user = Ember.ObjectProxy.create
+	classifyCount: 0
+	classifyMore: false
 	# TO-DO make these be on Application and Home views, respesctively
 	loginIdentity: null
 	signupIdentity: null

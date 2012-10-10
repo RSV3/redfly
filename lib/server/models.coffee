@@ -18,8 +18,7 @@ UserSchema = new Schema
 		token: type: String, required: 1
 		secret: type: String, required: 1
 	lastParsed: type: Date
-	classifyIndex: type: Number, required: 1, default: 0, min: 0
-	classifyQueue: [ type: Types.ObjectId, ref: 'Contact' ]
+	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]
 
 

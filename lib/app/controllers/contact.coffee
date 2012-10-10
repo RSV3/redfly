@@ -4,18 +4,12 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: null
-		firstHistory: (->
-				@get('_histories').objectAt 0
-			).property '_histories.@each'
-		historyCount: (->
-				@get '_histories.length'
-			).property '_histories.@each'
-		_histories: (->
+		histories: (->
 				# TODO maybe check to see if content is isLoaded and only run this query if so if @get 'content.isLoaded'
 				App.Mail.find
 					conditions:
 						sender: App.user.get('id')
-						recipient: @get 'id'
+						recipient: @get('id')
 					options:
 						sort: date: 1
 			).property 'content'

@@ -4,17 +4,17 @@
 	.span6
 		h1 {{name}}
 		h4 {{email}}
-		| {{#if firstHistory}}
+		| {{#if histories.firstObject}}
 		div
 			p
-				| You emailed {{nickname}} for the first time on {{firstHistory.sent}}.
+				| You emailed {{nickname}} for the first time on {{histories.firstObject.sent}}.
 				br
 				| The email subject was
-				em "{{firstHistory.subject}}"
+				em "{{histories.firstObject.subject}}"
 				| .
 			p
 				| You&apos;ve sent
-				strong  {{historyCount}} 
+				strong  {{histories.length}} 
 				| emails.
 		| {{/if}}
 	.span3

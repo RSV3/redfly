@@ -1,8 +1,8 @@
-| {{#if content}}
+| {{#unless complete}}
 
 div.navbar
 	.navbar-inner
-		.lead {{nickname}} is {{currentClassify}} out of {{App.user.classifyQueue.length}} contacts in your queue.
+		.lead There are {{total}} contacts in your queue.
 		.pull-right
 			ul.pager
 				li
@@ -10,17 +10,26 @@ div.navbar
 				li
 					| <a href="#" class="btn-success" {{action add target="controller"}}>Add and continue</a>
 
-| {{outlet}}
 
 | {{else}}
 
 .hero-unit
 	h1 Nicely done!
-	p You&apos;ve classified all the contacts we have for you. Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity, etc etc.
+	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity, etc etc.
+	| {{#if next}}
 	p
-		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>
-		| 	See all contacts
-		| </a>
+		| But hey, listen: there are some more contacts we could give you to classify. You know, if you 
+		em really
+		|  wanted to...
+	| {{/if}}
+	p
+		| {{#unless next}}
+		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a>
+		| {{else}}
+		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me with the rest!</a>
+		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>		
+		| {{/unless}}
 		p.star: i.icon-star
 
-| {{/if}}
+| {{/unless}}
+| {{outlet}}
