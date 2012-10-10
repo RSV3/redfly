@@ -151,7 +151,6 @@ module.exports = (app, socket) ->
 			fn verbose?.body
 
 	socket.on 'summary.user', (fn) ->
-		# TODO use mapreduce to do this probably
 		fn 'Krzysztof Baranowski'
 
 
@@ -283,7 +282,7 @@ module.exports = (app, socket) ->
 
 
 	# TODO Hack, but retain this logic
-	# TODO WARNING: concurrency problem if invoked too quickly in succession (user clicking "next" in the classify flow very fast)
+	# WARNING: concurrency problem if invoked too quickly in succession (user clicking "next" in the classify flow very fast)
 	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
 		models.User.findById userId, (err, user) ->
 			throw err if err

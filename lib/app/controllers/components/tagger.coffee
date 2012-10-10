@@ -21,8 +21,8 @@ module.exports = (Ember, App, socket) ->
 			@$('.new-tag').focus()
 		add: (event) ->
 			if tag = util.trim @get('currentTag')
-				existingTag = _.find @get('tags'), (otherTag) =>	# TODO is fat-arrow necessary?
-					tag is otherTag	# TODO this doesn't work, but this should: tag is otherTag.get('body')
+				existingTag = _.find @get('tags'), (candidate) =>
+					tag is candidate	# TODO this doesn't work, but this should: tag is candidate.get('body'). Might need fat-arrow above.
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user

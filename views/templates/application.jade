@@ -7,7 +7,7 @@
 		a(href='http://www.google.com/chromeframe/?redirect=true') install Google Chrome Frame
 		| to better experience this site.
 
-// TODO do connection alert if possible
+// TODO do connection alert if possible, remove .connection styles if not
 // <ui:connectionAlert>
 
 .navbar.navbar-inverse.navbar-fixed-top
@@ -69,7 +69,6 @@
 							| {{/each}}
 							li.divider
 							| {{/if}}
-							// TODO have a "no results" if nothing matches
 						| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
