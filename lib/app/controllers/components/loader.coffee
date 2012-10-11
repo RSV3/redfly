@@ -48,26 +48,35 @@ module.exports = (Ember, App, socket) ->
 				if message
 					alert message + ' Are you connected to the internet? Did you mistype your email?'
 				else
-					@get('loading').effect 'bounce'
-					@get('loading').pnotify type: 'success', closer: true
 					App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
 					@set 'stateConnecting', false
 					@set 'stateParsing', false
 					@set 'stateQueueing', false
 					@set 'stateDone', true
+					@get('loading').effect 'bounce'
+					@get('loading').pnotify type: 'success', closer: true
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'total', total
+				socket.on 'parse.mail', =>
+					@incrementProperty 'current'
 				@set 'stateConnecting', false
 				@set 'stateParsing', true
 				@set 'stateQueueing', false
 				@set 'stateDone', false
 
+			socket.on 'parse.queueing', =>
+				@set 'totalQueued', 0
+				socket.on 'parse.queue', =>
+					@incrementProperty 'totalQueued'
+				@set 'stateConnecting', false
+				@set 'stateParsing', false
+				@set 'stateQueueing', true
+				@set 'stateDone', false
+
 			socket.on 'parse.name', =>
 				App.refresh App.user.get('content')	# We just figured out the logged-in user's name, refesh.
-			socket.on 'parse.update', =>
-				@incrementProperty 'current'
 
 		percent: (->
 				current = @get 'current'

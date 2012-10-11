@@ -8,6 +8,9 @@
 		.progress.progress-striped.active
 			| <div class="bar" {{bindAttr style="percent"}}></div>
 		| {{/if}}
+		| {{#if stateQueueing}}
+		div New contacts found: {{totalQueued}}
+		| {{/if}}
 		| {{#if stateDone}}
 		| All done! <a href="#" {{action goClassify href=true}}>Start classifying</a>, dude.
 		| {{/if}}

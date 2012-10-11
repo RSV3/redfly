@@ -218,8 +218,10 @@ module.exports = (app, socket) ->
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
-					socket.emit 'parse.update'
+					socket.emit 'parse.mail'
 				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
+					socket.emit 'parse.queueing'
+
 					newContacts = []
 
 					moar = ->	# TODO can i define this below 'sift'? Actually just put it in 'sift' and try to make it a self-calling function
@@ -255,6 +257,7 @@ module.exports = (app, socket) ->
 									contact.names.addToSet name
 
 								newContacts.push contact
+								socket.emit 'parse.queue'
 							contact.knows.addToSet user
 
 							contact.save (err) ->
