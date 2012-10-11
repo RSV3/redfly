@@ -48,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', App.Contact.find()
+					router.get('applicationController').connectOutlet 'contacts', App.Contact.find added: $exists: true
 
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
