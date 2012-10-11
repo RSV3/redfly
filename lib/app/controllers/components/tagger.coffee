@@ -15,10 +15,10 @@ module.exports = (Ember, App, socket) ->
 		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 			).property 'contact.id', 'category'
-		click: (event) ->
+		click: ->
 			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
 			@$('.new-tag').focus()
-		add: (event) ->
+		add: ->
 			if tag = util.trim @get('currentTag')
 				existingTag = _.find @get('tags'), (candidate) =>
 					tag is candidate	# TODO this doesn't work, but this should: tag is candidate.get('body'). Might need fat-arrow above.
@@ -36,6 +36,7 @@ module.exports = (Ember, App, socket) ->
 					# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
 					# existingTag/@$().addClass 'animated pulse'
 				@set 'currentTag', null
+
 		tagView: Ember.View.extend
 			tagName: 'span'
 			classNames: ['tag']
@@ -59,6 +60,7 @@ module.exports = (Ember, App, socket) ->
 			willDestroyElement: ->
 				# TO-DO do this and change the icky code in 'add': http://stackoverflow.com/questions/9925171/deferring-removal-of-a-view-so-it-can-be-animated
 				# @$().addClass 'animated rotateOutDownLeft'
+
 		newTagView: Ember.TextField.extend
 			classNames: ['new-tag-field']
 			currentTagBinding: 'parentView.currentTag'
@@ -67,3 +69,7 @@ module.exports = (Ember, App, socket) ->
 						@set 'currentTag', tag.toLowerCase()
 					@$().attr 'size', 2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
 				).observes 'currentTag'
+			keyDown: (event) ->
+				if event.which is 9	# A tab.
+					@get('parentView').add()
+					return false	# Prevent focus from changing, the normal tab behavior
