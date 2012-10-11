@@ -103,12 +103,6 @@ module.exports = (app, socket) ->
 			if user
 				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
-
-			util = require './util'
-			util.mail
-				to: 'bski@mit.edu'
-				subject: 'asdf'
-				html: 'asdfasdf ' + JSON.stringify(process.env) + ' asdf ' + process.env.MONGOLAB_URI + '   ' + process.env.HOST
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
