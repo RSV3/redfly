@@ -27,18 +27,18 @@ module.exports = (DS, App) ->
 				if App.user.get('id') is @get('id')
 					return 'You'
 				@get 'canonicalName'
-			).property 'id', 'canonicalName'
+			).property 'id', 'App.user.id', 'canonicalName'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr('date', key: 'date')
 		names: DS.attr('array', key: 'names')
 		emails: DS.attr('array', key: 'emails')
 		knows: (->
-				if not @get '_knows.isLoaded'
-					ids = []
-					@get('_knows.content').forEach (clientId) ->
-						ids.push App.store.clientIdToId[clientId]
-					App.User.find _id: $in: ids
+				# if not @get '_knows.isLoaded'
+				ids = []
+				@get('_knows.content').forEach (clientId) ->
+					ids.push App.store.clientIdToId[clientId]
+				App.User.find _id: $in: ids
 				@get '_knows'
 			).property '_knows.@each', '_knows.isLoaded'
 		_knows: DS.hasMany('App.User', key: 'knows')
