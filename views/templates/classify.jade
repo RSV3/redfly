@@ -10,6 +10,7 @@ div.navbar
 				li
 					| <a href="#" class="btn-success" {{action add target="controller"}}>Add and continue</a>
 
+| {{outlet}}
 
 | {{else}}
 
@@ -32,4 +33,3 @@ div.navbar
 		p.star: i.icon-star
 
 | {{/unless}}
-| {{outlet}}

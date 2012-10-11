@@ -42,22 +42,20 @@ module.exports = (app, socket) ->
 
 					model.create record, (err, doc) ->
 						throw err if err
+						fn doc
 
 
-						# TODO horrible hack
-						setTimeout ->
-								# TODO only do this for contacts that have been added!
-								if (model is models.Tag) or (model is models.Note)
-									socket.broadcast.emit 'feed',
-										type: data.type
-										id: doc.id
-									socket.emit 'feed',
-										type: data.type
-										id: doc.id
-							, 500
+						# TODO only do this for contacts that have been added!
+						if (model is models.Tag) or (model is models.Note)
+							socket.broadcast.emit 'feed',
+								type: data.type
+								id: doc.id
+							socket.emit 'feed',
+								type: data.type
+								id: doc.id
 
 
-						return fn doc
+						
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
