@@ -4,13 +4,9 @@ module.exports = (Ember, App, socket) ->
 	App.LoaderView = Ember.View.extend
 		template: require '../../../../views/templates/components/loader'
 
-		# TODO hack. Actions target the view not the router for loaderview, probably becuause I added it manually
-		goClassify: ->
-			App.get('router').send 'goClassify'
-
 		didInsertElement: ->
-			$('#signupMessage').modal()	# TO-DO make scoped @$ when possible
-			@set 'loading', $.pnotify
+			@set 'modal', $('#signupMessage').modal()	# TO-DO make scoped @$ when possible
+			@set 'notification', $.pnotify
 				title: 'Email parsing status',
 				text: '<div id="loading"></div>'
 				type: 'info'
@@ -53,8 +49,8 @@ module.exports = (Ember, App, socket) ->
 					@set 'stateParsing', false
 					@set 'stateQueueing', false
 					@set 'stateDone', true
-					@get('loading').effect 'bounce'
-					@get('loading').pnotify type: 'success', closer: true
+					@get('notification').effect 'bounce'
+					@get('notification').pnotify type: 'success', closer: true
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
@@ -78,6 +74,7 @@ module.exports = (Ember, App, socket) ->
 			socket.on 'parse.name', =>
 				App.refresh App.user.get('content')	# We just figured out the logged-in user's name, refesh.
 
+
 		percent: (->
 				current = @get 'current'
 				total = @get 'total'
@@ -86,3 +83,10 @@ module.exports = (Ember, App, socket) ->
 					percentage = Math.round (current / total) * 100
 				'width: ' + percentage + '%;'
 			).property 'current', 'total'
+
+
+		classify: ->
+			@get('modal').modal 'hide'
+			@get('notification').pnotify_remove()
+			
+			App.get('router').send 'goClassify'
