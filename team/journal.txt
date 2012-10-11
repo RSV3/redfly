@@ -1,3 +1,9 @@
+- lots of bindings stuff only SEEMS to work because the model data happens to be loaded already. Notable places this happens are the activity
+  feed implicitly loading a few contacts and the search box loading many more
+- you must use an object, not an id, when making a belongsTo relationship
+
+
+
 Needed Features (ember/angular/knockout/derby research):
   - speedy loading with browser push/pop states (ideally only refreshing parts of the page that it has to), or more generally avoiding roundtrips to the server
   - bindings(auto-updating) in the view template

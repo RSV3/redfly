@@ -1,16 +1,15 @@
 .row-fluid.top
-	// TODO picture not be placeholder
 	img.img-polaroid.span3(src='https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg', alt='')
 	.span6
 		h1 {{name}}
 		h4 {{email}}
-		| {{#if histories.firstObject}}
+		| {{#if firstHistory}}
 		div
 			p
-				| You emailed {{nickname}} for the first time on {{histories.firstObject.sent}}.
+				| You emailed {{nickname}} for the first time on {{firstHistory.sent}}.
 				br
 				| The email subject was
-				em "{{histories.firstObject.subject}}"
+				em "{{firstHistory.subject}}"
 				| .
 			p
 				| You&apos;ve sent

@@ -21,14 +21,15 @@ module.exports = (Ember, App, socket) ->
 			).property 'App.user.queue.firstObject'
 		_baseQueueLength: 10
 		add: ->
-			if not @get 'added'
-				@set 'added', new Date
-				@set 'addedBy', App.user
-				App.store.commit()
+			contact = App.user.get('queue').shiftObject()
+			if not contact.get 'added'
+				contact.set 'added', new Date
+				contact.set 'addedBy', App.user
 
 			socket.emit 'removeQueueItemAndAddExclude', App.user.get('id')
 			@_continue()
 		skip: ->
+			App.user.get('queue').shiftObject()
 			exclude =
 				email: @get('email')
 			if name = @get('primaryName')
@@ -39,9 +40,8 @@ module.exports = (Ember, App, socket) ->
 			@_continue()
 		_continue: ->
 			App.user.incrementProperty 'classifyCount'
-			App.user.get('queue').shiftObject()
+			
 			App.store.commit()
-
 			@set 'content', App.user.get('queue.firstObject')
 		keepGoing: ->
 			App.user.set 'classifyMore', true

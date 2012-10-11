@@ -42,22 +42,20 @@ module.exports = (app, socket) ->
 
 					model.create record, (err, doc) ->
 						throw err if err
+						fn doc
 
 
-						# TODO horrible hack
-						setTimeout ->
-								# TODO only do this for contacts that have been added!
-								if (model is models.Tag) or (model is models.Note)
-									socket.broadcast.emit 'feed',
-										type: data.type
-										id: doc.id
-									socket.emit 'feed',
-										type: data.type
-										id: doc.id
-							, 500
+						# TODO only do this for contacts that have been added!
+						if (model is models.Tag) or (model is models.Note)
+							socket.broadcast.emit 'feed',
+								type: data.type
+								id: doc.id
+							socket.emit 'feed',
+								type: data.type
+								id: doc.id
 
 
-						return fn doc
+						
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
@@ -154,10 +152,9 @@ module.exports = (app, socket) ->
 		models.Tag.find().sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) -> tag.body.length
-			fn verbose.body
+			fn verbose?.body
 
 	socket.on 'summary.user', (fn) ->
-		# TODO use mapreduce to do this probably
 		fn 'Krzysztof Baranowski'
 
 
@@ -289,6 +286,7 @@ module.exports = (app, socket) ->
 
 
 	# TODO Hack, but retain this logic
+	# WARNING: concurrency problem if invoked too quickly in succession (user clicking "next" in the classify flow very fast)
 	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
 		models.User.findById userId, (err, user) ->
 			throw err if err

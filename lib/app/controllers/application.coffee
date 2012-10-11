@@ -37,7 +37,7 @@ module.exports = (Ember, App, socket) ->
 							model = 'Contact'
 							if type is 'tag' or type is 'note'
 								model = _s.capitalize type
-							@set 'results.' + type, App[model].find _id: $in: ids # TO-DO this should probably be a call to findMany maybe
+							@set 'results.' + type, App[model].find _id: $in: ids # TO-DO this should probably be a call to findMany maybe. Or maybe not.
 			).observes 'App.search'
 
 

@@ -13,16 +13,15 @@ module.exports = (Ember, App, socket) ->
 				mutable
 			).property '_rawTags.@each'
 		_rawTags: (->
-				# TODO have a check here to wait for contact.isLoaded? See if this getting run before the contact is there actually happens.
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
-			).property 'contact', 'category'
+			).property 'contact.id', 'category'
 		click: (event) ->
 			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
 			@$('.new-tag').focus()
 		add: (event) ->
 			if tag = util.trim @get('currentTag')
-				existingTag = _.find @get('tags'), (otherTag) =>	# TODO is fat-arrow necessary?
-					tag is otherTag	# TODO this doesn't work, but this should: tag is otherTag.get('body')
+				existingTag = _.find @get('tags'), (candidate) =>
+					tag is candidate	# TODO this doesn't work, but this should: tag is candidate.get('body'). Might need fat-arrow above.
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user

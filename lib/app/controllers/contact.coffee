@@ -5,14 +5,16 @@ module.exports = (Ember, App, socket) ->
 	App.ContactController = Ember.ObjectController.extend
 		currentNote: null
 		histories: (->
-				# TODO maybe check to see if content is isLoaded and only run this query if so if @get 'content.isLoaded'
 				App.Mail.find
 					conditions:
 						sender: App.user.get('id')
 						recipient: @get('id')
 					options:
 						sort: date: 1
-			).property 'content'
+			).property 'id'
+		firstHistory: (->
+				@get 'histories.firstObject'
+			).property 'histories.firstObject'
 		isKnown: (->
 				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
 				has = false
@@ -21,7 +23,7 @@ module.exports = (Ember, App, socket) ->
 						if user.get('id') is App.user.get('id')
 							has = true
 				has
-			).property 'knows.@each'
+			).property 'knows.@each.id'
 		disableAdd: (->
 				if util.trim @get('currentNote')
 					return false
