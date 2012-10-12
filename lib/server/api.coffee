@@ -18,10 +18,11 @@ module.exports = (app, socket) ->
 					model.findById id, (err, doc) ->
 						throw err if err
 						return fn doc
-				else if ids = data.ids
-					model.find _id: $in: ids, (err, docs) ->
-						throw err if err
-						return fn docs
+				# TODO The docs must be returned in the order of the provided ids.
+				# else if ids = data.ids
+				# 	model.find _id: $in: ids, (err, docs) ->
+				# 		throw err if err
+				# 		return fn docs
 				else if query = data.query
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
@@ -36,9 +37,11 @@ module.exports = (app, socket) ->
 
 					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
 					# override .toObject, or is that for something else?
+					# TODO XXX remove this once I'm convined that manual keys on the adapter have solved this problem
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1
-							record[prop.split('_')[0]] = val
+							throw new Error 'ember-data is still trying to coerce attribute names!'
+							# record[prop.split('_')[0]] = val
 
 					model.create record, (err, doc) ->
 						throw err if err
@@ -153,6 +156,10 @@ module.exports = (app, socket) ->
 
 
 
+	socket.on 'tags', (category, fn) ->
+		models.Tag.find(category: category).distinct 'body', (err, bodies) ->
+			fn bodies
+
 	socket.on 'search', (query, fn) ->
 		terms = _.uniq _.compact query.split(' ')
 		search = {}
@@ -185,7 +192,7 @@ module.exports = (app, socket) ->
 									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
 								catch err
 									continue	# User typed an invlid regular expression, just ignore it.
-								models[model].find conditions, '_id', @parallel()	# Only return '_id' field for efficiency.
+								models[model].find(conditions).select('_id').limit(10).exec @parallel()	# Only return '_id' field for efficiency.
 								return undefined	# Step library is insane.
 						, @parallel()
 				return undefined	# Still insane? Yes? Fine.
@@ -218,8 +225,10 @@ module.exports = (app, socket) ->
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
-					socket.emit 'parse.update'
+					socket.emit 'parse.mail'
 				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
+					socket.emit 'parse.queueing'
+
 					newContacts = []
 
 					moar = ->	# TODO can i define this below 'sift'? Actually just put it in 'sift' and try to make it a self-calling function
@@ -255,6 +264,7 @@ module.exports = (app, socket) ->
 									contact.names.addToSet name
 
 								newContacts.push contact
+								socket.emit 'parse.queue'
 							contact.knows.addToSet user
 
 							contact.save (err) ->

@@ -9,19 +9,11 @@ module.exports = (DS, App) ->
 
 
 	App.User = DS.Model.extend
-		date: DS.attr('date', key: 'date')
-		email: DS.attr('string', key: 'email')
+		date: DS.attr 'date'
+		email: DS.attr 'string'
 		canonicalName: DS.attr('string', key: 'name')
-		queue: (->
-				if not @get '_queue.isLoaded'
-					ids = []
-					@get('_queue.content').forEach (clientId) ->
-						ids.push App.store.clientIdToId[clientId]
-					App.Contact.find _id: $in: ids
-				@get '_queue'
-			).property '_queue.@each', '_queue.isLoaded'
-		_queue: DS.hasMany('App.Contact', key: 'queue')
-		excludes: DS.attr('array', key: 'excludes')
+		queue: DS.hasMany 'App.Contact'
+		excludes: DS.attr 'array'
 		name: (->
 				# TODO figure out a cleaner way to do entity equality
 				if App.user.get('id') is @get('id')
@@ -30,20 +22,12 @@ module.exports = (DS, App) ->
 			).property 'id', 'App.user.id', 'canonicalName'
 
 	App.Contact = DS.Model.extend
-		date: DS.attr('date', key: 'date')
-		names: DS.attr('array', key: 'names')
-		emails: DS.attr('array', key: 'emails')
-		knows: (->
-				# if not @get '_knows.isLoaded'
-				ids = []
-				@get('_knows.content').forEach (clientId) ->
-					ids.push App.store.clientIdToId[clientId]
-				App.User.find _id: $in: ids
-				@get '_knows'
-			).property '_knows.@each', '_knows.isLoaded'
-		_knows: DS.hasMany('App.User', key: 'knows')
-		added: DS.attr('date', key: 'added')
-		addedBy: DS.belongsTo('App.User', key: 'addedBy')
+		date: DS.attr 'date'
+		names: DS.attr 'array'
+		emails: DS.attr 'array'
+		knows: DS.hasMany 'App.User'
+		added: DS.attr 'date'
+		addedBy:(DS.belongsTo 'App.User', key: 'addedBy')
 		name: (->
 				if name = @get('primaryName')
 					return name
@@ -76,25 +60,25 @@ module.exports = (DS, App) ->
 			).property 'id'
 
 	App.Tag = DS.Model.extend
-		date: DS.attr('date', key: 'date')
+		date: DS.attr 'date'
 		creator: DS.belongsTo('App.User', key: 'creator')
 		contact: DS.belongsTo('App.Contact', key: 'contact')
-		category: DS.attr('string', key: 'category')
-		body: DS.attr('string', key: 'body')
+		category: DS.attr 'string'
+		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend
-		date: DS.attr('date', key: 'date')
+		date: DS.attr 'date'
 		author: DS.belongsTo('App.User', key: 'author')
 		contact: DS.belongsTo('App.Contact', key: 'contact')
-		body: DS.attr('string', key: 'body')
+		body: DS.attr 'string'
 		preview: (->
 				_s = require 'underscore.string'
 				_s.prune @get('body'), 80
 			).property 'body'
 
 	App.Mail = DS.Model.extend
-		date: DS.attr('date', key: 'date')
+		date: DS.attr 'date'
 		sender: DS.belongsTo('App.User', key: 'sender')
 		recipient: DS.belongsTo('App.Contact', key: 'recipient')
-		subject: DS.attr('string', key: 'subject')
-		sent: DS.attr('date', key: 'sent')
+		subject: DS.attr 'string'
+		sent: DS.attr 'date'
