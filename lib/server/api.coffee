@@ -18,10 +18,11 @@ module.exports = (app, socket) ->
 					model.findById id, (err, doc) ->
 						throw err if err
 						return fn doc
-				else if ids = data.ids
-					model.find _id: $in: ids, (err, docs) ->
-						throw err if err
-						return fn docs
+				# TODO The docs must be returned in the order of the provided ids.
+				# else if ids = data.ids
+				# 	model.find _id: $in: ids, (err, docs) ->
+				# 		throw err if err
+				# 		return fn docs
 				else if query = data.query
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
