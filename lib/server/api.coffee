@@ -156,6 +156,10 @@ module.exports = (app, socket) ->
 
 
 
+	socket.on 'tags', (category, fn) ->
+		models.Tag.find(category: category).distinct 'body', (err, bodies) ->
+			fn bodies
+
 	socket.on 'search', (query, fn) ->
 		terms = _.uniq _.compact query.split(' ')
 		search = {}

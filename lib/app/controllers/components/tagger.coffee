@@ -67,9 +67,90 @@ module.exports = (Ember, App, socket) ->
 			currentTagChanged: (->
 					if tag = @get('currentTag')
 						@set 'currentTag', tag.toLowerCase()
-					@$().attr 'size', 2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
 				).observes 'currentTag'
 			keyDown: (event) ->
 				if event.which is 9	# A tab.
 					@get('parentView').add()
 					return false	# Prevent focus from changing, the normal tab behavior
+			tagsBinding: 'parentView.tags'
+			attributeBindings: ['size', 'autocomplete', 'dataSource:data-source', 'dataProvide:data-provide', 'dataItems:data-items']
+			size: (->
+					2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
+				).property 'currentTag'
+			autocomplete: 'off'
+			dataSource: (->
+					category = @get 'parentView.category'
+					# TODO include other tags from api call
+					# socket.emit 'tags', category, (bodies) ->
+					predefined = @get('parentView').dictionary[category]
+					predefined = _.reject predefined, (candidate) =>
+						for tag in @get 'tags'
+							if tag.get('body') is candidate
+								return true
+						return false
+
+					quoted = _.map predefined, (item) -> '"' + item + '"'
+					'[' + quoted + ']'
+				).property 'tags.@each'
+			dataProvide: 'typeahead'
+			dataItems: 6
+
+
+		dictionary:
+			redstar: [
+				'ideator'
+				'germ'
+				'phase1'
+				'founder'
+				'action'
+				'healthcare'
+				'research'
+				'salon'
+				'aging'
+				'underemployment'
+				'loopit'
+				'vinely'
+				'gosprout'
+				'greenback'
+				'silver black'
+				'atlas'
+			]
+			industry: [
+				'legal'
+				'attorney'
+				'partner'
+				'director'
+				'venture capital (vc)'
+				'private equity (pe)'
+				'consumer electronics'
+				'medical devices'
+				'tv'
+				'news'
+				'print'
+				'music'
+				'consumer packaged goods (cpg)'
+				'retail'
+				'apparel'
+				'sports'
+				'entertainment'
+				'healthcare'
+				'research'
+				'e-commerce'
+				'b2b'
+				'b2c'
+				'direct sales'
+				'finance'
+				'banking'
+				'small medium business (smb)'
+				'big data'
+				'social media'
+				'consulting'
+				'investment banking'
+				'angel investing'
+				'consumer'
+				'web'
+				'enterprise'
+				'software'
+				'academic'
+				'professor'
+			]
