@@ -82,7 +82,8 @@ module.exports = (Ember, App, socket) ->
 					category = @get 'parentView.category'
 					# TODO include other tags from api call
 					# socket.emit 'tags', category, (bodies) ->
-					predefined = @get('parentView').dictionary[category]
+					# _.union(_.values(dictionary)...)
+					predefined = @get('parentView').dictionary[category or 'industry']
 					predefined = _.reject predefined, (candidate) =>
 						for tag in @get 'tags'
 							if tag.get('body') is candidate
