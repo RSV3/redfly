@@ -188,7 +188,7 @@ module.exports = (app, socket) ->
 									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
 								catch err
 									continue	# User typed an invlid regular expression, just ignore it.
-								models[model].find conditions, '_id', @parallel()	# Only return '_id' field for efficiency.
+								models[model].find(conditions).select('_id').limit(10).exec @parallel()	# Only return '_id' field for efficiency.
 								return undefined	# Step library is insane.
 						, @parallel()
 				return undefined	# Still insane? Yes? Fine.
