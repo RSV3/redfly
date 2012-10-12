@@ -59,6 +59,8 @@ module.exports = (user, notifications) ->
 									if comma isnt -1
 										name = name[comma + 1..] + ' ' + name[...comma]
 										name = tools.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
+									if (not name) or (validators.isEmail name)
+										name = null
 
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
 									blacklist = require './blacklist'
