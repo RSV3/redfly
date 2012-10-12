@@ -37,9 +37,11 @@ module.exports = (app, socket) ->
 
 					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
 					# override .toObject, or is that for something else?
+					# TODO XXX remove this once I'm convined that manual keys on the adapter have solved this problem
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1
-							record[prop.split('_')[0]] = val
+							throw new Error 'ember-data is still trying to coerce attribute names!'
+							# record[prop.split('_')[0]] = val
 
 					model.create record, (err, doc) ->
 						throw err if err

@@ -29,7 +29,9 @@ module.exports = (Ember, App, socket) ->
 			socket.emit 'removeQueueItemAndAddExclude', App.user.get('id')
 			@_continue()
 		skip: ->
-			App.user.get('queue').shiftObject()
+			# TODO hack
+			asdf = App.user.get('queue').shiftObject()
+			asdf.set 'addedBy', undefined
 			exclude =
 				email: @get('email')
 			if name = @get('primaryName')
