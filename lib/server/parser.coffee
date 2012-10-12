@@ -55,7 +55,8 @@ module.exports = (user, notifications) ->
 									tools = require '../util'
 									junkChars = ' \'",'
 									name = tools.trim to.name, junkChars
-									if comma = name.indexOf ','
+									comma = name.indexOf ','
+									if comma isnt -1
 										name = name[comma + 1..] + ' ' + name[...comma]
 										name = tools.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
 
