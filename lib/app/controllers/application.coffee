@@ -24,8 +24,10 @@ module.exports = (Ember, App, socket) ->
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
+				if @get('selectingResult') is true
+					return true
 				@get('searchFocused') and @get('results.content')
-			).property 'results.@each', 'searchFocused'
+			).property 'selectingResult', 'results.@each', 'searchFocused'
 		searchChanged: (->
 				query = util.trim App.get('search')
 				if not query
@@ -37,7 +39,7 @@ module.exports = (Ember, App, socket) ->
 							model = 'Contact'
 							if type is 'tag' or type is 'note'
 								model = _s.capitalize type
-							@set 'results.' + type, App.store.findMany App[model], ids
+							@set 'results.' + type, App[model].find _id: $in: ids
 			).observes 'App.search'
 
 
@@ -70,11 +72,20 @@ module.exports = (Ember, App, socket) ->
 			classNames: ['feed-item']
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
+
 		searchView: Ember.TextField.extend
 			focusIn: ->
 				@set 'controller.searchFocused', true
 			focusOut: ->
-				# Without this focusOut fires first and the search results vanish just as the user clicks an item.
+				@set 'controller.searchFocused', false
+
+		resultsView: Ember.View.extend
+			tagName: 'ul'
+			classNames: ['dropdown-menu', 'search-results']
+			mouseDown: ->
+				@set 'controller.selectingResult', true
+			mouseUp: ->
+				# Without this the search results vanish just as the user clicks an item.
 				setTimeout =>
-						@set 'controller.searchFocused', false
+						@set 'controller.selectingResult', false
 					, 0
