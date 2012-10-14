@@ -71,7 +71,7 @@ module.exports = (Ember, App, socket) ->
 			keyDown: (event) ->
 				if event.which is 9	# A tab.
 					@get('parentView').add()
-					return false	# Prevent focus from changing, the normal tab behavior
+					return false	# Prevent focus from changing, the normal tab key behavior
 			tagsBinding: 'parentView.tags'
 			attributeBindings: ['size', 'autocomplete', 'dataSource:data-source', 'dataProvide:data-provide', 'dataItems:data-items']
 			size: (->

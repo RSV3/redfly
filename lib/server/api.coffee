@@ -9,8 +9,7 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
-	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
-									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
+	socket.on 'db', (data, fn) ->
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -18,7 +17,6 @@ module.exports = (app, socket) ->
 					model.findById id, (err, doc) ->
 						throw err if err
 						return fn doc
-				# TODO The docs must be returned in the order of the provided ids.
 				# else if ids = data.ids
 				# 	model.find _id: $in: ids, (err, docs) ->
 				# 		throw err if err
@@ -34,21 +32,15 @@ module.exports = (app, socket) ->
 			when 'create'
 				record = data.record
 				if not _.isArray record
-
-					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
-					# override .toObject, or is that for something else?
 					# TODO XXX remove this once I'm convined that manual keys on the adapter have solved this problem
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1
 							throw new Error 'ember-data is still trying to coerce attribute names!'
 							# record[prop.split('_')[0]] = val
-
 					model.create record, (err, doc) ->
 						throw err if err
 						fn doc
 
-
-						# TODO only do this for contacts that have been added!
 						if (model is models.Tag) or (model is models.Note)
 							socket.broadcast.emit 'feed',
 								type: data.type
@@ -56,9 +48,6 @@ module.exports = (app, socket) ->
 							socket.emit 'feed',
 								type: data.type
 								id: doc.id
-
-
-						
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
