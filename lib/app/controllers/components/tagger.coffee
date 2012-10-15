@@ -20,8 +20,8 @@ module.exports = (Ember, App, socket) ->
 			@$('.new-tag').focus()
 		add: ->
 			if tag = util.trim @get('currentTag')
-				existingTag = _.find @get('tags'), (candidate) =>
-					tag is candidate	# TODO this doesn't work, but this should: tag is candidate.get('body'). Might need fat-arrow above.
+				existingTag = _.find @get('tags'), (candidate) ->
+					tag is candidate.get('body')
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user
@@ -43,7 +43,6 @@ module.exports = (Ember, App, socket) ->
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
 				$('.search-query').focus()
-				# TODO ideally handle this in TaggerView.click
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'
@@ -79,20 +78,25 @@ module.exports = (Ember, App, socket) ->
 				).property 'currentTag'
 			autocomplete: 'off'
 			dataSource: (->
-					category = @get 'parentView.category'
-					# TODO include other tags from api call
-					# socket.emit 'tags', category, (bodies) ->
-					# _.union(_.values(dictionary)...)
-					predefined = dictionary[category or 'industry']
-					predefined = _.reject predefined, (candidate) =>
+					allTags = @get '_allTags.content'
+					if _.isEmpty(allTags)
+						return '[]'
+					category = @get('parentView.category') or 'industry'
+					available = _.union allTags, dictionary[category]
+					available = _.reject available, (candidate) =>
 						for tag in @get 'tags'
 							if tag.get('body') is candidate
 								return true
 						return false
-
-					quoted = _.map predefined, (item) -> '"' + item + '"'
+					quoted = _.map available, (item) -> '"' + item + '"'
 					'[' + quoted + ']'
-				).property 'tags.@each'
+				).property 'tags.@each', '_allTags.@each'
+			_allTags: (->
+					category = @get('parentView.category') or 'industry'
+					socket.emit 'tags', category, (bodies) ->
+						tags.pushObjects bodies
+					tags = Ember.ArrayProxy.create content: []
+				).property 'parentView.category'
 			dataProvide: 'typeahead'
 			dataItems: 6
 
