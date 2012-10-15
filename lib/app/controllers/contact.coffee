@@ -48,6 +48,13 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', null
+		intro: (->
+				carriage = '%0D%0A'
+				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
+					'?subject=You know ' + @get('name') + ', right?' +
+					'&body=Hey ' + @get('addedBy.nickname') + ', could you give me an intro to ' + @get('email') + '? Thank you kindly!' +
+					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
+			).property 'name', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 
 
 	App.ContactView = Ember.View.extend

@@ -1,4 +1,6 @@
 module.exports = (DS, App) ->
+	tools = require '../util'
+
 
 	DS.attr.transforms.array =
 		from: (serialized) ->
@@ -20,6 +22,9 @@ module.exports = (DS, App) ->
 					return 'You'
 				@get 'canonicalName'
 			).property 'id', 'App.user.id', 'canonicalName'
+		nickname: (->
+				tools.nickname @get('canonicalName'), @get('email')
+			).property 'canonicalName', 'email'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
@@ -36,7 +41,6 @@ module.exports = (DS, App) ->
 				null
 			).property 'primaryName', 'email'
 		nickname: (->
-				tools = require '../util'
 				tools.nickname @get('primaryName'), @get('email')
 			).property 'primaryName', 'email'
 		email: (->
