@@ -75,7 +75,7 @@ module.exports = (Ember, App, socket) ->
 			tagsBinding: 'parentView.tags'
 			attributeBindings: ['size', 'autocomplete', 'dataSource:data-source', 'dataProvide:data-provide', 'dataItems:data-items']
 			size: (->
-					2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
+					2 + @get('currentTag.length')
 				).property 'currentTag'
 			autocomplete: 'off'
 			dataSource: (->
