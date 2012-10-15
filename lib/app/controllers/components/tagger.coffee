@@ -20,8 +20,8 @@ module.exports = (Ember, App, socket) ->
 			@$('.new-tag').focus()
 		add: ->
 			if tag = util.trim @get('currentTag')
-				existingTag = _.find @get('tags'), (candidate) =>
-					tag is candidate	# TODO this doesn't work, but this should: tag is candidate.get('body'). Might need fat-arrow above.
+				existingTag = _.find @get('tags'), (candidate) ->
+					tag is candidate.get('body')
 				if not existingTag
 					newTag = App.store.createRecord App.Tag,
 						creator: App.user
@@ -43,7 +43,6 @@ module.exports = (Ember, App, socket) ->
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
 				$('.search-query').focus()
-				# TODO ideally handle this in TaggerView.click
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'
@@ -71,86 +70,92 @@ module.exports = (Ember, App, socket) ->
 			keyDown: (event) ->
 				if event.which is 9	# A tab.
 					@get('parentView').add()
-					return false	# Prevent focus from changing, the normal tab behavior
+					return false	# Prevent focus from changing, the normal tab key behavior
 			tagsBinding: 'parentView.tags'
 			attributeBindings: ['size', 'autocomplete', 'dataSource:data-source', 'dataProvide:data-provide', 'dataItems:data-items']
 			size: (->
-					2 + @get('currentTag.length') # TODO Different characters have different widths, so this isn't super accurate.
+					2 + @get('currentTag.length')
 				).property 'currentTag'
 			autocomplete: 'off'
 			dataSource: (->
-					category = @get 'parentView.category'
-					# TODO include other tags from api call
-					# socket.emit 'tags', category, (bodies) ->
-					predefined = @get('parentView').dictionary[category]
-					predefined = _.reject predefined, (candidate) =>
+					allTags = @get '_allTags.content'
+					if _.isEmpty(allTags)
+						return '[]'
+					category = @get('parentView.category') or 'industry'
+					available = _.union allTags, dictionary[category]
+					available = _.reject available, (candidate) =>
 						for tag in @get 'tags'
 							if tag.get('body') is candidate
 								return true
 						return false
-
-					quoted = _.map predefined, (item) -> '"' + item + '"'
+					quoted = _.map available, (item) -> '"' + item + '"'
 					'[' + quoted + ']'
-				).property 'tags.@each'
+				).property 'tags.@each', '_allTags.@each'
+			_allTags: (->
+					category = @get('parentView.category') or 'industry'
+					socket.emit 'tags', category, (bodies) ->
+						tags.pushObjects bodies
+					tags = Ember.ArrayProxy.create content: []
+				).property 'parentView.category'
 			dataProvide: 'typeahead'
 			dataItems: 6
 
 
-		dictionary:
-			redstar: [
-				'ideator'
-				'germ'
-				'phase1'
-				'founder'
-				'action'
-				'healthcare'
-				'research'
-				'salon'
-				'aging'
-				'underemployment'
-				'loopit'
-				'vinely'
-				'gosprout'
-				'greenback'
-				'silver black'
-				'atlas'
-			]
-			industry: [
-				'legal'
-				'attorney'
-				'partner'
-				'director'
-				'venture capital (vc)'
-				'private equity (pe)'
-				'consumer electronics'
-				'medical devices'
-				'tv'
-				'news'
-				'print'
-				'music'
-				'consumer packaged goods (cpg)'
-				'retail'
-				'apparel'
-				'sports'
-				'entertainment'
-				'healthcare'
-				'research'
-				'e-commerce'
-				'b2b'
-				'b2c'
-				'direct sales'
-				'finance'
-				'banking'
-				'small medium business (smb)'
-				'big data'
-				'social media'
-				'consulting'
-				'investment banking'
-				'angel investing'
-				'consumer'
-				'web'
-				'enterprise'
-				'software'
-				'academic'
-				'professor'
-			]
+	dictionary =
+		redstar: [
+			'ideator'
+			'germ'
+			'phase1'
+			'founder'
+			'action'
+			'healthcare'
+			'research'
+			'salon'
+			'aging'
+			'underemployment'
+			'loopit'
+			'vinely'
+			'gosprout'
+			'greenback'
+			'silver black'
+			'atlas'
+		]
+		industry: [
+			'legal'
+			'attorney'
+			'partner'
+			'director'
+			'venture capital (vc)'
+			'private equity (pe)'
+			'consumer electronics'
+			'medical devices'
+			'tv'
+			'news'
+			'print'
+			'music'
+			'consumer packaged goods (cpg)'
+			'retail'
+			'apparel'
+			'sports'
+			'entertainment'
+			'healthcare'
+			'research'
+			'e-commerce'
+			'b2b'
+			'b2c'
+			'direct sales'
+			'finance'
+			'banking'
+			'small medium business (smb)'
+			'big data'
+			'social media'
+			'consulting'
+			'investment banking'
+			'angel investing'
+			'consumer'
+			'web'
+			'enterprise'
+			'software'
+			'academic'
+			'professor'
+		]

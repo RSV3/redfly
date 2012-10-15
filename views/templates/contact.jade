@@ -2,7 +2,12 @@
 	img.img-polaroid.span3(src='https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg', alt='')
 	.span6
 		h1 {{name}}
-		h4 {{email}}
+		h4
+			| {{#if isKnown}}
+			| {{email}}
+			| {{else}}
+			| <a {{bindAttr href="intro"}}>{{email}}</a>
+			| {{/if}}
 		| {{#if firstHistory}}
 		div
 			p
