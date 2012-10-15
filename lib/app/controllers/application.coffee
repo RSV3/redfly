@@ -48,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			# TODO addclear
 
-			$('.navbar-search i').popover()	# TO-DO make scoped @$ when possible
+			$('.navbar-search i[rel=popover]').popover()	# TO-DO make scoped @$ when possible and make the selector just [rel=popover]
 
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create

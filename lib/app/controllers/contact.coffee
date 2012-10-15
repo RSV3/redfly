@@ -48,11 +48,14 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@get('notes').unshiftObject newNote
 				@set 'currentNote', null
-		intro: (->
+		directMailto: (->
+				'mailto:'+ @get('name') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
+			).property 'name', 'email'
+		introMailto: (->
 				carriage = '%0D%0A'
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
 					'?subject=You know ' + @get('name') + ', right?' +
-					'&body=Hey ' + @get('addedBy.nickname') + ', could you give me an intro to ' + @get('email') + '? Thank you kindly!' +
+					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('email') + '? Thanks!' +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
 			).property 'name', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 
@@ -60,12 +63,25 @@ module.exports = (Ember, App, socket) ->
 	App.ContactView = Ember.View.extend
 		template: require '../../../views/templates/contact'
 		classNames: ['contact']
+
+		introView: Ember.View.extend
+			tagName: 'i'
+			didInsertElement: ->
+				$('.contact .top i[rel=tooltip]').tooltip()	# TODO make this scoped and use the selector: @$().tooltip()
+			attributeBindings: ['rel', 'dataTitle:data-title', 'dataPlacement:data-placement']
+			rel: 'tooltip'
+			dataTitle: (->
+					'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
+				).property 'controller.addedBy.nickname'
+			dataPlacement: 'right'
+
 		newNoteView: Ember.TextArea.extend
 			attributeBindings: ['placeholder', 'rows']
 			placeholder: (->
 					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
 				).property 'controller.nickname'
 			rows: 3
+
 		noteView: Ember.View.extend
 			tagName: 'blockquote'
 			didInsertElement: ->
