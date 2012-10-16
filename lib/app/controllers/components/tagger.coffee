@@ -79,7 +79,7 @@ module.exports = (Ember, App, socket) ->
 			autocomplete: 'off'
 			dataSource: (->
 					allTags = @get '_allTags.content'
-					if _.isEmpty(allTags)
+					if _.isEmpty allTags
 						return '[]'
 					category = @get('parentView.category') or 'industry'
 					available = _.union allTags, dictionary[category]
