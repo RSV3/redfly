@@ -16,14 +16,15 @@ module.exports = (Ember, App, socket) ->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 			).property 'contact.id', 'category'
 		availableTags: (->
-			allTags = @get('_allTags.content').sort()
-			dictionaryTags = dictionary[@get('category') or 'industry'].sort()
+			allTags = @get '_allTags.content'
+			dictionaryTags = dictionary[@get('category') or 'industry']
 			available = _.union dictionaryTags, allTags
 			available = _.reject available, (candidate) =>
 				for tag in @get 'tags'
 					if tag.get('body') is candidate
 						return true
 				return false
+			available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
 				category = @get('category') or 'industry'
