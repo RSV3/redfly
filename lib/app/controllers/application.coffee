@@ -74,6 +74,9 @@ module.exports = (Ember, App, socket) ->
 				@$().addClass 'animated flipInX'
 
 		searchView: Ember.TextField.extend
+			keyDown: (event) ->
+				if event.which is 27	# Escape.
+					@$().blur()
 			focusIn: ->
 				@set 'controller.searchFocused', true
 			focusOut: ->
