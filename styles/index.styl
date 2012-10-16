@@ -13,6 +13,8 @@ baseFontSize = 14px
 
 
 // Global variables.
+smallFontSize = baseFontSize / 1.4
+
 lightBorder = 1px solid #EEE
 mediumBorder = 1px solid #C6C6C6
 
@@ -29,38 +31,40 @@ tagger(fontSize)
 	taggerMargin = fontSize * 0.28
 	closePadding = fontSize * 0.25
 	.tagger
-		line-height fontSize * 1.42
-		.tag
-			a
-				color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
-			color #666
-			margin taggerMargin 0 0 taggerMargin
-			display inline-block
-			background-color #DEE7F8
-			border 1px solid #CAD8F3
+		.tags
+			line-height fontSize * 1.42
+			.tag
+				a
+					color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
+				color #666
+				margin taggerMargin 0 0 taggerMargin
+				display inline-block
+				background-color #DEE7F8
+				border 1px solid #CAD8F3
 
-			big = fontSize
-			little = fontSize / 4		
-			border-radius big little little big
+				big = fontSize
+				little = fontSize / 4		
+				border-radius big little little big
 
-			padding-left fontSize * 0.75
-			.body
-				margin-right taggerMargin
-			.close
-				float none
-				font-size inherit
-				border-left 1px dotted #1323d6
-				padding 0 closePadding 0 closePadding
-		.new-tag-form
-			margin taggerMargin 0 0 taggerMargin
-			height fontSize * 2
-			display inline
-			.new-tag
-				border none
-				box-shadow none
-				width auto
-				margin 0
-
+				padding-left fontSize * 0.75
+				.body
+					padding-right closePadding
+				.close
+					float none
+					font-size inherit
+					border-left 1px dotted #1323d6
+					padding 0 closePadding 0 closePadding
+			.new-tag-form
+				margin taggerMargin 0 0 taggerMargin
+				height fontSize * 2
+				display inline
+				.new-tag
+					border none
+					box-shadow none
+					width auto
+					margin 0
+		.cloud
+			margin-top 10px
 
 
 
@@ -73,7 +77,7 @@ body
 		margin-left searchMargin
 	.search-results
 		margin-left searchMargin
-		display block
+		display block	// Always show the dropdown.
 	.navbar-form .btn
 		margin-left 4px
 .activity
@@ -85,9 +89,8 @@ body
 	.summary .own-line
 		margin-top 10px
 	.feed
-		fontSize = baseFontSize / 1.4
-		font-size fontSize
-		tagger fontSize
+		font-size smallFontSize
+		tagger(smallFontSize)
 		.feed-item
 			border-bottom lightBorder
 			padding-bottom 10px
@@ -119,10 +122,12 @@ body
 		padding-bottom 30px
 		margin-bottom 30px
 		border-bottom lightBorder
-	tagger baseFontSize
-	.tagger
-		min-height 82px
-		border mediumBorder	
+	.tab-content
+		overflow visible
+		tagger(baseFontSize)
+		.tagger .tags
+			min-height 82px
+			border mediumBorder	
 	.add-a-note
 		margin-top 30px
 		textarea

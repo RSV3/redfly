@@ -15,27 +15,48 @@ module.exports = (Ember, App, socket) ->
 		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 			).property 'contact.id', 'category'
+		availableTags: (->
+			allTags = @get('_allTags.content').sort()
+			dictionaryTags = dictionary[@get('category') or 'industry'].sort()
+			available = _.union dictionaryTags, allTags
+			available = _.reject available, (candidate) =>
+				for tag in @get 'tags'
+					if tag.get('body') is candidate
+						return true
+				return false
+			).property 'category', 'tags.@each', '_allTags.@each'
+		_allTags: (->
+				category = @get('category') or 'industry'
+				socket.emit 'tags', category, (bodies) ->
+					tags.pushObjects bodies
+				tags = Ember.ArrayProxy.create content: []
+			).property 'category'
 		click: ->
 			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
 			@$('.new-tag').focus()
 		add: ->
 			if tag = util.trim @get('currentTag')
-				existingTag = _.find @get('tags'), (candidate) ->
-					tag is candidate.get('body')
-				if not existingTag
-					newTag = App.store.createRecord App.Tag,
-						creator: App.user
-						contact: @get 'contact'
-						category: @get('category') or 'industry'
-						body: tag
-					App.store.commit()
-					@set 'animate', true
-					@get('tags').pushObject newTag
-				else
-					# TODO find the element of the tag and play the appropriate animation
-					# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
-					# existingTag/@$().addClass 'animated pulse'
+				@_add tag
 				@set 'currentTag', null
+		_add: (tag) ->
+			existingTag = _.find @get('tags'), (candidate) ->
+				tag is candidate.get('body')
+			if not existingTag
+				newTag = App.store.createRecord App.Tag,
+					creator: App.user
+					contact: @get 'contact'
+					category: @get('category') or 'industry'
+					body: tag
+				App.store.commit()
+				@set 'animate', true
+				@get('tags').pushObject newTag
+			else
+				# TODO find the element of the tag and play the appropriate animation
+				# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
+				# existingTag/@$().addClass 'animated pulse'
+		showSuggestions: (->
+				@get('selectingSuggestion') or @get('taggerFocused')
+			).property 'selectingSuggestion', 'taggerFocused'
 
 		tagView: Ember.View.extend
 			tagName: 'span'
@@ -78,27 +99,18 @@ module.exports = (Ember, App, socket) ->
 				).property 'currentTag'
 			autocomplete: 'off'
 			dataSource: (->
-					allTags = @get '_allTags.content'
-					if _.isEmpty allTags
-						return '[]'
-					category = @get('parentView.category') or 'industry'
-					available = _.union allTags, dictionary[category]
-					available = _.reject available, (candidate) =>
-						for tag in @get 'tags'
-							if tag.get('body') is candidate
-								return true
-						return false
+					available = @get 'parentView.availableTags'
 					quoted = _.map available, (item) -> '"' + item + '"'
 					'[' + quoted + ']'
-				).property 'tags.@each', '_allTags.@each'
-			_allTags: (->
-					category = @get('parentView.category') or 'industry'
-					socket.emit 'tags', category, (bodies) ->
-						tags.pushObjects bodies
-					tags = Ember.ArrayProxy.create content: []
-				).property 'parentView.category'
+				).property 'parentView.availableTags'
 			dataProvide: 'typeahead'
 			dataItems: 6
+
+		availableTagView: Ember.View.extend
+			tagName: 'span'
+			use: ->
+				tag = @get 'context'
+				@get('parentView')._add tag
 
 
 	dictionary =

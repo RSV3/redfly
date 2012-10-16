@@ -24,7 +24,7 @@ module.exports = (Ember, App, socket) ->
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				if @get('selectingResult') is true
+				if @get('selectingResult')
 					return true
 				@get('searchFocused') and @get('results.content')
 			).property 'selectingResult', 'results.@each', 'searchFocused'

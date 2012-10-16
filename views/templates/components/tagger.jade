@@ -1,12 +1,21 @@
-| {{#each view.tags}}
-| {{#view view.tagView}}
-i.icon-tag  
-span.body
-	| <a href="#" {{action search target="view"}}>{{body}}</a>
-| <a class="close" {{action delete target="view"}}>×</a>
-| {{/view}}
-| {{/each}}
+.tags
+	| {{#each view.tags}}
+	| {{#view view.tagView}}
+	i.icon-tag  
+	| <a class="body" href="#" {{action search target="view"}}>{{body}}</a>
+	| <a class="close" {{action delete target="view"}}>×</a>
+	| {{/view}}
+	| {{/each}}
 
-| <form class="new-tag-form" {{action add on="submit" target="view"}}>
-| {{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
-| </form>
+	| <form class="new-tag-form" {{action add on="submit" target="view"}}>
+	| {{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
+	| </form>
+
+| {{#if view.cloud}}
+.cloud
+	| {{#each view.availableTags}}
+	| {{#view view.availableTagView}}
+	| <a href="#" {{action use target="view"}}><span class="label label-info"><i class="icon-plus"></i> {{this}}</span></a>
+	| {{/view}}
+	| {{/each}}
+| {{/if}}
