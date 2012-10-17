@@ -83,10 +83,12 @@ module.exports = (Ember, App, socket) ->
 			focusIn: ->
 				@set 'controller.usingSearch', true
 			focusOut: ->
-				# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results.
-				_.defer =>
-					focused = $(document.activeElement)
-					if not _.first @$().has(focused)
-						@set 'controller.usingSearch', false
+				# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results (after a small delay
+				# in cause of mousedown).
+				setTimeout =>
+						focused = $(document.activeElement)
+						if not _.first @$().has(focused)
+							@set 'controller.usingSearch', false
+					, 150
 
 			searchBoxView: Ember.TextField.extend()
