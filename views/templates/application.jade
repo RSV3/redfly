@@ -19,7 +19,7 @@
 				span.icon-bar
 			| <a class="brand" {{action goHome href=true}}>Redfly</a>
 			.nav-collapse.collapse
-				ul.nav
+				ul.nav.open
 					li.
 						<a {{action goHome href=true}}>Home</a>
 					li.
@@ -31,45 +31,46 @@
 					li
 						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...') Report a bug
 					// <li><a {{action goReport href=true}}>Report a bug</a></li>
-					li.dropdown
-						form.navbar-search.pull-left(autocomplete='off', onsubmit='return false;')
-							| {{view view.searchView class="search-query" placeholder="Search" valueBinding="App.search"}}
-							i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Searches are may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
-						| {{#if showResults}}
-						ul.dropdown-menu.search-results
-							| {{#if results.name}}
-							.nav-header Names
-							| {{#each results.name}}
-							li
-								| <a {{action goContact this href=true}}>{{name}}</a>
-							| {{/each}}
-							li.divider
-							| {{/if}}
-							| {{#if results.email}}
-							.nav-header Emails
-							| {{#each results.email}}
-							li
-								| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
-							| {{/each}}
-							li.divider
-							| {{/if}}
-							| {{#if results.tag}}
-							.nav-header Matches in tags
-							| {{#each results.tag}}
-							li
-								| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
-							| {{/each}}
-							li.divider
-							| {{/if}}
-							| {{#if results.note}}
-							.nav-header Matches in notes
-							| {{#each results.note}}
-							li
-								| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
-							| {{/each}}
-							li.divider
-							| {{/if}}
+					| {{#view view.searchView}}
+					form.navbar-search.pull-left(autocomplete='off', onsubmit='return false;')
+						| {{view view.searchBoxView class="search-query" placeholder="Search" valueBinding="App.search"}}
+						i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Searches are may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
+					| {{#if showResults}}
+					ul.dropdown-menu.search-results
+						| {{#if results.name}}
+						.nav-header Names
+						| {{#each results.name}}
+						li
+							| <a {{action goContact this href=true}}>{{name}}</a>
+						| {{/each}}
+						li.divider
 						| {{/if}}
+						| {{#if results.email}}
+						.nav-header Emails
+						| {{#each results.email}}
+						li
+							| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
+						| {{/each}}
+						li.divider
+						| {{/if}}
+						| {{#if results.tag}}
+						.nav-header Matches in tags
+						| {{#each results.tag}}
+						li
+							| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
+						| {{/each}}
+						li.divider
+						| {{/if}}
+						| {{#if results.note}}
+						.nav-header Matches in notes
+						| {{#each results.note}}
+						li
+							| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
+						| {{/each}}
+						li.divider
+						| {{/if}}
+					| {{/if}}
+					| {{/view}}
 			.pull-right
 				| {{#unless App.user.content}}
 				| <form class="navbar-form" {{action doLogin on="submit"}}>

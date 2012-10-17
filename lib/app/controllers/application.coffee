@@ -1,4 +1,5 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
 	_s = require 'underscore.string'
 	util = require '../../util'
 
@@ -24,8 +25,8 @@ module.exports = (Ember, App, socket) ->
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				@get('searchFocused') and @get('results.content')
-			).property 'results.@each', 'searchFocused'
+				@get('usingSearch') and @get('results.content')
+			).property 'results.@each', 'usingSearch'
 		searchChanged: (->
 				query = util.trim App.get('search')
 				if not query
@@ -69,14 +70,23 @@ module.exports = (Ember, App, socket) ->
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
 
-		searchView: Ember.TextField.extend
+		searchView: Ember.View.extend
+			tagName: 'li'
+			classNames: ['dropdown']
+			attributeBindings: ['role']
+			role: 'menu'
 			keyDown: (event) ->
+				if event.which is 13	# Enter.
+					_.defer => @set 'controller.usingSearch', false
 				if event.which is 27	# Escape.
-					@$().blur()
+					@$(':focus').blur()
 			focusIn: ->
-				@set 'controller.searchFocused', true
+				@set 'controller.usingSearch', true
 			focusOut: ->
-				# Short delay to allow a mouse click to register before the results disappear.
-				setTimeout =>
-						@set 'controller.searchFocused', false
-					, 150
+				# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results.
+				_.defer =>
+					focused = $(document.activeElement)
+					if not _.first @$().has(focused)
+						@set 'controller.usingSearch', false
+
+			searchBoxView: Ember.TextField.extend()

@@ -61,6 +61,7 @@ module.exports = (Ember, App, socket) ->
 			classNames: ['tag']
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
+				# TODO App.router.get('applicationController.searchView.searchBoxView.$')().focus() and make App.search private while I'm at it.
 				$('.search-query').focus()
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
