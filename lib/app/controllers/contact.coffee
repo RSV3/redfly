@@ -76,6 +76,7 @@ module.exports = (Ember, App, socket) ->
 			dataPlacement: 'right'
 
 		newNoteView: Ember.TextArea.extend
+			classNames: ['span12']
 			attributeBindings: ['placeholder', 'rows']
 			placeholder: (->
 					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'

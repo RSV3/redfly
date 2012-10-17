@@ -55,9 +55,6 @@ module.exports = (Ember, App, socket) ->
 				# TODO find the element of the tag and play the appropriate animation
 				# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
 				# existingTag/@$().addClass 'animated pulse'
-		showSuggestions: (->
-				@get('selectingSuggestion') or @get('taggerFocused')
-			).property 'selectingSuggestion', 'taggerFocused'
 
 		tagView: Ember.View.extend
 			tagName: 'span'

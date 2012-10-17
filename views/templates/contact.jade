@@ -41,7 +41,7 @@
 					| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
 	.span6
 		| {{#if isKnown}}
-		.row-fluid.add-a-note
+		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
 			| <button class="btn pull-right" type="submit" {{bindAttr disabled="disableAdd"}}>
