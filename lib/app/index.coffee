@@ -2,7 +2,7 @@ require 'html5-manifest'
 require '../vendor'
 
 # require 'ember'	# TODO also see if there's a way to get a debug version of node-ember like i'm using via script currently
-window.App = Ember.Application.create()
+window.App = Ember.Application.create autoinit: false
 
 # site = require('url').parse window.location.href
 # io = require 'socket.io-client' # TODO convoy fails

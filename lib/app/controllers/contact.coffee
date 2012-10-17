@@ -3,7 +3,6 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ContactController = Ember.ObjectController.extend
-		currentNote: null
 		histories: (->
 				App.Mail.find
 					conditions:
