@@ -57,12 +57,6 @@ module.exports = (Ember, App, socket) ->
 					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('email') + '? Thanks!' +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
 			).property 'name', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
-		poopty: (->
-				$('#poopty').attr 'href', @get('directMailto')
-			).observes 'directMailto'
-		peupty: (->
-				$('#peupty').attr 'href', @get('introMailto')
-			).observes 'introMailto'
 
 
 	App.ContactView = Ember.View.extend
