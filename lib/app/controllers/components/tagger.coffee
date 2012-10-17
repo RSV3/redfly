@@ -98,7 +98,7 @@ module.exports = (Ember, App, socket) ->
 					items: 6
 					updater: (item) =>
 						@get('parentView')._add item
-						@set 'parentView.currentTag', null
+						@set 'currentTag', null
 						return null
 				# Monkey-patch bootstrap so I can trigger bindings.
 				# typeahead = $(@$()).data('typeahead')
