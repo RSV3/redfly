@@ -66,7 +66,7 @@ module.exports = (Ember, App, socket) ->
 		introView: Ember.View.extend
 			tagName: 'i'
 			didInsertElement: ->
-				$('.contact .top i[rel=tooltip]').tooltip()	# TODO make this scoped and use the selector: @$().tooltip()
+				$(@$()).tooltip()
 			attributeBindings: ['rel', 'dataTitle:data-title', 'dataPlacement:data-placement']
 			rel: 'tooltip'
 			dataTitle: (->

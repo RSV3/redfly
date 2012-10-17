@@ -45,7 +45,7 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../views/templates/application'
 		didInsertElement: ->
-			$('.navbar-search i[rel=popover]').popover()	# TO-DO make scoped @$ when possible and make the selector just [rel=popover]
+			$(@$('[rel=popover]')).popover()
 
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create

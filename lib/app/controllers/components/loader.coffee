@@ -5,7 +5,7 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/loader'
 
 		didInsertElement: ->
-			@set 'modal', $('#signupMessage').modal()	# TO-DO make scoped @$ when possible
+			@set 'modal', $(@$()).modal()
 			@set 'notification', $.pnotify
 				title: 'Email parsing status',
 				text: '<div id="loading"></div>'
