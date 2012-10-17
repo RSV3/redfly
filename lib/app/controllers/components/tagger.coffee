@@ -85,6 +85,7 @@ module.exports = (Ember, App, socket) ->
 		newTagView: Ember.TextField.extend
 			classNames: ['new-tag-field']
 			currentTagBinding: 'parentView.currentTag'
+			tagsBinding: 'parentView.tags'
 			currentTagChanged: (->
 					if tag = @get('currentTag')
 						@set 'currentTag', tag.toLowerCase()
@@ -93,19 +94,26 @@ module.exports = (Ember, App, socket) ->
 				if event.which is 9	# A tab.
 					@get('parentView').add()
 					return false	# Prevent focus from changing, the normal tab key behavior
-			tagsBinding: 'parentView.tags'
-			attributeBindings: ['size', 'autocomplete', 'dataSource:data-source', 'dataProvide:data-provide', 'dataItems:data-items']
+			didInsertElement: ->					
+				$(@$()).typeahead
+					source: @get('parentView.availableTags')
+					items: 6
+					updater: (item) =>
+						@get('parentView')._add item
+						@set 'parentView.currentTag', null
+						return null
+				# Monkey-patch bootstrap so I can trigger bindings.
+				# typeahead = $(@$()).data('typeahead')
+				# move = typeahead.move
+				# that = this
+				# typeahead.move = (e) ->
+				# 	move.call this, e
+				# 	that.set 'currentTag', that.get('currentTag')
+			attributeBindings: ['size', 'autocomplete']
 			size: (->
 					2 + @get('currentTag.length')
 				).property 'currentTag'
 			autocomplete: 'off'
-			dataSource: (->
-					available = @get 'parentView.availableTags'
-					quoted = _.map available, (item) -> '"' + item + '"'
-					'[' + quoted + ']'
-				).property 'parentView.availableTags'
-			dataProvide: 'typeahead'
-			dataItems: 6
 
 		availableTagView: Ember.View.extend
 			tagName: 'span'
