@@ -2,12 +2,7 @@
 	img.img-polaroid.span3(src='https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg', alt='')
 	.span6
 		h1 {{name}}
-		h4
-			| {{#if isKnown}}
-			| {{email}}
-			| {{else}}
-			| <a {{bindAttr href="intro"}}>{{email}}</a>
-			| {{/if}}
+		h4 {{email}}
 		| {{#if firstHistory}}
 		div
 			p
@@ -29,18 +24,19 @@
 				| <a {{action goProfile this href=true}}>{{name}}</a>
 			| {{/each}}
 .row-fluid
-	.row-fluid.span6
+	.span6
 		.row-fluid
 			ul.nav.nav-pills
 				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
 				li: a(href='#industry', data-toggle='pill') Industry Tags
 			.tab-content
 				#redstar.tab-pane.fade.active.in
-					| {{view App.TaggerView contactBinding="this" category="redstar"}}
+					| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true"}}
 				#industry.tab-pane.fade
-					| {{view App.TaggerView contactBinding="this" category="industry"}}
+					| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
+	.span6
 		| {{#if isKnown}}
-		.row-fluid.add-a-note
+		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
 			| <button class="btn pull-right" type="submit" {{bindAttr disabled="disableAdd"}}>
@@ -49,15 +45,15 @@
 			| </button>
 			| </form>
 		| {{/if}}
-	.row-fluid.span6
-		p.lead Notes
-		| {{#each notes}}
-		| {{#view view.noteView}}
-		p {{body}}
-		// TO-DO do nl2br with bindings
-		small {{author.name}} | {{date}}
-		// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
-		| {{/view}}
-		| {{else}}
-		span {{emptyNotesText}}
-		| {{/each}}
+		.row-fluid
+			p.lead Notes
+			| {{#each notes}}
+			| {{#view view.noteView}}
+			p {{body}}
+			// TO-DO do nl2br with bindings
+			small {{author.name}} | {{date}}
+			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
+			| {{/view}}
+			| {{else}}
+			span {{emptyNotesText}}
+			| {{/each}}

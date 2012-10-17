@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 				mutable = []
 				@get('_initialContacts').forEach (contact) ->
 					item = Ember.ObjectProxy.create content: contact
-					item['typeInitialContact'] = true
+					item.typeInitialContact = true
 					mutable.push item
 				mutable
 			).property '_initialContacts.@each'
@@ -24,10 +24,8 @@ module.exports = (Ember, App, socket) ->
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				if @get('selectingResult') is true
-					return true
 				@get('searchFocused') and @get('results.content')
-			).property 'selectingResult', 'results.@each', 'searchFocused'
+			).property 'results.@each', 'searchFocused'
 		searchChanged: (->
 				query = util.trim App.get('search')
 				if not query
@@ -46,9 +44,7 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../views/templates/application'
 		didInsertElement: ->
-			# TODO addclear
-
-			$('.navbar-search i').popover()	# TO-DO make scoped @$ when possible
+			$('.navbar-search i[rel=popover]').popover()	# TO-DO make scoped @$ when possible and make the selector just [rel=popover]
 
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create
@@ -56,7 +52,7 @@ module.exports = (Ember, App, socket) ->
 				item['type' + data.type] = true
 				@get('controller.feed').unshiftObject item
 
-			# TODO get these to update sometimes. Maybe create a pattern for the simple use case of using a socket to get and set one value.
+			# TODO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.contacts', (count) =>
 				@set 'controller.contactsAdded', count
 			socket.emit 'summary.tags', (count) =>
@@ -74,18 +70,13 @@ module.exports = (Ember, App, socket) ->
 				@$().addClass 'animated flipInX'
 
 		searchView: Ember.TextField.extend
+			keyDown: (event) ->
+				if event.which is 27	# Escape.
+					@$().blur()
 			focusIn: ->
 				@set 'controller.searchFocused', true
 			focusOut: ->
-				@set 'controller.searchFocused', false
-
-		resultsView: Ember.View.extend
-			tagName: 'ul'
-			classNames: ['dropdown-menu', 'search-results']
-			mouseDown: ->
-				@set 'controller.selectingResult', true
-			mouseUp: ->
-				# Without this the search results vanish just as the user clicks an item.
+				# Short delay to allow a mouse click to register before the results disappear.
 				setTimeout =>
-						@set 'controller.selectingResult', false
-					, 0
+						@set 'controller.searchFocused', false
+					, 150

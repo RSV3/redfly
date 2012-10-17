@@ -36,40 +36,39 @@
 							| {{view view.searchView class="search-query" placeholder="Search" valueBinding="App.search"}}
 							i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Searches are may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
 						| {{#if showResults}}
-						| {{#view view.resultsView}}
-						| {{#if results.name}}
-						.nav-header Names
-						| {{#each results.name}}
-						li
-							| <a {{action goContact this href=true}}>{{name}}</a>
-						| {{/each}}
-						li.divider
-						| {{/if}}
-						| {{#if results.email}}
-						.nav-header Emails
-						| {{#each results.email}}
-						li
-							| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
-						| {{/each}}
-						li.divider
-						| {{/if}}
-						| {{#if results.tag}}
-						.nav-header Matches in tags
-						| {{#each results.tag}}
-						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
-						| {{/each}}
-						li.divider
-						| {{/if}}
-						| {{#if results.note}}
-						.nav-header Matches in notes
-						| {{#each results.note}}
-						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
-						| {{/each}}
-						li.divider
-						| {{/if}}
-						| {{/view}}
+						ul.dropdown-menu.search-results
+							| {{#if results.name}}
+							.nav-header Names
+							| {{#each results.name}}
+							li
+								| <a {{action goContact this href=true}}>{{name}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.email}}
+							.nav-header Emails
+							| {{#each results.email}}
+							li
+								| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.tag}}
+							.nav-header Matches in tags
+							| {{#each results.tag}}
+							li
+								| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
+							| {{#if results.note}}
+							.nav-header Matches in notes
+							| {{#each results.note}}
+							li
+								| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
+							| {{/each}}
+							li.divider
+							| {{/if}}
 						| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
@@ -99,7 +98,7 @@
 					| </a>
 					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
-					ul.dropdown-menu
+					ul.dropdown-menu(role='menu')
 						li
 							| <a {{action goUserProfile href=true}}>Profile</a>
 						li
