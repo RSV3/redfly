@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 				mutable = []
 				@get('_initialContacts').forEach (contact) ->
 					item = Ember.ObjectProxy.create content: contact
-					item['typeInitialContact'] = true
+					item.typeInitialContact = true
 					mutable.push item
 				mutable
 			).property '_initialContacts.@each'
