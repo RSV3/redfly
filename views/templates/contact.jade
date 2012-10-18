@@ -4,9 +4,9 @@
 		h1 {{name}}
 		h4
 			| {{#if isKnown}}
-			| <a {{bindAttr href="directMailto"}}>{{email}}</a>
+			| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{else}}
-			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}}>{{view view.introView class="icon-bullhorn"}}</a>
+			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/if}}
 		| {{#if firstHistory}}
 		div
