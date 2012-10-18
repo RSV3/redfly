@@ -84,7 +84,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'controller.usingSearch', true
 			focusOut: ->
 				# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results (after a small delay
-				# in cause of mousedown).
+				# in case of mousedown).
 				setTimeout =>
 						focused = $(document.activeElement)
 						if not _.first @$().has(focused)
