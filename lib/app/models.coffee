@@ -32,7 +32,7 @@ module.exports = (DS, App) ->
 		emails: DS.attr 'array'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
-		addedBy:(DS.belongsTo 'App.User', key: 'addedBy')
+		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		name: (->
 				if name = @get('primaryName')
 					return name

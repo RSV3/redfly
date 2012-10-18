@@ -7,5 +7,5 @@ module.exports = (Ember, App, socket) ->
 			
 	App.ProfileController = Ember.ObjectController.extend
 		contacts: (->
-				App.Contact.find 'addedBy': @get('id')
+				App.Contact.find addedBy: @get('id')
 			).property 'id'
