@@ -30,7 +30,13 @@
 			| {{/each}}
 .row-fluid
 	.span6
-		.row-fluid
+		.row-fluid.tag-category
+			p.lead Redstar Tags
+			| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true"}}
+		.row-fluid.tag-category
+			p.lead Industry Tags
+			| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
+		//-
 			ul.nav.nav-pills
 				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
 				li: a(href='#industry', data-toggle='pill') Industry Tags
