@@ -36,7 +36,7 @@
 					| {{#view view.searchView}}
 					form.navbar-search.pull-left(autocomplete='off', onsubmit='return false;')
 						| {{view view.searchBoxView class="search-query" placeholder="Search" valueBinding="App.search"}}
-						i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Searches are may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
+						i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Search terms may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
 					| {{#if showResults}}
 					ul.dropdown-menu.search-results
 						| {{#if results.name}}
