@@ -28,15 +28,15 @@ module.exports = (Ember, App, socket) ->
 					return false
 				return true
 			).property 'currentNote'
-		emptyNotesText: (->
-				if Math.random() < 0.9
-					# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
-					return 'No notes about this contact yet.'
-				('...and that\'s why you ' +
-					' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
-					 'always leave a note!</a>'
-				).htmlSafe()
-			).property().volatile()
+		# emptyNotesText: (->
+		# 		if Math.random() < 0.9
+		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
+		# 			return 'No notes about this contact yet.'
+		# 		('...and that\'s why you ' +
+		# 			' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
+		# 			 'always leave a note!</a>'
+		# 		).htmlSafe()
+		# 	).property().volatile()
 		add: ->
 			if note = util.trim @get('currentNote')
 				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
@@ -45,7 +45,7 @@ module.exports = (Ember, App, socket) ->
 					body: note
 				App.store.commit()
 				@set 'animate', true
-				@get('notes').unshiftObject newNote
+				@get('notes').pushObject newNote
 				@set 'currentNote', null
 		directMailto: (->
 				'mailto:'+ @get('name') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'

@@ -60,7 +60,7 @@ module.exports = (DS, App) ->
 					conditions:
 						contact: @get('id')
 					options:
-						sort: date: -1
+						sort: date: 1
 			).property 'id'
 
 	App.Tag = DS.Model.extend

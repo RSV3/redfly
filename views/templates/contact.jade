@@ -46,6 +46,18 @@
 				#industry.tab-pane.fade
 					| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
 	.span6
+		.row-fluid
+			p.lead Notes
+			| {{#each notes}}
+			| {{#view view.noteView}}
+			p {{body}}
+			// TO-DO do nl2br with bindings
+			small {{author.name}} | {{date}}
+			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
+			| {{/view}}
+			//- | {{else}}
+			//- span {{emptyNotesText}}
+			| {{/each}}
 		| {{#if isKnown}}
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
@@ -56,15 +68,3 @@
 			| </button>
 			| </form>
 		| {{/if}}
-		.row-fluid
-			p.lead Notes
-			| {{#each notes}}
-			| {{#view view.noteView}}
-			p {{body}}
-			// TO-DO do nl2br with bindings
-			small {{author.name}} | {{date}}
-			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
-			| {{/view}}
-			| {{else}}
-			span {{emptyNotesText}}
-			| {{/each}}
