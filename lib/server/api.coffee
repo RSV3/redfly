@@ -199,7 +199,7 @@ module.exports = (app, socket) ->
 					if not _.isEmpty typeDocs
 						if type is 'tag' or type is 'note'
 							typeDocs = _.uniq typeDocs, false, (typeDoc) ->
-								typeDoc.toObject.contact
+								typeDoc.contact.toString()	# Convert ObjectId object to a simple string.
 						results[type] = _.map typeDocs, (doc) ->
 							doc.id
 				return fn results
