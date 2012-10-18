@@ -52,9 +52,8 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@get('tags').pushObject newTag
 			else
-				# TODO find the element of the tag and play the appropriate animation
-				# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
-				# existingTag/@$().addClass 'animated pulse'
+				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
+				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
 
 		tagView: Ember.View.extend
 			tagName: 'span'
