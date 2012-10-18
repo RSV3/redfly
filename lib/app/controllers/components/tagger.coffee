@@ -137,6 +137,10 @@ module.exports = (Ember, App, socket) ->
 			'greenback'
 			'silver black'
 			'atlas'
+			'mentor'
+			'intern'
+			'investor'
+			'candidate'
 		]
 		industry: [
 			'legal'
@@ -176,4 +180,5 @@ module.exports = (Ember, App, socket) ->
 			'software'
 			'academic'
 			'professor'
+			'media'
 		]
