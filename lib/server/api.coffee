@@ -181,7 +181,12 @@ module.exports = (app, socket) ->
 									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
 								catch err
 									continue	# User typed an invlid regular expression, just ignore it.
-								models[model].find(conditions).select('_id').limit(10).exec @parallel()	# Only return '_id' field for efficiency.
+
+								# TODO temporary
+								if model is 'Contact'
+									conditions.added = $exists: true
+								
+								models[model].find(conditions).limit(10).exec @parallel()
 								return undefined	# Step library is insane.
 						, @parallel()
 				return undefined	# Still insane? Yes? Fine.
@@ -192,6 +197,9 @@ module.exports = (app, socket) ->
 				availableTypes.forEach (type, index) ->
 					typeDocs = docs[index]
 					if not _.isEmpty typeDocs
+						if type is 'tag' or type is 'note'
+							typeDocs = _.uniq typeDocs, false, (typeDoc) ->
+								typeDoc.toObject.contact
 						results[type] = _.map typeDocs, (doc) ->
 							doc.id
 				return fn results

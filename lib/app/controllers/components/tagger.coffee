@@ -52,15 +52,15 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@get('tags').pushObject newTag
 			else
-				# TODO find the element of the tag and play the appropriate animation
-				# probably make it play faster, like a mac system componenet bounce. And maybe play a sound.
-				# existingTag/@$().addClass 'animated pulse'
+				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
+				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
 
 		tagView: Ember.View.extend
 			tagName: 'span'
 			classNames: ['tag']
 			search: ->
 				App.set 'search', 'tag:' + @get('context.body')
+				# TODO App.router.get('applicationController.searchView.searchBoxView.$')().focus() and make App.search private while I'm at it.
 				$('.search-query').focus()
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
@@ -97,7 +97,7 @@ module.exports = (Ember, App, socket) ->
 					items: 6
 					updater: (item) =>
 						@get('parentView')._add item
-						@set 'parentView.currentTag', null
+						@set 'currentTag', null
 						return null
 				# Monkey-patch bootstrap so I can trigger bindings.
 				# typeahead = $(@$()).data('typeahead')
