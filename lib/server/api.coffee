@@ -9,8 +9,7 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
-	socket.on 'db', (data, fn) ->	# TODO probably need a big error catchall so every wrong query or mistyped url doesn't crash the server.
-									# TODO also more specific handling for things like malformed IDs, which can happen by url manipulation
+	socket.on 'db', (data, fn) ->
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -18,10 +17,10 @@ module.exports = (app, socket) ->
 					model.findById id, (err, doc) ->
 						throw err if err
 						return fn doc
-				else if ids = data.ids
-					model.find _id: $in: ids, (err, docs) ->
-						throw err if err
-						return fn docs
+				# else if ids = data.ids
+				# 	model.find _id: $in: ids, (err, docs) ->
+				# 		throw err if err
+				# 		return fn docs
 				else if query = data.query
 					model.find query.conditions, null, query.options, (err, docs) ->
 						throw err if err
@@ -33,36 +32,27 @@ module.exports = (app, socket) ->
 			when 'create'
 				record = data.record
 				if not _.isArray record
-
-					# TODO figure out how to make adapter not turn object references into '_id' attributes. Or create virtual setters. OR
-					# override .toObject, or is that for something else?
+					# TODO XXX remove this once I'm convined that manual keys on the adapter have solved this problem
 					for own prop, val of record
 						if prop.indexOf('id') isnt -1
-							record[prop.split('_')[0]] = val
-
+							throw new Error 'ember-data is still trying to coerce attribute names!'
+							# record[prop.split('_')[0]] = val
 					model.create record, (err, doc) ->
 						throw err if err
+						fn doc
 
-
-						# TODO horrible hack
-						setTimeout ->
-								# TODO only do this for contacts that have been added!
-								if (model is models.Tag) or (model is models.Note)
-									socket.broadcast.emit 'feed',
-										type: data.type
-										id: doc.id
-									# Later TODO remove this								
-									socket.emit 'feed',
-										type: data.type
-										id: doc.id
-							, 500
-
-
-						return fn doc
+						if (model is models.Tag) or (model is models.Note)
+							socket.broadcast.emit 'feed',
+								type: data.type
+								id: doc.id
+							socket.emit 'feed',
+								type: data.type
+								id: doc.id
 				else
-					model.create record, (err, docs...) ->
-						throw err if err
-						return fn docs
+					throw new Error 'unimplemented'
+					# model.create record, (err, docs...) ->
+					# 	throw err if err
+					# 	return fn docs
 			when 'save'
 				record = data.record
 				if not _.isArray record
@@ -75,7 +65,6 @@ module.exports = (app, socket) ->
 							socket.broadcast.emit 'feed',
 								type: data.type
 								id: doc.id
-							# Later TODO remove this
 							socket.emit 'feed',
 								type: data.type
 								id: doc.id
@@ -93,8 +82,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn()
 				else if ids = data.ids
-					# TODO Remove each one and call return fn() when they're ALL done
-					throw new Error 'unimplemented'
+					throw new Error 'unimplemented'	# Remove each one and call return fn() when they're all done.
 				else
 					throw new Error
 			else
@@ -105,29 +93,61 @@ module.exports = (app, socket) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if user
-				return fn()
+				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
 			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
 				session.save()
-				return fn result.authorizeUrl
+				return fn true, result.authorizeUrl
 
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			# TODO do authentication, either openID or: if user and user.password is req.body.password
 			if not user
-				return fn()
+				return fn false, 'Once more, with feeling!'
 			session.user = user.id
 			session.save()
-			return fn user.id
+			return fn true, user.id
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
 		fn()
 
+
+
+	moment = require 'moment'
+	oneWeekAgo = moment().subtract('days', 7).toDate()
+
+	summaryQuery = (model, field, cb) ->
+		models[model].where(field).gt(oneWeekAgo).count (err, count) ->
+			throw err if err
+			cb count
+
+	socket.on 'summary.contacts', (fn) ->
+		summaryQuery 'Contact', 'added', fn
+
+	socket.on 'summary.tags', (fn) ->
+		summaryQuery 'Tag', 'date', fn
+
+	socket.on 'summary.notes', (fn) ->
+		summaryQuery 'Note', 'date', fn
+
+	socket.on 'summary.verbose', (fn) ->
+		models.Tag.find().sort('date').select('body').exec (err, tags) ->
+			throw err if err
+			verbose = _.max tags, (tag) -> tag.body.length
+			fn verbose?.body
+
+	socket.on 'summary.user', (fn) ->
+		fn 'Krzysztof Baranowski'
+
+
+
+	socket.on 'tags', (category, fn) ->
+		models.Tag.find(category: category).distinct 'body', (err, bodies) ->
+			fn bodies
 
 	socket.on 'search', (query, fn) ->
 		terms = _.uniq _.compact query.split(' ')
@@ -161,7 +181,12 @@ module.exports = (app, socket) ->
 									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
 								catch err
 									continue	# User typed an invlid regular expression, just ignore it.
-								models[model].find conditions, '_id', @parallel()	# Only return '_id' field for efficiency.
+
+								# TODO temporary
+								if model is 'Contact'
+									conditions.added = $exists: true
+								
+								models[model].find(conditions).limit(10).exec @parallel()
 								return undefined	# Step library is insane.
 						, @parallel()
 				return undefined	# Still insane? Yes? Fine.
@@ -172,6 +197,9 @@ module.exports = (app, socket) ->
 				availableTypes.forEach (type, index) ->
 					typeDocs = docs[index]
 					if not _.isEmpty typeDocs
+						if type is 'tag' or type is 'note'
+							typeDocs = _.uniq typeDocs, false, (typeDoc) ->
+								typeDoc.contact.toString()	# Convert ObjectId object to a simple string.
 						results[type] = _.map typeDocs, (doc) ->
 							doc.id
 				return fn results
@@ -194,28 +222,27 @@ module.exports = (app, socket) ->
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
-					socket.emit 'parse.update'
+					socket.emit 'parse.mail'
 				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
+					socket.emit 'parse.queueing'
+
 					newContacts = []
 
 					moar = ->	# TODO can i define this below 'sift'? Actually just put it in 'sift' and try to make it a self-calling function
 						# If there were new contacts, determine those with the most correspondence and send a nudge email.
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
-								_.reduce mails, (mail, total) ->
+								_.reduce mails, (total, mail) ->
 										if _.contains contact.emails, mail.recipientEmail
 											return total - 1	# Negative totals to reverse the order!
 										return total
 									, 0
-							newContacts = newContacts[...5]
-
-							user.classifyIndex = user.classifyQueue.toObject().length	# TODO necessary toObject?
-							user.classifyQueue.push newContacts...
+							user.queue.unshift newContacts...
 
 							mail = require('./mail')(app)
-							mail.sendNudge user, newContacts
+							mail.sendNudge user, newContacts[...10]
 
-						user.lastParsed = Date.now()
+						user.lastParsed = new Date
 						user.save (err) ->
 							throw err if err
 
@@ -234,6 +261,7 @@ module.exports = (app, socket) ->
 									contact.names.addToSet name
 
 								newContacts.push contact
+								socket.emit 'parse.queue'
 							contact.knows.addToSet user
 
 							contact.save (err) ->
@@ -255,3 +283,19 @@ module.exports = (app, socket) ->
 					fn message
 
 			require('./parser')(user, notifications)
+
+
+
+	# TODO Hack, but retain this logic
+	# WARNING: concurrency problem if invoked too quickly in succession (user clicking "next" in the classify flow very fast)
+	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
+		models.User.findById userId, (err, user) ->
+			throw err if err
+			user.queue.shift()
+			if exclude
+				existing = _.find user.excludes, (candidate) ->
+					(exclude.name is candidate.name) and (exclude.email is candidate.email)
+				if not existing
+					user.excludes.push exclude
+			user.save (err) ->
+				throw err if err

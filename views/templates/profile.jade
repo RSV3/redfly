@@ -1,0 +1,13 @@
+.row-fluid
+	h1 {{canonicalName}}
+	p Signed up on {{date}}
+	//- p
+	//- 	| <a class="btn" {{action goClassify href=true}}>Do some classifying</a>
+	br
+	//- p Added {{contacts.length}} contact{{#unless_eq contacts.length compare=1}}s{{/unless_eq}} so far.
+	p Contacts added
+	ul
+		| {{#each contacts}}
+		li
+			| <a {{action goContact this href=true}}>{{name}}</a>
+		| {{/each}}

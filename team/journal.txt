@@ -1,3 +1,20 @@
+- search frontend features
+  - esc and losing focus closes results
+  - clicking a tag name starts a search for that tab
+  - arrow keys move between results
+  - clicking (or pressing enter if using arrow keys)
+- search backend features
+  - multiple terms, space delimited
+  - prefix search term with type (eg., 'tag:')
+  - no duplicates in results
+
+- lots of bindings stuff only SEEMS to work because the model data happens to be loaded already. Notable places this happens are the activity
+  feed implicitly loading a few contacts and the search box loading many more
+- you must use an object, not an id, when making a belongsTo relationship
+- ember-data store serializes all camel case model attributes to underscored ones and tries to append '_id' to belongsTo relationship names if you don't specify a key
+
+
+
 Needed Features (ember/angular/knockout/derby research):
   - speedy loading with browser push/pop states (ideally only refreshing parts of the page that it has to), or more generally avoiding roundtrips to the server
   - bindings(auto-updating) in the view template

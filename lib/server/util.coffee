@@ -1,13 +1,3 @@
-class exports.NotFound extends Error
-	constructor: (msg) ->
-		super msg
-
-class exports.AccessDenied extends Error
-	constructor: (msg) ->
-		super msg
-
-
-
 mailer = require 'nodemailer'
 
 transport = mailer.createTransport 'SMTP',

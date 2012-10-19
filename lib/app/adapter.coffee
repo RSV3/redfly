@@ -9,9 +9,9 @@ module.exports = (DS, socket) ->
 			socket.emit 'db', op: 'find', type: getTypeName(type), id: id, (data) ->
 				store.load type, id, data
 
-		findMany: (store, type, ids) ->
-			socket.emit 'db', op: 'find', type: getTypeName(type), ids: ids, (data) ->
-				store.load type, ids, data
+		# findMany: (store, type, ids) ->
+		# 	socket.emit 'db', op: 'find', type: getTypeName(type), ids: ids, (data) ->
+		# 		store.load type, ids, data
 
 		findQuery: (store, type, query, array) ->
 			if not query.conditions and not query.options
@@ -24,7 +24,6 @@ module.exports = (DS, socket) ->
 				store.loadMany type, data
 
 		createRecord: (store, type, model) ->
-			# TO-DO figure out what 'unsavedData' etc are for, and do the same for updateRecord and deleteRecord (though delete prolly just has an id)
 			socket.emit 'db', op: 'create', type: getTypeName(type), record: model.get('data').record, (data) ->
 				store.didCreateRecord model, data
 

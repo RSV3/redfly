@@ -51,15 +51,25 @@ module.exports = (user, notifications) ->
 							msg.on 'end', ->
 								for to in mimelib.parseAddresses msg.headers.to?[0]
 									email = tools.trim to.address.toLowerCase()
-									name = tools.trim(to.name)
+
+									tools = require '../util'
+									junkChars = ' \'",'
+									name = tools.trim to.name, junkChars
+									comma = name.indexOf ','
+									if comma isnt -1
+										name = name[comma + 1..] + ' ' + name[...comma]
+										name = tools.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
 									if (not name) or (validators.isEmail name)
 										name = null
+
 									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
 									blacklist = require './blacklist'
 									if (validators.isEmail email) and (email isnt user.email) and
 											(_.last(email.split('@')) not in blacklist.domains) and
 											(name not in blacklist.names) and
-											(email not in blacklist.emails)
+											(email not in blacklist.emails) and
+											(name not in _.pluck(user.excludes, 'name')) and
+											(email not in _.pluck(user.excludes, 'email'))
 										mails.push
 											subject: msg.headers.subject?[0]
 											sent: new Date msg.headers.date?[0]

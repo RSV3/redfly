@@ -9,10 +9,16 @@
 
 // Bootstrap variables.
 baseFontSize = 14px
+baseLineHeight = 20px
 
+
+// Implicit Bootstrap abstractions.
+marginBottom = baseLineHeight / 2
 
 
 // Global variables.
+smallFontSize = baseFontSize / 1.4
+
 lightBorder = 1px solid #EEE
 mediumBorder = 1px solid #C6C6C6
 
@@ -29,66 +35,73 @@ tagger(fontSize)
 	taggerMargin = fontSize * 0.28
 	closePadding = fontSize * 0.25
 	.tagger
-		line-height fontSize * 1.42
-		.tag
-			a
-				color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
-			color #666
-			margin taggerMargin 0 0 taggerMargin
-			display inline-block
-			background-color #DEE7F8
-			border 1px solid #CAD8F3
+		.tags
+			line-height fontSize * 1.42
+			.tag
+				a
+					color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
+				color #666
+				margin taggerMargin 0 0 taggerMargin
+				display inline-block
+				background-color #DEE7F8
+				border 1px solid #CAD8F3
 
-			big = fontSize
-			little = fontSize / 4		
-			border-radius big little little big
+				big = fontSize
+				little = fontSize / 4		
+				border-radius big little little big
 
-			padding-left fontSize * 0.75
-			.body
-				margin-right taggerMargin
-			.close
-				float none
-				font-size inherit
-				border-left 1px dotted #1323d6
-				padding 0 closePadding 0 closePadding
-		.new-tag-form
-			margin taggerMargin 0 0 taggerMargin
-			height fontSize * 2
-			display inline
-			.new-tag
-				border none
-				box-shadow none
-				width auto
-				margin 0
-
+				padding-left fontSize * 0.75
+				.body
+					padding-right closePadding
+				.close
+					float none
+					font-size inherit
+					border-left 1px dotted #1323d6
+					padding 0 closePadding 0 closePadding
+			.new-tag-form
+				margin taggerMargin 0 0 taggerMargin
+				height fontSize * 2
+				display inline
+				.new-tag
+					border none
+					box-shadow none
+					width auto
+					margin 0
+		.cloud
+			margin-top 10px
+			a:hover
+				text-decoration none
 
 
 
 body
 	padding-top 70px	// Make the container go all the way to the bottom of the topbar.
 
-searchMargin = 30px
-.navbar-search
-	margin-left searchMargin
-.search-results
-	margin-left searchMargin
-	display block
-.navbar-form .btn
-	margin-left 4px
-.feed
-	fontSize = baseFontSize / 1.4
-	font-size fontSize
-	tagger fontSize
+.navbar
+	searchMargin = 30px
+	.navbar-search
+		margin-left searchMargin
+	.search-results
+		margin-left searchMargin
+		display block	// Always show the dropdown.
+	.navbar-form .btn
+		margin-left 4px
+.activity
 	background-color white
 	min-height 620px
 	.nav-header
 		text-align center
 		margin-bottom 15px
-	.feed-item
-		border-bottom lightBorder
-		padding-bottom 10px
-		h4
-			font-weight 300
+	.summary .own-line
+		margin-top 10px
+	.feed
+		font-size smallFontSize
+		tagger(smallFontSize)
+		.feed-item
+			border-bottom lightBorder
+			padding-bottom 10px
+			h4
+				font-weight 300
 
 
 
@@ -115,42 +128,54 @@ searchMargin = 30px
 		padding-bottom 30px
 		margin-bottom 30px
 		border-bottom lightBorder
-		// > .name
-		// 	font-size 40px
-		// 	margin-bottom 15px
-		// TODO make this a span
-		.img-polaroid
-			margin-right 20px
-	tagger baseFontSize
-	.tagger
-		min-height 82px
-		border mediumBorder	
-	.add-a-note
-		margin-top 30px
-		textarea
-			display block
-			width 100%
+	// .tab-content
+	// 	overflow visible
+	.lead
+		margin-bottom marginBottom
+	.tag-category
+		margin-bottom baseLineHeight
+		tagger(baseFontSize)
+		.tagger .tags
+			min-height 82px
+			border mediumBorder	
 	blockquote
 		small::before
 			content normal
 
+.contacts
+	td
+		cursor pointer
+
+.classify
+	.navbar
+		.navbar-inner
+			padding-top 8px
+		.lead
+			display inline-block
+			margin-bottom 0
+		ul
+			margin 0
+	.star
+		text-align center
+		font-size 200px
+		color #E3170D
 
 
 
-.connection	// TODO
-	position fixed
-	text-align center
-	top 43px
-	left 0
-	width 100%
-	height 0
-	z-index 99
-	> .alert
-		background #fff1a8
-		border 1px solid #999
-		border-top 0
-		border-radius 0 0 3px 3px
-		display inline-block
-		line-height 21px
-		padding 0 12px
+// .connection
+// 	position fixed
+// 	text-align center
+// 	top 43px
+// 	left 0
+// 	width 100%
+// 	height 0
+// 	z-index 99
+// 	> .alert
+// 		background #fff1a8
+// 		border 1px solid #999
+// 		border-top 0
+// 		border-radius 0 0 3px 3px
+// 		display inline-block
+// 		line-height 21px
+// 		padding 0 12px
 
