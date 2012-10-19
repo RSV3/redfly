@@ -58,7 +58,6 @@
 			//- | {{else}}
 			//- span {{emptyNotesText}}
 			| {{/each}}
-		| {{#if isKnown}}
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
@@ -67,4 +66,3 @@
 			| Add Note
 			| </button>
 			| </form>
-		| {{/if}}
