@@ -28,7 +28,7 @@ config =
 
 
 	production:
-		HOST: 'redfly-prod.herokuapp.com'	# 'www.redfly.com'
+		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
 
 
