@@ -32,7 +32,7 @@ module.exports = (DS, App) ->
 		emails: DS.attr 'array'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
-		addedBy:(DS.belongsTo 'App.User', key: 'addedBy')
+		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		name: (->
 				if name = @get('primaryName')
 					return name
@@ -60,7 +60,7 @@ module.exports = (DS, App) ->
 					conditions:
 						contact: @get('id')
 					options:
-						sort: date: -1
+						sort: date: 1
 			).property 'id'
 
 	App.Tag = DS.Model.extend

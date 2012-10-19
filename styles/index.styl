@@ -9,7 +9,11 @@
 
 // Bootstrap variables.
 baseFontSize = 14px
+baseLineHeight = 20px
 
+
+// Implicit Bootstrap abstractions.
+marginBottom = baseLineHeight / 2
 
 
 // Global variables.
@@ -124,8 +128,12 @@ body
 		padding-bottom 30px
 		margin-bottom 30px
 		border-bottom lightBorder
-	.tab-content
-		overflow visible
+	// .tab-content
+	// 	overflow visible
+	.lead
+		margin-bottom marginBottom
+	.tag-category
+		margin-bottom baseLineHeight
 		tagger(baseFontSize)
 		.tagger .tags
 			min-height 82px

@@ -102,24 +102,29 @@ module.exports = (Ember, App, socket) ->
 
 			doSignup: (router, context) ->
 				if identity = tools.trim App.user.get 'signupIdentity'
+					controller = context.view.get 'controller'
 					App.user.set 'signupIdentity', null
+					_s = require 'underscore.string'
+					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com')
+						return controller.set 'signupError', 'Use your Redstar email kthx.'
 					socket.emit 'signup', util.identity(identity), (success, data) ->
 						if success
-							context.view.get('controller').set 'signupError', null
+							controller.set 'signupError', null
 							window.location.href = data
 						else
-							context.view.get('controller').set 'signupError', data
+							controller.set 'signupError', data
 
 			doLogin: (router, context) ->
 				if identity = tools.trim App.user.get 'loginIdentity'
+					controller = context.view.get 'controller'
 					App.user.set 'loginIdentity', null
 					socket.emit 'login', util.identity(identity), (success, data) ->
 						if success
-							context.view.get('controller').set 'loginError', null
+							controller.set 'loginError', null
 							App.auth.login data
 							router.transitionTo 'userProfile'
 						else
-							context.view.get('controller').set 'loginError', data
+							controller.set 'loginError', data
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->

@@ -4,9 +4,9 @@
 		h1 {{name}}
 		h4
 			| {{#if isKnown}}
-			| <a {{bindAttr href="directMailto"}}>{{email}}</a>
+			| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{else}}
-			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}}>{{view view.introView class="icon-bullhorn"}}</a>
+			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/if}}
 		| {{#if firstHistory}}
 		div
@@ -30,7 +30,13 @@
 			| {{/each}}
 .row-fluid
 	.span6
-		.row-fluid
+		.row-fluid.tag-category
+			p.lead Redstar Tags
+			| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true"}}
+		.row-fluid.tag-category
+			p.lead Industry Tags
+			| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
+		//-
 			ul.nav.nav-pills
 				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
 				li: a(href='#industry', data-toggle='pill') Industry Tags
@@ -40,6 +46,18 @@
 				#industry.tab-pane.fade
 					| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
 	.span6
+		.row-fluid
+			p.lead Notes
+			| {{#each notes}}
+			| {{#view view.noteView}}
+			p {{body}}
+			// TO-DO do nl2br with bindings
+			small {{author.name}} | {{date}}
+			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
+			| {{/view}}
+			//- | {{else}}
+			//- span {{emptyNotesText}}
+			| {{/each}}
 		| {{#if isKnown}}
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
@@ -50,15 +68,3 @@
 			| </button>
 			| </form>
 		| {{/if}}
-		.row-fluid
-			p.lead Notes
-			| {{#each notes}}
-			| {{#view view.noteView}}
-			p {{body}}
-			// TO-DO do nl2br with bindings
-			small {{author.name}} | {{date}}
-			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
-			| {{/view}}
-			| {{else}}
-			span {{emptyNotesText}}
-			| {{/each}}

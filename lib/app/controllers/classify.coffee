@@ -5,21 +5,16 @@ module.exports = (Ember, App, socket) ->
 		contentBinding: 'App.router.contactController.content'
 
 		total: (->
-				queueLength = App.user.get('queue.length')
-				if not App.user.get('classifyMore')
-					return Math.min @_baseQueueLength - App.user.get('classifyCount'), queueLength
-				queueLength
-			).property 'App.user.queue.length', 'App.user.classifyCount', 'App.user.classifyMore'
+				Math.min App.user.get('queue.length'), maxQueueLength - App.user.get('classifyCount')
+			).property 'App.user.queue.length', 'App.user.classifyCount'
 		complete: (->
 				noMore = not @get('content')
-				if not App.user.get('classifyMore')
-					return noMore or (App.user.get('classifyCount') is @_baseQueueLength)
-				noMore
-			).property 'content', 'App.user.classifyCount', 'App.user.classifyMore'
+				return noMore or (App.user.get('classifyCount') is maxQueueLength)
+			).property 'content', 'App.user.classifyCount'
 		next: (->
 				App.user.get 'queue.firstObject'
 			).property 'App.user.queue.firstObject'
-		_baseQueueLength: 10
+
 		add: ->
 			contact = App.user.get('queue').shiftObject()
 			if not contact.get 'added'
@@ -46,9 +41,13 @@ module.exports = (Ember, App, socket) ->
 			App.store.commit()
 			@set 'content', App.user.get('queue.firstObject')
 		keepGoing: ->
-			App.user.set 'classifyMore', true
+			App.user.set 'classifyCount', 0
 
 
 	App.ClassifyView = Ember.View.extend
 		template: require '../../../views/templates/classify'
 		classNames: ['classify']
+
+
+
+	maxQueueLength = 10
