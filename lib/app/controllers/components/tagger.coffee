@@ -7,21 +7,17 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/tagger'
 		classNames: ['tagger']
 		tags: (->
-				mutable = []
-				@get('_rawTags').forEach (tag) ->
-					mutable.push tag
-				mutable
-			).property '_rawTags.@each'
-		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
+				App.Tag.filter (data) =>
+					(data.get('contact') is @get('contact.id')) and (data.get('category') is @get('category'))
 			).property 'contact.id', 'category'
 		availableTags: (->
 			allTags = @get '_allTags.content'
 			dictionaryTags = dictionary[@get('category') or 'industry']
 			available = _.union dictionaryTags, allTags
 			available = _.reject available, (candidate) =>
-				for tag in @get 'tags'
-					if tag.get('body') is candidate
+				for tag in @get('tags').mapProperty('body')
+					if tag is candidate
 						return true
 				return false
 			available.sort()
@@ -40,17 +36,16 @@ module.exports = (Ember, App, socket) ->
 				@_add tag
 				@set 'currentTag', null
 		_add: (tag) ->
-			existingTag = _.find @get('tags'), (candidate) ->
+			existingTag = @get('tags').find (candidate) ->
 				tag is candidate.get('body')
 			if not existingTag
-				newTag = App.store.createRecord App.Tag,
+				App.Tag.createRecord
 					creator: App.user
 					contact: @get 'contact'
 					category: @get('category') or 'industry'
 					body: tag
 				App.store.commit()
 				@set 'animate', true
-				@get('tags').pushObject newTag
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
 				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
@@ -65,24 +60,22 @@ module.exports = (Ember, App, socket) ->
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'
-				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
+				$(event.target).parent().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
-						@get('parentView.tags').removeObject tag # Timing for animation. This would be unnecessary except 'tags' is currently a copy.
+						tag.deleteRecord()
+						App.store.commit()
 					, 1000
-				tag.deleteRecord()
-				App.store.commit()
 			didInsertElement: ->
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
-			willDestroyElement: ->
-				# TO-DO do this and change the icky code in 'add': http://stackoverflow.com/questions/9925171/deferring-removal-of-a-view-so-it-can-be-animated
-				# @$().addClass 'animated rotateOutDownLeft'
+			# TODO do this and 'delete' above, figure out animation framework
+			# willDestroyElement: ->
+			# 	@$().addClass 'animated rotateOutDownLeft'
 
 		newTagView: Ember.TextField.extend
 			classNames: ['new-tag-field']
 			currentTagBinding: 'parentView.currentTag'
-			tagsBinding: 'parentView.tags'
 			currentTagChanged: (->
 					if tag = @get('currentTag')
 						@set 'currentTag', tag.toLowerCase()

@@ -39,13 +39,12 @@ module.exports = (Ember, App, socket) ->
 		# 	).property().volatile()
 		add: ->
 			if note = util.trim @get('currentNote')
-				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
+				App.Note.createRecord
 					author: App.user
 					contact: @get 'content'
 					body: note
 				App.store.commit()
 				@set 'animate', true
-				@get('notes').pushObject newNote
 				@set 'currentNote', null
 		directMailto: (->
 				'mailto:'+ @get('name') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'

@@ -50,17 +50,13 @@ module.exports = (DS, App) ->
 				@get('names.firstObject')
 			).property 'names.@each'
 		notes: (->
-				mutable = []
-				@get('_rawNotes').forEach (note) ->
-					mutable.push note
-				mutable
-			).property '_rawNotes.@each'
-		_rawNotes: (->
-				App.Note.find
-					conditions:
-						contact: @get('id')
-					options:
-						sort: date: 1
+				App.Note.find contact: @get('id')
+					# conditions:
+					# 	contact: @get('id')
+					# options:
+					# 	sort: date: 1
+				App.Note.filter (data) =>
+					data.get('contact') is @get('id')
 			).property 'id'
 
 	App.Tag = DS.Model.extend
