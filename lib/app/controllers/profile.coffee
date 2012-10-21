@@ -4,7 +4,10 @@ module.exports = (Ember, App, socket) ->
 	App.ProfileView = Ember.View.extend
 		template: require '../../../views/templates/profile'
 		classNames: ['profile']
-		didInsertElement: ->
-			@set 'controller.contacts', App.Contact.find addedBy: @get('controller.id')
 			
-	App.ProfileController = Ember.ObjectController.extend()
+	App.ProfileController = Ember.ObjectController.extend
+		contacts: (->
+				App.Contact.find addedBy: @get('id')
+				App.Contact.filter (data) =>
+					data.get('addedBy') is @get('id')
+			).property 'id'
