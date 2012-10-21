@@ -15,18 +15,11 @@ module.exports = (Ember, App, socket) ->
 				@get 'histories.firstObject'
 			).property 'histories.firstObject'
 		isKnown: (->
-				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
-				has = false
-				if knowsed = @get('knows')
-					knowsed.forEach (user) ->
-						if user.get('id') is App.user.get('id')
-							has = true
-				has
+				@get('knows').find (user) ->
+					user.get('id') is App.user.get('id')
 			).property 'knows.@each.id'
 		disableAdd: (->
-				if util.trim @get('currentNote')
-					return false
-				return true
+				not util.trim @get('currentNote')
 			).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if Math.random() < 0.9
