@@ -40,15 +40,15 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@set 'currentNote', null
 		directMailto: (->
-				'mailto:'+ @get('name') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
-			).property 'name', 'email'
+				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
+			).property 'canonicalName', 'email'
 		introMailto: (->
 				carriage = '%0D%0A'
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
-					'?subject=You know ' + @get('name') + ', right?' +
+					'?subject=You know ' + @get('canonicalName') + ', right?' +
 					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('email') + '? Thanks!' +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'name', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
+			).property 'canonicalName', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 
 
 	App.ContactView = Ember.View.extend

@@ -44,7 +44,7 @@
 						.nav-header Names
 						| {{#each results.name}}
 						li
-							| <a {{action goContact this href=true}}>{{name}}</a>
+							| <a {{action goContact this href=true}}>{{canonicalName}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -52,7 +52,7 @@
 						.nav-header Emails
 						| {{#each results.email}}
 						li
-							| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
+							| <a {{action goContact this href=true}}>{{canonicalName}} - {{email}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -60,7 +60,7 @@
 						.nav-header Matches in tags
 						| {{#each results.tag}}
 						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
+							| <a {{action goContact contact href=true}}>{{contact.canonicalName}} - {{body}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -68,7 +68,7 @@
 						.nav-header Matches in notes
 						| {{#each results.note}}
 						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
+							| <a {{action goContact contact href=true}}>{{contact.canonicalName}} - "{{preview}}"</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -148,36 +148,36 @@
 					| {{#view view.feedItemView}}
 					| {{#if typeInitialContact}}
 					| <a {{action goContact this href=true}}>
-					h4 {{name}}
+					h4 {{canonicalName}}
 					| </a>
 					p
 						| Added by
-						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a>
 						| on {{added}}
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
 					| {{#if typeContact}}
 					| <a {{action goContact this href=true}}>
-					h4 {{name}}
+					h4 {{canonicalName}}
 					| </a>
 					p
 						| Was just added by
-						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a>
 						| !
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
 					| {{#if typeTag}}
-					| <a {{action goProfile creator href=true}}>{{creator.name}}</a>
+					| <a {{action goProfile creator href=true}}>{{creator.canonicalName}}</a>
 					| added the tag
 					em "{{body}}"
 					| to
-					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
 					| .
 					| {{/if}}
 					| {{#if typeNote}}
-					| <a {{action goProfile author href=true}}>{{author.name}}</a>
+					| <a {{action goProfile author href=true}}>{{author.canonicalName}}</a>
 					| wrote a note about
-					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
 					| : "{{preview}}"
 					| {{/if}}
 					| {{/view}}

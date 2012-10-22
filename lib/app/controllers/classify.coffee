@@ -27,9 +27,10 @@ module.exports = (Ember, App, socket) ->
 			# TODO hack
 			asdf = App.user.get('queue').shiftObject()
 			asdf.set 'addedBy', undefined
-			exclude =
-				email: @get('email')
-			if name = @get('primaryName')
+			exclude = {}
+			if email = @get('email')
+				exclude.email = email
+			if name = @get('name')
 				exclude.name = name
 			App.user.get('excludes').pushObject exclude
 

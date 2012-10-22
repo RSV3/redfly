@@ -34,21 +34,21 @@ module.exports = (DS, App) ->
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo('App.User', key: 'addedBy')
 		name: (->
-				if name = @get('primaryName')
+				@get('names.firstObject')
+			).property 'names.@each'
+		email: (->
+				@get('emails.firstObject')
+			).property 'emails.@each'
+		canonicalName: (->
+				if name = @get('name')
 					return name
 				if email = @get('email')
 					return email[...email.lastIndexOf('.')]
 				null
-			).property 'primaryName', 'email'
+			).property 'name', 'email'
 		nickname: (->
-				tools.nickname @get('primaryName'), @get('email')
-			).property 'primaryName', 'email'
-		email: (->
-				@get('emails.firstObject')
-			).property 'emails.@each'
-		primaryName: (->
-				@get('names.firstObject')
-			).property 'names.@each'
+				tools.nickname @get('name'), @get('email')
+			).property 'name', 'email'
 		notes: (->
 				App.Note.find contact: @get('id')
 					# conditions:

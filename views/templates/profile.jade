@@ -6,5 +6,5 @@
 	ul
 		| {{#each contacts}}
 		li
-			| <a {{action goContact this href=true}}>{{name}}</a>
+			| <a {{action goContact this href=true}}>{{canonicalName}}</a>
 		| {{/each}}
