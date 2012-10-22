@@ -43,7 +43,7 @@ App.auth =
 
 App.adapter = require('./adapter')(DS, socket)
 App.store = DS.Store.create
-	revision: 4
+	revision: 6
 	adapter: App.adapter
 	
 App.refresh = (record) ->

@@ -13,7 +13,7 @@ module.exports = (DS, App) ->
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
 		email: DS.attr 'string'
-		name: DS.attr('string', key: 'name')
+		name: DS.attr 'string'
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
 		canonicalName: (->
@@ -32,7 +32,7 @@ module.exports = (DS, App) ->
 		emails: DS.attr 'array'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
-		addedBy: DS.belongsTo('App.User', key: 'addedBy')
+		addedBy: DS.belongsTo 'App.User'
 		name: (->
 				@get('names.firstObject')
 			).property 'names.@each'
@@ -61,15 +61,15 @@ module.exports = (DS, App) ->
 
 	App.Tag = DS.Model.extend
 		date: DS.attr 'date'
-		creator: DS.belongsTo('App.User', key: 'creator')
-		contact: DS.belongsTo('App.Contact', key: 'contact')
+		creator: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		category: DS.attr 'string'
 		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend
 		date: DS.attr 'date'
-		author: DS.belongsTo('App.User', key: 'author')
-		contact: DS.belongsTo('App.Contact', key: 'contact')
+		author: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 		preview: (->
 				_s = require 'underscore.string'
@@ -78,7 +78,7 @@ module.exports = (DS, App) ->
 
 	App.Mail = DS.Model.extend
 		date: DS.attr 'date'
-		sender: DS.belongsTo('App.User', key: 'sender')
-		recipient: DS.belongsTo('App.Contact', key: 'recipient')
+		sender: DS.belongsTo 'App.User'
+		recipient: DS.belongsTo 'App.Contact'
 		subject: DS.attr 'string'
 		sent: DS.attr 'date'
