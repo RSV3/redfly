@@ -13,18 +13,18 @@ module.exports = (DS, App) ->
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
 		email: DS.attr 'string'
-		canonicalName: DS.attr('string', key: 'name')
+		name: DS.attr('string', key: 'name')
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
-		name: (->
+		canonicalName: (->
 				# TODO figure out a cleaner way to do entity equality
 				if App.user.get('id') is @get('id')
 					return 'You'
-				@get 'canonicalName'
-			).property 'id', 'App.user.id', 'canonicalName'
+				@get 'name'
+			).property 'id', 'App.user.id', 'name'
 		nickname: (->
-				tools.nickname @get('canonicalName'), @get('email')
-			).property 'canonicalName', 'email'
+				tools.nickname @get('name'), @get('email')
+			).property 'name', 'email'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
