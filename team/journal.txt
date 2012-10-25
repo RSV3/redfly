@@ -13,7 +13,6 @@
 - lots of bindings stuff only SEEMS to work because the model data happens to be loaded already. Notable places this happens are the activity
   feed implicitly loading a few contacts and the search box loading many more
 - you must use an object, not an id, when making a belongsTo relationship
-- ember-data store serializes all camel case model attributes to underscored ones and tries to append '_id' to belongsTo relationship names if you don't specify a key
 
 
 

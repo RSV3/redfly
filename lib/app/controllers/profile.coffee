@@ -13,5 +13,5 @@ module.exports = (Ember, App, socket) ->
 				# options:
 				# 	sort: date: -1
 				App.Contact.filter (data) =>
-					data.get('addedBy') is @get('id')
+					data.get('addedBy.id') is @get('id')
 			).property 'id'

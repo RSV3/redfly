@@ -9,7 +9,7 @@ module.exports = (Ember, App, socket) ->
 		tags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 				App.Tag.filter (data) =>
-					(data.get('contact') is @get('contact.id')) and (data.get('category') is @get('category'))
+					(data.get('contact.id') is @get('contact.id')) and (data.get('category') is @get('category'))
 			).property 'contact.id', 'category'
 		availableTags: (->
 			allTags = @get '_allTags.content'

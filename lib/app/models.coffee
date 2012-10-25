@@ -2,12 +2,17 @@ module.exports = (DS, App) ->
 	tools = require '../util'
 
 
-	DS.attr.transforms.array =
-		from: (serialized) ->
-			Ember.ArrayProxy.create content: serialized
-		to: (deserialized) ->
-			throw new Error 'unimplemented'
-			# deserialized.toArray() order is not guaranteed
+	App.adapter.registerTransform 'date',
+		fromJSON: (value) ->
+			new Date value
+		toJSON: (value) ->
+			value
+			
+	App.adapter.registerTransform 'array',
+		fromJSON: (value) ->
+			value
+		toJSON: (value) ->
+			value
 
 
 	App.User = DS.Model.extend
@@ -56,7 +61,7 @@ module.exports = (DS, App) ->
 					# options:
 					# 	sort: date: 1
 				App.Note.filter (data) =>
-					data.get('contact') is @get('id')
+					data.get('contact.id') is @get('id')
 			).property 'id'
 
 	App.Tag = DS.Model.extend
