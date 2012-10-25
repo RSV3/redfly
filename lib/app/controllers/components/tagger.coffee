@@ -9,8 +9,9 @@ module.exports = (Ember, App, socket) ->
 		tags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 				App.Tag.filter (data) =>
-					category = @get('category') or 'redstar'
-					(data.get('contact.id') is @get('contact.id')) and (data.get('category') is category)
+					if (category = @get('category')) and (category isnt data.get('category'))
+						return false
+					data.get('contact.id') is @get('contact.id')
 			).property 'contact.id', 'category'
 		availableTags: (->
 			allTags = @get '_allTags.content'
@@ -23,8 +24,7 @@ module.exports = (Ember, App, socket) ->
 			available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
-				category = @get('category') or 'redstar'
-				socket.emit 'tags', category, (bodies) ->
+				socket.emit 'tags', category: @get('category'), (bodies) ->
 					tags.pushObjects bodies
 				tags = Ember.ArrayProxy.create content: []
 			).property 'category'
