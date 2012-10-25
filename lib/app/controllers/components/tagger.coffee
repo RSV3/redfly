@@ -45,6 +45,11 @@ module.exports = (Ember, App, socket) ->
 					category: @get('category') or 'redstar'
 					body: tag
 				App.store.commit()
+				# TODO hack to make all known tags update when a the user adds a tag without causing flicker in the tag cloud
+				socket.emit 'tags', category: @get('category'), (bodies) =>
+					tags = @get '_allTags'
+					tags.clear()
+					tags.pushObjects bodies
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
