@@ -18,6 +18,7 @@
 				span.icon-bar
 				span.icon-bar
 			| <a class="brand" {{action goHome href=true}}>Redfly</a>
+			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav.open
 					//-
@@ -74,6 +75,7 @@
 						| {{/if}}
 					| {{/if}}
 					| {{/view}}
+			| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
 				| <form class="navbar-form" {{action doLogin on="submit"}}>
