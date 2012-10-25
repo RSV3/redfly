@@ -29,8 +29,7 @@ module.exports = (Ember, App, socket) ->
 				tags = Ember.ArrayProxy.create content: []
 			).property 'category'
 		click: ->
-			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
-			@$('.new-tag').focus()
+			$(@get('newTagViewInstance.element')).focus()
 		add: ->
 			if tag = util.trim @get('currentTag')
 				@_add tag
@@ -59,9 +58,9 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'span'
 			classNames: ['tag']
 			search: ->
-				App.set 'search', 'tag:' + @get('context.body')
-				# TODO App.router.get('applicationController.searchView.searchBoxView.$')().focus() and make App.search private while I'm at it.
-				$('.search-query').focus()
+				searchBox = App.get 'router.applicationView.searchViewInstance.searchBoxViewInstance'
+				searchBox.set 'value', 'tag:' + @get('context.body')
+				$(searchBox.get('element')).focus()
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'

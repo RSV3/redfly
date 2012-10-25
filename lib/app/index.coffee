@@ -32,8 +32,6 @@ App.user = Ember.ObjectProxy.create
 	loginIdentity: null
 	signupIdentity: null
 
-App.search = null
-
 App.auth =
 	login: (id) ->
 		App.user.set 'content', App.User.find id
