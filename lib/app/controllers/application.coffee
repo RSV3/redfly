@@ -62,9 +62,9 @@ module.exports = (Ember, App, socket) ->
 					# TODO check the substructure of results to make sure there actually are some.
 					@get('usingSearch') and @get('controller.results.content')
 				).property 'controller.results.@each', 'usingSearch'
-			keyDown: (event) ->
+			keyUp: (event) ->
 				if event.which is 13	# Enter.
-					_.defer => @set 'usingSearch', false
+					@set 'usingSearch', false
 				if event.which is 27	# Escape.
 					@$(':focus').blur()
 			focusIn: ->

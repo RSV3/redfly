@@ -83,9 +83,11 @@ module.exports = (Ember, App, socket) ->
 					if tag = @get('currentTag')
 						@set 'currentTag', tag.toLowerCase()
 				).observes 'currentTag'
-			keyDown: (event) ->
+			keyUp: (event) ->
 				if event.which is 9	# A tab.
-					@get('parentView').add()
+					# Defer adding the tag in case a typeahead selection highlighted and should be added instead.
+					_.defer =>
+						@get('parentView').add()
 					return false	# Prevent focus from changing, the normal tab key behavior
 			didInsertElement: ->
 				$(@$()).typeahead
