@@ -9,11 +9,12 @@ module.exports = (Ember, App, socket) ->
 		tags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
 				App.Tag.filter (data) =>
-					(data.get('contact.id') is @get('contact.id')) and (data.get('category') is @get('category'))
+					category = @get('category') or 'redstar'
+					(data.get('contact.id') is @get('contact.id')) and (data.get('category') is category)
 			).property 'contact.id', 'category'
 		availableTags: (->
 			allTags = @get '_allTags.content'
-			dictionaryTags = dictionary[@get('category') or 'industry']
+			dictionaryTags = dictionary[@get('category') or 'redstar']
 			available = _.union dictionaryTags, allTags
 			available = _.reject available, (candidate) =>
 				for tag in @get('tags').mapProperty('body')
@@ -22,7 +23,7 @@ module.exports = (Ember, App, socket) ->
 			available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
-				category = @get('category') or 'industry'
+				category = @get('category') or 'redstar'
 				socket.emit 'tags', category, (bodies) ->
 					tags.pushObjects bodies
 				tags = Ember.ArrayProxy.create content: []
@@ -41,7 +42,7 @@ module.exports = (Ember, App, socket) ->
 				App.Tag.createRecord
 					creator: App.user
 					contact: @get 'contact'
-					category: @get('category') or 'industry'
+					category: @get('category') or 'redstar'
 					body: tag
 				App.store.commit()
 				@set 'animate', true
