@@ -78,7 +78,6 @@ module.exports = (Ember, App, socket) ->
 			# 	@$().addClass 'animated rotateOutDownLeft'
 
 		newTagView: Ember.TextField.extend
-			classNames: ['new-tag-field']
 			currentTagBinding: 'parentView.currentTag'
 			currentTagChanged: (->
 					if tag = @get('currentTag')
