@@ -22,11 +22,10 @@ module.exports = (DS, App) ->
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
 		canonicalName: (->
-				# TODO figure out a cleaner way to do entity equality
-				if App.user.get('id') is @get('id')
+				if this is App.user.get('content')
 					return 'You'
 				@get 'name'
-			).property 'id', 'App.user.id', 'name'
+			).property 'App.user.content', 'name'
 		nickname: (->
 				tools.nickname @get('name'), @get('email')
 			).property 'name', 'email'

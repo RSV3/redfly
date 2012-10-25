@@ -19,7 +19,6 @@ module.exports = (Ember, App, socket) ->
 				for tag in @get('tags').mapProperty('body')
 					if tag is candidate
 						return true
-				return false
 			available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
@@ -84,7 +83,7 @@ module.exports = (Ember, App, socket) ->
 				if event.which is 9	# A tab.
 					@get('parentView').add()
 					return false	# Prevent focus from changing, the normal tab key behavior
-			didInsertElement: ->					
+			didInsertElement: ->
 				$(@$()).typeahead
 					source: @get('parentView.availableTags')
 					items: 6
@@ -108,7 +107,7 @@ module.exports = (Ember, App, socket) ->
 		availableTagView: Ember.View.extend
 			tagName: 'span'
 			use: ->
-				tag = @get 'context'
+				tag = @get('context').toString()
 				@get('parentView')._add tag
 
 
