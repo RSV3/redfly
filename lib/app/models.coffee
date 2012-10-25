@@ -47,7 +47,10 @@ module.exports = (DS, App) ->
 				if name = @get('name')
 					return name
 				if email = @get('email')
-					return email[...email.lastIndexOf('.')]
+					_ = require 'underscore'
+					splitted = email.split '@'
+					domain = _.first _.last(splitted).split('.')
+					return _.first(splitted) + ' [' + domain + ']'
 				null
 			).property 'name', 'email'
 		nickname: (->

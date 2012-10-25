@@ -32,7 +32,9 @@ module.exports = (app) ->
 				names.push name
 			else
 				email = _.first(contact.emails)
-				names.push email[...email.lastIndexOf('.')]
+				splitted = email.split '@'
+				domain = _.first _.last(splitted).split('.')
+				names.push _.first(splitted) + ' [' + domain + ']'
 		nicknames = (tools.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
 		
 		send 'nudge',
