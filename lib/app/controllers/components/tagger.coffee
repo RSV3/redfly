@@ -7,50 +7,49 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/tagger'
 		classNames: ['tagger']
 		tags: (->
-				mutable = []
-				@get('_rawTags').forEach (tag) ->
-					mutable.push tag
-				mutable
-			).property '_rawTags.@each'
-		_rawTags: (->
 				App.Tag.find contact: @get('contact.id'), category: @get('category')
+				App.Tag.filter (data) =>
+					if (category = @get('category')) and (category isnt data.get('category'))
+						return false
+					data.get('contact.id') is @get('contact.id')
 			).property 'contact.id', 'category'
 		availableTags: (->
 			allTags = @get '_allTags.content'
-			dictionaryTags = dictionary[@get('category') or 'industry']
+			dictionaryTags = dictionary[@get('category') or 'redstar']
 			available = _.union dictionaryTags, allTags
 			available = _.reject available, (candidate) =>
-				for tag in @get 'tags'
-					if tag.get('body') is candidate
+				for tag in @get('tags').mapProperty('body')
+					if tag is candidate
 						return true
-				return false
 			available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
-				category = @get('category') or 'industry'
-				socket.emit 'tags', category, (bodies) ->
+				socket.emit 'tags', category: @get('category'), (bodies) ->
 					tags.pushObjects bodies
 				tags = Ember.ArrayProxy.create content: []
 			).property 'category'
 		click: ->
-			# @get('newTagView').$().focus() # TO-DO, maybe using the view on 'event'?
-			@$('.new-tag').focus()
+			$(@get('newTagViewInstance.element')).focus()
 		add: ->
 			if tag = util.trim @get('currentTag')
 				@_add tag
 				@set 'currentTag', null
 		_add: (tag) ->
-			existingTag = _.find @get('tags'), (candidate) ->
+			existingTag = @get('tags').find (candidate) ->
 				tag is candidate.get('body')
 			if not existingTag
-				newTag = App.store.createRecord App.Tag,
+				App.Tag.createRecord
 					creator: App.user
 					contact: @get 'contact'
-					category: @get('category') or 'industry'
+					category: @get('category') or 'redstar'
 					body: tag
 				App.store.commit()
+				# TODO hack to make all known tags update when a the user adds a tag without causing flicker in the tag cloud
+				socket.emit 'tags', category: @get('category'), (bodies) =>
+					tags = @get '_allTags'
+					tags.clear()
+					tags.pushObjects bodies
 				@set 'animate', true
-				@get('tags').pushObject newTag
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
 				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
@@ -59,39 +58,38 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'span'
 			classNames: ['tag']
 			search: ->
-				App.set 'search', 'tag:' + @get('context.body')
-				# TODO App.router.get('applicationController.searchView.searchBoxView.$')().focus() and make App.search private while I'm at it.
-				$('.search-query').focus()
+				searchBox = App.get 'router.applicationView.searchViewInstance.searchBoxViewInstance'
+				searchBox.set 'value', 'tag:' + @get('context.body')
+				$(searchBox.get('element')).focus()
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
 			delete: (event) ->
 				tag = @get 'context'
-				$(event.target).parent().addClass 'animated rotateOutDownLeft' # TO-DO icky, why doesn't the scoped jquery work? @$
+				$(event.target).parent().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
-						@get('parentView.tags').removeObject tag # Timing for animation. This would be unnecessary except 'tags' is currently a copy.
+						tag.deleteRecord()
+						App.store.commit()
 					, 1000
-				tag.deleteRecord()
-				App.store.commit()
 			didInsertElement: ->
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
-			willDestroyElement: ->
-				# TO-DO do this and change the icky code in 'add': http://stackoverflow.com/questions/9925171/deferring-removal-of-a-view-so-it-can-be-animated
-				# @$().addClass 'animated rotateOutDownLeft'
+			# TODO do this and 'delete' above, figure out animation framework
+			# willDestroyElement: ->
+			# 	@$().addClass 'animated rotateOutDownLeft'
 
 		newTagView: Ember.TextField.extend
-			classNames: ['new-tag-field']
 			currentTagBinding: 'parentView.currentTag'
-			tagsBinding: 'parentView.tags'
 			currentTagChanged: (->
 					if tag = @get('currentTag')
 						@set 'currentTag', tag.toLowerCase()
 				).observes 'currentTag'
-			keyDown: (event) ->
+			keyUp: (event) ->
 				if event.which is 9	# A tab.
-					@get('parentView').add()
+					# Defer adding the tag in case a typeahead selection highlighted and should be added instead.
+					_.defer =>
+						@get('parentView').add()
 					return false	# Prevent focus from changing, the normal tab key behavior
-			didInsertElement: ->					
+			didInsertElement: ->
 				$(@$()).typeahead
 					source: @get('parentView.availableTags')
 					items: 6
@@ -115,7 +113,7 @@ module.exports = (Ember, App, socket) ->
 		availableTagView: Ember.View.extend
 			tagName: 'span'
 			use: ->
-				tag = @get 'context'
+				tag = @get('context').toString()
 				@get('parentView')._add tag
 
 

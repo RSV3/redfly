@@ -1,7 +1,7 @@
 .row-fluid.top
 	img.img-polaroid.span3(src='https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg', alt='')
 	.span6
-		h1 {{name}}
+		h1 {{canonicalName}}
 		h4
 			| {{#if isKnown}}
 			| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
@@ -26,7 +26,7 @@
 		ul
 			| {{#each knows}}
 			li
-				| <a {{action goProfile this href=true}}>{{name}}</a>
+				| <a {{action goProfile this href=true}}>{{canonicalName}}</a>
 			| {{/each}}
 .row-fluid
 	.span6
@@ -52,13 +52,12 @@
 			| {{#view view.noteView}}
 			p {{body}}
 			// TO-DO do nl2br with bindings
-			small {{author.name}} | {{date}}
+			small {{author.canonicalName}} | {{date}}
 			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
 			| {{/view}}
 			//- | {{else}}
 			//- span {{emptyNotesText}}
 			| {{/each}}
-		| {{#if isKnown}}
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
@@ -67,4 +66,3 @@
 			| Add Note
 			| </button>
 			| </form>
-		| {{/if}}

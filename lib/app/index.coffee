@@ -32,8 +32,6 @@ App.user = Ember.ObjectProxy.create
 	loginIdentity: null
 	signupIdentity: null
 
-App.search = null
-
 App.auth =
 	login: (id) ->
 		App.user.set 'content', App.User.find id
@@ -43,7 +41,7 @@ App.auth =
 
 App.adapter = require('./adapter')(DS, socket)
 App.store = DS.Store.create
-	revision: 4
+	revision: 6
 	adapter: App.adapter
 	
 App.refresh = (record) ->
@@ -57,10 +55,7 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		initialize = ->
-			App.user.removeObserver 'isLoaded', initialize
-			App.initialize()
-		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
-		App.initialize()
+		
+	App.initialize()

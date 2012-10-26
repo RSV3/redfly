@@ -8,7 +8,7 @@
 	| {{/each}}
 
 	| <form class="new-tag-form" {{action add on="submit" target="view"}}>
-	| {{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
+	| {{view view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"}}
 	| </form>
 
 | {{#if view.cloud}}

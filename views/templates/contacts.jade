@@ -11,10 +11,10 @@
 		tbody
 			| {{#each content}}
 			| <tr {{action goContact this href=true}}>
-			td {{name}}
+			td {{canonicalName}}
 			td {{email}}
 			td {{added}}
-			td {{addedBy.name}}
-			td {{knows.firstObject.name}}
+			td {{addedBy.canonicalName}}
+			td {{knows.firstObject.canonicalName}}
 			| </tr>
 			| {{/each}}

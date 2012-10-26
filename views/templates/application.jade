@@ -18,6 +18,7 @@
 				span.icon-bar
 				span.icon-bar
 			| <a class="brand" {{action goHome href=true}}>Redfly</a>
+			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav.open
 					//-
@@ -34,17 +35,17 @@
 					li
 						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...') Report a bug
 					// <li><a {{action goReport href=true}}>Report a bug</a></li>
-					| {{#view view.searchView}}
+					| {{#view view.searchView viewName="searchViewInstance"}}
 					form.navbar-search.pull-left(autocomplete='off', onsubmit='return false;')
-						| {{view view.searchBoxView class="search-query" placeholder="Search" valueBinding="App.search"}}
+						| {{view view.searchBoxView placeholder="Search" class="search-query" viewName="searchBoxViewInstance"}}
 						i.icon-large.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-title='Search', data-content='Find contacts by name, email, tag, etc. Search terms may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
-					| {{#if showResults}}
+					| {{#if view.showResults}}
 					ul.dropdown-menu.search-results
 						| {{#if results.name}}
 						.nav-header Names
 						| {{#each results.name}}
 						li
-							| <a {{action goContact this href=true}}>{{name}}</a>
+							| <a {{action goContact this href=true}}>{{canonicalName}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -52,7 +53,7 @@
 						.nav-header Emails
 						| {{#each results.email}}
 						li
-							| <a {{action goContact this href=true}}>{{name}} - {{email}}</a>
+							| <a {{action goContact this href=true}}>{{canonicalName}} - {{email}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -60,7 +61,7 @@
 						.nav-header Matches in tags
 						| {{#each results.tag}}
 						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - {{body}}</a>
+							| <a {{action goContact contact href=true}}>{{contact.canonicalName}} - {{body}}</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
@@ -68,12 +69,13 @@
 						.nav-header Matches in notes
 						| {{#each results.note}}
 						li
-							| <a {{action goContact contact href=true}}>{{contact.name}} - "{{preview}}"</a>
+							| <a {{action goContact contact href=true}}>{{contact.canonicalName}} - "{{preview}}"</a>
 						| {{/each}}
 						li.divider
 						| {{/if}}
 					| {{/if}}
 					| {{/view}}
+			| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
 				| <form class="navbar-form" {{action doLogin on="submit"}}>
@@ -98,7 +100,7 @@
 				.btn-group
 					| <a class="btn" {{action goUserProfile href=true}}>
 					i.icon-user
-					|  {{App.user.canonicalName}}
+					|  {{App.user.name}}
 					| </a>
 					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
@@ -148,36 +150,36 @@
 					| {{#view view.feedItemView}}
 					| {{#if typeInitialContact}}
 					| <a {{action goContact this href=true}}>
-					h4 {{name}}
+					h4 {{canonicalName}}
 					| </a>
 					p
 						| Added by
-						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a>
 						| on {{added}}
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
 					| {{#if typeContact}}
 					| <a {{action goContact this href=true}}>
-					h4 {{name}}
+					h4 {{canonicalName}}
 					| </a>
 					p
 						| Was just added by
-						| <a {{action goProfile addedBy href=true}}>{{addedBy.name}}</a>
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a>
 						| !
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
 					| {{#if typeTag}}
-					| <a {{action goProfile creator href=true}}>{{creator.name}}</a>
+					| <a {{action goProfile creator href=true}}>{{creator.canonicalName}}</a>
 					| added the tag
 					em "{{body}}"
 					| to
-					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
 					| .
 					| {{/if}}
 					| {{#if typeNote}}
-					| <a {{action goProfile author href=true}}>{{author.name}}</a>
+					| <a {{action goProfile author href=true}}>{{author.canonicalName}}</a>
 					| wrote a note about
-					| <a {{action goContact contact href=true}}>{{contact.name}}</a>
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
 					| : "{{preview}}"
 					| {{/if}}
 					| {{/view}}
