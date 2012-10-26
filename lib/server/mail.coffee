@@ -2,12 +2,11 @@ module.exports = (app) ->
 	util = require './util'
 
 
-	send = (template, options, locals) ->
-		locals ?= {}
+	send = (template, options, locals = {}) ->
 		locals.path = (url) ->
 			'http://' + process.env.HOST + url
 
-		app.render template, locals, (err, html) ->
+		app.render 'mail/' + template, locals, (err, html) ->
 			throw err if err
 
 			options.html = html
@@ -15,11 +14,11 @@ module.exports = (app) ->
 			util.mail options
 
 
-	sendWelcome: (to) ->
-		send 'welcome',
-			to: to
-			subject: 'Thank you for joining Redfly!'
-			# Need to add 'title:' here
+	# sendWelcome: (to) ->
+	# 	send 'welcome',
+	# 		to: to
+	# 		subject: 'Thank you for joining Redfly!'
+	# 		# Need to add 'title:' here
 
 	sendNudge: (user, contacts) ->
 		_ = require 'underscore'
@@ -31,8 +30,11 @@ module.exports = (app) ->
 		for contact in contacts
 			if name = _.first(contact.names)
 				names.push name
-			email = _.first(contact.emails)
-			names.push email[...email.lastIndexOf('.')]
+			else
+				email = _.first(contact.emails)
+				splitted = email.split '@'
+				domain = _.first _.last(splitted).split('.')
+				names.push _.first(splitted) + ' [' + domain + ']'
 		nicknames = (tools.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
 		
 		send 'nudge',

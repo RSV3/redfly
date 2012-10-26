@@ -1,0 +1,90 @@
+| {{#unless complete}}
+
+div.navbar
+	.navbar-inner
+		.lead There are {{total}} contacts in your queue.
+		.pull-right
+			ul.pager
+				li
+					| <a href="#" class="btn-danger" {{action skip target="controller"}}>Skip forever</a>
+				li
+					| <a href="#" class="btn-success" {{action add target="controller"}}>Add and continue</a>
+
+//- | {{outlet}}
+
+| {{else}}
+
+.hero-unit
+	h1 Nicely done!
+	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity, etc etc.
+	| {{#unless noMore}}
+	p
+		| But hey, listen: there are some more contacts we could give you to classify. You know, if you 
+		em really
+		|  wanted to...
+	| {{/unless}}
+	p
+		| {{#if noMore}}
+		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a>
+		| {{else}}
+		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me again!</a>
+		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>		
+		| {{/if}}
+		p.star: i.icon-star
+
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+br
+
+| {{/unless}}
+
+
+
+| {{outlet}}

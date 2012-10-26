@@ -1,0 +1,26 @@
+.hide
+	#loadingStarted
+		| {{#if stateConnecting}}
+		| Makin&apos; pals with gmail...
+		img.pull-right(src='http://www.updown.com/facebook/g/loading.gif')
+		| {{/if}}
+		| {{#if stateParsing}}
+		div {{current}} of {{total}}
+		.progress.progress-striped.active
+			| <div class="bar" {{bindAttr style="percent"}}></div>
+		| {{/if}}
+		| {{#if stateQueueing}}
+		div New contacts found: {{totalQueued}}
+		| {{/if}}
+		| {{#if stateDone}}
+		| All done! <a href="#" {{action classify href=true}}>Start classifying</a>, dude.
+		| {{/if}}
+
+.modal.fade.hide(tabindex='-1', role='dialog')
+	.modal-header
+		button.close(type='button', data-dismiss='modal') ×
+		h3 You&apos;re all set!
+	.modal-body
+		p You&apos;ve successfully connected your email, when parsing is complete you&apos;ll be able to classify the people Redfly finds.
+	.modal-footer
+		button.btn(data-dismiss='modal') Close

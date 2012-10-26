@@ -3,7 +3,20 @@ module.exports = (Ember, App, socket) ->
 	tools = require '../util'
 
 
+	# Ember.Route.reopen
+	# 	enter: (router) ->
+	# 		@_super router
+	# 		# Pageviews correspond to leaf nodes, however there's nothing preventing us from tracking all sorts different actions with this
+	# 		# google analytics router hook.
+	# 		if @get('isLeafRoute')
+	# 			path = @absoluteRoute router
+	# 			_gaq.push ['_trackPageview', path]
+
+
 	App.Router = Ember.Router.extend
+		location: 'history'
+		enableLogging: true	# TODO
+
 		root: Ember.Route.extend
 			home: Ember.Route.extend
 				route: '/'
@@ -35,7 +48,12 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', App.Contact.find()
+					router.get('applicationController').connectOutlet 'contacts', App.Contact.find added: $exists: true
+
+			leaderboard: Ember.Route.extend
+				route: '/leaderboard'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'leaderboard', App.User.find()
 
 			tags: Ember.Route.extend
 				route: '/tags'
@@ -56,14 +74,9 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					index = App.user.get 'classifyIndex'
-					contact = App.user.get('classifyQueue').objectAt index
-					App.classify.set 'content', contact
-
-					router.get('applicationController').connectOutlet 'classify', App.classify
-					router.get('classifyController').connectOutlet 'contact', App.classify
-
-					App.store.findQuery App.Contact, {}	# TODO hack to refresh the contacts, not sure why user.classifyQueue doesn't get loaded
+					contact = Ember.ObjectProxy.create contentBinding: 'App.user.queue.firstObject'
+					router.get('applicationController').connectOutlet 'classify'
+					router.get('classifyController').connectOutlet 'contact', contact
 
 
 			load: Ember.Route.extend
@@ -78,6 +91,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'home'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
 			goReport: Ember.Route.transitionTo 'report'
@@ -88,32 +102,31 @@ module.exports = (Ember, App, socket) ->
 
 			doSignup: (router, context) ->
 				if identity = tools.trim App.user.get 'signupIdentity'
+					controller = context.view.get 'controller'
 					App.user.set 'signupIdentity', null
+					_s = require 'underscore.string'
+					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com')
+						return controller.set 'signupError', 'Use your Redstar email kthx.'
 					socket.emit 'signup', util.identity(identity), (success, data) ->
 						if success
-							context.view.get('controller').set 'signupError', null
+							controller.set 'signupError', null
 							window.location.href = data
 						else
-							context.view.get('controller').set 'signupError', data
+							controller.set 'signupError', data
 
 			doLogin: (router, context) ->
 				if identity = tools.trim App.user.get 'loginIdentity'
+					controller = context.view.get 'controller'
 					App.user.set 'loginIdentity', null
 					socket.emit 'login', util.identity(identity), (success, data) ->
 						if success
-							context.view.get('controller').set 'loginError', null
+							controller.set 'loginError', null
 							App.auth.login data
 							router.transitionTo 'userProfile'
 						else
-							context.view.get('controller').set 'loginError', data
+							controller.set 'loginError', data
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->
 					App.auth.logout()
 					router.transitionTo 'home'
-
-
-		# location: 'history'	# TODO Also rework server/index to serve index.html on any route (where currently "next new util.NotFound") WITHOUT
-								# REDIRECTING (preserve the route for ember) and make all 3 error pages be part of ember somehow. Keep the server
-								# error page however. Can I capture ember errors and serve a special page? Replace all instances of /#
-		enableLogging: true	# TODO

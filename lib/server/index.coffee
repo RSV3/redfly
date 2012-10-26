@@ -14,24 +14,21 @@ app = express()
 server = http.createServer(app)
 
 root = path.dirname path.dirname __dirname
-optimize = if process.env.OPTIMIZE then true else false
 
 key = 'express.sid'
 store = new RedisStore do ->
-	parse = require('url').parse
-	redisToGo = parse process.env.REDISTOGO_URL
-	host: redisToGo.hostname
-	port: redisToGo.port
-	pass: redisToGo.auth.split(':')[1]
+	url = require('url').parse process.env.REDISTOGO_URL
+	host: url.hostname
+	port: url.port
+	pass: url.auth.split(':')[1]
 
 
 app.configure ->
 	app.set 'port', process.env.PORT or 5000
 
-	# Mail template rendering.
-	app.set 'views', root + '/mail'
+	app.set 'views', root + '/views'
 	app.set 'view engine', 'jade'
-	app.locals.pretty = not optimize
+	app.locals.pretty = process.env.NODE_ENV is 'development'
 
 	app.use (req, res, next) ->
 		if req.headers.host isnt process.env.HOST
@@ -51,43 +48,27 @@ app.configure ->
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
 
-	# TODO this is probably still useful! Just make the lookup smarkter, and change config-local
-	# app.use (req, res, next) ->
-	# 	if user = process.env.AUTO_AUTH
-	# 		req.session.user = user
-	# 	next()
+	app.use (req, res, next) ->
+		if user = process.env.AUTO_AUTH
+			req.session.user = user
+		next()
 
 	app.use app.router
 
-	app.use require('./pipeline')(root, optimize)
-
-	# TODO how do 404 etc (error) pages work with ember? If I do them
-	# on the server then keep this, change view root to not be mail, change
-	# mail functions appropriately, grab pages from poverup and consolidate
-	app.use (req, res, next) ->
-		next new util.NotFound
-	app.use (err, req, res, next) ->
-		if err instanceof util.NotFound
-			res.send 404, 'Page not found'
-			# res.statusCode = 404;
-			# res.locals.title = 'Page Not Found :('
-			# res.render 'error/not_found'
-		else if err instanceof util.AccessDenied
-			res.send 403, 'Access denied'
-			# res.statusCode = 403
-			# res.render 'error/access_denied'
-		else
-			next err
+	pipeline = require('./pipeline')(root, app)
+	app.use pipeline.middleware()
+	# app.use pipeline.catchall
+	app.use (req, res) ->
+		res.locals.root = path.basename root
+		res.render 'index'
 
 app.configure 'development', ->
 	app.use express.errorHandler()
 
 app.configure 'production', ->
 	app.use (err, req, res, next) ->
-		# TODO maybe send error email to myself here, or just check the logs. Consider attaching to 'uncaughtException' too.
-		res.send 500, 'Error'
-		# res.statusCode = 500
-		# res.render 'error/error'
+		res.statusCode = 500
+		res.render 'error'
 
 
 
@@ -111,16 +92,18 @@ app.get '/authorized', (req, res) ->
 			throw err if err
 
 			req.session.user = user.id
-			res.redirect('/#/load')	# TODO exposes url creation strategy
+			res.redirect('/load')
 
 
 
 io = require('socket.io').listen server
 
-# Heroku doesn't support websockets, force long polling.
 io.configure ->
+	# Heroku doesn't support websockets, force long polling.
 	io.set 'transports', ['xhr-polling']
 	io.set 'polling duration', 10
+	if process.env.NODE_ENV is 'production'
+		io.set 'log level', 1
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie

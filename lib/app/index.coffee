@@ -2,10 +2,12 @@ require 'html5-manifest'
 require '../vendor'
 
 # require 'ember'	# TODO also see if there's a way to get a debug version of node-ember like i'm using via script currently
-window.App = Ember.Application.create()
+window.App = Ember.Application.create autoinit: false
 
+# site = require('url').parse window.location.href
 # io = require 'socket.io-client' # TODO convoy fails
-socket = io.connect document.location.href
+# socket = io.connect site.protocol + '//' + site.host
+socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port and ":" + window.location.port))
 
 # Handlebars.registerHelper 'date', (property, options) ->
 # 	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
@@ -24,15 +26,11 @@ Handlebars.registerHelper 'debug', (optionalValue) ->
 		console.log optionalValue
 
 
-
 App.user = Ember.ObjectProxy.create
+	classifyCount: 0
 	# TO-DO make these be on Application and Home views, respesctively
 	loginIdentity: null
 	signupIdentity: null
-
-App.search = null
-# TODO
-App.classify = Ember.ObjectProxy.create()
 
 App.auth =
 	login: (id) ->
@@ -43,7 +41,7 @@ App.auth =
 
 App.adapter = require('./adapter')(DS, socket)
 App.store = DS.Store.create
-	revision: 4
+	revision: 6
 	adapter: App.adapter
 	
 App.refresh = (record) ->
@@ -57,10 +55,7 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		initialize = ->
-			App.user.removeObserver 'isLoaded', initialize
-			App.initialize()
-		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
-		App.initialize()
+		
+	App.initialize()
