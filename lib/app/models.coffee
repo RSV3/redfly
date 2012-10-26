@@ -4,7 +4,10 @@ module.exports = (DS, App) ->
 
 	App.adapter.registerTransform 'date',
 		fromJSON: (value) ->
-			new Date value
+			if value
+				date = new Date value
+				throw new Error 'Invalid date.' if isNaN date
+				return date
 		toJSON: (value) ->
 			value
 			

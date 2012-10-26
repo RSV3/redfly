@@ -32,15 +32,9 @@ module.exports = (app, socket) ->
 			when 'create'
 				record = data.record
 				if not _.isArray record
-					# TODO XXX remove this once I'm convined that manual keys on the adapter have solved this problem
-					for own prop, val of record
-						if prop.indexOf('id') isnt -1
-							throw new Error 'ember-data is still trying to coerce attribute names!'
-							# record[prop.split('_')[0]] = val
 					model.create record, (err, doc) ->
 						throw err if err
 						fn doc
-
 						if (model is models.Tag) or (model is models.Note)
 							socket.broadcast.emit 'feed',
 								type: data.type
@@ -59,18 +53,17 @@ module.exports = (app, socket) ->
 					model.findById record.id, (err, doc) ->
 						throw err if err
 						_.extend doc, record
+						if (model is models.Contact) and ('added' in doc.modifiedPaths())
+							socket.broadcast.emit 'feed',
+								type: data.type
+								id: doc.id
+							socket.emit 'feed',
+								type: data.type
+								id: doc.id
 						# Important to do updates through the 'save' call so middleware and validators happen.
 						doc.save (err) ->
 							throw err if err
 							return fn doc
-	
-							if (model is models.Contact) and ('added' in doc.modifiedPaths())
-								socket.broadcast.emit 'feed',
-									type: data.type
-									id: doc.id
-								socket.emit 'feed',
-									type: data.type
-									id: doc.id
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -280,19 +273,3 @@ module.exports = (app, socket) ->
 					fn message
 
 			require('./parser')(user, notifications)
-
-
-
-	# TODO Hack, but retain this logic
-	# WARNING: concurrency problem if invoked too quickly in succession (user clicking "next" in the classify flow very fast)
-	socket.on 'removeQueueItemAndAddExclude', (userId, exclude) ->
-		models.User.findById userId, (err, user) ->
-			throw err if err
-			user.queue.shift()
-			if exclude
-				existing = _.find user.excludes, (candidate) ->
-					(exclude.name is candidate.name) and (exclude.email is candidate.email)
-				if not existing
-					user.excludes.push exclude
-			user.save (err) ->
-				throw err if err

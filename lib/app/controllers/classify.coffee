@@ -8,35 +8,40 @@ module.exports = (Ember, App, socket) ->
 				Math.min App.user.get('queue.length'), maxQueueLength - App.user.get('classifyCount')
 			).property 'App.user.queue.length', 'App.user.classifyCount'
 		complete: (->
-				noMore = not @get('content')
-				return noMore or (App.user.get('classifyCount') is maxQueueLength)
-			).property 'content', 'App.user.classifyCount'
+				return @get('noMore') or (App.user.get('classifyCount') is maxQueueLength)
+			).property 'noMore', 'App.user.classifyCount'
+		noMore: (->
+				not @get('content')
+			).property 'content'
 
 		add: ->
-			contact = App.user.get('queue').shiftObject()
+			contact = @get 'content'
 			if not contact.get 'added'
 				contact.set 'added', new Date
 				contact.set 'addedBy', App.user
 
-			socket.emit 'removeQueueItemAndAddExclude', App.user.get('id')
 			@_continue()
 		skip: ->
-			# TODO hack
-			asdf = App.user.get('queue').shiftObject()
-			asdf.set 'addedBy', undefined
 			exclude = {}
 			if email = @get('email')
 				exclude.email = email
 			if name = @get('name')
 				exclude.name = name
-			App.user.get('excludes').pushObject exclude
 
-			socket.emit 'removeQueueItemAndAddExclude', App.user.get('id'), exclude
+			existingExclude = App.user.get('excludes').find (candidate) ->
+				(exclude.name is candidate.name) and (exclude.email is candidate.email)
+			if not existingExclude
+				# TODO hack temporarily, setting the excludes property to a new object is the only way ember-data will pick up that it's been changed.
+				excludes = App.user.get('excludes').slice()
+				excludes.pushObject exclude
+				App.user.set 'excludes', excludes
+
 			@_continue()
 		_continue: ->
-			App.user.incrementProperty 'classifyCount'
-			
+			App.user.get('queue').shiftObject()
 			App.store.commit()
+			
+			App.user.incrementProperty 'classifyCount'
 			@set 'content', App.user.get('queue.firstObject')
 		keepGoing: ->
 			App.user.set 'classifyCount', 0

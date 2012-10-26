@@ -4,6 +4,10 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 		histories: (->
+				# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
+				# fake contact is below the page break and has no ID set
+				if not @get('id')
+					return []
 				App.Mail.find
 					conditions:
 						sender: App.user.get('id')
