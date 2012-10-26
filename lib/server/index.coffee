@@ -82,7 +82,7 @@ app.get '/authorized', (req, res) ->
 		throw err if err
 		if user
 			req.session.user = user.id
-			return res.redirect('/profile')
+			return res.redirect '/profile'
 		else
 
 			oauth = require 'oauth-gmail'
@@ -101,7 +101,7 @@ app.get '/authorized', (req, res) ->
 					throw err if err
 
 					req.session.user = user.id
-					res.redirect('/load')
+					res.redirect '/load'
 
 
 
