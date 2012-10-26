@@ -54,4 +54,4 @@ module.exports = (Ember, App, socket) ->
 
 
 
-	maxQueueLength = 10
+	maxQueueLength = 7
