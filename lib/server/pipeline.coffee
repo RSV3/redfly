@@ -36,7 +36,7 @@ module.exports = (root, app) ->
 						paths: [path.dirname(basePath)]
 					new less.Parser(options).parse body, (err, tree) ->
 						return done err if err
-						asset.body = tree.toCSS() + '\n' + asset.body
+						asset.body = tree.toCSS(compress: process.env.NODE_ENV is 'production') + '\n' + asset.body     # 'compress' option won't be necessary once Convoy minifies css
 						done()
 			]
 			# minify: process.env.NODE_ENV is 'production'	# Doesn't do anything, convoy doesn't minify css yet.
