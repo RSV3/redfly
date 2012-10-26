@@ -76,23 +76,32 @@ app.get '/authorized', (req, res) ->
 	data = req.session.authorizeData
 	delete req.session.authorizeData
 
-	oauth = require 'oauth-gmail'
-	client = oauth.createClient()
-	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+	# Authroize flow has temporarily been commandeered for login too.
+	models = require './models'
+	models.User.findOne email: data.email, (err, user) ->
 		throw err if err
-
-		# Create the user and log him in.
-		models = require './models'
-		user = new models.User
-		user.email = data.email
-		user.oauth =
-			token: result.accessToken
-			secret: result.accessTokenSecret
-		user.save (err) ->
-			throw err if err
-
+		if user
 			req.session.user = user.id
-			res.redirect('/load')
+			return res.redirect('/profile')
+		else
+
+			oauth = require 'oauth-gmail'
+			client = oauth.createClient()
+			client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+				throw err if err
+
+				# Create the user and log him in.
+				models = require './models'
+				user = new models.User
+				user.email = data.email
+				user.oauth =
+					token: result.accessToken
+					secret: result.accessTokenSecret
+				user.save (err) ->
+					throw err if err
+
+					req.session.user = user.id
+					res.redirect('/load')
 
 
 

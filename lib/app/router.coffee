@@ -121,8 +121,10 @@ module.exports = (Ember, App, socket) ->
 					socket.emit 'login', util.identity(identity), (success, data) ->
 						if success
 							controller.set 'loginError', null
-							App.auth.login data
-							router.transitionTo 'userProfile'
+							# Temporary use of authorize flow for login.
+							window.location.href = data
+							# App.auth.login data
+							# router.transitionTo 'userProfile'
 						else
 							controller.set 'loginError', data
 

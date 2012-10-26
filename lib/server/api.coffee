@@ -97,9 +97,18 @@ module.exports = (app, socket) ->
 			throw err if err
 			if not user
 				return fn false, 'Once more, with feeling!'
-			session.user = user.id
-			session.save()
-			return fn true, user.id
+			# session.user = user.id
+			# session.save()
+			# return fn true, user.id
+
+			# Tempoarily use of the authorize flow for login. Copy/pasted.
+			oauth = require 'oauth-gmail'
+			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+			client.getRequestToken email, (err, result) -> 
+				throw err if err
+				session.authorizeData = email: email, request: result
+				session.save()
+				return fn true, result.authorizeUrl
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
