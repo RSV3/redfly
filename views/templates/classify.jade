@@ -25,7 +25,7 @@ div.navbar
 	| {{/unless}}
 	p
 		| {{#if noMore}}
-		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a>
+		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a> 
 		| {{else}}
 		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me again!</a>
 		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>		
