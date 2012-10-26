@@ -19,6 +19,12 @@
 
 
 
+Copying mongodb from different instances
+========================================
+
+* /opt/local/mongodb/bin/mongodump --host ds037097.mongolab.com:37097 --username heroku_app6375910 --password <password> --db heroku_app6375910 --out redfly-test.json
+
+* /opt/local/mongodb/bin/mongorestore --host ds037067.mongolab.com:37067 --username heroku_app6375934 --password <password> --db heroku_app6375934 redfly-test.json/heroku_app6375910
 
 
 ----- One-time setup -------
