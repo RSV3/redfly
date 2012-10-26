@@ -17,14 +17,14 @@ div.navbar
 .hero-unit
 	h1 Nicely done!
 	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity, etc etc.
-	| {{#if next}}
+	| {{#if content}}
 	p
 		| But hey, listen: there are some more contacts we could give you to classify. You know, if you 
 		em really
 		|  wanted to...
 	| {{/if}}
 	p
-		| {{#unless next}}
+		| {{#unless content}}
 		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a>
 		| {{else}}
 		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me again!</a>

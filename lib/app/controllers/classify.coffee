@@ -11,9 +11,6 @@ module.exports = (Ember, App, socket) ->
 				noMore = not @get('content')
 				return noMore or (App.user.get('classifyCount') is maxQueueLength)
 			).property 'content', 'App.user.classifyCount'
-		next: (->
-				App.user.get 'queue.firstObject'
-			).property 'App.user.queue.firstObject'
 
 		add: ->
 			contact = App.user.get('queue').shiftObject()

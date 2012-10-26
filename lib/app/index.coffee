@@ -55,10 +55,7 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		initialize = ->
-			App.user.removeObserver 'isLoaded', initialize
-			App.initialize()
-		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
-		App.initialize()
+		
+	App.initialize()

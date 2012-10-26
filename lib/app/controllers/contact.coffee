@@ -15,7 +15,7 @@ module.exports = (Ember, App, socket) ->
 				@get 'histories.firstObject'
 			).property 'histories.firstObject'
 		isKnown: (->
-				@get('knows').find (user) ->
+				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')
 			).property 'knows.@each.id'
 		disableAdd: (->
