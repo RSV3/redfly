@@ -8,4 +8,10 @@ module.exports = (Ember, App, socket) ->
 	App.ProfileController = Ember.ObjectController.extend
 		contacts: (->
 				App.Contact.find addedBy: @get('id')
-			).property('id').volatile()
+				# conditions:
+				# 	addedBy: @get('id')
+				# options:
+				# 	sort: date: -1
+				App.Contact.filter (data) =>
+					data.get('addedBy.id') is @get('id')
+			).property 'id'

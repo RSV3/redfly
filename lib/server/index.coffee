@@ -76,23 +76,32 @@ app.get '/authorized', (req, res) ->
 	data = req.session.authorizeData
 	delete req.session.authorizeData
 
-	oauth = require 'oauth-gmail'
-	client = oauth.createClient()
-	client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+	# Authroize flow has temporarily been commandeered for login too.
+	models = require './models'
+	models.User.findOne email: data.email, (err, user) ->
 		throw err if err
-
-		# Create the user and log him in.
-		models = require './models'
-		user = new models.User
-		user.email = data.email
-		user.oauth =
-			token: result.accessToken
-			secret: result.accessTokenSecret
-		user.save (err) ->
-			throw err if err
-
+		if user
 			req.session.user = user.id
-			res.redirect('/load')
+			return res.redirect '/profile'
+		else
+
+			oauth = require 'oauth-gmail'
+			client = oauth.createClient()
+			client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
+				throw err if err
+
+				# Create the user and log him in.
+				models = require './models'
+				user = new models.User
+				user.email = data.email
+				user.oauth =
+					token: result.accessToken
+					secret: result.accessTokenSecret
+				user.save (err) ->
+					throw err if err
+
+					req.session.user = user.id
+					res.redirect '/load'
 
 
 
@@ -114,7 +123,8 @@ io.set 'authorization', (data, accept) ->
 
 	store.load data.sessionId, (err, session) ->
 		throw err if err
-		throw new Error 'No session.' if not session	# TODO this can happen if page is idle for a while. Probably create a new session here.
+		if not session
+			return accept 'No session.', false
 
 		data.session = session
 		return accept null, true

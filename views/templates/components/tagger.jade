@@ -8,14 +8,14 @@
 	| {{/each}}
 
 	| <form class="new-tag-form" {{action add on="submit" target="view"}}>
-	| {{view view.newTagView class="new-tag" valueBinding="view.currentTag"}}
+	| {{view view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"}}
 	| </form>
 
 | {{#if view.cloud}}
 .cloud
 	| {{#each view.availableTags}}
 	| {{#view view.availableTagView}}
-	| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{this}}</span></a>
+	| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{this}}</span></a> 
 	| {{/view}}
 	| {{/each}}
 | {{/if}}

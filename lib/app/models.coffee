@@ -2,29 +2,36 @@ module.exports = (DS, App) ->
 	tools = require '../util'
 
 
-	DS.attr.transforms.array =
-		from: (serialized) ->
-			Ember.ArrayProxy.create content: serialized
-		to: (deserialized) ->
-			throw new Error 'unimplemented'
-			# deserialized.toArray() order is not guaranteed
+	App.adapter.registerTransform 'date',
+		fromJSON: (value) ->
+			if value
+				date = new Date value
+				throw new Error 'Invalid date.' if isNaN date
+				return date
+		toJSON: (value) ->
+			value
+			
+	App.adapter.registerTransform 'array',
+		fromJSON: (value) ->
+			value
+		toJSON: (value) ->
+			value
 
 
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
 		email: DS.attr 'string'
-		canonicalName: DS.attr('string', key: 'name')
+		name: DS.attr 'string'
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
-		name: (->
-				# TODO figure out a cleaner way to do entity equality
-				if App.user.get('id') is @get('id')
+		canonicalName: (->
+				if this is App.user.get('content')
 					return 'You'
-				@get 'canonicalName'
-			).property 'id', 'App.user.id', 'canonicalName'
+				@get 'name'
+			).property 'App.user.content', 'name'
 		nickname: (->
-				tools.nickname @get('canonicalName'), @get('email')
-			).property 'canonicalName', 'email'
+				tools.nickname @get('name'), @get('email')
+			).property 'name', 'email'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
@@ -32,48 +39,47 @@ module.exports = (DS, App) ->
 		emails: DS.attr 'array'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
-		addedBy: DS.belongsTo('App.User', key: 'addedBy')
+		addedBy: DS.belongsTo 'App.User'
 		name: (->
-				if name = @get('primaryName')
-					return name
-				if email = @get('email')
-					return email[...email.lastIndexOf('.')]
-				null
-			).property 'primaryName', 'email'
-		nickname: (->
-				tools.nickname @get('primaryName'), @get('email')
-			).property 'primaryName', 'email'
+				@get('names.firstObject')
+			).property 'names.@each'
 		email: (->
 				@get('emails.firstObject')
 			).property 'emails.@each'
-		primaryName: (->
-				@get('names.firstObject')
-			).property 'names.@each'
+		canonicalName: (->
+				if name = @get('name')
+					return name
+				if email = @get('email')
+					_ = require 'underscore'
+					splitted = email.split '@'
+					domain = _.first _.last(splitted).split('.')
+					return _.first(splitted) + ' [' + domain + ']'
+				null
+			).property 'name', 'email'
+		nickname: (->
+				tools.nickname @get('name'), @get('email')
+			).property 'name', 'email'
 		notes: (->
-				mutable = []
-				@get('_rawNotes').forEach (note) ->
-					mutable.push note
-				mutable
-			).property '_rawNotes.@each'
-		_rawNotes: (->
-				App.Note.find
-					conditions:
-						contact: @get('id')
-					options:
-						sort: date: 1
+				App.Note.find contact: @get('id')
+					# conditions:
+					# 	contact: @get('id')
+					# options:
+					# 	sort: date: 1
+				App.Note.filter (data) =>
+					data.get('contact.id') is @get('id')
 			).property 'id'
 
 	App.Tag = DS.Model.extend
 		date: DS.attr 'date'
-		creator: DS.belongsTo('App.User', key: 'creator')
-		contact: DS.belongsTo('App.Contact', key: 'contact')
+		creator: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		category: DS.attr 'string'
 		body: DS.attr 'string'
 
 	App.Note = DS.Model.extend
 		date: DS.attr 'date'
-		author: DS.belongsTo('App.User', key: 'author')
-		contact: DS.belongsTo('App.Contact', key: 'contact')
+		author: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
 		body: DS.attr 'string'
 		preview: (->
 				_s = require 'underscore.string'
@@ -82,7 +88,7 @@ module.exports = (DS, App) ->
 
 	App.Mail = DS.Model.extend
 		date: DS.attr 'date'
-		sender: DS.belongsTo('App.User', key: 'sender')
-		recipient: DS.belongsTo('App.Contact', key: 'recipient')
+		sender: DS.belongsTo 'App.User'
+		recipient: DS.belongsTo 'App.Contact'
 		subject: DS.attr 'string'
 		sent: DS.attr 'date'

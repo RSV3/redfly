@@ -74,7 +74,7 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					contact = App.user.get 'queue.firstObject'
+					contact = Ember.ObjectProxy.create contentBinding: 'App.user.queue.firstObject'
 					router.get('applicationController').connectOutlet 'classify'
 					router.get('classifyController').connectOutlet 'contact', contact
 
@@ -121,8 +121,10 @@ module.exports = (Ember, App, socket) ->
 					socket.emit 'login', util.identity(identity), (success, data) ->
 						if success
 							controller.set 'loginError', null
-							App.auth.login data
-							router.transitionTo 'userProfile'
+							# Temporary use of authorize flow for login.
+							window.location.href = data
+							# App.auth.login data
+							# router.transitionTo 'userProfile'
 						else
 							controller.set 'loginError', data
 

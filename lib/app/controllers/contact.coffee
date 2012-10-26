@@ -4,6 +4,10 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 		histories: (->
+				# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
+				# fake contact is below the page break and has no ID set
+				if not @get('id')
+					return []
 				App.Mail.find
 					conditions:
 						sender: App.user.get('id')
@@ -15,18 +19,11 @@ module.exports = (Ember, App, socket) ->
 				@get 'histories.firstObject'
 			).property 'histories.firstObject'
 		isKnown: (->
-				# TO-DO there has to be better way to do 'contains'. Preserve the testing for nonexistence of get(knows)
-				has = false
-				if knowsed = @get('knows')
-					knowsed.forEach (user) ->
-						if user.get('id') is App.user.get('id')
-							has = true
-				has
+				@get('knows')?.find (user) ->
+					user.get('id') is App.user.get('id')
 			).property 'knows.@each.id'
 		disableAdd: (->
-				if util.trim @get('currentNote')
-					return false
-				return true
+				not util.trim @get('currentNote')
 			).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if Math.random() < 0.9
@@ -39,24 +36,23 @@ module.exports = (Ember, App, socket) ->
 		# 	).property().volatile()
 		add: ->
 			if note = util.trim @get('currentNote')
-				newNote = App.store.createRecord App.Note,	# TODO will this work as App.Note.createRecord? Change here and elsewhere.
+				App.Note.createRecord
 					author: App.user
 					contact: @get 'content'
 					body: note
 				App.store.commit()
 				@set 'animate', true
-				@get('notes').pushObject newNote
 				@set 'currentNote', null
 		directMailto: (->
-				'mailto:'+ @get('name') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
-			).property 'name', 'email'
+				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
+			).property 'canonicalName', 'email'
 		introMailto: (->
 				carriage = '%0D%0A'
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
-					'?subject=You know ' + @get('name') + ', right?' +
+					'?subject=You know ' + @get('canonicalName') + ', right?' +
 					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('email') + '? Thanks!' +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'name', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
+			).property 'canonicalName', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 
 
 	App.ContactView = Ember.View.extend

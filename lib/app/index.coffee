@@ -8,6 +8,8 @@ window.App = Ember.Application.create autoinit: false
 # io = require 'socket.io-client' # TODO convoy fails
 # socket = io.connect site.protocol + '//' + site.host
 socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port and ":" + window.location.port))
+socket.on 'error', ->
+	window.location.reload()
 
 # Handlebars.registerHelper 'date', (property, options) ->
 # 	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
@@ -32,8 +34,6 @@ App.user = Ember.ObjectProxy.create
 	loginIdentity: null
 	signupIdentity: null
 
-App.search = null
-
 App.auth =
 	login: (id) ->
 		App.user.set 'content', App.User.find id
@@ -43,7 +43,7 @@ App.auth =
 
 App.adapter = require('./adapter')(DS, socket)
 App.store = DS.Store.create
-	revision: 4
+	revision: 6
 	adapter: App.adapter
 	
 App.refresh = (record) ->
@@ -57,10 +57,7 @@ require('./router')(Ember, App, socket)
 socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
-		initialize = ->
-			App.user.removeObserver 'isLoaded', initialize
-			App.initialize()
-		App.user.addObserver 'isLoaded', initialize
 	else
 		App.auth.logout()
-		App.initialize()
+		
+	App.initialize()
