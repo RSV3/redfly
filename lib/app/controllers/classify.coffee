@@ -11,8 +11,9 @@ module.exports = (Ember, App, socket) ->
 				return @get('noMore') or (App.user.get('classifyCount') is maxQueueLength)
 			).property 'noMore', 'App.user.classifyCount'
 		noMore: (->
-				not @get('content')
-			).property 'content'
+				# content.id and not just content because if you arrive from the router it sets a proxy initially.
+				not @get('content.id')
+			).property 'content.id'
 
 		add: ->
 			contact = @get 'content'
