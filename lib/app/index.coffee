@@ -8,8 +8,8 @@ window.App = Ember.Application.create autoinit: false
 # io = require 'socket.io-client' # TODO convoy fails
 # socket = io.connect site.protocol + '//' + site.host
 socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port and ":" + window.location.port))
-socket.on 'error', ->
-	window.location.reload()
+# socket.on 'error', ->
+# 	window.location.reload()
 
 # Handlebars.registerHelper 'date', (property, options) ->
 # 	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page

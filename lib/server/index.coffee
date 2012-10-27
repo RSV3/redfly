@@ -123,8 +123,9 @@ io.set 'authorization', (data, accept) ->
 
 	store.load data.sessionId, (err, session) ->
 		throw err if err
-		if not session
-			return accept 'No session.', false
+		throw new Error 'No session.' if not session    # TODO this can happen if page is idle for a while. Probably create a new session here.
+		# if not session
+		# 	return accept 'No session.', false
 
 		data.session = session
 		return accept null, true
