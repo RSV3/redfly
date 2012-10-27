@@ -8,7 +8,7 @@ Types = Schema.Types
 
 
 excludeSchema = new Schema
-	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
+	email: type: String, trim: 1, lowercase: 1, validator: validators.isEmail
 	name: type: String, trim: 1
 
 UserSchema = new Schema
