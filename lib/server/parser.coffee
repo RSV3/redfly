@@ -53,7 +53,7 @@ module.exports = (user, notifications) ->
 									email = tools.trim to.address.toLowerCase()
 
 									tools = require '../util'
-									junkChars = ' \'",'
+									junkChars = ' \'",<>'
 									name = tools.trim to.name, junkChars
 									comma = name.indexOf ','
 									if comma isnt -1
