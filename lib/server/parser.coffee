@@ -3,7 +3,7 @@ module.exports = (user, notifications) ->
 	validators = require('validator').validators
 	tools = require '../util'
 	
-	request = require 'request'
+	request = require 'request'	# TODO remove 'request' from package.json when no longer reliant on winedora.
 	request.post
 		url: 'http://winedora-staging.herokuapp.com/social/xoauth/'
 		body: 'user=' + user.email + '&token=' + user.oauth.token + '&secret=' + user.oauth.secret
