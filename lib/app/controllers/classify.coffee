@@ -15,14 +15,27 @@ module.exports = (Ember, App, socket) ->
 				not @get('content.id')
 			).property 'content.id'
 
-		add: ->
-			contact = @get 'content'
-			if not contact.get 'added'
-				contact.set 'added', new Date
-				contact.set 'addedBy', App.user
+		continueText: (->
+				if not @get 'added'
+					return 'Save and continue'
+				'Continue'
+			).property 'added'
 
-			@_continue()
+		continue: ->
+			if not @get 'added'
+				@set 'added', new Date
+				@set 'addedBy', App.user
+
+			App.user.get('queue').shiftObject()
+			App.user.incrementProperty 'classifyCount'
+			@_next()
 		skip: ->
+			queue = App.user.get 'queue'
+			contact = queue.shiftObject()
+			queue.pushObject contact
+
+			@_next()
+		ignore: ->
 			exclude = {}
 			if email = @get('email')
 				exclude.email = email
@@ -37,12 +50,11 @@ module.exports = (Ember, App, socket) ->
 				excludes.pushObject exclude
 				App.user.set 'excludes', excludes
 
-			@_continue()
-		_continue: ->
 			App.user.get('queue').shiftObject()
-			App.store.commit()
-			
 			App.user.incrementProperty 'classifyCount'
+			@_next()
+		_next: ->
+			App.store.commit()
 			@set 'content', App.user.get('queue.firstObject')
 		keepGoing: ->
 			App.user.set 'classifyCount', 0
