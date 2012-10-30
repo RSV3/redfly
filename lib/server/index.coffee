@@ -54,10 +54,7 @@ app.configure ->
 		next()
 
 	app.use app.router
-
-	pipeline = require('./pipeline')(root, app)
-	app.use pipeline.middleware()
-	# app.use pipeline.catchall
+	app.use require('./pipeline')(root, app)
 	app.use (req, res) ->
 		res.locals.root = path.basename root
 		res.render 'index'

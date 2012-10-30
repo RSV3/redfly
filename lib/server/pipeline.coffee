@@ -56,4 +56,4 @@ module.exports = (root, app) ->
 	# 	require('convoy/lib/middleware').send req, res, options, next
 
 
-	module.exports = pipeline
+	module.exports = pipeline.middleware()
