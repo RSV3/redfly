@@ -28,7 +28,8 @@ div.navbar
 		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a> 
 		| {{else}}
 		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me again!</a>
-		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>		
+		| &nbsp;
+		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>
 		| {{/if}}
 		p.star: i.icon-star
 
