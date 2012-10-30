@@ -47,9 +47,6 @@ module.exports = (root, app) ->
 		# 	packager: 'copy'
 		# 	autocache: process.env.NODE_ENV is 'development'
 
-		'app.manifest':
-			packager: require 'html5-manifest/packager'
-
 
 	# pipeline.catchall = (req, res, next) ->
 	# 	options =
