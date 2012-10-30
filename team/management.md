@@ -19,15 +19,33 @@
 
 
 
-Copying mongodb from different instances
+
+
+Util
 ========================================
 
-* /opt/local/mongodb/bin/mongodump --host ds037097.mongolab.com:37097 --username heroku_app6375910 --password <password> --db heroku_app6375910 --out redfly-test.json
+development commands:
+mongo ds037067-a.mongolab.com:37067/heroku_app6379653 -u heroku_app6379653 -p p1kafm34rqlg2a233c700j0bcj
+redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
 
-* /opt/local/mongodb/bin/mongorestore --host ds037067.mongolab.com:37067 --username heroku_app6375934 --password <password> --db heroku_app6375934 redfly-test.json/heroku_app6375910
+test commands:
+mongo ds037097.mongolab.com:37097/heroku_app6375910 -u heroku_app6375910 -p osf31ssqike03ju6i6852jd0v2
+
+dumping prod db to dev:
+mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
+mongorestore --host ds037067-a.mongolab.com:37067 --username heroku_app6379653 --password p1kafm34rqlg2a233c700j0bcj --db heroku_app6379653 redfly_dump/heroku_app8065862
+
+get all tags:
+require('./models').Tag.find body: /whatever/, (err, tags) ->
+	throw err if err
+	console.log tags
 
 
------ One-time setup -------
+
+
+
+One-time setup
+==============
 
 - Add config variable for each environment to heroku
 	heroku config:add APP_ENV=development --remote heroku-dev
@@ -43,6 +61,8 @@ Copying mongodb from different instances
 	git push -u origin test
 	git push -u origin staging
 	git push -u origin prod
+
+
 
 
 Heroku Add-Ons added
