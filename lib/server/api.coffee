@@ -53,17 +53,20 @@ module.exports = (app, socket) ->
 					model.findById record.id, (err, doc) ->
 						throw err if err
 						_.extend doc, record
+						broadcast = false
 						if (model is models.Contact) and ('added' in doc.modifiedPaths())
-							socket.broadcast.emit 'feed',
-								type: data.type
-								id: doc.id
-							socket.emit 'feed',
-								type: data.type
-								id: doc.id
+							broadcast = true
 						# Important to do updates through the 'save' call so middleware and validators happen.
 						doc.save (err) ->
 							throw err if err
-							return fn doc
+							fn doc
+							if broadcast
+								socket.broadcast.emit 'feed',
+									type: data.type
+									id: doc.id
+								socket.emit 'feed',
+									type: data.type
+									id: doc.id
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
