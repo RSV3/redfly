@@ -1,4 +1,31 @@
-- Install Node.js 0.8.7
+development commands:
+mongo ds037067-a.mongolab.com:37067/heroku_app6379653 -u heroku_app6379653 -p p1kafm34rqlg2a233c700j0bcj
+redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
+
+test commands:
+mongo ds037097.mongolab.com:37097/heroku_app6375910 -u heroku_app6375910 -p osf31ssqike03ju6i6852jd0v2
+
+dumping prod db to dev:
+mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
+mongorestore --host ds037067-a.mongolab.com:37067 --username heroku_app6379653 --password p1kafm34rqlg2a233c700j0bcj --db heroku_app6379653 redfly_dump/heroku_app8065862
+
+get all tags:
+require('./models').Tag.find body: /whatever/, (err, tags) ->
+	throw err if err
+	console.log tags
+
+
+
+
+
+
+
+Developer setup
+===============
+
+- Install latest Node.js (http://nodejs.org)
+- Install Git (http://git-scm.com)
+- Install Heroku Toolbelt (https://toolbelt.heroku.com/)
 
 - Clone project from github.
 	git clone git@github.com:RSV3/redfly.git
@@ -20,31 +47,7 @@
 
 
 
-
-Util
-========================================
-
-development commands:
-mongo ds037067-a.mongolab.com:37067/heroku_app6379653 -u heroku_app6379653 -p p1kafm34rqlg2a233c700j0bcj
-redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
-
-test commands:
-mongo ds037097.mongolab.com:37097/heroku_app6375910 -u heroku_app6375910 -p osf31ssqike03ju6i6852jd0v2
-
-dumping prod db to dev:
-mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
-mongorestore --host ds037067-a.mongolab.com:37067 --username heroku_app6379653 --password p1kafm34rqlg2a233c700j0bcj --db heroku_app6379653 redfly_dump/heroku_app8065862
-
-get all tags:
-require('./models').Tag.find body: /whatever/, (err, tags) ->
-	throw err if err
-	console.log tags
-
-
-
-
-
-One-time setup
+Project setup
 ==============
 
 - Add config variable for each environment to heroku
