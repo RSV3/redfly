@@ -3,6 +3,11 @@ module.exports = (Ember, App, socket) ->
 	tools = require '../util'
 
 
+	Ember.Router.reopen
+		transitionTo: (path, context) ->
+			console.log path
+			@_super path, context
+
 	# Ember.Route.reopen
 	# 	enter: (router) ->
 	# 		@_super router
@@ -18,7 +23,7 @@ module.exports = (Ember, App, socket) ->
 		enableLogging: true	# TODO
 
 		root: Ember.Route.extend
-			home: Ember.Route.extend
+			index: Ember.Route.extend
 				route: '/'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'home'
@@ -88,7 +93,7 @@ module.exports = (Ember, App, socket) ->
 				redirectsTo: 'userProfile'
 
 
-			goHome: Ember.Route.transitionTo 'home'
+			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
@@ -131,4 +136,4 @@ module.exports = (Ember, App, socket) ->
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->
 					App.auth.logout()
-					router.transitionTo 'home'
+					router.transitionTo 'index'
