@@ -27,6 +27,14 @@ module.exports = (Ember, App, socket) ->
 
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../views/templates/application'
+
+		changeActiveTab: (->
+				state = App.get 'router.currentState.name'
+				tabs = ['classify', 'leaderboard', 'contacts', 'tags']
+				for tab in tabs
+					@set 'at' + _s.capitalize(tab), false
+				@set 'at' + _s.capitalize(state), true
+			).observes 'App.router.currentState.name'
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create

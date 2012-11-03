@@ -24,14 +24,18 @@
 					//-
 						li.
 							<a {{action goHome href=true}}>Home</a>
-					li.
-						<a {{action goClassify href=true}}>Classify</a>
-					li.
-						<a {{action goLeaderboard href=true}}>Users</a>
-					li.
-						<a {{action goContacts href=true}}>Contacts</a>
-					li.
-						<a {{action goTags href=true}}>Tags</a>
+					| <li {{bindAttr class="view.atClassify:active"}}>
+					|	<a {{action goClassify href=true}}>Classify</a>
+					| </li>
+					| <li {{bindAttr class="view.atLeaderboard:active"}}>
+					|	<a {{action goLeaderboard href=true}}>Users</a>
+					| </li>
+					| <li {{bindAttr class="view.atContacts:active"}}>
+					|	<a {{action goContacts href=true}}>Contacts</a>
+					| </li>
+					| <li {{bindAttr class="view.atTags:active"}}>
+					|	<a {{action goTags href=true}}>Tags</a>
+					| </li>
 					li
 						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
 					// <li><a {{action goReport href=true}}>Report a bug</a></li>
