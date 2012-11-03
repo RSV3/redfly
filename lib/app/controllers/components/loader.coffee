@@ -1,4 +1,5 @@
 module.exports = (Ember, App, socket) ->
+	util = require '../../util'
 
 
 	App.LoaderView = Ember.View.extend
@@ -6,22 +7,14 @@ module.exports = (Ember, App, socket) ->
 
 		didInsertElement: ->
 			@set 'modal', $(@$()).modal()
-			@set 'notification', $.pnotify
+			@set 'notification', util.notify
 				title: 'Email parsing status',
 				text: '<div id="loading"></div>'
 				type: 'info'
-				# nonblock: true
 				hide: false
 				closer: false
 				sticker: false
 				icon: 'icon-envelope'
-				animate_speed: 700
-				opacity: 0.9
-				animation:
-					effect_in: 'drop'
-					options_in: direction: 'up'
-					effect_out: 'drop'
-					options_out: direction: 'right'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'

@@ -3,10 +3,20 @@ module.exports = (Ember, App, socket) ->
 	tools = require '../util'
 
 
+	interceptedPath = null
+
 	Ember.Router.reopen
 		transitionTo: (path, context) ->
-			console.log path
-			@_super path, context
+			_ = require 'underscore'
+
+			authenticated = App.user.get 'content'
+			state = _.last path.split('.')
+			if not authenticated and state not in ['root', 'index']
+				interceptedPath = path
+				App.get('router').send 'doIntercept'
+			else
+				@_super path, context
+
 
 	# Ember.Route.reopen
 	# 	enter: (router) ->
@@ -129,7 +139,8 @@ module.exports = (Ember, App, socket) ->
 							# Temporary use of authorize flow for login.
 							window.location.href = data
 							# App.auth.login data
-							# router.transitionTo 'userProfile'
+							# router.transitionTo interceptedPath or 'userProfile'
+							# interceptedPath = null
 						else
 							controller.set 'loginError', data
 
@@ -137,3 +148,11 @@ module.exports = (Ember, App, socket) ->
 				socket.emit 'logout', ->
 					App.auth.logout()
 					router.transitionTo 'index'
+
+			doIntercept: (router, context) ->
+				util.notify
+					title: 'Please log in'
+					text: 'Then we\'ll send you to your page.'
+					before_open: (pnotify) =>
+						pnotify.css top: '60px'
+				router.transitionTo 'index'
