@@ -72,11 +72,12 @@ module.exports = (Ember, App, socket) ->
 
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
-			attributeBindings: ['placeholder', 'rows']
+			attributeBindings: ['placeholder', 'rows', 'tabindex']
 			placeholder: (->
 					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
 				).property 'controller.nickname'
 			rows: 3
+			tabindex: 3
 
 		noteView: Ember.View.extend
 			tagName: 'blockquote'

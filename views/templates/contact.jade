@@ -32,10 +32,10 @@
 	.span6
 		.row-fluid.tag-category
 			p.lead Redstar Tags
-			| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true"}}
+			| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true" tabindex="1"}}
 		.row-fluid.tag-category
 			p.lead Industry Tags
-			| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
+			| {{view App.TaggerView contactBinding="this" category="industry" cloud="true" tabindex="2"}}
 		//-
 			ul.nav.nav-pills
 				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
@@ -61,7 +61,7 @@
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
-			| <button class="btn pull-right" type="submit" {{bindAttr disabled="disableAdd"}}>
+			| <button class="btn pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
 			i.icon-comment  
 			| Add Note
 			| </button>

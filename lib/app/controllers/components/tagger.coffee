@@ -33,7 +33,7 @@ module.exports = (Ember, App, socket) ->
 		add: ->
 			if tag = util.trim @get('currentTag')
 				@_add tag
-				@set 'currentTag', null
+			@set 'currentTag', null
 		_add: (tag) ->
 			existingTag = @get('tags').find (candidate) ->
 				tag is candidate.get('body')
@@ -85,8 +85,13 @@ module.exports = (Ember, App, socket) ->
 				).observes 'currentTag'
 			keyDown: (event) ->
 				if event.which is 9	# A tab.
-					return false	# Prevent focus from changing, the normal tab key behavior
+					if @get('currentTag')
+						return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
 			keyUp: (event) ->
+				if event.which is 8	# A backspace/delete.
+					lastTag = @get 'parentView.tags.lastObject'
+					lastTag.deleteRecord()
+					App.store.commit()
 				if event.which is 9
 					# Defer adding the tag in case a typeahead selection highlighted and should be added instead.
 					_.defer =>
@@ -106,11 +111,14 @@ module.exports = (Ember, App, socket) ->
 				# typeahead.move = (e) ->
 				# 	move.call this, e
 				# 	that.set 'currentTag', that.get('currentTag')
-			attributeBindings: ['size', 'autocomplete']
+			attributeBindings: ['size', 'autocomplete', 'tabindex']
 			size: (->
 					2 + @get('currentTag.length')
 				).property 'currentTag'
 			autocomplete: 'off'
+			tabindex: (->
+					@get('parentView.tabindex') or 0
+				).property 'parentView.tabindex'
 
 		availableTagView: Ember.View.extend
 			tagName: 'span'
