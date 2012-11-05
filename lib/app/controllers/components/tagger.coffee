@@ -131,7 +131,8 @@ module.exports = (Ember, App, socket) ->
 		redstar: [
 			'ideator'
 			'germ'
-			'phase1'
+			'pitch'
+			'project'
 			'founder'
 			'action'
 			'healthcare'
