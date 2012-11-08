@@ -11,6 +11,7 @@
 baseFontSize = 14px
 baseLineHeight = 20px
 navbarText = #777
+linkColor = #08c
 
 
 // Implicit Bootstrap abstractions.
@@ -126,11 +127,29 @@ body
 
 .contact
 	.top
+		h1
+			display inline-block
+			margin-bottom 0
+			margin-right 10px
+		h4
+			display inline-block
+			margin-right 10px
 		padding-bottom 30px
 		margin-bottom 30px
 		border-bottom lightBorder
-	// .tab-content
-	// 	overflow visible
+		// .tab-content
+		// overflow visible
+		.editor
+			position relative
+			.popover
+				display block	// Bootstrap tries to make popover initial state hidden.
+				padding 10px
+				width 260px
+				.nav-header
+					padding-left 0
+				i
+					margin 3px
+					margin-top 5px
 	.lead
 		margin-bottom marginBottom
 	.tag-category

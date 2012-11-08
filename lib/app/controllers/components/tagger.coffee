@@ -45,6 +45,7 @@ module.exports = (Ember, App, socket) ->
 					body: tag
 				App.store.commit()
 				# TODO hack to make all known tags update when a the user adds a tag without causing flicker in the tag cloud
+				# update: I think I can fix this by making the 'tags' property settable
 				socket.emit 'tags', category: @get('category'), (bodies) =>
 					tags = @get '_allTags'
 					tags.clear()

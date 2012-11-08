@@ -1,4 +1,5 @@
 module.exports = (DS, App) ->
+	_ = require 'underscore'
 	tools = require '../util'
 
 
@@ -43,14 +44,19 @@ module.exports = (DS, App) ->
 		name: (->
 				@get('names.firstObject')
 			).property 'names.@each'
+		aliases: ( ->
+				_.rest @get('names')
+			).property 'names.@each'
 		email: (->
 				@get('emails.firstObject')
+			).property 'emails.@each'
+		otherEmails: ( ->
+				_.rest @get('emails')
 			).property 'emails.@each'
 		canonicalName: (->
 				if name = @get('name')
 					return name
 				if email = @get('email')
-					_ = require 'underscore'
 					splitted = email.split '@'
 					domain = _.first _.last(splitted).split('.')
 					return _.first(splitted) + ' [' + domain + ']'

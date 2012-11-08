@@ -1,6 +1,7 @@
 module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+
 	models = require './models'
 
 
@@ -147,8 +148,17 @@ module.exports = (app, socket) ->
 
 
 
+	socket.on 'verifyUniqueness', (id, field, candidates, fn) ->
+		models.Contact.findOne().ne('_id', id).in(field + 's', candidates).exec (err, contact) ->
+			throw err if err
+			fn _.chain(contact?.names)
+				.intersection(candidates)
+				.first()
+				.value()
+
 	socket.on 'tags', (conditions, fn) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
+			throw err if err
 			fn bodies
 
 	socket.on 'search', (query, fn) ->

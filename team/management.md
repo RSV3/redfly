@@ -5,6 +5,9 @@ redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
 test commands:
 mongo ds037097.mongolab.com:37097/heroku_app6375910 -u heroku_app6375910 -p osf31ssqike03ju6i6852jd0v2
 
+prod commands:
+mongo ds039147.mongolab.com:39147/heroku_app8065862 -u heroku_app8065862 -p 6cqi48lldblomdf4uebuhplblj
+
 dumping prod db to dev:
 mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
 mongorestore --host ds037067-a.mongolab.com:37067 --username heroku_app6379653 --password p1kafm34rqlg2a233c700j0bcj --db heroku_app6379653 redfly_dump/heroku_app8065862
