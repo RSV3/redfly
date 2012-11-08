@@ -3,54 +3,7 @@
 	.span6
 		h1 {{canonicalName}}
 		| {{#if isKnown}}
-		| {{#view view.editView}}
-		| <a href="#" {{action toggle target="view"}}>
-		i.icon-pencil.icon-large
-		| </a>
-		| {{#if view.show}}
-		.popover
-			| {{#if view.duplicate}}
-			.alert.alert-info
-				| The name "{{view.duplicate}}" is already in use. 
-				a(href='#') Merge duplicate
-				|  (coming soon).
-			| {{/if}}
-			.clearfix
-				.pull-right
-					| {{#unless view.working}}
-					| <a href="#" {{action done target="view"}}>
-					| Save and close 
-					i.icon-ok
-					| </a>
-					| {{else}}
-					| working...
-					| {{/unless}}
-			.nav-header Display Name
-			| {{view Ember.TextField valueBinding="view.primary"}}
-			| {{#if view.others.length}}
-			.nav-header Aliases
-			| {{#each other in view.others}}
-			| {{#view view.itemView otherBinding="other"}}
-			| {{view Ember.TextField valueBinding="other.content"}}
-			.pull-right
-				| <a href="#" {{action promote target="view"}}>
-				i.icon-arrow-up
-				| </a>
-				| <a href="#" {{action remove target="view"}}>
-				i.icon-trash
-				| </a>
-			| {{/view}}
-			| {{/each}}
-			| {{/if}}
-			| {{#if view.primary}}
-			div
-				| <a href="#" {{action add target="view"}}>
-				i.icon-plus
-				|  Add another
-				| </a>
-			| {{/if}}
-		| {{/if}}
-		| {{/view}}
+		| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 		| {{/if}}
 		h4
 			| {{#if isKnown}}
@@ -59,9 +12,7 @@
 			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/if}}
 		| {{#if isKnown}}
-		| <a href="#" {{action editEmails target="controller"}}></a>
-		a: i.icon-pencil
-		| </a>
+		| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 		| {{/if}}		
 		| {{#if firstHistory}}
 		div

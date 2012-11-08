@@ -149,9 +149,9 @@ module.exports = (app, socket) ->
 
 
 	socket.on 'verifyUniqueness', (id, field, candidates, fn) ->
-		models.Contact.findOne().ne('_id', id).in(field + 's', candidates).exec (err, contact) ->
+		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
 			throw err if err
-			fn _.chain(contact?.names)
+			fn _.chain(contact?[field])
 				.intersection(candidates)
 				.first()
 				.value()

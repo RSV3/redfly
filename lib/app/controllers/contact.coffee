@@ -61,16 +61,19 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['contact']
 
 		editView: Ember.View.extend
+			template: require '../../../views/templates/components/editor'
 			tagName: 'span'
 			classNames: ['editor']
 			primary: ((key, value) ->
 					if arguments.length is 1
-						return @get('controller.name')
+						return @get 'controller.' + @get('primaryAttribute')
 					value
-				).property 'controller.name'
+				# ).property 'controller.' + @get('primaryAttribute')
+				).property()
 			others: (->
-					Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.aliases')
-				).property 'controller.aliases'
+					Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.' + @get('otherAttribute'))
+				# ).property 'controller.' + @get('otherAttribute')
+				).property()
 			_makeProxyArray: (array) ->
 				# Since I can't bind to positions in an array, I have to create object proxies for each of the elements and add/remove those.
 				_.map array, (value) ->
@@ -95,10 +98,10 @@ module.exports = (Ember, App, socket) ->
 				# Set primary and others to the new values so the user can see any modifications to the input while stuff saves.
 				@set 'primary', _.first all
 				@set 'others.content', @_makeProxyArray _.rest all
-				socket.emit 'verifyUniqueness', @get('controller.id'), 'name', all, (duplicate) =>
+				socket.emit 'verifyUniqueness', @get('controller.id'), @get('allAttribute'), all, (duplicate) =>
 					@set 'duplicate', duplicate
 					if not duplicate
-						@set 'controller.names', all
+						@set 'controller.' + @get('allAttribute'), all
 						App.store.commit()
 						@toggle()
 
