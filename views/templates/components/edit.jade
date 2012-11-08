@@ -1,0 +1,47 @@
+| <a href="#" {{action toggle target="view"}}>
+i.icon-pencil.icon-large
+| </a>
+| {{#if view.show}}
+.popover
+	| {{#if view.duplicate}}
+	.alert.alert-info
+		| Another contact has the {{view.primaryAttribute}} "{{view.duplicate}}".
+		br
+		a(href='#') Merge duplicate
+		|  (coming soon).
+	| {{/if}}
+	.clearfix
+		.pull-right
+			| {{#unless view.working}}
+			| <a href="#" {{action done target="view"}}>
+			| Save and close 
+			i.icon-ok
+			| </a>
+			| {{else}}
+			| working...
+			| {{/unless}}
+	.nav-header {{view.prettyPrimaryAttribute}}
+	| {{view Ember.TextField valueBinding="view.primary"}}
+	| {{#if view.others.length}}
+	.nav-header {{view.prettyOtherAttribute}}
+	| {{#each other in view.others}}
+	| {{#view view.itemView otherBinding="other"}}
+	| {{view Ember.TextField valueBinding="other.content"}}
+	.pull-right
+		| <a href="#" {{action promote target="view"}}>
+		i.icon-arrow-up
+		| </a>
+		| <a href="#" {{action remove target="view"}}>
+		i.icon-trash
+		| </a>
+	| {{/view}}
+	| {{/each}}
+	| {{/if}}
+	| {{#if view.primary}}
+	div
+		| <a href="#" {{action add target="view"}}>
+		i.icon-plus
+		|  Add another
+		| </a>
+	| {{/if}}
+| {{/if}}

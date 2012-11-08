@@ -1,12 +1,14 @@
 .row-fluid.top
-	| <img class="img-polaroid img-rounded span3" {{bindAttr src="canonicalPicture"}}>
+	.span3.picture
+		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		| {{view view.editPictureView}}
 	.span6
-		div
+		.row-fluid
 			h1 {{canonicalName}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
-		div
+		.row-fluid
 			h4
 				| {{#if isKnown}}
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
@@ -17,7 +19,7 @@
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{/if}}
 		| {{#if firstHistory}}
-		div
+		.row-fluid
 			p
 				| It&apos;s been 
 				strong 9 days 

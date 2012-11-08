@@ -1,0 +1,21 @@
+| <a href="#" {{action toggle target="view"}}>
+i.icon-edit.icon-large
+| </a>
+| {{#if view.show}}
+.popover
+	| {{#if view.invalid}}
+	.alert.alert-error Pretty sure that&apos;s not a valid URL.
+	| {{/if}}
+	.clearfix
+		.pull-right
+			| {{#unless view.working}}
+			| <a href="#" {{action done target="view"}}>
+			| Save and close 
+			i.icon-ok
+			| </a>
+			| {{else}}
+			| working...
+			| {{/unless}}
+	.nav-header Picture URL
+	| {{view Ember.TextField valueBinding="view.newPicture"}}
+| {{/if}}

@@ -61,9 +61,9 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['contact']
 
 		editView: Ember.View.extend
-			template: require '../../../views/templates/components/editor'
+			template: require '../../../views/templates/components/edit'
 			tagName: 'span'
-			classNames: ['editor', 'overlay']
+			classNames: ['edit', 'overlay']
 			primary: ((key, value) ->
 					if arguments.length is 1
 						return @get 'controller.' + @get('primaryAttribute')
@@ -121,6 +121,32 @@ module.exports = (Ember, App, socket) ->
 						@get('others').unshiftObject Ember.ObjectProxy.create content: primary
 				remove: (event) ->
 					@get('others').removeObject @get('other')
+
+		editPictureView: Ember.View.extend
+			template: require '../../../views/templates/components/edit-picture'
+			tagName: 'span'
+			classNames: ['edit', 'overlay']
+			newPicture: ((key, value) ->
+					if arguments.length is 1
+						return @get 'controller.picture'
+					value
+				).property 'controller.picture'
+			toggle: ->
+				@toggleProperty 'show'
+			done: ->
+				@set 'working', true
+
+				newPicture = @get 'newPicture'
+				validators = require('validator').validators
+				# console.log newPicture
+				valid = newPicture and validators.isUrl(newPicture)
+				@set 'invalid', not valid
+				if valid
+					@set 'controller.picture', newPicture
+					App.store.commit()
+					@toggle()
+
+				@set 'working', false
 
 		introView: Ember.View.extend
 			tagName: 'i'
