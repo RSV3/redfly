@@ -1,19 +1,21 @@
 .row-fluid.top
 	img.img-polaroid.img-rounded.span3(src='https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg', alt='')
 	.span6
-		h1 {{canonicalName}}
-		| {{#if isKnown}}
-		| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
-		| {{/if}}
-		h4
+		div
+			h1 {{canonicalName}}
 			| {{#if isKnown}}
-			| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
-			| {{else}}
-			| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
+			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
-		| {{#if isKnown}}
-		| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
-		| {{/if}}		
+		div
+			h4
+				| {{#if isKnown}}
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
+				| {{else}}
+				| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
+				| {{/if}}
+			| {{#if isKnown}}
+			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
+			| {{/if}}
 		| {{#if firstHistory}}
 		div
 			p
