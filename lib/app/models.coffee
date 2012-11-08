@@ -38,6 +38,7 @@ module.exports = (DS, App) ->
 		date: DS.attr 'date'
 		names: DS.attr 'array'
 		emails: DS.attr 'array'
+		picture: DS.attr 'string'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
@@ -65,6 +66,9 @@ module.exports = (DS, App) ->
 		nickname: (->
 				tools.nickname @get('name'), @get('email')
 			).property 'name', 'email'
+		canonicalPicture: (->
+				@get('picture') or 'https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg'
+			).property 'picture'
 		notes: (->
 				App.Note.find contact: @get('id')
 					# conditions:

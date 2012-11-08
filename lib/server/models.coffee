@@ -25,6 +25,7 @@ UserSchema = new Schema
 ContactSchema = new Schema
 	emails: [ type: String ]
 	names: [ type: String ]
+	picture: type: String, trim: 1, validator: validators.isUrl
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
