@@ -30,6 +30,14 @@ mediumBorder = 1px solid #C6C6C6
 .lead strong
 	font-weight normal
 
+.overlay
+	position relative
+	.popover
+		display block	// Bootstrap tries to make popover initial state hidden.
+		padding 10px
+		.nav-header
+			padding-left 0
+
 
 
 // Mixins.
@@ -140,13 +148,8 @@ body
 		// .tab-content
 		// overflow visible
 		.editor
-			position relative
 			.popover
-				display block	// Bootstrap tries to make popover initial state hidden.
-				padding 10px
 				width 260px
-				.nav-header
-					padding-left 0
 				i
 					margin 3px
 					margin-top 5px

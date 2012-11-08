@@ -63,7 +63,7 @@ module.exports = (Ember, App, socket) ->
 		editView: Ember.View.extend
 			template: require '../../../views/templates/components/editor'
 			tagName: 'span'
-			classNames: ['editor']
+			classNames: ['editor', 'overlay']
 			primary: ((key, value) ->
 					if arguments.length is 1
 						return @get 'controller.' + @get('primaryAttribute')
