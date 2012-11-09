@@ -67,7 +67,8 @@ module.exports = (DS, App) ->
 				tools.nickname @get('name'), @get('email')
 			).property 'name', 'email'
 		canonicalPicture: (->
-				@get('picture') or 'https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg'
+				# https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg
+				@get('picture') or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
 			).property 'picture'
 		notes: (->
 				App.Note.find contact: @get('id')
