@@ -102,16 +102,20 @@ module.exports = (Ember, App, socket) ->
 						util.trim item
 					.compact()
 					.value()
+					
+				nothing = _.isEmpty all
+				@set 'nothing', nothing
+
 				# Set primary and others to the new values so the user can see any modifications to the input while stuff saves.
 				@set 'primary', _.first all
 				@set 'others.content', @_makeProxyArray _.rest all
 				socket.emit 'verifyUniqueness', @get('controller.id'), @get('allAttribute'), all, (duplicate) =>
 					@set 'duplicate', duplicate
-					if not duplicate
+
+					if (not nothing) and (not duplicate)
 						@set 'controller.' + @get('allAttribute'), all
 						App.store.commit()
 						@toggle()
-
 					@set 'working', false
 
 			itemView: Ember.View.extend

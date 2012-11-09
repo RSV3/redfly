@@ -3,6 +3,9 @@ i.icon-pencil.icon-large
 | </a>
 | {{#if view.show}}
 .popover
+	| {{#if view.nothing}}
+	.alert.alert-error Dudebro, you have to enter something dude, bro.
+	| {{/if}}
 	| {{#if view.duplicate}}
 	.alert.alert-info
 		| Another contact has the {{view.primaryAttribute}} "{{view.duplicate}}".
