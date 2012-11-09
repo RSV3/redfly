@@ -21,13 +21,11 @@
 		| {{#if firstHistory}}
 		.row-fluid
 			p
-				| It&apos;s been 
-				strong 9 days 
-				| since you communicated with {{nickname}}. 
-				| <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
-				| You&apos;ve emailed each other {{histories.length}} times.
+				| You&apos;ve emailed each other {{histories.length}} times and last spoke 
+				strong {{lastTalked}}
+				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
 			p
-				| You guys first talked on {{firstHistory.sent}}. The email subject was
+				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
 				em "{{firstHistory.subject}}"
 				| .
 		| {{/if}}

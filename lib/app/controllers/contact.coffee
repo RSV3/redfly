@@ -19,6 +19,11 @@ module.exports = (Ember, App, socket) ->
 		firstHistory: (->
 				@get 'histories.firstObject'
 			).property 'histories.firstObject'
+		lastTalked: (->
+				if sent = @get('histories.lastObject.sent')
+					# moment = require 'moment'
+					moment(sent).fromNow()
+			).property 'histories.lastObject.sent'
 		isKnown: (->
 				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')
