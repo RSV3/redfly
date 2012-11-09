@@ -33,7 +33,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if Math.random() < 0.9
-		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work?
+		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work? Something to do with volatile?
 		# 			return 'No notes about this contact yet.'
 		# 		('...and that\'s why you ' +
 		# 			' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
