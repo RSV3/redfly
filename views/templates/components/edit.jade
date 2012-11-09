@@ -16,9 +16,14 @@ i.icon-pencil.icon-large
 	.clearfix
 		.pull-right
 			| {{#unless view.working}}
-			| <a href="#" {{action done target="view"}}>
-			| Save and close 
+			| <a href="#" {{action save target="view"}}>
+			| Save 
 			i.icon-ok
+			| </a>
+			| <a href="#" {{action toggle target="view"}}>
+			| &nbsp;
+			| Close 
+			i.icon-remove
 			| </a>
 			| {{else}}
 			| working...

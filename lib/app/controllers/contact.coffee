@@ -92,7 +92,7 @@ module.exports = (Ember, App, socket) ->
 				_.defer =>
 					# Ideally there's a way to get a list of itemViews and pick the last one, and not do this with jquery.
 					@$('input').last().focus()
-			done: ->
+			save: ->
 				@set 'working', true
 
 				all = @get('others').getEach 'content'
@@ -102,7 +102,7 @@ module.exports = (Ember, App, socket) ->
 						util.trim item
 					.compact()
 					.value()
-					
+
 				nothing = _.isEmpty all
 				@set 'nothing', nothing
 
@@ -144,7 +144,7 @@ module.exports = (Ember, App, socket) ->
 				).property 'controller.picture'
 			toggle: ->
 				@toggleProperty 'show'
-			done: ->
+			save: ->
 				@set 'working', true
 
 				newPicture = @get 'newPicture'
