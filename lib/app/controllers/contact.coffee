@@ -74,11 +74,13 @@ module.exports = (Ember, App, socket) ->
 						return @get 'controller.' + @get('primaryAttribute')
 					value
 				# ).property 'controller.' + @get('primaryAttribute')
-				).property()
+				# TODO hack
+				).property 'controller.name', 'controller.email'
 			others: (->
 					Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.' + @get('otherAttribute'))
 				# ).property 'controller.' + @get('otherAttribute')
-				).property()
+				# TODO hack
+				).property 'controller.aliases', 'controller.otherEmails'
 			_makeProxyArray: (array) ->
 				# Since I can't bind to positions in an array, I have to create object proxies for each of the elements and add/remove those.
 				_.map array, (value) ->
