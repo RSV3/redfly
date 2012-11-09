@@ -1,4 +1,5 @@
 - A contact must have at least one entry in its 'names' OR one entry in its 'emails'
+  - tighter constraint: email required is being enforced in the frontend now
 
 - search frontend features
   - esc and losing focus closes results
