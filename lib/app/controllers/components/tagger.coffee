@@ -90,9 +90,10 @@ module.exports = (Ember, App, socket) ->
 						return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
 			keyUp: (event) ->
 				if event.which is 8	# A backspace/delete.
-					lastTag = @get 'parentView.tags.lastObject'
-					lastTag.deleteRecord()
-					App.store.commit()
+					if not @get('currentTag')
+						lastTag = @get 'parentView.tags.lastObject'
+						lastTag.deleteRecord()
+						App.store.commit()
 				if event.which is 9
 					# Defer adding the tag in case a typeahead selection highlighted and should be added instead.
 					_.defer =>
