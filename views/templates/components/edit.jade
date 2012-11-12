@@ -13,21 +13,7 @@ i.icon-pencil.icon-large
 		a(href='#') Merge duplicate
 		|  (coming soon).
 	| {{/if}}
-	.clearfix
-		.pull-right
-			| {{#unless view.working}}
-			| <a href="#" {{action save target="view"}}>
-			| Save 
-			i.icon-ok
-			| </a>
-			| <a href="#" {{action toggle target="view"}}>
-			| &nbsp;
-			| Close 
-			i.icon-remove
-			| </a>
-			| {{else}}
-			| working...
-			| {{/unless}}
+	| <a href="#" class="close" {{action toggle target="view"}}>×</a>
 	.nav-header {{view.prettyPrimaryAttribute}}
 	| {{view Ember.TextField valueBinding="view.primary"}}
 	| {{#if view.others.length}}
@@ -52,4 +38,13 @@ i.icon-pencil.icon-large
 		|  Add another
 		| </a>
 	| {{/if}}
+	.pull-right
+		| {{#unless view.working}}
+		| <a href="#" {{action save target="view"}}>
+		| Save 
+		i.icon-ok
+		| </a>
+		| {{else}}
+		| working...
+		| {{/unless}}
 | {{/if}}
