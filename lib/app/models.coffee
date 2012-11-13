@@ -43,13 +43,13 @@ module.exports = (DS, App) ->
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
 		name: (->
-				@get('names.firstObject')
+				@get 'names.firstObject'
 			).property 'names.firstObject'
 		aliases: ( ->
 				_.rest @get('names')
 			).property 'names.@each'
 		email: (->
-				@get('emails.firstObject')
+				@get 'emails.firstObject'
 			).property 'emails.firstObject'
 		otherEmails: ( ->
 				_.rest @get('emails')

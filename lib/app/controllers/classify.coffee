@@ -2,7 +2,12 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ClassifyController = Ember.ObjectController.extend
-		contentBinding: 'App.router.contactController.content'
+		contentBinding: 'App.user.queue.firstObject'
+
+		contentChanged: (->
+				if App.get('router.currentState.name') is 'classify'
+					Ember.set 'App.router.contactController.content', @get('content')
+			).observes 'content', 'App.router.currentState.name'
 
 		total: (->
 				Math.min App.user.get('queue.length'), maxQueueLength - App.user.get('classifyCount')
@@ -11,9 +16,8 @@ module.exports = (Ember, App, socket) ->
 				return @get('noMore') or (App.user.get('classifyCount') is maxQueueLength)
 			).property 'noMore', 'App.user.classifyCount'
 		noMore: (->
-				# content.id and not just content because if you arrive from the router it sets a proxy initially.
-				not @get('content.id')
-			).property 'content.id'
+				not @get('content')
+			).property 'content'
 
 		continueText: (->
 				if not @get 'added'
@@ -55,7 +59,6 @@ module.exports = (Ember, App, socket) ->
 			@_next()
 		_next: ->
 			App.store.commit()
-			@set 'content', App.user.get('queue.firstObject')
 		keepGoing: ->
 			App.user.set 'classifyCount', 0
 
@@ -66,4 +69,4 @@ module.exports = (Ember, App, socket) ->
 
 
 
-	maxQueueLength = 20
+	maxQueueLength = 3

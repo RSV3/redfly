@@ -89,9 +89,8 @@ module.exports = (Ember, App, socket) ->
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					contact = Ember.ObjectProxy.create contentBinding: 'App.user.queue.firstObject'
 					router.get('applicationController').connectOutlet 'classify'
-					router.get('classifyController').connectOutlet 'contact', contact
+					router.get('classifyController').connectOutlet 'contact'
 
 
 			load: Ember.Route.extend
