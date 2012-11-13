@@ -144,7 +144,7 @@ module.exports = (app, socket) ->
 			fn verbose?.body
 
 	socket.on 'summary.user', (fn) ->
-		fn 'Krzysztof Baranowski'
+		fn 'Jeet Signh'
 
 
 
