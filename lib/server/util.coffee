@@ -14,6 +14,7 @@ transport = mailer.createTransport 'SMTP',
 # 	html: '<strong>Hello world.</strong>'
 exports.mail = (options) ->
 	if intercept = process.env.INTERCEPT_EMAIL
+		options.replyTo = options.to
 		options.to = intercept
 	transport.sendMail options, (err, response) ->
 		if err

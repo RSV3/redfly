@@ -18,13 +18,13 @@ config =
 	test:
 		HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
 
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
 
 
 	production:
