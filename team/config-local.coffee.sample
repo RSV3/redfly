@@ -1,0 +1,5 @@
+# Copy to the project root directory.
+module.exports =
+	INTERCEPT_EMAIL: 'me@gmail.com'
+
+	AUTO_AUTH: '508e9765fafcc802000000a3'
