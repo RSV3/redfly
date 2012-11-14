@@ -5,7 +5,7 @@ config =
 	development:
 		HOST: 'localhost:5000'
 		NODE_ENV: 'development'
-		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_development_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_development_intercept@gmail.com'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6379653:p1kafm34rqlg2a233c700j0bcj@ds037067-a.mongolab.com:37067/heroku_app6379653'
 
@@ -18,13 +18,13 @@ config =
 	test:
 		HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
 		NODE_ENV: 'development'
-		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com'
 
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		# INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com'
 
 
 	production:
