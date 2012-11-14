@@ -1,7 +1,7 @@
 _ = require 'underscore'
 
 
-module.exports = (app, user, notifications, cb) ->
+module.exports = (app, user, notifications = {}, cb) ->
 
 	parse = (app, user, notifications, cb) ->
 		validators = require('validator').validators
