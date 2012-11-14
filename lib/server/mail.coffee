@@ -59,6 +59,6 @@ module.exports = (app) ->
 						subject: 'On the Health and Well-Being of Redfly'
 					,
 					title: 'It\'s been a big week!'
-					contactsAdded: numContacts
+					contactsQueued: numContacts
 					tagsCreated: numTags
 					notesAuthored: numNotes

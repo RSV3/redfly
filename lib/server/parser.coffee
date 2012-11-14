@@ -129,10 +129,12 @@ module.exports = (app, user, notifications = {}, cb) ->
 						# If there were new contacts, determine the ones with the most recent correspondance and send a nudge email.
 						if newContacts.length isnt 0
 							newContacts = _.sortBy newContacts, (contact) ->
-								_.max mails, (mail) ->
-									if mail.recipient isnt contact
-										return null
-									mail.sent
+								_.chain(mails)
+									.filter (mail) ->
+										mail.recipient is contact
+									.max (mail) ->
+										mail.sent.getTime() # TO-DO probably can be just mail.sent
+									.value()
 							newContacts.reverse()
 							
 							user.queue.unshift newContacts...

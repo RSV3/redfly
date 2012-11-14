@@ -44,7 +44,7 @@ module.exports = (Ember, App, socket) ->
 
 			# TODO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.contacts', (count) =>
-				@set 'controller.contactsAdded', count
+				@set 'controller.contactsQueued', count
 			socket.emit 'summary.tags', (count) =>
 				@set 'controller.tagsCreated', count
 			socket.emit 'summary.notes', (count) =>
