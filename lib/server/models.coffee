@@ -1,9 +1,8 @@
 validators = require('validator').validators
 
-mongoose = require 'mongoose'
-mongoose.connect process.env.MONGOLAB_URI
+db = require './db'
 
-Schema = mongoose.Schema
+Schema = db.Schema
 Types = Schema.Types
 
 
@@ -64,8 +63,8 @@ NoteSchema.plugin common
 MailSchema.plugin common
 
 
-exports.User = mongoose.model 'User', UserSchema
-exports.Contact = mongoose.model 'Contact', ContactSchema
-exports.Tag = mongoose.model 'Tag', TagSchema
-exports.Note = mongoose.model 'Note', NoteSchema
-exports.Mail = mongoose.model 'Mail', MailSchema
+exports.User = db.model 'User', UserSchema
+exports.Contact = db.model 'Contact', ContactSchema
+exports.Tag = db.model 'Tag', TagSchema
+exports.Note = db.model 'Note', NoteSchema
+exports.Mail = db.model 'Mail', MailSchema
