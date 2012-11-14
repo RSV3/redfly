@@ -131,8 +131,10 @@ module.exports = (app, user, notifications, cb) ->
 							newContacts = _.sortBy newContacts, (contact) ->
 								_.max mails, (mail) ->
 									if mail.recipient isnt contact
-										return 0
-									mail.sent.getTime()
+										return null
+									mail.sent
+							newContacts.reverse()
+							
 							user.queue.unshift newContacts...
 							mailer.sendNudge user, newContacts[...10]
 						else
