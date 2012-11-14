@@ -11,7 +11,7 @@ require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
 
 
 app = express()
-server = http.createServer(app)
+server = http.createServer app
 
 root = path.dirname path.dirname __dirname
 
@@ -133,4 +133,4 @@ io.sockets.on 'connection', (socket) ->
 
 
 server.listen app.get('port'), ->
-	console.info 'Express server listening on port ' + app.get('port')
+	console.info 'App started in ' + process.env.APP_ENV + ' environment, listening on port ' + app.get('port')

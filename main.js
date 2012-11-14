@@ -3,5 +3,5 @@ require('longjohn');
 
 require('./config');
 
-require('./lib/server');
-console.info('App starting in ' + process.env.APP_ENV + ' environment');
+var module = process.argv[2];
+require('./lib/' + module);

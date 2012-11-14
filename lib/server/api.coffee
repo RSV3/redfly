@@ -3,6 +3,7 @@ module.exports = (app, socket) ->
 	_s = require 'underscore.string'
 
 	models = require './models'
+	logic = require './logic'
 
 
 	session = socket.handshake.session
@@ -120,31 +121,30 @@ module.exports = (app, socket) ->
 
 
 
-	moment = require 'moment'
-	oneWeekAgo = moment().subtract('days', 7).toDate()
-
-	summaryQuery = (model, field, cb) ->
-		models[model].where(field).gt(oneWeekAgo).count (err, count) ->
-			throw err if err
-			cb count
-
 	socket.on 'summary.contacts', (fn) ->
-		summaryQuery 'Contact', 'added', fn
+		logic.summaryContacts (err, count) ->
+			throw err if err
+			fn count
 
 	socket.on 'summary.tags', (fn) ->
-		summaryQuery 'Tag', 'date', fn
+		logic.summaryTags (err, count) ->
+			throw err if err
+			fn count
 
 	socket.on 'summary.notes', (fn) ->
-		summaryQuery 'Note', 'date', fn
+		logic.summaryNotes (err, count) ->
+			throw err if err
+			fn count
 
 	socket.on 'summary.verbose', (fn) ->
 		models.Tag.find().sort('date').select('body').exec (err, tags) ->
 			throw err if err
-			verbose = _.max tags, (tag) -> tag.body.length
+			verbose = _.max tags, (tag) ->
+				tag.body.length
 			fn verbose?.body
 
 	socket.on 'summary.user', (fn) ->
-		fn 'Jeet Signh'
+		fn 'Joe Chung'
 
 
 
@@ -235,63 +235,9 @@ module.exports = (app, socket) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
 					socket.emit 'parse.mail'
-				done: (mails) ->	# TODO probably move the meat (db saving stuff) of this function elsewhere. Don't forget params to it like 'user'
+				completedAllEmails: ->
 					socket.emit 'parse.queueing'
+				foundNewContact: ->
+					socket.emit 'parse.enqueued'
 
-					newContacts = []
-
-					moar = ->	# TODO can i define this below 'sift'? Actually just put it in 'sift' and try to make it a self-calling function
-						# If there were new contacts, determine those with the most correspondence and send a nudge email.
-						if newContacts.length isnt 0
-							newContacts = _.sortBy newContacts, (contact) ->
-								_.reduce mails, (total, mail) ->
-										if _.contains contact.emails, mail.recipientEmail
-											return total - 1	# Negative totals to reverse the order!
-										return total
-									, 0
-							user.queue.unshift newContacts...
-
-							mail = require('./mail')(app)
-							mail.sendNudge user, newContacts[...10]
-
-						user.lastParsed = new Date
-						user.save (err) ->
-							throw err if err
-
-							return fn()
-
-					sift = (index = 0) ->
-						mail = mails[index]
-
-						# Find an existing contact with one of the same emails or names.
-						models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
-							throw err if err
-							if not contact
-								contact = new models.Contact
-								contact.emails.addToSet mail.recipientEmail
-								if name = mail.recipientName
-									contact.names.addToSet name
-
-								newContacts.push contact
-								socket.emit 'parse.queue'
-							contact.knows.addToSet user
-
-							contact.save (err) ->
-								throw err if err
-								mail.sender = user
-								mail.recipient = contact
-								models.Mail.create mail, (err, doc) ->
-									throw err if err
-
-									index++
-									if index < mails.length
-										return sift index	# Wee recursion!
-									moar()
-
-					if mails.length isnt 0
-						sift()
-
-				error: (message) ->
-					fn message
-
-			require('./parser')(user, notifications)
+			require('./parser') app, user, notifications, fn

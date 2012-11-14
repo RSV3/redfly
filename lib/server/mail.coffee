@@ -10,7 +10,7 @@ module.exports = (app) ->
 			throw err if err
 
 			options.html = html
-			options.from ?= 'Redfly Supreme Ninja <kbaranowski@redstar.com>'
+			options.from ?= 'His Serene Highness of Redfly <kbaranowski@redstar.com>'
 			util.mail options
 
 
@@ -43,3 +43,22 @@ module.exports = (app) ->
 			,
 			title: 'Hi ' + user.name + '!'
 			names: names
+
+	sendNewsletter: (user) ->
+		step = require 'step'
+		logic = require './logic'
+		step ->
+				logic.summaryContacts @parallel()
+				logic.summaryTags @parallel()
+				logic.summaryNotes @parallel()
+				return undefined
+			, (err, numContacts, numTags, numNotes) ->
+				throw err if err
+				send 'newsletter',
+						to: user.email
+						subject: 'On the Health and Well-Being of Redfly'
+					,
+					title: 'It\'s been a big week!'
+					contactsAdded: numContacts
+					tagsCreated: numTags
+					notesAuthored: numNotes

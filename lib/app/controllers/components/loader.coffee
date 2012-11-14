@@ -31,19 +31,18 @@ module.exports = (Ember, App, socket) ->
 			@set 'stateQueueing', false
 			@set 'stateDone', false
 
-			socket.emit 'parse', App.user.get('id'), (message) =>
-				# TODO check if 'message' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
+			socket.emit 'parse', App.user.get('id'), (err) =>
+				# TODO check if 'err' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
 				# temporary mesasure
-				if message
-					alert message + ' Are you connected to the internet? Did you mistype your email?'
-				else
-					App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
-					@set 'stateConnecting', false
-					@set 'stateParsing', false
-					@set 'stateQueueing', false
-					@set 'stateDone', true
-					@get('notification').effect 'bounce'
-					@get('notification').pnotify type: 'success', closer: true
+				if err
+					return alert err.message + ' Are you connected to the internet? Did you mistype your email?'
+				App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
+				@set 'stateConnecting', false
+				@set 'stateParsing', false
+				@set 'stateQueueing', false
+				@set 'stateDone', true
+				@get('notification').effect 'bounce'
+				@get('notification').pnotify type: 'success', closer: true
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
@@ -57,7 +56,7 @@ module.exports = (Ember, App, socket) ->
 
 			socket.on 'parse.queueing', =>
 				@set 'totalQueued', 0
-				socket.on 'parse.queue', =>
+				socket.on 'parse.enqueued', =>
 					@incrementProperty 'totalQueued'
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
