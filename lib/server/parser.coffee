@@ -125,25 +125,24 @@ module.exports = (app, user, notifications = {}, cb) ->
 						if index < mails.length
 							return sift index	# Wee recursion!
 
-						# If there were new contacts, determine the ones with the most recent correspondance and send a nudge email.
-						if newContacts.length isnt 0
-							newContacts = _.sortBy newContacts, (contact) ->
-								_.chain(mails)
-									.filter (mail) ->
-										mail.recipient is contact
-									.max (mail) ->
-										mail.sent.getTime() # TO-DO probably can be just mail.sent
-									.value()
-							newContacts.reverse()
-							
-							user.queue.unshift newContacts...
-							mailer.sendNudge user, newContacts[...10], cb
-						else
-							mailer.sendNewsletter user, cb
+						newContacts = _.sortBy newContacts, (contact) ->
+							_.chain(mails)
+								.filter (mail) ->
+									mail.recipient is contact
+								.max (mail) ->
+									mail.sent.getTime() # TO-DO probably can be just mail.sent
+								.value()
+						newContacts.reverse()
+						user.queue.unshift newContacts...
 
 						user.lastParsed = new Date
 						user.save (err) ->
 							throw err if err
+
+							if newContacts.length isnt 0
+								mailer.sendNudge user, newContacts[...10], cb
+							else
+								mailer.sendNewsletter user, cb
 		sift()
 
 
