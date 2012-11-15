@@ -1,5 +1,5 @@
 moment = require 'moment'
-if not moment().format('dddd') is 'Thursday'
+if moment().format('dddd') isnt process.env.NUDGE_DAY
 	process.exit()
 
 

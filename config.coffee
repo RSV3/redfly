@@ -26,10 +26,14 @@ config =
 		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
 
+		NUDGE_DAY: 'Thursday'
+
 
 	production:
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
+
+		NUDGE_DAY: 'Friday'
 
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'
