@@ -1,3 +1,8 @@
+moment = require 'moment'
+if not moment().format('dddd') is 'Thursday'
+	process.exit()
+
+
 models = require '../server/models'
 
 models.User.find (err, users) ->
