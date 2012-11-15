@@ -1,10 +1,5 @@
-mailer = require 'nodemailer'
+services = require './services'
 
-transport = mailer.createTransport 'SMTP',
-	service: 'SendGrid'
-	auth:
-		user: process.env.SENDGRID_USERNAME
-		pass: process.env.SENDGRID_PASSWORD
 
 # Example mail options.
 # options = 
@@ -16,7 +11,7 @@ exports.mail = (options) ->
 	if intercept = process.env.INTERCEPT_EMAIL
 		options.replyTo = options.to
 		options.to = intercept
-	transport.sendMail options, (err, response) ->
+	services.getTransport().sendMail options, (err, response) ->
 		if err
 			# TODO change this to logging/airbrake
 			throw err 

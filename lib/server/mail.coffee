@@ -45,9 +45,8 @@ module.exports = (app) ->
 			names: names
 
 	sendNewsletter: (user) ->
-		step = require 'step'
 		logic = require './logic'
-		step ->
+		require('step') ->
 				logic.summaryContacts @parallel()
 				logic.summaryTags @parallel()
 				logic.summaryNotes @parallel()

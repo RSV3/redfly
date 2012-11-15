@@ -1,6 +1,6 @@
 validators = require('validator').validators
 
-db = require './db'
+db = require('./services').getDb()
 
 Schema = db.Schema
 Types = Schema.Types

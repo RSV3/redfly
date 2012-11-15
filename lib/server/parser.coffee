@@ -99,7 +99,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 		sift = (index = 0) ->
 			if mails.length is 0
 				mailer.sendNewsletter user
-				return
+				return cb?()
 
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
