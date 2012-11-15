@@ -98,8 +98,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 		newContacts = []
 		sift = (index = 0) ->
 			if mails.length is 0
-				mailer.sendNewsletter user
-				return cb?()
+				return mailer.sendNewsletter user, cb
 
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
@@ -138,15 +137,13 @@ module.exports = (app, user, notifications = {}, cb) ->
 							newContacts.reverse()
 							
 							user.queue.unshift newContacts...
-							mailer.sendNudge user, newContacts[...10]
+							mailer.sendNudge user, newContacts[...10], cb
 						else
-							mailer.sendNewsletter user
+							mailer.sendNewsletter user, cb
 
 						user.lastParsed = new Date
 						user.save (err) ->
 							throw err if err
-
-							return cb?()
 		sift()
 
 

@@ -7,13 +7,11 @@ services = require './services'
 # 	to: 'receiver1@example.com, receiver2@example.com'
 # 	subject: 'Hello!'
 # 	html: '<strong>Hello world.</strong>'
-exports.mail = (options) ->
+exports.mail = (options, cb) ->
 	if intercept = process.env.INTERCEPT_EMAIL
 		options.replyTo = options.to
 		options.to = intercept
 	services.getTransport().sendMail options, (err, response) ->
-		if err
-			# TODO change this to logging/airbrake
-			throw err 
-		else
-			console.info 'Message sent: ' + response.message
+		throw err if err	# TODO change this to logging/airbrake
+		console.info 'Message sent: ' + response.message
+		cb?()

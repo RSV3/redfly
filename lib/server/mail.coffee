@@ -2,7 +2,7 @@ module.exports = (app) ->
 	util = require './util'
 
 
-	send = (template, options, locals = {}) ->
+	send = (template, options, locals = {}, cb) ->
 		locals.path = (url) ->
 			'http://' + process.env.HOST + url
 
@@ -11,16 +11,17 @@ module.exports = (app) ->
 
 			options.html = html
 			options.from ?= 'His Serene Highness of Redfly <kbaranowski@redstar.com>'
-			util.mail options
+			util.mail options, cb
 
 
-	# sendWelcome: (to) ->
+	# sendWelcome: (to, cb) ->
 	# 	send 'welcome',
-	# 		to: to
-	# 		subject: 'Thank you for joining Redfly!'
-	# 		# Need to add 'title:' here
+	# 			to: to
+	# 			subject: 'Thank you for joining Redfly!'
+	# 			# Need to add 'title:' here
+	#		, {}, cb
 
-	sendNudge: (user, contacts) ->
+	sendNudge: (user, contacts, cb) ->
 		_ = require 'underscore'
 		_s = require 'underscore.string'
 		tools = require '../util'
@@ -41,10 +42,11 @@ module.exports = (app) ->
 				to: user.email
 				subject: 'Tell me more about ' + nicknames.join(', ') + '...'	# TODO Use _s.toSentenceSerial whenever it becomes available.
 			,
-			title: 'Hi ' + user.name + '!'
-			names: names
+				title: 'Hi ' + user.name + '!'
+				names: names
+			, cb
 
-	sendNewsletter: (user) ->
+	sendNewsletter: (user, cb) ->
 		logic = require './logic'
 		require('step') ->
 				logic.summaryContacts @parallel()
@@ -57,7 +59,8 @@ module.exports = (app) ->
 						to: user.email
 						subject: 'On the Health and Well-Being of Redfly'
 					,
-					title: 'It\'s been a big week!'
-					contactsQueued: numContacts
-					tagsCreated: numTags
-					notesAuthored: numNotes
+						title: 'It\'s been a big week!'
+						contactsQueued: numContacts
+						tagsCreated: numTags
+						notesAuthored: numNotes
+					, cb
