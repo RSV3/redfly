@@ -31,6 +31,10 @@ config =
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
 
+		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
+		S3_SECRET_KEY: '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'
+		BACKUP_BUCKET: 'backups.redfly.redstar.com'
+
 
 
 process.env.APP_ENV ?= 'development'
