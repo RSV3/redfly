@@ -1,7 +1,9 @@
 .row-fluid.top
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		| {{#if isKnown}}
 		| {{view view.editPictureView}}
+		| {{/if}}		
 	.span6
 		.row-fluid
 			h1 {{canonicalName}}
