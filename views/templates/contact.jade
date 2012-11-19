@@ -32,12 +32,18 @@
 				| .
 		| {{/if}}
 	.span3
-		h5 People who know {{nickname}}
-		ul
-			| {{#each knows}}
-			li
-				| <a {{action goProfile this href=true}}>{{canonicalName}}</a>
-			| {{/each}}
+		.row-fluid.actions
+			| <a href="#mergeModal" class="btn" role="button" data-toggle="modal">
+			i.icon-signin
+			| &nbsp;&nbsp;Merge
+			| </a>
+		.row-fluid
+			h5 People who know {{nickname}}
+			ul
+				| {{#each knows}}
+				li
+					| <a {{action goProfile this href=true}}>{{canonicalName}}</a>
+				| {{/each}}
 .row-fluid
 	.span6
 		.row-fluid.tag-category
@@ -76,3 +82,14 @@
 			| Add Note
 			| </button>
 			| </form>
+
+
+
+#mergeModal.modal.hide.fade(tabindex='-1', role='dialog', aria-labelledby='mergeModalLabel', aria-hidden='true')
+	.modal-header
+		button.close(type='button', data-dismiss='modal') ×
+		h3#mergeModalLabel Merge contacts
+	.modal-body
+		p asdf
+	.modal-footer
+		button.btn(data-dismiss='modal') Close

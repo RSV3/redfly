@@ -6,7 +6,7 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/loader'
 
 		didInsertElement: ->
-			@set 'modal', $(@$()).modal()
+			@set 'modal', $(@$()).modal()	# TO-DO when fixing this, also check out the contacts merge modal
 			@set 'notification', util.notify
 				title: 'Email parsing status',
 				text: '<div id="loading"></div>'
