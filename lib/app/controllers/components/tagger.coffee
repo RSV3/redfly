@@ -59,7 +59,7 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'span'
 			classNames: ['tag']
 			search: ->
-				searchBox = App.get 'router.applicationView.searchViewInstance.searchBoxViewInstance'
+				searchBox = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
 				searchBox.set 'value', 'tag:' + @get('context.body')
 				$(searchBox.get('element')).focus()
 				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
