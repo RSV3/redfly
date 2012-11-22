@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			@set 'modal', $(@$()).modal()	# TO-DO when fixing this, also check out the contacts merge modal
 			@set 'notification', util.notify
-				title: 'Email parsing status',
+				title: 'Email parsing status'
 				text: '<div id="loading"></div>'
 				type: 'info'
 				hide: false

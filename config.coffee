@@ -7,7 +7,7 @@ config =
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_development_intercept@gmail.com'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6379653:p1kafm34rqlg2a233c700j0bcj@ds037067-a.mongolab.com:37067/heroku_app6379653'
+		MONGOLAB_URI: 'mongodb://heroku_app6379653:r6dae13oimgpm3vjsm8fjnle19@ds043467.mongolab.com:43467/heroku_app6379653'
 
 		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		

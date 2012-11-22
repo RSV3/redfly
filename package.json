@@ -9,6 +9,7 @@
 		"underscore.string": "2.3.0",
 		"moment": "1.7.2",
 		"step": "0.0.5",
+		"async": "0.1.22",
 		"express": "3.0.3",
 		"cookie": "0.0.5",
 		"gzippo": "0.2.0",

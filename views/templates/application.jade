@@ -40,7 +40,7 @@
 					li
 						a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
 					// <li><a {{action goReport href=true}}>Report a bug</a></li>
-					| {{view view.spotlightSearchView viewName="spotlightSearchViewInstance"}}
+					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}

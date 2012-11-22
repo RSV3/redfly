@@ -7,11 +7,11 @@ Types = Schema.Types
 
 
 excludeSchema = new Schema
-	email: type: String, trim: 1, lowercase: 1, validator: validators.isEmail
+	email: type: String, trim: 1, lowercase: 1, validate: validators.isEmail
 	name: type: String, trim: 1
 
 UserSchema = new Schema
-	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validator: validators.isEmail
+	email: type: String, required: 1, unique: 1, trim: 1, lowercase: 1, validate: validators.isEmail
 	name: type: String, trim: 1	# Would be required but the user's name isn't known at the time of signup.
 	oauth:
 		token: type: String, required: 1
@@ -24,7 +24,7 @@ UserSchema = new Schema
 ContactSchema = new Schema
 	emails: [ type: String ]
 	names: [ type: String ]
-	picture: type: String, trim: 1, validator: validators.isUrl
+	picture: type: String, trim: 1, validate: validators.isUrl
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
@@ -61,6 +61,9 @@ ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
+
+
+TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 
 exports.User = db.model 'User', UserSchema

@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	tools = require '../../util'
 
 
 	App.ContactController = Ember.ObjectController.extend
@@ -9,12 +9,9 @@ module.exports = (Ember, App, socket) ->
 				# fake contact is below the page break and has no ID set
 				if not @get('id')
 					return []
-				App.Mail.find
-					conditions:
-						sender: App.user.get('id')
-						recipient: @get('id')
-					options:
-						sort: date: 1
+				query = sender: App.user.get('id'), recipient: @get('id')
+				App.filter App.Mail, {field: 'sent'}, query, (data) =>
+					(data.get('sender.id') is App.user.get('id')) and (data.get('recipient.id') is @get('id'))
 			).property 'id'
 		firstHistory: (->
 				@get 'histories.firstObject'
@@ -26,10 +23,10 @@ module.exports = (Ember, App, socket) ->
 			).property 'histories.lastObject.sent'
 		isKnown: (->
 				@get('knows')?.find (user) ->
-					user.get('id') is App.user.get('id')
+					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
 			).property 'knows.@each.id'
 		disableAdd: (->
-				not util.trim @get('currentNote')
+				not tools.trim @get('currentNote')
 			).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if _.random(1, 10) < 9
@@ -41,16 +38,15 @@ module.exports = (Ember, App, socket) ->
 		# 		).htmlSafe()
 		# 	).property().volatile()
 		add: ->
-			if note = util.trim @get('currentNote')
+			if note = tools.trim @get('currentNote')
 				App.Note.createRecord
+					date: new Date	# Only so that sorting is smooth.
 					author: App.user
 					contact: @get 'content'
 					body: note
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
-		merge: ->
-			
 		directMailto: (->
 				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
 			).property 'canonicalName', 'email'
@@ -66,6 +62,9 @@ module.exports = (Ember, App, socket) ->
 	App.ContactView = Ember.View.extend
 		template: require '../../../views/templates/contact'
 		classNames: ['contact']
+
+		showMerge: ->
+			@get('mergeViewInstance')._launch()
 
 		editView: Ember.View.extend
 			template: require '../../../views/templates/components/edit'
@@ -101,7 +100,7 @@ module.exports = (Ember, App, socket) ->
 				all.unshift @get('primary')
 				all = _.chain(all)
 					.map (item) ->
-						util.trim item
+						tools.trim item
 					.compact()
 					.value()
 
@@ -151,7 +150,6 @@ module.exports = (Ember, App, socket) ->
 
 				newPicture = @get 'newPicture'
 				validators = require('validator').validators
-				# console.log newPicture
 				valid = newPicture and validators.isUrl(newPicture)
 				@set 'invalid', not valid
 				if valid
@@ -160,6 +158,58 @@ module.exports = (Ember, App, socket) ->
 					@toggle()
 
 				@set 'working', false
+
+		mergeView: Ember.View.extend
+			classNames: ['merge']
+			selections: (->
+					Ember.ArrayProxy.create content: []
+				).property 'controller.content'
+			_launch: ->
+				@set 'modal', $(@$('.modal')).modal()
+			merge: ->
+				@get('modal').modal 'hide'
+
+				util = require '../util'
+				notification = util.notify
+					title: 'Merge status'
+					text: 'The merge is in progress. MEERRRGEEE.'
+					type: 'info'
+					hide: false
+					closer: false
+					sticker: false
+					icon: 'icon-signin'
+					before_open: (pnotify) =>
+						pnotify.css top: '60px'
+				
+				selections = @get 'selections'
+				socket.emit 'merge', @get('controller.id'), selections.getEach('id'), =>
+					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data. Issue
+					# a delete instead even though they're already deleted in the database.
+					selections.forEach (selection) ->
+						selection.deleteRecord()
+					App.store.commit()
+					# Refresh the store with the stuff that could have changed.
+					App.refresh @get('controller.content')
+					App.Tag.find contact: @get('controller.id')
+					App.Note.find contact: @get('controller.id')
+					App.Mail.find recipient: @get('controller.id')
+
+					notification.effect 'bounce'
+					notification.pnotify
+						text: 'One ' + @get('controller.nickname') + ' to rule them all!'
+						type: 'success'
+						hide: true
+						closer: true
+
+				@get('selections').clear()
+
+
+			mergeSearchView: App.SearchView.extend
+				excludes: (->
+						@get('parentView.selections').toArray().concat @get('controller.content')
+					).property 'controller.content', 'parentView.selections.@each'
+				select: (event) ->
+					@get('parentView.selections').pushObject event.context
 
 		introView: Ember.View.extend
 			tagName: 'i'

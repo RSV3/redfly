@@ -211,10 +211,46 @@ module.exports = (app, socket) ->
 					if not _.isEmpty typeDocs
 						if type is 'tag' or type is 'note'
 							typeDocs = _.uniq typeDocs, false, (typeDoc) ->
-								typeDoc.contact.toString()	# Convert ObjectId object to a simple string.
+								typeDoc.contact.toString()	# Convert ObjectId to a simple string.
 						results[type] = _.map typeDocs, (doc) ->
 							doc.id
 				return fn results
+
+	socket.on 'merge', (contactId, mergeIds, fn) ->
+		models.Contact.findById contactId, (err, contact) ->
+			throw err if err
+			models.Contact.find().in('_id', mergeIds).exec (err, merges) ->
+				throw err if err
+
+				async = require 'async'
+				async.forEach merges, (merge, cb) ->
+					for field in ['names', 'emails', 'knows']
+						contact[field].addToSet merge[field]...
+					for field in ['picture', 'added', 'addedBy']
+						if (value = merge[field]) and not contact[field]
+							contact[field] = value
+					async.forEach [{type: 'Tag', field: 'contact'}, {type: 'Note', field: 'contact'}, {type: 'Mail', field: 'recipient'}], (update, cb) ->
+						conditions = {}
+						conditions[update.field] = merge.id
+						models[update.type].find conditions, (err, docs) ->
+							throw err if err
+							async.forEach docs, (doc, cb) ->
+								doc[update.field] = contact
+								doc.save (err) ->
+									# If there's a duplicate key error that means the same tag is on two contacts, just delete the other one.
+									if err?.code is 11001
+										doc.remove cb
+									else
+										cb err
+							, (err) ->
+								cb err
+					, (err) ->
+						throw err if err
+						merge.remove cb
+				, (err) ->
+					contact.save (err) ->
+						throw err if err
+						return fn()
 
 	socket.on 'parse', (id, fn) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.

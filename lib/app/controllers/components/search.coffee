@@ -6,17 +6,17 @@ module.exports = (Ember, App, socket) ->
 
 	App.SearchView = Ember.View.extend
 		template: require '../../../../views/templates/components/search'
-		classNames: ['dropdown']
+		classNames: ['search', 'dropdown']
 		didInsertElement: ->
 			$(@$('[rel=popover]')).popover()
-			$(@$()).parent().addClass('open')	# Containing element needs to have the 'open' class for arrow keys to work
+			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
 		results: Ember.ObjectProxy.create()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
 				@get('usingSearch') and @get('results.content')
-			).property 'results.@each', 'usingSearch'
+			).property 'usingSearch', 'results.content'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'usingSearch', false
@@ -43,8 +43,10 @@ module.exports = (Ember, App, socket) ->
 						socket.emit 'search', query, (results) =>
 							@set 'results.content', {}
 							for type, ids of results
+								if excludes = @get('parentView.excludes')?.getEach('id')
+									ids = _.difference ids, excludes
 								model = 'Contact'
 								if type is 'tag' or type is 'note'
 									model = _s.capitalize type
 								@set 'results.' + type, App[model].find _id: $in: ids
-				).observes 'value'
+				).observes 'value', 'parentView.excludes'

@@ -47,6 +47,15 @@ App.store = DS.Store.create
 	
 App.refresh = (record) ->
 	App.store.findQuery record.constructor, record.get('id')
+App.filter = (type, sort, query, filter) ->
+	records = type.filter query, filter
+	sort.asc ?= true
+	options =
+		content: records
+		sortProperties: [sort.field]
+		sortAscending: sort.asc
+	Ember.ArrayProxy.create Ember.SortableMixin, options
+
 
 require('./models')(DS, App)
 require('./controllers')(Ember, App, socket)

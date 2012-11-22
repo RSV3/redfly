@@ -45,7 +45,7 @@ module.exports = (DS, App) ->
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
-		aliases: ( ->
+		aliases: (->
 				_.rest @get('names')
 			).property 'names.@each'
 		email: (->
@@ -71,12 +71,7 @@ module.exports = (DS, App) ->
 				@get('picture') or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
 			).property 'picture'
 		notes: (->
-				App.Note.find contact: @get('id')
-					# conditions:
-					# 	contact: @get('id')
-					# options:
-					# 	sort: date: 1
-				App.Note.filter (data) =>
+				App.filter App.Note, {field: 'date'}, {contact: @get('id')}, (data) =>
 					data.get('contact.id') is @get('id')
 			).property 'id'
 

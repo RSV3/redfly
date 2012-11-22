@@ -59,3 +59,5 @@ module.exports = (Ember, App, socket) ->
 
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'
+			select: (event) ->
+				App.get('router').send 'goContact', event.context

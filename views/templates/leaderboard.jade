@@ -7,7 +7,7 @@
 				th Email
 				th Signed Up
 		tbody
-			| {{#each content}}
+			| {{#each controller}}
 			| <tr {{action goProfile this href=true}}>
 			td {{canonicalName}}
 			td {{email}}

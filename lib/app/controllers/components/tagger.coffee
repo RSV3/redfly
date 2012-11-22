@@ -7,21 +7,22 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/tagger'
 		classNames: ['tagger']
 		tags: (->
-				App.Tag.find contact: @get('contact.id'), category: @get('category')
-				App.Tag.filter (data) =>
+				sort = field: 'date'
+				query = contact: @get('contact.id'), category: @get('category')
+				App.filter App.Tag, sort, query, (data) =>
 					if (category = @get('category')) and (category isnt data.get('category'))
 						return false
 					data.get('contact.id') is @get('contact.id')
 			).property 'contact.id', 'category'
 		availableTags: (->
-			allTags = @get '_allTags.content'
-			dictionaryTags = dictionary[@get('category') or 'redstar']
-			available = _.union dictionaryTags, allTags
-			available = _.reject available, (candidate) =>
-				for tag in @get('tags').mapProperty('body')
-					if tag is candidate
-						return true
-			available.sort()
+				allTags = @get '_allTags.content'
+				dictionaryTags = dictionary[@get('category') or 'redstar']
+				available = _.union dictionaryTags, allTags
+				available = _.reject available, (candidate) =>
+					for tag in @get('tags').mapProperty('body')
+						if tag is candidate
+							return true
+				available.sort()
 			).property 'category', 'tags.@each', '_allTags.@each'
 		_allTags: (->
 				socket.emit 'tags', category: @get('category'), (bodies) ->
@@ -39,6 +40,7 @@ module.exports = (Ember, App, socket) ->
 				tag is candidate.get('body')
 			if not existingTag
 				App.Tag.createRecord
+					date: new Date	# Only so that sorting is smooth.
 					creator: App.user
 					contact: @get 'contact'
 					category: @get('category') or 'redstar'
