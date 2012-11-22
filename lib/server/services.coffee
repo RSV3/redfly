@@ -1,6 +1,10 @@
 db = null
 exports.getDb = ->
-	db ?= require('mongoose').connect process.env.MONGOLAB_URI
+	if not db
+		db = require 'mongoose'
+		db.set 'debug', process.env.NODE_ENV is 'development'
+		db.connect process.env.MONGOLAB_URI
+	db
 
 transport = null
 exports.getTransport = ->
