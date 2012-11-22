@@ -214,13 +214,16 @@ module.exports = (Ember, App, socket) ->
 		introView: Ember.View.extend
 			tagName: 'i'
 			didInsertElement: ->
-				$(@$()).tooltip()
-			attributeBindings: ['rel', 'dataTitle:data-title', 'dataPlacement:data-placement']
+				@set 'tooltip', $(@$()).tooltip
+					placement: 'bottom'
+					title: 'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
+			attributeBindings: ['rel']
 			rel: 'tooltip'
-			dataTitle: (->
-					'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
-				).property 'controller.addedBy.nickname'
-			dataPlacement: 'right'
+			# TODO kind of lame hack, figure out the right way to change data in bootstrap plugins (hopefully generically so I can use it to
+			# fix the tagger typeahead too.)
+			nicknameChanged: (->
+					@get('tooltip').data('tooltip').options.title = 'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
+				).observes 'controller.addedBy.nickname'
 
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']

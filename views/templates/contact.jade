@@ -11,14 +11,13 @@
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
 		.row-fluid
-			h4
-				| {{#if isKnown}}
-				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
-				| {{else}}
-				| {{email}} &nbsp;&nbsp;<a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
-				| {{/if}}
 			| {{#if isKnown}}
+			h4
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
+			| {{else}}
+			p.bullhorn
+				| <a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
