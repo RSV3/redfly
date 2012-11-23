@@ -6,6 +6,10 @@
 		| {{/if}}		
 	.span6
 		.row-fluid
+			| {{#unless isKnown}}
+			p.bullhorn
+				| <a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
+			| {{/unless}}
 			h1 {{canonicalName}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
@@ -16,8 +20,6 @@
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{else}}
-			p.bullhorn
-				| <a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
