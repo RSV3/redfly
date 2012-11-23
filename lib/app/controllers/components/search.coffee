@@ -12,25 +12,27 @@ module.exports = (Ember, App, socket) ->
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
-		results: Ember.ObjectProxy.create()
+		results: (->
+				Ember.ObjectProxy.create()
+			).property()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				@get('usingSearch') and @get('results.content')
-			).property 'usingSearch', 'results.content'
+				@get('using') and @get('results.content')
+			).property 'using', 'results.content'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
-				@set 'usingSearch', false
+				@set 'using', false
 			if event.which is 27	# Escape.
 				@$(':focus').blur()
 		focusIn: ->
-			@set 'usingSearch', true
+			@set 'using', true
 		focusOut: ->
 			# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results (after a small delay
 			# in case of mousedown).
 			setTimeout =>
 					focused = $(document.activeElement)
 					if not _.first @$().has(focused)
-						@set 'usingSearch', false
+						@set 'using', false
 				, 150
 
 		searchBoxView: Ember.TextField.extend
