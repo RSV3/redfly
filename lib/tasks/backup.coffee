@@ -1,4 +1,4 @@
-tools = require '../util'
+util = require '../server/util'
 
 url = require('url').parse process.env.MONGOLAB_URI
 auth = url.auth.split ':'
@@ -9,7 +9,7 @@ config =
 		port: url.port
 		username: auth[0]
 		password: auth[1]
-		db: tools.trim url.pathname, '/'
+		db: util.trim url.pathname, '/'
 	s3:
 		key: process.env.S3_ACCESS_KEY
 		secret: process.env.S3_SECRET_KEY

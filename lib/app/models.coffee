@@ -1,6 +1,6 @@
 module.exports = (DS, App) ->
 	_ = require 'underscore'
-	tools = require '../util'
+	util = require '../util'
 
 
 	App.adapter.registerTransform 'date',
@@ -31,7 +31,7 @@ module.exports = (DS, App) ->
 				@get 'name'
 			).property 'App.user.content', 'name'
 		nickname: (->
-				tools.nickname @get('name'), @get('email')
+				util.nickname @get('name'), @get('email')
 			).property 'name', 'email'
 
 	App.Contact = DS.Model.extend
@@ -64,7 +64,7 @@ module.exports = (DS, App) ->
 				null
 			).property 'name', 'email'
 		nickname: (->
-				tools.nickname @get('name'), @get('email')
+				util.nickname @get('name'), @get('email')
 			).property 'name', 'email'
 		canonicalPicture: (->
 				# https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg

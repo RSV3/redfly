@@ -1,6 +1,5 @@
 module.exports = (Ember, App, socket) ->
 	util = require './util'
-	tools = require '../util'
 
 
 	interceptedPath = null
@@ -115,7 +114,6 @@ module.exports = (Ember, App, socket) ->
 
 
 			doSignup: (router, context) ->
-				if identity = tools.trim App.user.get 'signupIdentity'
 					controller = context.view.get 'controller'
 					App.user.set 'signupIdentity', null
 					_s = require 'underscore.string'
@@ -129,7 +127,6 @@ module.exports = (Ember, App, socket) ->
 							controller.set 'signupError', data
 
 			doLogin: (router, context) ->
-				if identity = tools.trim App.user.get 'loginIdentity'
 					controller = context.view.get 'controller'
 					App.user.set 'loginIdentity', null
 					socket.emit 'login', util.identity(identity), (success, data) ->

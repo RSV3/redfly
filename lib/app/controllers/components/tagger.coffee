@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../../../util'
+	util = require '../../util'
 
 
 	App.TaggerView = Ember.View.extend

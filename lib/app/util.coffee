@@ -1,4 +1,7 @@
-exports.identity = (identity) ->
+util = module.exports = require '../util'
+
+
+util.identity = (identity) ->
 	_s = require 'underscore.string'
 
 	# If only the username was typed make it a proper email.
@@ -7,7 +10,7 @@ exports.identity = (identity) ->
 	identity
 
 
-exports.notify = (options) ->
+util.notify = (options) ->
 	_ = require 'underscore'
 
 	defaults =

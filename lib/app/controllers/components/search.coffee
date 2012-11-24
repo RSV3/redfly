@@ -1,7 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-	util = require '../../../util'
+	util = require '../../util'
 
 
 	App.SearchView = Ember.View.extend

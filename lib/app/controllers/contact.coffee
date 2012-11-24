@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	tools = require '../../util'
+	util = require '../util'
 
 
 	App.ContactController = Ember.ObjectController.extend
@@ -26,7 +26,7 @@ module.exports = (Ember, App, socket) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
 			).property 'knows.@each.id'
 		disableAdd: (->
-				not tools.trim @get('currentNote')
+				not util.trim @get('currentNote')
 			).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if _.random(1, 10) < 9
@@ -38,7 +38,7 @@ module.exports = (Ember, App, socket) ->
 		# 		).htmlSafe()
 		# 	).property().volatile()
 		add: ->
-			if note = tools.trim @get('currentNote')
+			if note = util.trim @get('currentNote')
 				App.Note.createRecord
 					date: new Date	# Only so that sorting is smooth.
 					author: App.user
@@ -53,7 +53,7 @@ module.exports = (Ember, App, socket) ->
 		introMailto: (->
 				carriage = '%0D%0A'
 				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use tools.baseUrl here instead later
+				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use util.baseUrl here instead later
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
 					'?subject=You know ' + @get('nickname') + ', right?' +
 					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
@@ -103,7 +103,7 @@ module.exports = (Ember, App, socket) ->
 				all.unshift @get('primary')
 				all = _.chain(all)
 					.map (item) ->
-						tools.trim item
+						util.trim item
 					.compact()
 					.value()
 
@@ -172,7 +172,6 @@ module.exports = (Ember, App, socket) ->
 			merge: ->
 				@get('modal').modal 'hide'
 
-				util = require '../util'
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'

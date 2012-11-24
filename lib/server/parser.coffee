@@ -5,7 +5,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 	parse = (app, user, notifications, cb) ->
 		validators = require('validator').validators
-		tools = require '../util'
+		util = require './util'
 		
 		request = require 'request'	# TODO remove 'request' from package.json when no longer reliant on winedora.
 		request.post
@@ -55,15 +55,14 @@ module.exports = (app, user, notifications = {}, cb) ->
 							fetch.on 'message', (msg) ->
 								msg.on 'end', ->
 									for to in mimelib.parseAddresses msg.headers.to?[0]
-										email = tools.trim to.address.toLowerCase()
+										email = util.trim to.address.toLowerCase()
 
-										tools = require '../util'
 										junkChars = ' \'",<>'
-										name = tools.trim to.name, junkChars
+										name = util.trim to.name, junkChars
 										comma = name.indexOf ','
 										if comma isnt -1
 											name = name[comma + 1..] + ' ' + name[...comma]
-											name = tools.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
+											name = util.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
 										if (not name) or (validators.isEmail name)
 											name = null
 

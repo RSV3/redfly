@@ -1,5 +1,7 @@
 services = require './services'
 
+util = module.exports = require '../util'
+
 
 # Example mail options.
 # options = 
@@ -7,7 +9,7 @@ services = require './services'
 # 	to: 'receiver1@example.com, receiver2@example.com'
 # 	subject: 'Hello!'
 # 	html: '<strong>Hello world.</strong>'
-exports.mail = (options, cb) ->
+util.mail = (options, cb) ->
 	if intercept = process.env.INTERCEPT_EMAIL
 		options.replyTo = options.to
 		options.to = intercept

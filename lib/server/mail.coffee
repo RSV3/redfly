@@ -24,7 +24,6 @@ module.exports = (app) ->
 	sendNudge: (user, contacts, cb) ->
 		_ = require 'underscore'
 		_s = require 'underscore.string'
-		tools = require '../util'
 
 		# TODO duplicates some logic in the client models. Maybe put said logic in a common place.
 		names = []
@@ -36,7 +35,7 @@ module.exports = (app) ->
 				splitted = email.split '@'
 				domain = _.first _.last(splitted).split('.')
 				names.push _.first(splitted) + ' [' + domain + ']'
-		nicknames = (tools.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
+		nicknames = (util.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
 		
 		send 'nudge',
 				to: user.email

@@ -1,7 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-	util = require '../../util'
 
 
 	App.ApplicationController = Ember.Controller.extend
