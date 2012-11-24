@@ -3,8 +3,8 @@ module.exports = (app) ->
 
 
 	send = (template, options, locals = {}, cb) ->
-		locals.path = (url) ->
-			'http://' + process.env.HOST + url
+		locals.path = (path) ->
+			util.baseUrl + path
 
 		app.render 'mail/' + template, locals, (err, html) ->
 			throw err if err

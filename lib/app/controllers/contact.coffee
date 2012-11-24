@@ -52,11 +52,14 @@ module.exports = (Ember, App, socket) ->
 			).property 'canonicalName', 'email'
 		introMailto: (->
 				carriage = '%0D%0A'
+				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
+				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use tools.baseUrl here instead later
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
-					'?subject=You know ' + @get('canonicalName') + ', right?' +
-					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('email') + '? Thanks!' +
+					'?subject=You know ' + @get('nickname') + ', right?' +
+					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
+					'This fella right here:' + carriage + carriage + encodeURI(url) +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'canonicalName', 'email', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
+			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 
 
 	App.ContactView = Ember.View.extend

@@ -2,6 +2,7 @@ module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
+	util = require './util'
 	models = require './models'
 	logic = require './logic'
 
@@ -90,7 +91,7 @@ module.exports = (app, socket) ->
 			if user
 				return fn false, 'A user with that email already exists.'
 			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result
@@ -108,7 +109,7 @@ module.exports = (app, socket) ->
 
 			# Tempoarily use of the authorize flow for login. Copy/pasted.
 			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: 'http://' + process.env.HOST + '/authorized'
+			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
 			client.getRequestToken email, (err, result) -> 
 				throw err if err
 				session.authorizeData = email: email, request: result

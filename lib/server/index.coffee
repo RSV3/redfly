@@ -32,7 +32,7 @@ app.configure ->
 
 	app.use (req, res, next) ->
 		if req.headers.host isnt process.env.HOST
-			url = req.protocol + process.env.HOST + req.url
+			url = util.baseUrl + req.url
 			res.writeHead 301, Location: url
 			return res.end()
 		next()
