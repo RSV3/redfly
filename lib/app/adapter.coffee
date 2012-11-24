@@ -9,9 +9,15 @@ module.exports = (DS, socket) ->
 			socket.emit 'db', op: 'find', type: getTypeName(type), id: id, (data) ->
 				store.load type, id, data
 
-		# findMany: (store, type, ids) ->
-		# 	socket.emit 'db', op: 'find', type: getTypeName(type), ids: ids, (data) ->
-		# 		store.loadMany type, data
+		findMany: (store, type, ids) ->
+			socket.emit 'db', op: 'find', type: getTypeName(type), ids: ids, (data) ->
+				data.sort (a, b) ->
+					aIndex = ids.indexOf a.id
+					bIndex = ids.indexOf b.id
+					return -1 if aIndex < bIndex
+					return 1 if aIndex > bIndex
+					return 0
+				store.loadMany type, data
 
 		findQuery: (store, type, query, array) ->
 			if not query.conditions and not query.options
