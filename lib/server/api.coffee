@@ -223,6 +223,11 @@ module.exports = (app, socket) ->
 			models.Contact.find().in('_id', mergeIds).exec (err, merges) ->
 				throw err if err
 
+				history = new models.Merge
+				history.contacts = [contact].concat merges...
+				history.save (err) ->
+					throw err if err
+
 				async = require 'async'
 				async.forEach merges, (merge, cb) ->
 					for field in ['names', 'emails', 'knows']

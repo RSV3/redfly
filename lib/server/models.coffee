@@ -47,10 +47,13 @@ MailSchema = new Schema
 	sent: type: Date
 
 
+MergeSchema = new Schema
+	contacts: [Types.Mixed]
+
+
 common = (schema) ->
 	schema.add
 		date: type: Date, required: true, default: Date.now
-		
 	schema.set 'toJSON', getters: true	# To make 'id' included in json serialization for the API.
 
 
@@ -62,6 +65,8 @@ TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
 
+MergeSchema.plugin common
+
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
@@ -71,3 +76,5 @@ exports.Contact = db.model 'Contact', ContactSchema
 exports.Tag = db.model 'Tag', TagSchema
 exports.Note = db.model 'Note', NoteSchema
 exports.Mail = db.model 'Mail', MailSchema
+
+exports.Merge = db.model 'Merge', MergeSchema
