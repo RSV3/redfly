@@ -19,5 +19,6 @@ exports.notify = (options) ->
 			options_in: direction: 'up'
 			effect_out: 'drop'
 			options_out: direction: 'right'
+		mouse_reset: false	# Fixes pines notify bug in which jquery UI animations cause the notifications to get stuck when the user mouses over them.
 	options = _.extend defaults, options
 	$.pnotify options
