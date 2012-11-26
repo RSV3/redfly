@@ -2,7 +2,7 @@ http = require 'http'
 path = require 'path'
 express = require 'express'
 gzippo = require 'gzippo'
-RedisStore = require('connect-redis')(express)
+RedisStore = require('connect-redis') express
 
 util = require './util'
 
@@ -26,7 +26,7 @@ store = new RedisStore do ->
 app.configure ->
 	app.set 'port', process.env.PORT or 5000
 
-	app.set 'views', root + '/views'
+	app.set 'views', path.join(root, 'views')
 	app.set 'view engine', 'jade'
 	app.locals.pretty = process.env.NODE_ENV is 'development'
 
@@ -38,7 +38,7 @@ app.configure ->
 		next()
 	# app.use express.logger('dev')
 	# app.use express.profiler()
-	app.use express.favicon(root + '/favicon.ico')
+	app.use express.favicon(path.join(root, 'favicon.ico'))
 	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
 	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
@@ -54,9 +54,8 @@ app.configure ->
 		next()
 
 	app.use app.router
-	app.use require('./pipeline')(root, app)
+	app.use require('./pipeline') root, app
 	app.use (req, res) ->
-		res.locals.root = path.basename root
 		res.render 'index'
 
 app.configure 'development', ->
@@ -128,8 +127,26 @@ io.set 'authorization', (data, accept) ->
 		return accept null, true
 
 io.sockets.on 'connection', (socket) ->
-	require('./api')(app, socket)
+	require('./api') app, socket
 
+
+
+options =
+	watch: process.env.NODE_ENV is 'development'
+	exports: 'process'
+bundle = require('browserify') options
+bundle.register '.jade', (body, file) ->
+	result = null
+	app.render file, (err, data) ->
+		throw err if err
+		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+	result
+bundle.addEntry 'lib/app/index.coffee'
+
+app.get '/app.js', (req, res) ->
+	res.writeHead(200, {'Content-Type': 'application/javascript'})
+	res.end bundle.bundle()
 
 
 server.listen app.get('port'), ->

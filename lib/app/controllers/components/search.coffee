@@ -13,7 +13,7 @@ module.exports = (Ember, App, socket) ->
 		attributeBindings: ['role']
 		role: 'menu'
 		results: (->
-				Ember.ObjectProxy.create()
+				Ember.ObjectProxy.create()	# TODO try getting rid of this entirely and changing get/set 'results.content' to just get/set 'results'
 			).property()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.

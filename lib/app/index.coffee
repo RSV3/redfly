@@ -40,7 +40,7 @@ App.auth =
 		App.user.set 'content', null
 
 
-App.adapter = require('./adapter')(DS, socket)
+App.adapter = require('./adapter') DS, socket
 App.store = DS.Store.create
 	revision: 6
 	adapter: App.adapter
@@ -57,9 +57,9 @@ App.filter = (type, sort, query, filter) ->
 	Ember.ArrayProxy.create Ember.SortableMixin, options
 
 
-require('./models')(DS, App)
-require('./controllers')(Ember, App, socket)
-require('./router')(Ember, App, socket)
+require('./models') DS, App
+require('./controllers') Ember, App, socket
+require('./router') Ember, App, socket
 
 
 socket.emit 'session', (session) ->
