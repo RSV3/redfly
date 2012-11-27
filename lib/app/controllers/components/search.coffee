@@ -12,13 +12,10 @@ module.exports = (Ember, App, socket) ->
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
-		results: (->
-				Ember.ObjectProxy.create()	# TODO try getting rid of this entirely and changing get/set 'results.content' to just get/set 'results'
-			).property()
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				@get('using') and @get('results.content')
-			).property 'using', 'results.content'
+				@get('using') and @get('results')
+			).property 'using', 'results'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
@@ -40,10 +37,10 @@ module.exports = (Ember, App, socket) ->
 			valueChanged: (->
 					query = util.trim @get('value')
 					if not query
-						@set 'results.content', null
+						@set 'results', null
 					else
 						socket.emit 'search', query, (results) =>
-							@set 'results.content', {}
+							@set 'results', {}
 							for type, ids of results
 								if excludes = @get('parentView.excludes')?.getEach('id')
 									ids = _.difference ids, excludes

@@ -2,7 +2,7 @@ _ = require 'underscore'
 _s = require 'underscore.string'
 
 
-exports.baseUrl = 'http://' + process?.env.HOST	# TODO remove ? when client has 'process' object (prolly after browserify)
+exports.baseUrl = 'http://' + process.env.HOST
 
 
 exports.trim = (string, characters) ->

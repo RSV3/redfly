@@ -1,12 +1,14 @@
+# These values get subbed in by the build process.
+process.env.NODE_ENV = '[NODE_ENV]'
+process.env.HOST = '[HOST]'
+
 require '../vendor'
 
-# require 'ember'	# TODO also see if there's a way to get a debug version of node-ember like i'm using via script currently
+# require 'ember'
 window.App = Ember.Application.create autoinit: false
 
-# site = require('url').parse window.location.href
-# io = require 'socket.io-client' # TODO convoy fails
-# socket = io.connect site.protocol + '//' + site.host
-socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port and ":" + window.location.port))
+io = require 'socket.io-client'
+socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
 	window.location.reload()
 
@@ -69,3 +71,8 @@ socket.emit 'session', (session) ->
 		App.auth.logout()
 		
 	App.initialize()
+
+
+socket.on 'reloadStyles', ->
+	stylesheet = $('link[href="/app.css"]')
+	stylesheet.attr 'href', 'app.css?timestamp=' + Date.now()

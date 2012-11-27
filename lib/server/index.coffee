@@ -12,8 +12,8 @@ require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
 
 app = express()
 server = http.createServer app
-
 root = path.dirname path.dirname __dirname
+pipeline = require('./pipeline') root
 
 key = 'express.sid'
 store = new RedisStore do ->
@@ -54,7 +54,7 @@ app.configure ->
 		next()
 
 	app.use app.router
-	app.use require('./pipeline') root, app
+	app.use pipeline.middleware()
 	app.use (req, res) ->
 		res.render 'index'
 
@@ -63,6 +63,7 @@ app.configure 'development', ->
 
 app.configure 'production', ->
 	app.use (err, req, res, next) ->
+		console.error err
 		res.statusCode = 500
 		res.render 'error'
 
@@ -119,7 +120,6 @@ io.set 'authorization', (data, accept) ->
 
 	store.load data.sessionId, (err, session) ->
 		throw err if err
-		# throw new Error 'No session.' if not session    # TODO remove
 		if not session
 			return accept 'No session.', false
 
@@ -129,12 +129,15 @@ io.set 'authorization', (data, accept) ->
 io.sockets.on 'connection', (socket) ->
 	require('./api') app, socket
 
+	pipeline.on 'invalidate', ->
+		socket.emit 'reloadStyles'
 
 
-options =
+
+bundle = require('browserify')
 	watch: process.env.NODE_ENV is 'development'
+	debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
 	exports: 'process'
-bundle = require('browserify') options
 bundle.register '.jade', (body, file) ->
 	result = null
 	app.render file, (err, data) ->
@@ -146,7 +149,11 @@ bundle.addEntry 'lib/app/index.coffee'
 
 app.get '/app.js', (req, res) ->
 	res.writeHead(200, {'Content-Type': 'application/javascript'})
-	res.end bundle.bundle()
+
+	content = bundle.bundle()
+	for variable in ['NODE_ENV', 'HOST']
+		content = content.replace '[' + variable + ']', process.env[variable]
+	res.end content
 
 
 server.listen app.get('port'), ->

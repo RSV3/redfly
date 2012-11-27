@@ -20,11 +20,15 @@ config =
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
 
+		MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
+
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
+
+		MONGOLAB_URI: 'mongodb://heroku_app6375934:oulrbvefpj1gho0o6mq9n77t4h@ds037067-a.mongolab.com:37067/heroku_app6375934'
 
 		NUDGE_DAY: 'Thursday'
 
@@ -33,11 +37,13 @@ config =
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
 
-		NUDGE_DAY: 'Friday'
+		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'
 		BACKUP_BUCKET: 'backups.redfly.redstar.com'
+
+		NUDGE_DAY: 'Friday'
 
 
 

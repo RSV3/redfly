@@ -15,5 +15,5 @@ util.mail = (options, cb) ->
 		options.to = intercept
 	services.getTransport().sendMail options, (err, response) ->
 		throw err if err	# TODO change this to logging/airbrake
-		console.info 'Message sent: ' + response.message
+		console.info 'Message sent to ' + options.to + ' with response ' + response.message
 		cb?()

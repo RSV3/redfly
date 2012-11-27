@@ -1,0 +1,8 @@
+#!/usr/bin/env coffee
+
+# TODO possibly use copydb instead of mongodump and mongorestore: http://docs.mongodb.org/manual/tutorial/copy-databases-between-instances/
+# https://www.google.com/search?q=mongo+drop+all+collections+when+restoring&oq=mongo+drop+all+collections+when+restoring&aqs=chrome.0.57j62l3.8169&sugexp=chrome,mod=0&sourceid=chrome&ie=UTF-8&qscrl=1
+
+# mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
+# mongorestore --host ds043467.mongolab.com:43467 --username heroku_app6379653 --password r6dae13oimgpm3vjsm8fjnle19 --db heroku_app6379653 redfly_dump/heroku_app8065862
+

@@ -1,3 +1,9 @@
+things I want out of my asset pipeline:
+- watch files for changes
+- compile all my assets (coffee to js, stylus to css) and serve from memory, not generated files
+- concatenate all assets together and serve just one js, css, and html file.
+- minify js/css/html
+
 - A contact must have at least one entry in its 'names' OR one entry in its 'emails'
   - tighter constraint: email required is being enforced in the frontend now
 

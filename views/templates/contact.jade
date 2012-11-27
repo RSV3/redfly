@@ -19,7 +19,6 @@
 			h4
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
-			| {{else}}
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
@@ -33,11 +32,13 @@
 				| .
 		| {{/if}}
 	.span3
+		| {{#if firstHistory}}
 		.row-fluid.actions
 			| <a class="btn" role="button" {{action showMerge target="view"}}>
 			i.icon-signin
 			| &nbsp;&nbsp;Merge
 			| </a>
+		| {{/if}}
 		.row-fluid
 			h5 People who know {{nickname}}
 			ul
