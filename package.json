@@ -1,6 +1,6 @@
 {
 	"name": "redfly",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"private": true,
 	"dependencies": {
 		"coffee-script": "1.4.0",
