@@ -13,4 +13,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/contacts')(Ember, App, socket)
 	require('./controllers/tags')(Ember, App, socket)
 	require('./controllers/report')(Ember, App, socket)
+	require('./controllers/create')(Ember, App, socket)
 	require('./controllers/classify')(Ember, App, socket)

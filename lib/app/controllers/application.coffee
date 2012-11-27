@@ -27,7 +27,7 @@ module.exports = (Ember, App, socket) ->
 
 		changeActiveTab: (->
 				state = App.get 'router.currentState.name'
-				tabs = ['classify', 'leaderboard', 'contacts', 'tags']
+				tabs = ['create', 'classify', 'leaderboard', 'contacts', 'tags']
 				for tab in tabs
 					@set 'at' + _s.capitalize(tab), false
 				@set 'at' + _s.capitalize(state), true

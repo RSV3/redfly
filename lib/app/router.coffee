@@ -85,6 +85,11 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'profile', App.user
 
+			create: Ember.Route.extend
+				route: '/create'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'create'
+
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
@@ -110,6 +115,7 @@ module.exports = (Ember, App, socket) ->
 			goReport: Ember.Route.transitionTo 'report'
 
 			goUserProfile: Ember.Route.transitionTo 'userProfile'
+			goCreate: Ember.Route.transitionTo 'create'
 			goClassify: Ember.Route.transitionTo 'classify'
 
 

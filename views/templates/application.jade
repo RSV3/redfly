@@ -24,6 +24,9 @@
 					//-
 						li.
 							<a {{action goHome href=true}}>Home</a>
+					| <li {{bindAttr class="view.atCreate:active"}}>
+					|	<a {{action goCreate href=true}}>Create</a>
+					| </li>
 					| <li {{bindAttr class="view.atClassify:active"}}>
 					|	<a {{action goClassify href=true}}>Classify</a>
 					| </li>
@@ -73,6 +76,8 @@
 					ul.dropdown-menu(role='menu')
 						li
 							| <a {{action goUserProfile href=true}}>Profile</a>
+						li
+							| <a {{action goCreate href=true}}>Create</a>
 						li
 							| <a {{action goClassify href=true}}>Classify</a>
 						li.divider
