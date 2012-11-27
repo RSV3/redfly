@@ -39,7 +39,7 @@ module.exports = (Ember, App, socket) ->
 					if not query
 						@set 'results', null
 					else
-						socket.emit 'search', query, (results) =>
+						socket.emit 'search', query, @get('parentView.conditions'), (results) =>
 							@set 'results', {}
 							for type, ids of results
 								if excludes = @get('parentView.excludes')?.getEach('id')

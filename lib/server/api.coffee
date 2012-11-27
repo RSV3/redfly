@@ -162,7 +162,7 @@ module.exports = (app, socket) ->
 			throw err if err
 			fn bodies
 
-	socket.on 'search', (query, fn) ->
+	socket.on 'search', (query, moreConditions, fn) ->
 		terms = _.uniq _.compact query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
@@ -195,9 +195,12 @@ module.exports = (app, socket) ->
 								catch err
 									continue	# User typed an invlid regular expression, just ignore it.
 
-								# TODO temporary
 								if model is 'Contact'
 									conditions.added = $exists: true
+									_.extend conditions, moreConditions
+								# else
+								# 	for k, v of moreConditions
+								# 		conditions['contact.' + k] = v
 								
 								models[model].find(conditions).limit(10).exec @parallel()
 								return undefined	# Step library is insane.
