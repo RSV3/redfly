@@ -3,7 +3,7 @@ util = require '../server/util'
 url = require('url').parse process.env.MONGOLAB_URI
 auth = url.auth.split ':'
 
-config =
+options =
 	mongodb:
 		host: url.hostname
 		port: url.port
@@ -16,4 +16,4 @@ config =
 		bucket: process.env.BACKUP_BUCKET
 
 backup = require 'mongodb_s3_backup'
-backup.sync config.mongodb, config.s3
+backup.sync options.mongodb, options.s3

@@ -84,6 +84,10 @@ module.exports = (app, socket) ->
 			else
 				throw new Error
 
+	feed = ->
+		asdf = 5		
+
+
 
 	socket.on 'signup', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
