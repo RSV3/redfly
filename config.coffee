@@ -36,8 +36,6 @@ config =
 	production:
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle.enterprise+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
-
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
@@ -45,7 +43,7 @@ config =
 		S3_SECRET_KEY: '+hWdQ7SL0YUVwdKw1hp6lWIdeAYiD/fHMJrEHPXn'
 		BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
-		NUDGE_DAY: 'Wednesday'
+		NUDGE_DAY: 'Friday'
 
 
 
