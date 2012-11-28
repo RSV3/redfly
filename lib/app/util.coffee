@@ -13,7 +13,7 @@ util.identity = (identity) ->
 util.notify = (options) ->
 	_ = require 'underscore'
 
-	defaults =
+	_.defaults options,
 		# nonblock: true
 		animate_speed: 700
 		opacity: 0.9
@@ -23,5 +23,4 @@ util.notify = (options) ->
 			effect_out: 'drop'
 			options_out: direction: 'right'
 		mouse_reset: false	# Fixes pines notify bug in which jquery UI animations cause the notifications to get stuck when the user mouses over them.
-	options = _.extend defaults, options
 	$.pnotify options

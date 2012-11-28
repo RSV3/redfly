@@ -149,7 +149,15 @@ module.exports = (app, socket) ->
 
 
 
-	socket.on 'verifyUniqueness', (id, field, candidates, fn) ->
+	socket.on 'verifyUniqueness', (field, value, fn) ->
+		field += 's'
+		conditions = {}
+		conditions[field] = value
+		models.Contact.findOne conditions, (err, contact) ->
+			throw err if err
+			fn contact?[field][0]
+
+	socket.on 'deprecatedVerifyUniqueness', (id, field, candidates, fn) ->	# Deprecated, bitches
 		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[field])

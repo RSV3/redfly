@@ -1,3 +1,8 @@
+validation utility:
+- filters should be able to handle whatever a user could put (or not put) in an input field, so preeeetty much anything.
+- validate functions intentionally don't allow returning arrays of errors, because the error messages are intended to be displayed on a field-by-field
+  basis (not one big list for the whole form).
+
 things I want out of my asset pipeline:
 - watch files for changes
 - compile all my assets (coffee to js, stylus to css) and serve from memory, not generated files

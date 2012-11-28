@@ -50,8 +50,7 @@
 				| <form class="navbar-form" {{action doLogin on="submit"}}>
 				| <span {{bindAttr class=":control-group loginError:error"}}>
 				| {{#if loginError}}
-				span.help-inline
-					| {{loginError}} 
+				span.help-inline {{loginError}} 
 				| {{/if}}
 				span.input-prepend
 					span.add-on

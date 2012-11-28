@@ -113,7 +113,7 @@ module.exports = (Ember, App, socket) ->
 				# Set primary and others to the new values so the user can see any modifications to the input while stuff saves.
 				@set 'primary', _.first all
 				@set 'others.content', @_makeProxyArray _.rest all
-				socket.emit 'verifyUniqueness', @get('controller.id'), @get('allAttribute'), all, (duplicate) =>
+				socket.emit 'deprecatedVerifyUniqueness', @get('controller.id'), @get('allAttribute'), all, (duplicate) =>
 					@set 'duplicate', duplicate
 
 					if (not nothing) and (not duplicate)
