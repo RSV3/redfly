@@ -94,20 +94,23 @@ module.exports = (Ember, App, socket) ->
 					_.defer =>
 						@get('parentView').add()
 			didInsertElement: ->
-				$(@$()).typeahead
-					source: @get('parentView.availableTags')
+				@set 'typeahead', $(@$()).typeahead
+					source: null	# Placeholder, populate later.
 					items: 6
 					updater: (item) =>
 						@get('parentView')._add item
 						@set 'currentTag', null
 						return null
-				# Monkey-patch bootstrap so I can trigger bindings.
+				# Monkey-patch bootstrap so I can trigger bindings. Current way this is happening is by customizing bootstrap.js
 				# typeahead = $(@$()).data('typeahead')
 				# move = typeahead.move
 				# that = this
 				# typeahead.move = (e) ->
 				# 	move.call this, e
 				# 	that.set 'currentTag', that.get('currentTag')
+			updateTypeahead: (->
+					@get('typeahead').data('typeahead').source = @get('parentView.availableTags')
+				).observes 'parentView.availableTags.@each'
 			attributeBindings: ['size', 'autocomplete', 'tabindex']
 			size: (->
 					2 + @get('currentTag.length')
