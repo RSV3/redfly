@@ -225,25 +225,28 @@ module.exports = (app, socket) ->
 			fn bodies
 
 	socket.on 'tagStats', (fn) ->
-		# group =
-		# 	$group:
-		# 		_id: '$body'
-		# 		count: $sum: 1
-		# 		mostRecent: $max: '$date'
-		# 		# contacts: $addToSet: '$contacts'
-		# project =
-		# 	$project:
-		# 		body: '$_id'
-		# models.Tag.aggregate group, project, (err, results) ->
-		# 		throw err if err
-		# 		fn results
-		fn [
-			{body: 'capitalism', count: 56, mostRecent: new Date()}
-			{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
-			{body: 'socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
-			{body: 'fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
-			{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		]
+		group =
+			$group:
+				_id: '$body'
+				count: $sum: 1
+				mostRecent: $max: '$date'
+				# contacts: $addToSet: '$contacts'
+		project =
+			$project:
+				_id: 0
+				body: '$_id'
+				count: 1
+				mostRecent: 1
+		models.Tag.aggregate group, project, (err, results) ->
+				throw err if err
+				fn results
+		# fn [
+		# 	{body: 'capitalism', count: 56, mostRecent: new Date()}
+		# 	{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
+		# 	{body: 'socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
+		# 	{body: 'fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
+		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
+		# ]
 
 	socket.on 'merge', (contactId, mergeIds, fn) ->
 		models.Contact.findById contactId, (err, contact) ->
