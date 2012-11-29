@@ -4,7 +4,6 @@ process.env.HOST = '[HOST]'
 
 require '../vendor'
 
-# require 'ember'
 window.App = Ember.Application.create autoinit: false
 
 io = require 'socket.io-client'

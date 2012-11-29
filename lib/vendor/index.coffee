@@ -5,5 +5,9 @@ require './bootstrap'
 require './jquery.pnotify'
 require './addclear'
 
-require './ember-data'
+
+require './handlebars'
 require './handlebars-helpers'
+
+require './ember'
+require './ember-data'
