@@ -33,6 +33,9 @@ module.exports = (Ember, App, socket) ->
 				@set 'at' + _s.capitalize(state), true
 			).observes 'App.router.currentState.name'
 		didInsertElement: ->
+			setTimeout ->
+					throw new Error 'penis penis'
+				, 3000
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create
 					content: App.get(data.type).find data.id

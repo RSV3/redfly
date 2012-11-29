@@ -4,6 +4,15 @@ process.env.HOST = '[HOST]'
 
 require '../vendor'
 
+
+TraceKit.report.subscribe (stacktrace) ->
+	# TODO log the stacktrace, logged in user, and router path
+	console.log stacktrace
+
+Ember.onerror = (err) ->
+	alert 'asdf'
+	console.log err
+
 window.App = Ember.Application.create autoinit: false
 
 io = require 'socket.io-client'
