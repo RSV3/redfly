@@ -6,7 +6,7 @@ require './jquery.pnotify'
 require './addclear'
 
 
-require './handlebars'
+# require './handlebars'
 require './handlebars-helpers'
 
 require './ember'
