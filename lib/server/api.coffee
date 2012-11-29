@@ -38,13 +38,8 @@ module.exports = (app, socket) ->
 					model.create record, (err, doc) ->
 						throw err if err
 						fn doc
-						if (model is models.Tag) or (model is models.Note)
-							socket.broadcast.emit 'feed',
-								type: data.type
-								id: doc.id
-							socket.emit 'feed',
-								type: data.type
-								id: doc.id
+						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
+							feed data, doc
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
@@ -56,20 +51,13 @@ module.exports = (app, socket) ->
 					model.findById record.id, (err, doc) ->
 						throw err if err
 						_.extend doc, record
-						broadcast = false
-						if (model is models.Contact) and ('added' in doc.modifiedPaths())
-							broadcast = true
+						broadcast = (model is models.Contact) and ('added' in doc.modifiedPaths())
 						# Important to do updates through the 'save' call so middleware and validators happen.
 						doc.save (err) ->
 							throw err if err
 							fn doc
 							if broadcast
-								socket.broadcast.emit 'feed',
-									type: data.type
-									id: doc.id
-								socket.emit 'feed',
-									type: data.type
-									id: doc.id
+								feed data, doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -84,9 +72,13 @@ module.exports = (app, socket) ->
 			else
 				throw new Error
 
-	feed = ->
-		asdf = 5		
-
+	feed = (data, doc) ->
+		socket.broadcast.emit 'feed',
+			type: data.type
+			id: doc.id
+		socket.emit 'feed',
+			type: data.type
+			id: doc.id
 
 
 	socket.on 'signup', (email, fn) ->
