@@ -1,2 +1,12 @@
 .row-fluid
-	| Coming soon!
+	h1 All Tags
+
+	| {{#each controller}}
+	.row-fluid
+		.span4.offset2.centered
+			| {{view App.TagView}} 
+		.span1.centered
+			span.badge.badge-info {{count}}
+		.span4
+			| Used {{mostRecent}}
+	| {{/each}}

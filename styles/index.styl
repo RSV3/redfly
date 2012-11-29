@@ -42,30 +42,34 @@ redstar = #e51937
 
 
 
-// Mixins.
+// Mixins (basically components, with arguements!).
+tag(fontSize)
+	.tag
+		a
+			color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
+		color #666
+		display inline-block
+		background-color #DEE7F8
+		border 1px solid #CAD8F3
+
+		big = fontSize
+		little = fontSize / 4
+		border-radius big little little big
+
+		padding-left fontSize * 0.75
+		.body
+			padding-right fontSize * 0.25
+
 tagger(fontSize)
 	taggerMargin = fontSize * 0.28
-	closePadding = fontSize * 0.25
 	.tagger
-		.tags
+		.main
 			line-height fontSize * 1.42
+			tag(fontSize)
 			.tag
-				a
-					color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
-				color #666
 				margin taggerMargin 0 0 taggerMargin
-				display inline-block
-				background-color #DEE7F8
-				border 1px solid #CAD8F3
-
-				big = fontSize
-				little = fontSize / 4		
-				border-radius big little little big
-
-				padding-left fontSize * 0.75
-				.body
-					padding-right closePadding
 				.close
+					closePadding = fontSize * 0.25
 					float none
 					font-size inherit
 					border-left 1px dotted #1323d6
@@ -187,7 +191,7 @@ body
 	.tag-category
 		margin-bottom baseLineHeight
 		tagger(baseFontSize)
-		.tagger .tags
+		.tagger .main
 			min-height 82px
 			border mediumBorder	
 	blockquote
@@ -211,9 +215,16 @@ body
 	td
 		cursor pointer
 
+.tags
+	h1
+		margin-bottom horizontalMargin * 4
+	.centered
+		text-align center
+
 .create
+	h1
+		margin-bottom horizontalMargin * 4
 	form
-		margin-top horizontalMargin * 4
 		legend
 			margin-bottom 0
 		.form-actions
@@ -245,6 +256,12 @@ body
 .search
 	.search-results
 		display block	// Always show the dropdown.
+
+
+
+// Components that are just basically default mixins
+tag(baseFontSize)
+
 
 
 // .connection

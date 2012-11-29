@@ -42,6 +42,10 @@ Needed Features (ember/angular/knockout/derby research):
 
 
 
+i.icon-star(style='position: relative; top: -38px; left: 55px; color: #e51937')
+
+
+
 --------------------------------- xoath attempts ---------------------------------
 
 user =

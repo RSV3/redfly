@@ -145,27 +145,6 @@ module.exports = (app, socket) ->
 
 
 
-	socket.on 'verifyUniqueness', (field, value, fn) ->
-		field += 's'
-		conditions = {}
-		conditions[field] = value
-		models.Contact.findOne conditions, (err, contact) ->
-			throw err if err
-			fn contact?[field][0]
-
-	socket.on 'deprecatedVerifyUniqueness', (id, field, candidates, fn) ->	# Deprecated, bitches
-		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
-			throw err if err
-			fn _.chain(contact?[field])
-				.intersection(candidates)
-				.first()
-				.value()
-
-	socket.on 'tags', (conditions, fn) ->
-		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
-			throw err if err
-			fn bodies
-
 	socket.on 'search', (query, moreConditions, fn) ->
 		terms = _.uniq _.compact query.split(' ')
 		search = {}
@@ -223,6 +202,48 @@ module.exports = (app, socket) ->
 						results[type] = _.map typeDocs, (doc) ->
 							doc.id
 				return fn results
+
+	socket.on 'verifyUniqueness', (field, value, fn) ->
+		field += 's'
+		conditions = {}
+		conditions[field] = value
+		models.Contact.findOne conditions, (err, contact) ->
+			throw err if err
+			fn contact?[field][0]
+
+	socket.on 'deprecatedVerifyUniqueness', (id, field, candidates, fn) ->	# Deprecated, bitches
+		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
+			throw err if err
+			fn _.chain(contact?[field])
+				.intersection(candidates)
+				.first()
+				.value()
+
+	socket.on 'tags', (conditions, fn) ->
+		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
+			throw err if err
+			fn bodies
+
+	socket.on 'tagStats', (fn) ->
+		# group =
+		# 	$group:
+		# 		_id: '$body'
+		# 		count: $sum: 1
+		# 		mostRecent: $max: '$date'
+		# 		# contacts: $addToSet: '$contacts'
+		# project =
+		# 	$project:
+		# 		body: '$_id'
+		# models.Tag.aggregate group, project, (err, results) ->
+		# 		throw err if err
+		# 		fn results
+		fn [
+			{body: 'Capitalism', count: 56, mostRecent: new Date()}
+			{body: 'Communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
+			{body: 'Socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
+			{body: 'Fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
+			{body: 'Vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
+		]
 
 	socket.on 'merge', (contactId, mergeIds, fn) ->
 		models.Contact.findById contactId, (err, contact) ->

@@ -2,6 +2,7 @@ module.exports = (Ember, App, socket) ->
 
 	require('./controllers/components/connection')(Ember, App, socket)
 	require('./controllers/components/search')(Ember, App, socket)
+	require('./controllers/components/tag')(Ember, App, socket)
 	require('./controllers/components/tagger')(Ember, App, socket)
 	require('./controllers/components/loader')(Ember, App, socket)
 

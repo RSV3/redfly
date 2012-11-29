@@ -57,14 +57,7 @@ module.exports = (Ember, App, socket) ->
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
 				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
 
-		tagView: Ember.View.extend
-			tagName: 'span'
-			classNames: ['tag']
-			search: ->
-				searchBox = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-				searchBox.set 'value', 'tag:' + @get('context.body')
-				$(searchBox.get('element')).focus()
-				return false	# Prevent event propogation so that the search field gets focus and not the tagger.
+		tagView: App.TagView.extend
 			delete: (event) ->
 				tag = @get 'context'
 				$(event.target).parent().addClass 'animated rotateOutDownLeft'
@@ -97,7 +90,7 @@ module.exports = (Ember, App, socket) ->
 						lastTag.deleteRecord()
 						App.store.commit()
 				if event.which is 9
-					# Defer adding the tag in case a typeahead selection highlighted and should be added instead.
+					# Defer adding the tag in case a typeahead selection is highlighted and should be added instead.
 					_.defer =>
 						@get('parentView').add()
 			didInsertElement: ->
