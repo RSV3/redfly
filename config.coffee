@@ -7,7 +7,7 @@ config =
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6379653:r6dae13oimgpm3vjsm8fjnle19@ds043467.mongolab.com:43467/heroku_app6379653'
+		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
 
 		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		
@@ -28,7 +28,7 @@ config =
 		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6375934:oulrbvefpj1gho0o6mq9n77t4h@ds037067-a.mongolab.com:37067/heroku_app6375934'
+		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
 
 		NUDGE_DAY: 'Thursday'
 

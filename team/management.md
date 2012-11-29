@@ -1,5 +1,5 @@
 development commands:
-mongo ds043467.mongolab.com:43467/heroku_app6379653 -u heroku_app6379653 -p r6dae13oimgpm3vjsm8fjnle19
+mongo ds043837.mongolab.com:43837/heroku_app6379653 -u heroku_app6379653 -p 2vos1gak0e63rjl5220mluubm6
 redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
 
 test commands:
@@ -10,14 +10,7 @@ mongo ds039147.mongolab.com:39147/heroku_app8065862 -u heroku_app8065862 -p 6cqi
 
 dumping prod db to dev:
 mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
-mongorestore --host ds043467.mongolab.com:43467 --username heroku_app6379653 --password r6dae13oimgpm3vjsm8fjnle19 --db heroku_app6379653 redfly_dump/heroku_app8065862
-
-get all tags:
-require('./models').Tag.find body: /whatever/, (err, tags) ->
-	throw err if err
-	console.log tags
-
-
+mongorestore --host ds043837.mongolab.com:43837 --username heroku_app6379653 --password 2vos1gak0e63rjl5220mluubm6 --db heroku_app6379653 redfly_dump/heroku_app8065862
 
 
 
