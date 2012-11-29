@@ -28,7 +28,7 @@
 		"ember": "1.0.0-pre.2",
 		"browserify": "1.16.4",
 		"convoy": "0.4.0",
-		"convoy-stylus": "0.1.1",
+		"convoy-stylus": "0.1.2",
 		"less": "1.3.1",
 		"mongodb_s3_backup": "0.0.4"
 	},
