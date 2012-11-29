@@ -238,11 +238,11 @@ module.exports = (app, socket) ->
 		# 		throw err if err
 		# 		fn results
 		fn [
-			{body: 'Capitalism', count: 56, mostRecent: new Date()}
-			{body: 'Communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
-			{body: 'Socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
-			{body: 'Fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
-			{body: 'Vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
+			{body: 'capitalism', count: 56, mostRecent: new Date()}
+			{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
+			{body: 'socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
+			{body: 'fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
+			{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
 		]
 
 	socket.on 'merge', (contactId, mergeIds, fn) ->
