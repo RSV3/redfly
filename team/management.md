@@ -5,6 +5,9 @@ redis-cli -h koi.redistogo.com -p 9609 -a d8fafc860dfba6c9d50b6dbabc90653b
 test commands:
 mongo ds037097.mongolab.com:37097/heroku_app6375910 -u heroku_app6375910 -p osf31ssqike03ju6i6852jd0v2
 
+staging commands:
+mongo ds043847.mongolab.com:43847/heroku_app6375934 -u heroku_app6375934 -p oc78rcclpfcs9iu3i8prldlki3
+
 prod commands:
 mongo ds039147.mongolab.com:39147/heroku_app8065862 -u heroku_app8065862 -p 6cqi48lldblomdf4uebuhplblj
 
