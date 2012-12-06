@@ -15,7 +15,19 @@ dumping prod db to dev:
 mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
 mongorestore --host ds043837.mongolab.com:43837 --username heroku_app6379653 --password 2vos1gak0e63rjl5220mluubm6 --db heroku_app6379653 redfly_dump/heroku_app8065862
 
+Mocha Tutorials
+===============
 
+- http://wekeroad.com/2012/02/25/testing-your-model-with-mocha-mongo-and-nodejs
+- http://dailyjs.com/2011/12/08/mocha/
+- http://net.tutsplus.com/tutorials/javascript-ajax/better-coffeescript-testing-with-mocha/
+- http://brianstoner.com/blog/testing-in-nodejs-with-mocha/
+- http://robdodson.me/blog/2012/05/28/mocking-requests-with-mocha-chai-and-sinon/
+- http://www.adaltas.com/blog/2012/02/19/nodejs-test-mocha-should-travis/
+- http://blog.james-carr.org/2012/01/16/blog-rolling-with-mongodb-node-js-and-coffeescript/
+- http://www.coffeescriptlove.com/2012/02/testing-coffeescript-with-mocha.html
+- http://www.scoop.it/t/nodejs-code
+- http://tympanus.net/codrops/2012/10/11/real-time-geolocation-service-with-node-js/
 
 
 
