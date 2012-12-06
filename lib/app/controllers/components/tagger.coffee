@@ -120,11 +120,17 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.tabindex') or 0
 				).property 'parentView.tabindex'
 
-		availableTagView: Ember.View.extend
-			tagName: 'span'
-			use: ->
-				tag = @get('context').toString()
-				@get('parentView')._add tag
+		# availableTagView: Ember.View.extend
+		# 	tagName: 'span'
+		# 	use: ->
+		# 		tag = @get('context').toString()
+		# 		@get('parentView')._add tag
+		# TODO
+		# renderedAvailableTags: (->
+		# 		html = _.reduce @get('availableTags'), (memo, tag) ->
+		# 			memo + '<a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> ' + tag + '</span></a>'
+		# 		html.htmlSafe()
+		# 	).property 'availableTags.@each'
 
 
 	dictionary =
