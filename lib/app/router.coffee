@@ -62,7 +62,12 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', App.Contact.find added: $exists: true
+					router.get('applicationController').connectOutlet 'contacts', fullContent
+					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
+						content: App.Contact.find(added: $exists: true)
+						sortProperties: ['added']
+						sortAscending: false
+					router.get('contactsController').set 'fullContent', fullContent
 
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
@@ -73,6 +78,14 @@ module.exports = (Ember, App, socket) ->
 				route: '/tags'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'tags'
+					socket.emit 'tagStats', (stats) =>
+						for stat in stats
+							stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
+						fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
+							content: stats
+							sortProperties: ['count']
+							sortAscending: false
+						router.get('tagsController').set 'fullContent', fullContent
 
 			report: Ember.Route.extend
 				route: '/report'
