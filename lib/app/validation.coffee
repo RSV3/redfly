@@ -1,5 +1,7 @@
 module.exports = (socket) ->
 	_ = require 'underscore'
+	_s = require 'underscore.string'
+
 	validators = require('validator').validators
 
 	util = require '../util'
@@ -15,7 +17,11 @@ module.exports = (socket) ->
 	filter:
 		general:
 			picture: (picture) ->
-				util.trim picture
+				if picture
+					picture = util.trim picture
+					if not _s.startsWith picture, 'http'
+						picture = 'http://' + picture
+					picture
 		contact:
 			# emails: (emails) ->
 			# 	_.chain(emails)

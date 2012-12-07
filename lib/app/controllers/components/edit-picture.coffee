@@ -1,4 +1,5 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
 	validation = require('../validation') socket
 
 	validate = validation.validate
@@ -25,7 +26,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'error', error
 			if not error
 				@set 'picture', newPicture
-				App.store.commit()
+				# Deferring makes this work becuase pictureBinding has to sync I think.
+				_.defer ->
+					App.store.commit()
 				@toggle()
 
 			@set 'working', false
