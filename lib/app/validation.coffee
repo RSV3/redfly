@@ -13,6 +13,9 @@ module.exports = (socket) ->
 			'There is another contact with that ' + value + '.'
 	
 	filter:
+		general:
+			picture: (picture) ->
+				util.trim picture
 		contact:
 			# emails: (emails) ->
 			# 	_.chain(emails)
@@ -25,9 +28,11 @@ module.exports = (socket) ->
 					util.trim email.toLowerCase()
 			name: (name) ->
 				util.trim name
-			picture: (picture) ->
-				util.trim picture
 	validate:
+		general:
+			picture: (picture) ->
+				if not validators.isUrl picture
+					return messages.format 'URL'
 		contact:
 			# emails: (emails) ->
 			# 	if _.isEmpty emails
@@ -51,6 +56,3 @@ module.exports = (socket) ->
 					if duplicate
 						return cb messages.unique 'name'
 					cb()
-			picture: (picture) ->
-				if not validators.isUrl picture
-					return messages.format 'URL'

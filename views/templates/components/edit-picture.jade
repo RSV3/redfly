@@ -3,8 +3,8 @@ i.icon-edit.icon-large
 | </a>
 | {{#if view.show}}
 .popover
-	| {{#if view.invalid}}
-	.alert.alert-error Pretty sure that's not a valid URL.
+	| {{#if view.error}}
+	.alert.alert-error {{view.error}}
 	| {{/if}}
 	| <a href="#" class="close" {{action toggle target="view"}}>×</a>
 	.nav-header Picture URL

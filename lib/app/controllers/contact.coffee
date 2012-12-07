@@ -137,31 +137,6 @@ module.exports = (Ember, App, socket) ->
 				remove: (event) ->
 					@get('others').removeObject @get('other')
 
-		editPictureView: Ember.View.extend
-			template: require '../../../views/templates/components/edit-picture'
-			tagName: 'span'
-			classNames: ['edit', 'overlay']
-			newPicture: ((key, value) ->
-					if arguments.length is 1
-						return @get 'controller.picture'
-					value
-				).property 'controller.picture'
-			toggle: ->
-				@toggleProperty 'show'
-			save: ->
-				@set 'working', true
-
-				newPicture = @get 'newPicture'
-				validators = require('validator').validators
-				valid = newPicture and validators.isUrl(newPicture)
-				@set 'invalid', not valid
-				if valid
-					@set 'controller.picture', newPicture
-					App.store.commit()
-					@toggle()
-
-				@set 'working', false
-
 		mergeView: Ember.View.extend
 			classNames: ['merge']
 			selections: (->

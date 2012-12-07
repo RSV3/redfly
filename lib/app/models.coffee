@@ -23,6 +23,7 @@ module.exports = (DS, App) ->
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
+		picture: DS.attr 'string'
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
 		canonicalName: (->
@@ -33,6 +34,9 @@ module.exports = (DS, App) ->
 		nickname: (->
 				util.nickname @get('name'), @get('email')
 			).property 'name', 'email'
+		canonicalPicture: (->
+				@get('picture') or 'http://i.imgur.com/t1Svb.jpg'
+			).property 'picture'
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'

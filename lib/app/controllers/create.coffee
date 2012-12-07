@@ -37,10 +37,10 @@ module.exports = (Ember, App, socket) ->
 					cb?()
 		pictureField: FormField.extend
 			_fire: (cb) ->
-				picture = filter.contact.picture @get('parentView.picture')
+				picture = filter.general.picture @get('parentView.picture')
 				@set 'parentView.picture', picture
 				if picture	# Picture isn't required, only set an error message if the user typed something.
-					@set 'error', validate.contact.picture picture
+					@set 'error', validate.general.picture picture
 				cb?()
 
 		create: ->

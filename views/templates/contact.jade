@@ -2,8 +2,8 @@
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
 		| {{#if isKnown}}
-		| {{view view.editPictureView}}
-		| {{/if}}		
+		| {{view App.EditPictureView pictureBinding="picture"}}
+		| {{/if}}
 	.span6
 		.row-fluid
 			| {{#unless isKnown}}

@@ -1,10 +1,16 @@
 .row-fluid
-	h1 {{name}}
-	p Signed up on {{date}}
-	br
-	p Added {{contacts.length}} contact{{#unless_eq contacts.length compare=1}}s{{/unless_eq}} so far.
-	ul
-		| {{#each contacts}}
-		li
-			| <a {{action goContact this href=true}}>{{canonicalName}}</a>
-		| {{/each}}
+	.span9
+		h1 {{name}}
+		p Signed up on {{date}}
+		br
+		p Added {{contacts.length}} contact{{#unless_eq contacts.length compare=1}}s{{/unless_eq}} so far.
+		ul
+			| {{#each contacts}}
+			li
+				| <a {{action goContact this href=true}}>{{canonicalName}}</a>
+			| {{/each}}
+	.span3.picture
+		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		| {{#if self}}
+		| {{view App.EditPictureView pictureBinding="picture"}}
+		| {{/if}}

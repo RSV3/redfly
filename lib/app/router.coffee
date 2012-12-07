@@ -97,6 +97,7 @@ module.exports = (Ember, App, socket) ->
 				route: '/profile'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'profile', App.user
+					router.get('profileController').set 'self', true
 
 			create: Ember.Route.extend
 				route: '/create'
