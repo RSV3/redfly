@@ -67,10 +67,14 @@
 		.row-fluid
 			p.lead Notes
 			| {{#collection contentBinding="notes" itemViewClass="view.noteView"}}
-			p {{view.content.body}}
+			| <a href="#" class="pull-left" {{action goProfile view.content.author}}>
+			| 	<img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
+			| </a>
 			// TO-DO do nl2br with bindings
-			small {{view.content.author.canonicalName}} | {{view.content.date}}
-			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
+			.media-body
+				p {{view.content.body}}
+				small.muted {{view.content.author.canonicalName}} | {{view.content.date}}
+				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
 			//- | {{else}}
 			//- span {{emptyNotesText}}
 			| {{/collection}}

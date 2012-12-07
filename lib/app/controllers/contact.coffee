@@ -204,7 +204,7 @@ module.exports = (Ember, App, socket) ->
 			rel: 'tooltip'
 
 		newNoteView: Ember.TextArea.extend
-			classNames: ['span12']
+			classNames: ['new-note', 'span12']
 			attributeBindings: ['placeholder', 'rows', 'tabindex']
 			placeholder: (->
 					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
@@ -213,7 +213,7 @@ module.exports = (Ember, App, socket) ->
 			tabindex: 3
 
 		noteView: Ember.View.extend
-			tagName: 'blockquote'
+			classNames: ['media']
 			didInsertElement: ->
 				if @get 'controller.animate'
 					@set 'controller.animate', false
