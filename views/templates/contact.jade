@@ -66,16 +66,14 @@
 	.span6
 		.row-fluid
 			p.lead Notes
-			| {{#each notes}}
-			| {{#view view.noteView}}
-			p {{body}}
+			| {{#collection contentBinding="notes" itemViewClass="view.noteView"}}
+			p {{view.content.body}}
 			// TO-DO do nl2br with bindings
-			small {{author.canonicalName}} | {{date}}
+			small {{view.content.author.canonicalName}} | {{view.content.date}}
 			// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
-			| {{/view}}
 			//- | {{else}}
 			//- span {{emptyNotesText}}
-			| {{/each}}
+			| {{/collection}}
 		.row-fluid
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}

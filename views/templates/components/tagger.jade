@@ -1,4 +1,5 @@
 .main
+	// TO-DO this would be more efficient with the #collection helper, but requires code changes to both tag.coffee and tagger.coffee
 	| {{#each view.tags}}
 	| {{#view view.tagView}}
 	i.icon-tag  
@@ -11,12 +12,10 @@
 	| {{view view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"}}
 	| </form>
 
-//-
+//- TEST THIS IF BRINGING BACK, namely the 'use' action
 	| {{#if view.cloud}}
 	.cloud
-		| {{#each view.availableTags}}
-		| {{#view view.availableTagView}}
-		| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{this}}</span></a> 
-		| {{/view}}
-		| {{/each}}
+		| {{#collection contentBinding="view.availableTags" itemViewClass="view.availableTagView"}}
+		| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{this.content}}</span></a> 
+		| {{/collection}}
 	| {{/if}}
