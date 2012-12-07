@@ -72,6 +72,17 @@ module.exports = (Ember, App, socket) ->
 			# TODO do this and 'delete' above, figure out animation framework
 			# willDestroyElement: ->
 			# 	@$().addClass 'animated rotateOutDownLeft'
+			
+			# didInsertElement: ->
+			# 	@set 'tooltip', $(@$()).tooltip
+			# 		title: null	# Placeholder, populate later.
+			# 		placement: 'top'
+			# updateTooltip: (->
+			# 		@get('tooltip').data('tooltip').options.title = 'Created by ' + @get('creator.canonicalName') + ' ' + require('moment')(@get('date')).fromNow()
+			# 	).observes 'creator.canonicalName', 'date'
+			# attributeBindings: ['rel']
+			# rel: 'tooltip'
+
 
 		newTagView: Ember.TextField.extend
 			currentTagBinding: 'parentView.currentTag'
