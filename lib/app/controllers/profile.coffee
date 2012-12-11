@@ -10,3 +10,6 @@ module.exports = (Ember, App, socket) ->
 				App.filter App.Contact, {field: 'added', asc: false}, {addedBy: @get('id')}, (data) =>
 					data.get('addedBy.id') is @get('id')
 			).property 'id'
+		latestContacts: (->
+				@get('contacts').slice 0, 20
+			).property 'contacts.@each'
