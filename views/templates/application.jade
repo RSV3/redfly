@@ -30,9 +30,9 @@
 					| <li {{bindAttr class="view.atClassify:active"}}>
 					|	<a {{action goClassify href=true}}>Classify</a>
 					| </li>
-					| <li {{bindAttr class="view.atImport:active"}}>
-					|	<a {{action goImport href=true}}>File Import</a>
-					| </li>
+					//- | <li {{bindAttr class="view.atImport:active"}}>
+					//- |	<a {{action goImport href=true}}>File Import</a>
+					//- | </li>
 					| <li {{bindAttr class="view.atLeaderboard:active"}}>
 					|	<a {{action goLeaderboard href=true}}>Users</a>
 					| </li>
@@ -75,8 +75,8 @@
 					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
 					ul.dropdown-menu(role='menu')
-						li
-							| <a {{action goUserProfile href=true}}>Profile</a>
+						//- li
+						//- 	| <a {{action goUserProfile href=true}}>Profile</a>
 						li
 							| <a {{action goCreate href=true}}>Create</a>
 						li
