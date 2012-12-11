@@ -12,10 +12,9 @@
 	| {{view view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"}}
 	| </form>
 
-//- TEST THIS IF BRINGING BACK, namely the 'use' action
-	| {{#if view.cloud}}
-	.cloud
-		| {{#collection contentBinding="view.availableTags" itemViewClass="view.availableTagView"}}
-		| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{this.content}}</span></a> 
-		| {{/collection}}
-	| {{/if}}
+| {{#if view.cloud}}
+.cloud
+	| {{#collection contentBinding="view.availableTags" itemViewClass="view.availableTagView"}}
+	| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{view.content}}</span></a> 
+	| {{/collection}}
+| {{/if}}

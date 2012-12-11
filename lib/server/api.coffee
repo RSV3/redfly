@@ -220,9 +220,17 @@ module.exports = (app, socket) ->
 				.value()
 
 	socket.on 'tags', (conditions, fn) ->
-		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
-			throw err if err
-			fn bodies
+		# models.Tag.find(conditions).distinct 'body', (err, bodies) ->
+		# 	throw err if err
+		# 	fn bodies
+		models.Tag.aggregate {$match: conditions},
+			{$group:  _id: '$body', count: $sum: 1},
+			{$sort: count: -1},
+			{$project: _id: 0, body: '$_id'},
+			{$limit: 12},
+			(err, results) ->
+				throw err if err
+				fn _.pluck results, 'body'
 
 	socket.on 'tagStats', (fn) ->
 		group =
