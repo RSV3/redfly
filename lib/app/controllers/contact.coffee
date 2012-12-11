@@ -203,18 +203,18 @@ module.exports = (Ember, App, socket) ->
 			attributeBindings: ['rel']
 			rel: 'tooltip'
 
-		newNoteView: Ember.TextArea.extend
-			classNames: ['new-note', 'span12']
-			attributeBindings: ['placeholder', 'rows', 'tabindex']
-			placeholder: (->
-					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
-				).property 'controller.nickname'
-			rows: 3
-			tabindex: 3
-
 		noteView: Ember.View.extend
 			classNames: ['media']
 			didInsertElement: ->
 				if @get 'controller.animate'
 					@set 'controller.animate', false
 					@$().addClass 'animated flipInX'
+
+		newNoteView: Ember.TextArea.extend
+			classNames: ['span12']
+			attributeBindings: ['placeholder', 'rows', 'tabindex']
+			placeholder: (->
+					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
+				).property 'controller.nickname'
+			rows: 3
+			tabindex: 3
