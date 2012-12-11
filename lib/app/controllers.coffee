@@ -52,3 +52,4 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/report')(Ember, App, socket)
 	require('./controllers/create')(Ember, App, socket)
 	require('./controllers/classify')(Ember, App, socket)
+	require('./controllers/import')(Ember, App, socket)

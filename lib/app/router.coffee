@@ -110,6 +110,11 @@ module.exports = (Ember, App, socket) ->
 					router.get('applicationController').connectOutlet 'classify'
 					router.get('classifyController').connectOutlet 'contact'
 
+			import: Ember.Route.extend
+				route: '/import'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'import'
+
 
 			load: Ember.Route.extend
 				route: '/load'	# Public url so the http-based authorize flow can hook in.
@@ -131,6 +136,7 @@ module.exports = (Ember, App, socket) ->
 			goUserProfile: Ember.Route.transitionTo 'userProfile'
 			goCreate: Ember.Route.transitionTo 'create'
 			goClassify: Ember.Route.transitionTo 'classify'
+			goImport: Ember.Route.transitionTo 'import'
 
 
 			doSignup: (router, context) ->

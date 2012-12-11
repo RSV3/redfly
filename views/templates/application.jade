@@ -30,6 +30,9 @@
 					| <li {{bindAttr class="view.atClassify:active"}}>
 					|	<a {{action goClassify href=true}}>Classify</a>
 					| </li>
+					| <li {{bindAttr class="view.atImport:active"}}>
+					|	<a {{action goImport href=true}}>File Import</a>
+					| </li>
 					| <li {{bindAttr class="view.atLeaderboard:active"}}>
 					|	<a {{action goLeaderboard href=true}}>Users</a>
 					| </li>
@@ -78,6 +81,8 @@
 							| <a {{action goCreate href=true}}>Create</a>
 						li
 							| <a {{action goClassify href=true}}>Classify</a>
+						li
+							| <a {{action goImport href=true}}>File Import</a>
 						li.divider
 						li
 							| <a href="#" {{action doLogout}}>Log Out</a>
