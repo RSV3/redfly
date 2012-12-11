@@ -15,10 +15,17 @@ module.exports = (Ember, App, socket) ->
 					data.get('contact.id') is @get('contact.id')
 			).property 'contact.id', 'category'
 		availableTags: (->
-				# allTags = @get '_allTags.content'
-				# dictionaryTags = dictionary[@get('category') or 'redstar']
-				# available = _.union dictionaryTags, allTags
-				# available = _.reject available, (candidate) =>
+				allTags = @get '_allTags.content'
+				dictionaryTags = dictionary[@get('category') or 'redstar']
+				available = _.union dictionaryTags, allTags
+				available = _.reject available, (candidate) =>
+					for tag in @get('tags').mapProperty('body')
+						if tag is candidate
+							return true
+				available.sort()
+			).property 'category', 'tags.@each', '_allTags.@each'
+		cloudTags: (->
+				# TO-DO some logic duplication between this and availableTags
 				available = _.reject @get('_allTags.content'), (candidate) =>
 					for tag in @get('tags').mapProperty('body')
 						if tag is candidate

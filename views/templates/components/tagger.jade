@@ -14,7 +14,7 @@
 
 | {{#if view.cloud}}
 .cloud
-	| {{#collection contentBinding="view.availableTags" itemViewClass="view.availableTagView"}}
+	| {{#collection contentBinding="view.cloudTags" itemViewClass="view.availableTagView"}}
 	| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{view.content}}</span></a> 
 	| {{/collection}}
 | {{/if}}
