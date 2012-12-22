@@ -78,7 +78,7 @@ module.exports = (Ember, App, socket) ->
 				route: '/tags'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'tags'
-					socket.emit 'tagStats', (stats) =>
+					socket.emit 'tags.stats', (stats) =>
 						for stat in stats
 							stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
 						fullContent = Ember.ArrayProxy.create Ember.SortableMixin,

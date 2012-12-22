@@ -14,28 +14,28 @@ module.exports = (Ember, App, socket) ->
 						return false
 					data.get('contact.id') is @get('contact.id')
 			).property 'contact.id', 'category'
-		availableTags: (->
-				allTags = @get '_allTags.content'
-				dictionaryTags = dictionary[@get('category') or 'redstar']
-				available = _.union dictionaryTags, allTags
-				available = _.reject available, (candidate) =>
-					for tag in @get('tags').mapProperty('body')
-						if tag is candidate
-							return true
-				available.sort()
-			).property 'category', 'tags.@each', '_allTags.@each'
+		autocompleteTags: (->
+				socket.emit 'tags.all', category: @get('category'), (allTags) =>
+					allTags = _.union allTags, dictionary[@get('category') or 'redstar']
+					allTags = @_filterTags allTags
+					result.pushObjects allTags
+				result = []
+			).property 'category', 'tags.@each'
 		cloudTags: (->
-				# TO-DO some logic duplication between this and availableTags
-				available = _.reject @get('_allTags.content'), (candidate) =>
+				@_filterTags @get('_popularTags')
+			).property 'category', 'tags.@each'
+		_filterTags: (tags) ->
+				if not @get('tags')
+					return []
+				tags = _.reject tags, (candidate) =>
 					for tag in @get('tags').mapProperty('body')
 						if tag is candidate
 							return true
-				available.sort()
-			).property 'category', 'tags.@each', '_allTags.@each'
-		_allTags: (->
-				socket.emit 'tags', category: @get('category'), (bodies) ->
-					tags.pushObjects bodies
-				tags = Ember.ArrayProxy.create content: []
+				tags.sort()
+		_popularTags: (->
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					result.pushObjects popularTags
+				result = []
 			).property 'category'
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
@@ -54,12 +54,6 @@ module.exports = (Ember, App, socket) ->
 					category: @get('category') or 'redstar'
 					body: tag
 				App.store.commit()
-				# TODO hack to make all known tags update when a the user adds a tag without causing flicker in the tag cloud
-				# update: I think I can fix this by making the 'tags' property settable
-				socket.emit 'tags', category: @get('category'), (bodies) =>
-					tags = @get '_allTags'
-					tags.clear()
-					tags.pushObjects bodies
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
@@ -128,8 +122,8 @@ module.exports = (Ember, App, socket) ->
 				# 	move.call this, e
 				# 	that.set 'currentTag', that.get('currentTag')
 			updateTypeahead: (->
-					@get('typeahead').data('typeahead').source = @get('parentView.availableTags')
-				).observes 'parentView.availableTags.@each'
+					@get('typeahead').data('typeahead').source = @get('parentView.autocompleteTags')
+				).observes 'parentView.autocompleteTags.@each'
 			attributeBindings: ['size', 'autocomplete', 'tabindex']
 			size: (->
 					2 + @get('currentTag.length')
@@ -139,7 +133,7 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.tabindex') or 0
 				).property 'parentView.tabindex'
 
-		availableTagView: Ember.View.extend
+		cloudTagView: Ember.View.extend
 			tagName: 'span'
 			use: ->
 				tag = @get('content').toString()

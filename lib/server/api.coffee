@@ -219,10 +219,12 @@ module.exports = (app, socket) ->
 				.first()
 				.value()
 
-	socket.on 'tags', (conditions, fn) ->
-		# models.Tag.find(conditions).distinct 'body', (err, bodies) ->
-		# 	throw err if err
-		# 	fn bodies
+	socket.on 'tags.all', (conditions, fn) ->
+		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
+			throw err if err
+			fn bodies
+
+	socket.on 'tags.popular', (conditions, fn) ->
 		models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', count: $sum: 1},
 			{$sort: count: -1},
@@ -232,7 +234,7 @@ module.exports = (app, socket) ->
 				throw err if err
 				fn _.pluck results, 'body'
 
-	socket.on 'tagStats', (fn) ->
+	socket.on 'tags.stats', (fn) ->
 		group =
 			$group:
 				_id: '$body'
