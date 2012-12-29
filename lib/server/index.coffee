@@ -6,8 +6,6 @@ RedisStore = require('connect-redis') express
 
 util = require './util'
 
-require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
-
 
 
 app = express()
