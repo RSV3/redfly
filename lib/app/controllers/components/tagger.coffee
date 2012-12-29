@@ -23,7 +23,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'category', 'tags.@each'
 		cloudTags: (->
 				@_filterTags @get('_popularTags')
-			).property 'category', 'tags.@each'
+			).property 'category', 'tags.@each', '_popularTags.@each'
 		_filterTags: (tags) ->
 				if not @get('tags')
 					return []
