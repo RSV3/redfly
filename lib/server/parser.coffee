@@ -1,6 +1,6 @@
 _ = require 'underscore'
 xoa2 = require 'xoauth2'
-imap = require 'imap'
+imap = require 'imap-jtnt-xoa2'
 util = require './util'
 
 
