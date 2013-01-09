@@ -1,93 +1,114 @@
 _ = require 'underscore'
+oauth = require 'oauth-gmail'
+xoa2 = require 'xoauth2'
+imap = require 'imap'
+util = require './util'
 
 
 module.exports = (app, user, notifications = {}, cb) ->
 
 	parse = (app, user, notifications, cb) ->
 		validators = require('validator').validators
-		util = require './util'
-		
-		request = require 'request'	# TODO remove 'request' from package.json when no longer reliant on winedora.
-		request.post
-			url: 'http://winedora-staging.herokuapp.com/social/xoauth/'
-			body: 'user=' + user.email + '&token=' + user.oauth.token + '&secret=' + user.oauth.secret
-			, (err, response, body) ->
-				throw err if err
-				throw new Error if response.statusCode isnt 200
 
-				imap = require 'imap'
-				server = new imap.ImapConnection
-					xoauth: body
-					host: 'imap.gmail.com'
-					port: 993
-					secure: true
+		opts =
+			user: user.email
+			clientId: process.env.GOOGLE_API_ID
+			clientSecret: process.env.GOOGLE_API_SECRET
+			refreshToken: user.oauth.refreshToken
+		client = xoa2.createXOAuth2Generator opts
 
-				server.connect (err) ->
+		client.getToken (err, token) ->
+
+			opts = 
+				host: 'imap.gmail.com'
+				port: 993
+				secure: true
+				xoauth2: token
+
+			server = new imap.ImapConnection opts
+
+			server.connect (err) ->
+
+				if err
+					console.log "ERR in server"
+					console.warn err
+				
+				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					if err
-						console.warn err
-						return cb new Error 'There was a problem connecting to gmail.'
-					
-					server.openBox '[Gmail]/All Mail', true, (err, box) ->
-						throw err if err
+						console.log "ERR in openBox"
+						console.log err
+						throw err
 
-						criteria = [['FROM', user.email]]
-						if previous = user.lastParsed
-							criteria.unshift ['SINCE', previous]
-						server.search criteria, (err, results) ->
-							throw err if err
+					criteria = [['FROM', user.email]]
+					if previous = user.lastParsed
+						criteria.unshift ['SINCE', previous]
 
-							mimelib = require 'mimelib'
-							mails = []
-							notifications.foundTotal? results.length
+					server.search criteria, (err, results) ->
+						if err
+							console.log "search err"
+							console.dir err
 
-							finish = ->
-								notifications.completedAllEmails?()
-								enqueue app, user, notifications, mails, cb
-								server.logout()
+						mimelib = require 'mimelib'
+						mails = []
+						notifications.foundTotal? results.length
 
-							if results.length is 0
-								# Return statement is important, simply invoking the callback doesn't stop code from excuting in the current scope.
-								return finish()
-							fetch = server.fetch results,
-								request:
-									headers: ['from', 'to', 'subject', 'date']
-							
-							fetch.on 'message', (msg) ->
-								msg.on 'end', ->
-									for to in mimelib.parseAddresses msg.headers.to?[0]
-										email = util.trim to.address.toLowerCase()
+						finish = ->
+							notifications.completedAllEmails?()
+							enqueue app, user, notifications, mails, cb
+							server.logout()
 
-										junkChars = ' \'",<>'
-										name = util.trim to.name, junkChars
-										comma = name.indexOf ','
-										if comma isnt -1
-											name = name[comma + 1..] + ' ' + name[...comma]
-											name = util.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
-										if (not name) or (validators.isEmail name)
-											name = null
+						if results.length is 0
+							# Return statement is important, simply invoking the callback doesn't stop code from excuting in the current scope.
+							return finish()
 
-										# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-										blacklist = require './blacklist'
-										if (validators.isEmail email) and (email isnt user.email) and
-												(_.last(email.split('@')) not in blacklist.domains) and
-												(name not in blacklist.names) and
-												(email not in blacklist.emails) and
-												(name not in _.pluck(user.excludes, 'name')) and
-												(email not in _.pluck(user.excludes, 'email'))
-											mails.push
-												subject: msg.headers.subject?[0]
-												sent: new Date msg.headers.date?[0]
-												recipientEmail: email
-												recipientName: name
-									notifications.completedEmail?()
+						fetch = server.fetch results,
+							request:
+								headers: ['from', 'to', 'subject', 'date']
+						
+						fetch.on 'message', (msg) ->
+							msg.on 'end', ->
+								for to in mimelib.parseAddresses msg.headers.to?[0]
+									email = util.trim to.address.toLowerCase()
 
-							fetch.once 'message', (msg) ->
-								msg.on 'end', ->
-									{name} = mimelib.parseAddresses(msg.headers.from[0])[0]
-									notifications.foundName? name
+									junkChars = ' \'",<>'
+									name = util.trim to.name, junkChars
+									comma = name.indexOf ','
+									if comma isnt -1
+										name = name[comma + 1..] + ' ' + name[...comma]
+										name = util.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
+									if (not name) or (validators.isEmail name)
+										name = null
 
-							fetch.on 'end', ->
-								return finish()
+									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
+									blacklist = require './blacklist'
+									if (validators.isEmail email) and (email isnt user.email) and
+											(_.last(email.split('@')) not in blacklist.domains) and
+											(name not in blacklist.names) and
+											(email not in blacklist.emails) and
+											(name not in _.pluck(user.excludes, 'name')) and
+											(email not in _.pluck(user.excludes, 'email'))
+										mails.push
+											subject: msg.headers.subject?[0]
+											sent: new Date msg.headers.date?[0]
+											recipientEmail: email
+											recipientName: name
+									else
+										console.log 'blacklisting'
+										console.dir
+											subject: msg.headers.subject?[0]
+											sent: new Date msg.headers.date?[0]
+											recipientEmail: email
+											recipientName: name
+
+								notifications.completedEmail?()
+
+						fetch.once 'message', (msg) ->
+							msg.on 'end', ->
+								{name} = mimelib.parseAddresses(msg.headers.from[0])[0]
+								notifications.foundName? name
+
+						fetch.on 'end', ->
+							return finish()
 
 
 	enqueue = (app, user, notifications, mails, cb) ->
@@ -100,6 +121,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 				return mailer.sendNewsletter user, cb
 
 			mail = mails[index]
+
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 				throw err if err
