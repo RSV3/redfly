@@ -19,17 +19,15 @@ module.exports = (app, socket) ->
 			done false, null
 		else models.User.findOne email: profile._json.email, (err, user) ->
 			throw err if err
-			if user
-				done err, user
-			else
+			if not user
 				user = new models.User
 				user.email = profile._json.email
 				user.name = profile._json.name
-				user.oauth =
-					accessToken: access
-					refreshToken: refresh
-				user.save (err) ->
-					done err, user
+			user.oauth =
+				accessToken: access
+				refreshToken: refresh
+			user.save (err) ->
+				done err, user
 
 	passport.use(new GoogleStrategy {
 			clientID: process.env.GOOGLE_API_ID
