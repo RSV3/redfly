@@ -1,13 +1,64 @@
+passport = require 'passport'
+GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+
+util = require './util'
+models = require './models'
+
 module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
-	util = require './util'
-	models = require './models'
 	logic = require './logic'
 
-
 	session = socket.handshake.session
+
+	authCallBack = (access, refresh, profile, done) ->
+		if profile._json.email isnt session.email
+			session.wrongemail = profile._json.email
+			session.save()
+			done false, null
+		else models.User.findOne email: profile._json.email, (err, user) ->
+			throw err if err
+			if user
+				done err, user
+			else
+				user = new models.User
+				user.email = profile._json.email
+				user.name = profile._json.name
+				user.oauth =
+					accessToken: access
+					refreshToken: refresh
+				user.save (err) ->
+					done err, user
+
+	passport.use(new GoogleStrategy {
+			clientID: process.env.GOOGLE_API_ID
+			clientSecret: process.env.GOOGLE_API_SECRET
+			callbackURL: util.baseUrl + '/authorized'
+		}, authCallBack)
+
+	app.get '/authorize', passport.authenticate('google', 
+		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
+#		approvalPrompt: 'force'
+		accessType: 'offline'
+	), (err, user, info) ->
+			console.log 'never gets here'
+
+	app.get '/authorized', (req, res, next) ->
+		passport.authenticate('google',  (err, user, info) ->
+			if not user
+				console.log('wrong email: ' + session.wrongemail)
+				res.redirect '/profile'
+			else 
+				req.login user, {}, (err) ->
+					if err then return next err
+					if user.lastParsed 
+						yesterday = new Date()
+						yesterday.setDate(yesterday.getDate() - 1)
+						if user.lastParsed > yesterday
+							return res.redirect "/profile"
+					return res.redirect "/load"
+		) req, res, next
 
 	socket.on 'session', (fn) ->
 		fn session
@@ -86,36 +137,23 @@ module.exports = (app, socket) ->
 			throw err if err
 			if user
 				return fn false, 'A user with that email already exists.'
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
-			client.getRequestToken email, (err, result) -> 
-				throw err if err
-				session.authorizeData = email: email, request: result
-				session.save()
-				return fn true, result.authorizeUrl
+			session.email = email
+			session.save()
+			return fn true, '/authorize'
+
 
 	socket.on 'login', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if not user
-				return fn false, 'Once more, with feeling!'
-			# session.user = user.id
-			# session.save()
-			# return fn true, user.id
-
-			# Tempoarily use of the authorize flow for login. Copy/pasted.
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
-			client.getRequestToken email, (err, result) -> 
-				throw err if err
-				session.authorizeData = email: email, request: result
-				session.save()
-				return fn true, result.authorizeUrl
+				return fn false, 'User not found: Once more, with feeling!'
+			session.email = email
+			session.save()
+			return fn true, '/authorize'
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
 		fn()
-
 
 
 	socket.on 'summary.contacts', (fn) ->
@@ -323,4 +361,9 @@ module.exports = (app, socket) ->
 				foundNewContact: ->
 					socket.emit 'parse.enqueued'
 
-			require('./parser') app, user, notifications, fn
+			try
+				require('./parser') app, user, notifications, fn
+			catch e
+				console.log "PARSER ERR"
+				console.log e
+

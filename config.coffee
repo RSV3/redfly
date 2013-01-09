@@ -14,6 +14,9 @@ config =
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 
+		GOOGLE_API_ID: '297124502120.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'HkTxwXiUzlWMRhc6UTQgMvpo'
+
 
 	# test:
 	# 	HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
@@ -42,6 +45,9 @@ config =
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'
 		BACKUP_BUCKET: 'backups.redfly.redstar.com'
+
+		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
 
 		NUDGE_DAY: 'Friday'
 

@@ -4,6 +4,15 @@ express = require 'express'
 gzippo = require 'gzippo'
 RedisStore = require('connect-redis') express
 
+passport = require 'passport'
+
+passport.serializeUser (user, done) ->
+	done null, user._id
+
+passport.deserializeUser (id, done) ->			# needed to get this setup early
+	models = require './models'
+	models.User.findOne _id: id, done			# in order to avoid session corruption issue
+
 util = require './util'
 
 
@@ -46,6 +55,9 @@ app.configure ->
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
 
+	app.use passport.initialize()
+	app.use passport.session()
+
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
 			req.session.user = user
@@ -65,49 +77,16 @@ app.configure 'production', ->
 		res.statusCode = 500
 		res.render 'error'
 
-
-
-app.get '/authorized', (req, res) ->
-	data = req.session.authorizeData
-	delete req.session.authorizeData
-
-	# Authroize flow has temporarily been commandeered for login too.
-	models = require './models'
-	models.User.findOne email: data.email, (err, user) ->
-		throw err if err
-		if user
-			req.session.user = user.id
-			return res.redirect '/profile'
-		else
-
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient()
-			client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
-				throw err if err
-
-				# Create the user and log him in.
-				models = require './models'
-				user = new models.User
-				user.email = data.email
-				user.oauth =
-					token: result.accessToken
-					secret: result.accessTokenSecret
-				user.save (err) ->
-					throw err if err
-
-					req.session.user = user.id
-					res.redirect '/load'
-
-
-
 io = require('socket.io').listen server
 
 io.configure ->
 	# Heroku doesn't support websockets, force long polling.
-	io.set 'transports', ['xhr-polling']
+	# but for ec2, we can omit this, and default to websocket
+	# io.set 'transports', ['xhr-polling']
 	io.set 'polling duration', 10
 	if process.env.NODE_ENV is 'production'
 		io.set 'log level', 1
+	io.set 'log level', 1 #jTNT
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
@@ -129,8 +108,6 @@ io.sockets.on 'connection', (socket) ->
 
 	pipeline.on 'invalidate', ->
 		socket.emit 'reloadStyles'
-
-
 
 bundle = require('browserify')
 	watch: process.env.NODE_ENV is 'development'
