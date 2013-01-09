@@ -20,7 +20,7 @@ module.exports = (Ember, App, socket) ->
 					allTags = @_filterTags allTags
 					result.pushObjects allTags
 				result = []
-			).property 'category', 'tags.@each'
+			).property 'category', 'tags.@each', '_popularTags.@each'
 		cloudTags: (->
 				@_filterTags @get('_popularTags')
 			).property 'category', 'tags.@each'
