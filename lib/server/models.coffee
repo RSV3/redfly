@@ -15,8 +15,8 @@ UserSchema = new Schema
 	name: type: String, trim: true	# Would be required but the user's name isn't known at the time of signup.
 	picture: type: String, trim: true, validate: validators.isUrl
 	oauth:
-		token: type: String, required: true
-		secret: type: String, required: true
+		accessToken: type: String
+		refreshToken: type: String
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]

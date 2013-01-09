@@ -144,8 +144,10 @@ module.exports = (Ember, App, socket) ->
 					controller = context.view.get 'controller'
 					App.user.set 'signupIdentity', null
 					_s = require 'underscore.string'
-					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com')
-						return controller.set 'signupError', 'Use your Redstar email kthx.'
+					# jTNT
+					# if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com') 
+					# 	return controller.set 'signupError', 'Use your Redstar email kthx.'
+					#
 					socket.emit 'signup', util.identity(identity), (success, data) ->
 						if success
 							controller.set 'signupError', null
@@ -160,7 +162,6 @@ module.exports = (Ember, App, socket) ->
 					socket.emit 'login', util.identity(identity), (success, data) ->
 						if success
 							controller.set 'loginError', null
-							# Temporary use of authorize flow for login.
 							window.location.href = data
 							# App.auth.login data
 							# router.transitionTo interceptedPath or 'userProfile'
@@ -174,9 +175,11 @@ module.exports = (Ember, App, socket) ->
 					router.transitionTo 'index'
 
 			doIntercept: (router, context) ->
+				msgtitle= 'Please log in to your redstar email'
+				msgtxt= 'Then we\'ll send you to your page.'
 				util.notify
-					title: 'Please log in'
-					text: 'Then we\'ll send you to your page.'
+					title: msgtitle
+					text: msgtxt
 					before_open: (pnotify) =>
 						pnotify.css top: '60px'
 				router.transitionTo 'index'

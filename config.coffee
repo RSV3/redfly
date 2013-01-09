@@ -13,6 +13,8 @@ config =
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
+		GOOGLE_API_ID: '297124502120.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'HkTxwXiUzlWMRhc6UTQgMvpo'
 
 
 	test:
@@ -45,6 +47,8 @@ config =
 
 		NUDGE_DAY: 'Friday'
 
+		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
 
 
 process.env.APP_ENV ?= 'development'
