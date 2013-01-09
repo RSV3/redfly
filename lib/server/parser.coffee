@@ -1,5 +1,4 @@
 _ = require 'underscore'
-oauth = require 'oauth-gmail'
 xoa2 = require 'xoauth2'
 imap = require 'imap'
 util = require './util'
