@@ -113,6 +113,7 @@ io.sockets.on 'connection', (socket) ->
 
 bundle = require('browserify')
 	watch: process.env.NODE_ENV is 'development'
+	cache: true
 	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
 	exports: 'process'
 bundle.register '.jade', (body, file) ->
