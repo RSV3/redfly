@@ -23,9 +23,10 @@ module.exports = (app, socket) ->
 				user = new models.User
 				user.email = profile._json.email
 				user.name = profile._json.name
-			user.oauth =
-				accessToken: access
-				refreshToken: refresh
+				user.oauth = {}
+			user.oauth.accessToken = access
+			if refresh
+				user.oauth.refreshToken = refresh
 			user.save (err) ->
 				done err, user
 
@@ -34,6 +35,13 @@ module.exports = (app, socket) ->
 			clientSecret: process.env.GOOGLE_API_SECRET
 			callbackURL: util.baseUrl + '/authorized'
 		}, authCallBack)
+
+	app.get '/force-authorize', passport.authenticate('google', 
+		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
+		approvalPrompt: 'force'
+		accessType: 'offline'
+	), (err, user, info) ->
+			console.log 'never gets here'
 
 	app.get '/authorize', passport.authenticate('google', 
 		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
@@ -50,12 +58,16 @@ module.exports = (app, socket) ->
 			else 
 				req.login user, {}, (err) ->
 					if err then return next err
-					if user.lastParsed 
-						yesterday = new Date()
-						yesterday.setDate(yesterday.getDate() - 1)
-						if user.lastParsed > yesterday
-							return res.redirect "/profile"
-					return res.redirect "/load"
+					if not user.oauth.refreshToken
+						console.log 'attempting to force new refresh token'
+						return res.redirect '/force-authorize'
+					else 
+						if user.lastParsed 
+							yesterday = new Date()
+							yesterday.setDate(yesterday.getDate() - 1)
+							if user.lastParsed > yesterday
+								return res.redirect "/profile"
+						return res.redirect "/load"
 		) req, res, next
 
 	socket.on 'session', (fn) ->
