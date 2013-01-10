@@ -149,7 +149,7 @@ module.exports = (app, socket) ->
 				return fn false, 'A user with that email already exists.'
 			session.email = email
 			session.save()
-			return fn true, '/authorize'
+			return fn true, '/force-authorize'
 
 
 	socket.on 'login', (email, fn) ->
@@ -159,7 +159,9 @@ module.exports = (app, socket) ->
 				return fn false, 'User not found: Once more, with feeling!'
 			session.email = email
 			session.save()
-			return fn true, '/authorize'
+			if user.oauth.refreshToken
+				return fn true, '/authorize'
+			return fn true, '/force-authorize'
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
