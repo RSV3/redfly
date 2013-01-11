@@ -50,8 +50,9 @@ app.configure ->
 	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
 
-	app.use express.bodyParser()
-	app.use express.methodOverride()
+	# jTNT - I don't think we're ever relying on these
+	# app.use express.bodyParser()
+	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
 
@@ -123,13 +124,33 @@ bundle.register '.jade', (body, file) ->
 	result
 bundle.addEntry 'lib/app/index.coffee'
 
-app.get '/app.js', (req, res) ->
-	res.writeHead(200, {'Content-Type': 'application/javascript'})
-
-	content = bundle.bundle()
+getContent = () ->
+	c = bundle.bundle()
 	for variable in ['NODE_ENV', 'HOST']
-		content = content.replace '[' + variable + ']', process.env[variable]
-	res.end content
+		c = c.replace '[' + variable + ']', process.env[variable]
+	return c
+
+content = ''
+compressedcontent = ''
+if process.env.NODE_ENV isnt 'development'
+	content = getContent()
+	content = require('uglify-js').minify(content, {fromString:true}).code
+	require('zlib').gzip content, (err, buff) ->
+		if not err
+			compressedcontent = buff
+
+app.get '/app.js', (req, res) ->
+	h =
+		'Content-Type': 'application/javascript'
+	if process.env.NODE_ENV is 'development'
+		c = getContent()
+	else if compressedcontent.length and req.headers['accept-encoding'].match(/gzip/)
+		c = compressedcontent
+		h['content-encoding'] = 'gzip'
+	else
+		c = content
+	res.writeHead 200, h
+	res.end c
 
 
 
