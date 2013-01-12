@@ -25,6 +25,9 @@ config =
 
 	# 	MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
 
+		# GOOGLE_API_ID: ''
+		# GOOGLE_API_SECRET: ''
+
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
@@ -34,6 +37,9 @@ config =
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
 
 		NUDGE_DAY: 'Thursday'
+
+		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
 
 
 	production:
