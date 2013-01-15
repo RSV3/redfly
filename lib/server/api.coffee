@@ -74,6 +74,14 @@ module.exports = (app, socket) ->
 		fn session
 
 	socket.on 'db', (data, fn) ->
+		feed = (data, doc) ->
+			socket.broadcast.emit 'feed',
+				type: data.type
+				id: doc.id
+			socket.emit 'feed',
+				type: data.type
+				id: doc.id
+
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -133,14 +141,6 @@ module.exports = (app, socket) ->
 			else
 				throw new Error
 
-	feed = (data, doc) ->
-		socket.broadcast.emit 'feed',
-			type: data.type
-			id: doc.id
-		socket.emit 'feed',
-			type: data.type
-			id: doc.id
-
 
 	socket.on 'signup', (email, fn) ->
 		models.User.findOne email: email, (err, user) ->
@@ -156,7 +156,7 @@ module.exports = (app, socket) ->
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
 			if not user
-				return fn false, 'User not found: Once more, with feeling!'
+				return fn false, 'Once more, with feeling!'
 			session.email = email
 			session.save()
 			if user.oauth.refreshToken

@@ -1,7 +1,6 @@
 http = require 'http'
 path = require 'path'
 express = require 'express'
-gzippo = require 'gzippo'
 RedisStore = require('connect-redis') express
 
 passport = require 'passport'
@@ -46,11 +45,8 @@ app.configure ->
 	# app.use express.logger('dev')
 	# app.use express.profiler()
 	app.use express.favicon(path.join(root, 'favicon.ico'))
-	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
-	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
-
-	# jTNT - I don't think we're ever relying on these
+	app.use express.static(path.join(root, 'public'))
 	# app.use express.bodyParser()
 	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
@@ -61,7 +57,7 @@ app.configure ->
 
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
-			req.session.user = user
+			req.session.passport.user = user
 		next()
 
 	app.use app.router
@@ -78,16 +74,15 @@ app.configure 'production', ->
 		res.statusCode = 500
 		res.render 'error'
 
+
 io = require('socket.io').listen server
 
 io.configure ->
 	# Heroku doesn't support websockets, force long polling.
-	# but for ec2, we can omit this, and default to websocket
-	# io.set 'transports', ['xhr-polling']
+	# TODO remove this line if moving to ec2
+	io.set 'transports', ['xhr-polling']
 	io.set 'polling duration', 10
-	if process.env.NODE_ENV is 'production'
-		io.set 'log level', 1
-	io.set 'log level', 1 #jTNT
+	io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
@@ -110,47 +105,31 @@ io.sockets.on 'connection', (socket) ->
 	pipeline.on 'invalidate', ->
 		socket.emit 'reloadStyles'
 
-bundle = require('browserify')
-	watch: process.env.NODE_ENV is 'development'
-	cache: true
-	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
-	exports: 'process'
-bundle.register '.jade', (body, file) ->
-	result = null
-	app.render file, (err, data) ->
-		throw err if err
-		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
-		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-	result
-bundle.addEntry 'lib/app/index.coffee'
 
-getContent = () ->
-	c = bundle.bundle()
+app.get '/app.js', do ->
+	bundle = require('browserify')
+		watch: process.env.NODE_ENV is 'development'
+		# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
+		exports: 'process'
+	bundle.register '.jade', (body, file) ->
+		result = null
+		app.render file, (err, data) ->
+			throw err if err
+			data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+			result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+		result
+	bundle.addEntry 'lib/app/index.coffee'
+
+	content = bundle.bundle()
 	for variable in ['NODE_ENV', 'HOST']
-		c = c.replace '[' + variable + ']', process.env[variable]
-	return c
+		content = content.replace '[' + variable + ']', process.env[variable]
+	# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
+	if process.env.NODE_ENV is 'production'
+		content = require('uglify-js').minify(content, fromString: true).code
 
-content = ''
-compressedcontent = ''
-if process.env.NODE_ENV isnt 'development'
-	content = getContent()
-	content = require('uglify-js').minify(content, {fromString:true}).code
-	require('zlib').gzip content, (err, buff) ->
-		if not err
-			compressedcontent = buff
-
-app.get '/app.js', (req, res) ->
-	h =
-		'Content-Type': 'application/javascript'
-	if process.env.NODE_ENV is 'development'
-		c = getContent()
-	else if compressedcontent.length and req.headers['accept-encoding'].match(/gzip/)
-		c = compressedcontent
-		h['content-encoding'] = 'gzip'
-	else
-		c = content
-	res.writeHead 200, h
-	res.end c
+	(req, res) ->
+		res.set 'Content-Type', 'application/javascript'
+		res.send content
 
 
 

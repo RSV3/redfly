@@ -143,8 +143,8 @@ module.exports = (Ember, App, socket) ->
 				if identity = util.trim App.user.get 'signupIdentity'
 					controller = context.view.get 'controller'
 					App.user.set 'signupIdentity', null
-					_s = require 'underscore.string'
 
+					_s = require 'underscore.string'
 					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com') 
 					 	return controller.set 'signupError', 'Use your Redstar email kthx.'
 
@@ -175,11 +175,9 @@ module.exports = (Ember, App, socket) ->
 					router.transitionTo 'index'
 
 			doIntercept: (router, context) ->
-				msgtitle= 'Please log in to your redstar email'
-				msgtxt= 'Then we\'ll send you to your page.'
 				util.notify
-					title: msgtitle
-					text: msgtxt
+					title: 'Please log in'
+					text: 'Then we\'ll send you to your page.'
 					before_open: (pnotify) =>
 						pnotify.css top: '60px'
 				router.transitionTo 'index'
