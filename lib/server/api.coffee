@@ -2,17 +2,31 @@ module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
+	logic = require './logic'
 	util = require './util'
 	models = require './models'
-	logic = require './logic'
 
 
 	session = socket.handshake.session
 
+
 	socket.on 'session', (fn) ->
 		fn session
 
+	socket.on 'logout', (fn) ->
+		session.destroy()
+		fn()
+
+
 	socket.on 'db', (data, fn) ->
+		feed = (doc) ->
+			socket.broadcast.emit 'feed',
+				type: data.type
+				id: doc.id
+			socket.emit 'feed',
+				type: data.type
+				id: doc.id
+
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -39,7 +53,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						fn doc
 						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
-							feed data, doc
+							feed doc
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
@@ -57,7 +71,7 @@ module.exports = (app, socket) ->
 							throw err if err
 							fn doc
 							if broadcast
-								feed data, doc
+								feed doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -71,51 +85,6 @@ module.exports = (app, socket) ->
 					throw new Error
 			else
 				throw new Error
-
-	feed = (data, doc) ->
-		socket.broadcast.emit 'feed',
-			type: data.type
-			id: doc.id
-		socket.emit 'feed',
-			type: data.type
-			id: doc.id
-
-
-	socket.on 'signup', (email, fn) ->
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-			if user
-				return fn false, 'A user with that email already exists.'
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
-			client.getRequestToken email, (err, result) -> 
-				throw err if err
-				session.authorizeData = email: email, request: result
-				session.save()
-				return fn true, result.authorizeUrl
-
-	socket.on 'login', (email, fn) ->
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-			if not user
-				return fn false, 'Once more, with feeling!'
-			# session.user = user.id
-			# session.save()
-			# return fn true, user.id
-
-			# Tempoarily use of the authorize flow for login. Copy/pasted.
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient callbackUrl: util.baseUrl + '/authorized'
-			client.getRequestToken email, (err, result) -> 
-				throw err if err
-				session.authorizeData = email: email, request: result
-				session.save()
-				return fn true, result.authorizeUrl
-
-	socket.on 'logout', (fn) ->
-		session.destroy()
-		fn()
-
 
 
 	socket.on 'summary.contacts', (fn) ->
@@ -142,7 +111,6 @@ module.exports = (app, socket) ->
 
 	socket.on 'summary.user', (fn) ->
 		fn 'Joe Chung'
-
 
 
 	socket.on 'search', (query, moreConditions, fn) ->
