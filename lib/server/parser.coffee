@@ -85,11 +85,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 											recipientName: name
 								notifications.completedEmail?()
 
-						fetch.once 'message', (msg) ->
-							msg.on 'end', ->
-								{name} = mimelib.parseAddresses(msg.headers.from[0])[0]
-								notifications.foundName? name
-
 						fetch.on 'end', ->
 							return finish()
 

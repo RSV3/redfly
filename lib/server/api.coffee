@@ -276,12 +276,6 @@ module.exports = (app, socket) ->
 				return fn()
 
 			notifications =
-				foundName: (name) ->
-					if not user.name
-						user.name = name
-						user.save (err) ->
-							throw err if err
-							socket.emit 'parse.name'
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
