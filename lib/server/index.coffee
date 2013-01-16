@@ -129,19 +129,19 @@ io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
 io.set 'polling duration', 10
 io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
-io.set 'store', do ->
-	SocketioRedisStore = require 'socket.io/lib/stores/redis'
-	redis = require 'socket.io/node_modules/redis'
-	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
-	for client in clients
-		client.auth redisConfig.pass, (err) ->
-			throw err if err
+# io.set 'store', do ->
+# 	SocketioRedisStore = require 'socket.io/lib/stores/redis'
+# 	redis = require 'socket.io/node_modules/redis'
+# 	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
+# 	for client in clients
+# 		client.auth redisConfig.pass, (err) ->
+# 			throw err if err
 
-	new SocketioRedisStore
-		redis: redis
-		redisPub: clients[0]
-		redisSub: clients[1]
-		redisClient: clients[2]
+# 	new SocketioRedisStore
+# 		redis: redis
+# 		redisPub: clients[0]
+# 		redisSub: clients[1]
+# 		redisClient: clients[2]
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
