@@ -1,8 +1,8 @@
 http = require 'http'
 path = require 'path'
 express = require 'express'
-gzippo = require 'gzippo'
 RedisStore = require('connect-redis') express
+everyauth = require 'everyauth'
 
 util = require './util'
 
@@ -19,6 +19,64 @@ store = new RedisStore do ->
 	host: url.hostname
 	port: url.port
 	pass: url.auth.split(':')[1]
+
+everyauth.google.configure
+	appId: process.env.GOOGLE_API_ID
+	appSecret: process.env.GOOGLE_API_SECRET
+	entryPath: '/authorize'
+	callbackPath: '/authorized'
+	scope: [
+			'https://www.googleapis.com/auth/userinfo.profile'
+			'https://www.googleapis.com/auth/userinfo.email'
+			'https://mail.google.com/'
+			'https://www.google.com/m8/feeds'
+		].join ' '
+	handleAuthCallbackError: (req, res) ->
+		res.redirect '/unauthorized'
+	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
+		_s = require 'underscore.string'
+		models = require './models'
+
+		email = googleUserMetadata.email.toLowerCase()
+		if not _s.endsWith(email, '@redstar.com')
+			return {}
+		models.User.findOne email: email, (err, user) ->
+			throw err if err
+			throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
+			if user
+				# promise.fulfill user
+				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
+				if not user.oauth
+					user.name = googleUserMetadata.name
+					if picture = googleUserMetadata.picture
+						user.picture = picture
+					user.oauth = accessTokenExtra.refresh_token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				else
+					promise.fulfill user
+				# END TEMPORARY ###########
+			else
+				user = new models.User
+				user.email = email
+				user.name = googleUserMetadata.name
+				if picture = googleUserMetadata.picture
+					user.picture = picture
+				user.oauth = accessTokenExtra.refresh_token
+				user.save (err) ->
+					throw err if err
+					promise.fulfill user
+		promise = @Promise()
+	addToSession: (session, auth) ->
+		session.user = auth.user.id
+	sendResponse: (res, data) ->
+		user = data.user
+		if not user.id
+			return res.redirect '/invalid'
+		if not user.lastParsed
+			return res.redirect '/load'
+		res.redirect '/profile'
 
 
 app.configure ->
@@ -37,20 +95,17 @@ app.configure ->
 	# app.use express.logger('dev')
 	# app.use express.profiler()
 	app.use express.favicon(path.join(root, 'favicon.ico'))
-	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
-	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
-
-	app.use express.bodyParser()
-	app.use express.methodOverride()
+	app.use express.static(path.join(root, 'public'))
+	# app.use express.bodyParser()
+	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
-
+	app.use everyauth.middleware()
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
 			req.session.user = user
 		next()
-
 	app.use app.router
 	app.use pipeline.middleware()
 	app.use (req, res) ->
@@ -66,48 +121,14 @@ app.configure 'production', ->
 		res.render 'error'
 
 
-
-app.get '/authorized', (req, res) ->
-	data = req.session.authorizeData
-	delete req.session.authorizeData
-
-	# Authroize flow has temporarily been commandeered for login too.
-	models = require './models'
-	models.User.findOne email: data.email, (err, user) ->
-		throw err if err
-		if user
-			req.session.user = user.id
-			return res.redirect '/profile'
-		else
-
-			oauth = require 'oauth-gmail'
-			client = oauth.createClient()
-			client.getAccessToken data.request, req.query.oauth_verifier, (err, result) ->
-				throw err if err
-
-				# Create the user and log him in.
-				models = require './models'
-				user = new models.User
-				user.email = data.email
-				user.oauth =
-					token: result.accessToken
-					secret: result.accessTokenSecret
-				user.save (err) ->
-					throw err if err
-
-					req.session.user = user.id
-					res.redirect '/load'
-
-
-
 io = require('socket.io').listen server
 
 io.configure ->
 	# Heroku doesn't support websockets, force long polling.
+	# TODO remove this line if moving to ec2
 	io.set 'transports', ['xhr-polling']
 	io.set 'polling duration', 10
-	if process.env.NODE_ENV is 'production'
-		io.set 'log level', 1
+	io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
@@ -131,27 +152,30 @@ io.sockets.on 'connection', (socket) ->
 		socket.emit 'reloadStyles'
 
 
-
-bundle = require('browserify')
-	watch: process.env.NODE_ENV is 'development'
-	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
-	exports: 'process'
-bundle.register '.jade', (body, file) ->
-	result = null
-	app.render file, (err, data) ->
-		throw err if err
-		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
-		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-	result
-bundle.addEntry 'lib/app/index.coffee'
-
-app.get '/app.js', (req, res) ->
-	res.writeHead(200, {'Content-Type': 'application/javascript'})
+app.get '/app.js', do ->
+	bundle = require('browserify')
+		watch: process.env.NODE_ENV is 'development'
+		# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
+		exports: 'process'
+	bundle.register '.jade', (body, file) ->
+		result = null
+		app.render file, (err, data) ->
+			throw err if err
+			data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+			result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+		result
+	bundle.addEntry 'lib/app/index.coffee'
 
 	content = bundle.bundle()
 	for variable in ['NODE_ENV', 'HOST']
 		content = content.replace '[' + variable + ']', process.env[variable]
-	res.end content
+	# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
+	if process.env.NODE_ENV is 'production'
+		content = require('uglify-js').minify(content, fromString: true).code
+
+	(req, res) ->
+		res.set 'Content-Type', 'application/javascript'
+		res.send content
 
 
 
