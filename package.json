@@ -22,7 +22,7 @@
 		"connect-redis": "1.4.4",
 		"validator": "0.4.13",
 		"mongoose": "3.4.0",
-		"socket.io": "0.9.11",
+		"socket.io": "0.9.13",
 		"socket.io-client": "0.9.11",
 		"browserify": "1.16.4",
 		"uglify-js": "2.2.3",
