@@ -7,8 +7,8 @@ config =
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
 
-		GOOGLE_API_ID: '297124502120.apps.googleusercontent.com'
-		GOOGLE_API_SECRET: 'HkTxwXiUzlWMRhc6UTQgMvpo'
+		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
 
@@ -46,8 +46,8 @@ config =
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
 
-		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
-		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
+		GOOGLE_API_ID: '614207063627-rg8v0hi2l04h90h6s0umhjinv4rhavm1.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: '7WcNC-SBlZcOVfkjy_vIIT3s'
 
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'

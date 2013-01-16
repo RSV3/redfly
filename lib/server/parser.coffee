@@ -1,51 +1,43 @@
-_ = require 'underscore'
-xoa2 = require 'xoauth2'
-imap = require 'imap-jtnt-xoa2'
-util = require './util'
-
-
 module.exports = (app, user, notifications = {}, cb) ->
+	_ = require 'underscore'
+
 
 	parse = (app, user, notifications, cb) ->
+		util = require './util'
 		validators = require('validator').validators
 
-		opts =
+		generator = require('xoauth2').createXOAuth2Generator
 			user: user.email
 			clientId: process.env.GOOGLE_API_ID
 			clientSecret: process.env.GOOGLE_API_SECRET
-			refreshToken: user.oauth.refreshToken
-		client = xoa2.createXOAuth2Generator opts
+			refreshToken: user.oauth
 
-		client.getToken (err, token) ->
+		generator.getToken (err, token) ->
+			throw err if err
 
-			opts = 
+			imap = require 'imap-jtnt-xoa2'
+			server = new imap.ImapConnection
 				host: 'imap.gmail.com'
 				port: 993
 				secure: true
 				xoauth2: token
 
-			server = new imap.ImapConnection opts
-
 			server.connect (err) ->
-
 				if err
-					console.log "ERR in server"
 					console.warn err
+					return cb new Error 'Problem connecting to gmail.'
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					if err
-						console.log "ERR in openBox"
-						console.log err
-						throw err
+						console.warn err
+						return cb new Error 'Problem opening mailbox.'
 
 					criteria = [['FROM', user.email]]
 					if previous = user.lastParsed
 						criteria.unshift ['SINCE', previous]
 
 					server.search criteria, (err, results) ->
-						if err
-							console.log "search err"
-							console.dir err
+						throw err if err
 
 						mimelib = require 'mimelib'
 						mails = []
@@ -91,14 +83,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 											sent: new Date msg.headers.date?[0]
 											recipientEmail: email
 											recipientName: name
-									else
-										console.log 'blacklisting'
-										console.dir
-											subject: msg.headers.subject?[0]
-											sent: new Date msg.headers.date?[0]
-											recipientEmail: email
-											recipientName: name
-
 								notifications.completedEmail?()
 
 						fetch.once 'message', (msg) ->
@@ -112,7 +96,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 	enqueue = (app, user, notifications, mails, cb) ->
 		models = require './models'
-		mailer = require('./mail')(app)
+		mailer = require('./mail') app
 
 		newContacts = []
 		sift = (index = 0) ->
@@ -120,7 +104,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 				return mailer.sendNewsletter user, cb
 
 			mail = mails[index]
-
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 				throw err if err

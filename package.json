@@ -20,7 +20,6 @@
 		"passport-google-oauth": "0.1.4",
 		"xoauth2": "0.1.4",
 		"mimelib": "0.2.7",
-		"request": "2.11.4",
 		"connect-redis": "1.4.4",
 		"validator": "0.4.13",
 		"mongoose": "3.4.0",

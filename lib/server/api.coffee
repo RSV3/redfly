@@ -12,7 +12,7 @@ module.exports = (app, socket) ->
 
 	session = socket.handshake.session
 
-	authCallBack = (access, refresh, profile, done) ->
+	authCallBack = (accessToken, refreshToken, profile, done) ->
 		if profile._json.email isnt session.email
 			session.wrongemail = profile._json.email
 			session.save()
@@ -24,9 +24,8 @@ module.exports = (app, socket) ->
 				user.email = profile._json.email
 				user.name = profile._json.name
 				user.oauth = {}
-			user.oauth.accessToken = access
-			if refresh
-				user.oauth.refreshToken = refresh
+			if refreshToken
+				user.oauth = refreshToken
 			user.save (err) ->
 				done err, user
 
@@ -58,7 +57,7 @@ module.exports = (app, socket) ->
 			else 
 				req.login user, {}, (err) ->
 					if err then return next err
-					if not user.oauth.refreshToken
+					if not user.oauth
 						console.log 'attempting to force new refresh token'
 						return res.redirect '/force-authorize'
 					else 
@@ -159,7 +158,7 @@ module.exports = (app, socket) ->
 				return fn false, 'Once more, with feeling!'
 			session.email = email
 			session.save()
-			if user.oauth.refreshToken
+			if user.oauth
 				return fn true, '/authorize'
 			return fn true, '/force-authorize'
 
