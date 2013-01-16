@@ -136,8 +136,6 @@ io.set 'store', do ->
 	for client in clients
 		client.auth redisConfig.pass, (err) ->
 			throw err if err
-		client.on 'error', (err) ->
-			throw err
 
 	new SocketioRedisStore
 		redis: redis
@@ -145,20 +143,20 @@ io.set 'store', do ->
 		redisSub: clients[1]
 		redisClient: clients[2]
 
-io.set 'authorization', (data, accept) ->
-	if not data.headers.cookie
-		return accept 'No cookie transmitted.', false
-	cookie = require 'cookie'
-	data.cookie = cookie.parse data.headers.cookie
-	data.sessionId = data.cookie[key].substring 2, 26
+# io.set 'authorization', (data, accept) ->
+# 	if not data.headers.cookie
+# 		return accept 'No cookie transmitted.', false
+# 	cookie = require 'cookie'
+# 	data.cookie = cookie.parse data.headers.cookie
+# 	data.sessionId = data.cookie[key].substring 2, 26
 
-	store.load data.sessionId, (err, session) ->
-		throw err if err
-		if not session
-			return accept 'No session.', false
+# 	store.load data.sessionId, (err, session) ->
+# 		throw err if err
+# 		if not session
+# 			return accept 'No session.', false
 
-		data.session = session
-		return accept null, true
+# 		data.session = session
+# 		return accept null, true
 
 io.sockets.on 'connection', (socket) ->
 	require('./api') app, socket
