@@ -12,11 +12,9 @@ excludeSchema = new Schema
 
 UserSchema = new Schema
 	email: type: String, required: true, unique: true, trim: true, lowercase: true, validate: validators.isEmail
-	name: type: String, trim: true	# Would be required but the user's name isn't known at the time of signup.
+	name: type: String, required: true, trim: true
 	picture: type: String, trim: true, validate: validators.isUrl
-	oauth:
-		token: type: String, required: true
-		secret: type: String, required: true
+	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]

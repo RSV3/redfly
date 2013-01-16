@@ -2,7 +2,7 @@ module.exports = (Ember, App, socket) ->
 	util = require './util'
 
 
-	interceptedPath = null
+	interceptedPath = null	# TO-DO this doesn't work any more. The paradigm is flawed: we have to save this to the session to survive auth flow.
 
 	Ember.Router.reopen
 		transitionTo: (path, context) ->
@@ -10,7 +10,7 @@ module.exports = (Ember, App, socket) ->
 
 			authenticated = App.user.get 'content'
 			state = _.last path.split('.')
-			if not authenticated and state not in ['root', 'index']
+			if not authenticated and state not in ['root', 'index', 'unauthorized', 'invalid']
 				interceptedPath = path
 				App.get('router').send 'doIntercept'
 			else
@@ -117,12 +117,33 @@ module.exports = (Ember, App, socket) ->
 
 
 			load: Ember.Route.extend
-				route: '/load'	# Public url so the http-based authorize flow can hook in.
+				route: '/load'	# Public for the authorization flow.
 				enter: (manager) ->
 					# TO-DO probably set a session variable or something to ensure loading doesn't happen twice by back button or anything.
 					view = App.LoaderView.create()
 					view.append()
 				redirectsTo: 'userProfile'
+
+
+			unauthorized: Ember.Route.extend
+				route: '/unauthorized'	# Public for the authorization flow.
+				enter: (manager) ->
+					util.notify
+						title: 'Unauthorized'
+						text: 'You must grant the requested permissions.'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
+				redirectsTo: 'index'
+
+			invalid: Ember.Route.extend
+				route: '/invalid'	# Public for the authorization flow.
+				enter: (manager) ->
+					util.notify
+						title: 'Invalid Account'
+						text: 'You must use your Redstar account.'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
+				redirectsTo: 'index'
 
 
 			goHome: Ember.Route.transitionTo 'index'
@@ -138,35 +159,6 @@ module.exports = (Ember, App, socket) ->
 			goClassify: Ember.Route.transitionTo 'classify'
 			goImport: Ember.Route.transitionTo 'import'
 
-
-			doSignup: (router, context) ->
-				if identity = util.trim App.user.get 'signupIdentity'
-					controller = context.view.get 'controller'
-					App.user.set 'signupIdentity', null
-					_s = require 'underscore.string'
-					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com')
-						return controller.set 'signupError', 'Use your Redstar email kthx.'
-					socket.emit 'signup', util.identity(identity), (success, data) ->
-						if success
-							controller.set 'signupError', null
-							window.location.href = data
-						else
-							controller.set 'signupError', data
-
-			doLogin: (router, context) ->
-				if identity = util.trim App.user.get 'loginIdentity'
-					controller = context.view.get 'controller'
-					App.user.set 'loginIdentity', null
-					socket.emit 'login', util.identity(identity), (success, data) ->
-						if success
-							controller.set 'loginError', null
-							# Temporary use of authorize flow for login.
-							window.location.href = data
-							# App.auth.login data
-							# router.transitionTo interceptedPath or 'userProfile'
-							# interceptedPath = null
-						else
-							controller.set 'loginError', data
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->
