@@ -139,36 +139,6 @@ module.exports = (Ember, App, socket) ->
 			goImport: Ember.Route.transitionTo 'import'
 
 
-			doSignup: (router, context) ->
-				if identity = util.trim App.user.get 'signupIdentity'
-					controller = context.view.get 'controller'
-					App.user.set 'signupIdentity', null
-
-					_s = require 'underscore.string'
-					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com') 
-					 	return controller.set 'signupError', 'Use your Redstar email kthx.'
-
-					socket.emit 'signup', util.identity(identity), (success, data) ->
-						if success
-							controller.set 'signupError', null
-							window.location.href = data
-						else
-							controller.set 'signupError', data
-
-			doLogin: (router, context) ->
-				if identity = util.trim App.user.get 'loginIdentity'
-					controller = context.view.get 'controller'
-					App.user.set 'loginIdentity', null
-					socket.emit 'login', util.identity(identity), (success, data) ->
-						if success
-							controller.set 'loginError', null
-							window.location.href = data
-							# App.auth.login data
-							# router.transitionTo interceptedPath or 'userProfile'
-							# interceptedPath = null
-						else
-							controller.set 'loginError', data
-
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->
 					App.auth.logout()

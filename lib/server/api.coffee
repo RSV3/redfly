@@ -72,6 +72,11 @@ module.exports = (app, socket) ->
 	socket.on 'session', (fn) ->
 		fn session
 
+	socket.on 'logout', (fn) ->
+		session.destroy()
+		fn()
+
+
 	socket.on 'db', (data, fn) ->
 		feed = (data, doc) ->
 			socket.broadcast.emit 'feed',
@@ -139,32 +144,6 @@ module.exports = (app, socket) ->
 					throw new Error
 			else
 				throw new Error
-
-
-	socket.on 'signup', (email, fn) ->
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-			if user
-				return fn false, 'A user with that email already exists.'
-			session.email = email
-			session.save()
-			return fn true, '/force-authorize'
-
-
-	socket.on 'login', (email, fn) ->
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-			if not user
-				return fn false, 'Once more, with feeling!'
-			session.email = email
-			session.save()
-			if user.oauth
-				return fn true, '/authorize'
-			return fn true, '/force-authorize'
-
-	socket.on 'logout', (fn) ->
-		session.destroy()
-		fn()
 
 
 	socket.on 'summary.contacts', (fn) ->
