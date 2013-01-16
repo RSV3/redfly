@@ -121,6 +121,10 @@ module.exports = (Ember, App, socket) ->
 						App.store.commit()
 						@toggle()
 					@set 'working', false
+			initiateMerge: ->
+				@toggle()
+				@get('parentView').showMerge()
+				
 
 			itemView: Ember.View.extend
 				classNames: ['row-fluid']
