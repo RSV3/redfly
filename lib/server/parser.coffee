@@ -100,9 +100,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 		newContacts = []
 		sift = (index = 0) ->
-			if mails.length is 0
-				return mailer.sendNewsletter user, cb
-
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
@@ -146,6 +143,12 @@ module.exports = (app, user, notifications = {}, cb) ->
 								mailer.sendNudge user, newContacts[...10], cb
 							else
 								mailer.sendNewsletter user, cb
+		# TO-DO hacky and awful, all of sift() needs to be refactored
+		if mails.length is 0
+			user.lastParsed = new Date
+			user.save (err) ->
+				throw err if err
+			return mailer.sendNewsletter user, cb
 		sift()
 
 

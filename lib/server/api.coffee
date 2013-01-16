@@ -1,73 +1,14 @@
-passport = require 'passport'
-GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-
-util = require './util'
-models = require './models'
-
 module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
 	logic = require './logic'
+	util = require './util'
+	models = require './models'
+
 
 	session = socket.handshake.session
 
-	authCallBack = (accessToken, refreshToken, profile, done) ->
-		if profile._json.email isnt session.email
-			session.wrongemail = profile._json.email
-			session.save()
-			done false, null
-		else models.User.findOne email: profile._json.email, (err, user) ->
-			throw err if err
-			if not user
-				user = new models.User
-				user.email = profile._json.email
-				user.name = profile._json.name
-				user.oauth = {}
-			if refreshToken
-				user.oauth = refreshToken
-			user.save (err) ->
-				done err, user
-
-	passport.use(new GoogleStrategy {
-			clientID: process.env.GOOGLE_API_ID
-			clientSecret: process.env.GOOGLE_API_SECRET
-			callbackURL: util.baseUrl + '/authorized'
-		}, authCallBack)
-
-	app.get '/force-authorize', passport.authenticate('google', 
-		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
-		approvalPrompt: 'force'
-		accessType: 'offline'
-	), (err, user, info) ->
-			console.log 'never gets here'
-
-	app.get '/authorize', passport.authenticate('google', 
-		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
-#		approvalPrompt: 'force'
-		accessType: 'offline'
-	), (err, user, info) ->
-			console.log 'never gets here'
-
-	app.get '/authorized', (req, res, next) ->
-		passport.authenticate('google',  (err, user, info) ->
-			if not user
-				console.log('wrong email: ' + session.wrongemail)
-				res.redirect '/profile'
-			else 
-				req.login user, {}, (err) ->
-					if err then return next err
-					if not user.oauth
-						console.log 'attempting to force new refresh token'
-						return res.redirect '/force-authorize'
-					else 
-						if user.lastParsed 
-							yesterday = new Date()
-							yesterday.setDate(yesterday.getDate() - 1)
-							if user.lastParsed > yesterday
-								return res.redirect "/profile"
-						return res.redirect "/load"
-		) req, res, next
 
 	socket.on 'session', (fn) ->
 		fn session
@@ -78,7 +19,7 @@ module.exports = (app, socket) ->
 
 
 	socket.on 'db', (data, fn) ->
-		feed = (data, doc) ->
+		feed = (doc) ->
 			socket.broadcast.emit 'feed',
 				type: data.type
 				id: doc.id
@@ -112,7 +53,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						fn doc
 						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
-							feed data, doc
+							feed doc
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
@@ -130,7 +71,7 @@ module.exports = (app, socket) ->
 							throw err if err
 							fn doc
 							if broadcast
-								feed data, doc
+								feed doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -170,7 +111,6 @@ module.exports = (app, socket) ->
 
 	socket.on 'summary.user', (fn) ->
 		fn 'Joe Chung'
-
 
 
 	socket.on 'search', (query, moreConditions, fn) ->
@@ -351,9 +291,4 @@ module.exports = (app, socket) ->
 				foundNewContact: ->
 					socket.emit 'parse.enqueued'
 
-			try
-				require('./parser') app, user, notifications, fn
-			catch e
-				console.log "PARSER ERR"
-				console.log e
-
+			require('./parser') app, user, notifications, fn

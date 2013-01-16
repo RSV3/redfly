@@ -2,15 +2,7 @@ http = require 'http'
 path = require 'path'
 express = require 'express'
 RedisStore = require('connect-redis') express
-
-passport = require 'passport'
-
-passport.serializeUser (user, done) ->
-	done null, user._id
-
-passport.deserializeUser (id, done) ->			# needed to get this setup early
-	models = require './models'
-	models.User.findOne _id: id, done			# in order to avoid session corruption issue
+everyauth = require 'everyauth'
 
 util = require './util'
 
@@ -27,6 +19,64 @@ store = new RedisStore do ->
 	host: url.hostname
 	port: url.port
 	pass: url.auth.split(':')[1]
+
+everyauth.google.configure
+	appId: process.env.GOOGLE_API_ID
+	appSecret: process.env.GOOGLE_API_SECRET
+	entryPath: '/authorize'
+	callbackPath: '/authorized'
+	scope: [
+			'https://www.googleapis.com/auth/userinfo.profile'
+			'https://www.googleapis.com/auth/userinfo.email'
+			'https://mail.google.com/'
+			'https://www.google.com/m8/feeds'
+		].join ' '
+	handleAuthCallbackError: (req, res) ->
+		res.redirect '/unauthorized'
+	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
+		_s = require 'underscore.string'
+		models = require './models'
+
+		email = googleUserMetadata.email.toLowerCase()
+		if not _s.endsWith(email, '@redstar.com')
+			return {}
+		models.User.findOne email: email, (err, user) ->
+			throw err if err
+			throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
+			if user
+				# promise.fulfill user
+				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
+				if not user.oauth
+					user.name = googleUserMetadata.name
+					if picture = googleUserMetadata.picture
+						user.picture = picture
+					user.oauth = accessTokenExtra.refresh_token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				else
+					promise.fulfill user
+				# END TEMPORARY ###########
+			else
+				user = new models.User
+				user.email = email
+				user.name = googleUserMetadata.name
+				if picture = googleUserMetadata.picture
+					user.picture = picture
+				user.oauth = accessTokenExtra.refresh_token
+				user.save (err) ->
+					throw err if err
+					promise.fulfill user
+		promise = @Promise()
+	addToSession: (session, auth) ->
+		session.user = auth.user.id
+	sendResponse: (res, data) ->
+		user = data.user
+		if not user.id
+			return res.redirect '/invalid'
+		if not user.lastParsed
+			return res.redirect '/load'
+		res.redirect '/profile'
 
 
 app.configure ->
@@ -51,15 +101,11 @@ app.configure ->
 	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
-
-	app.use passport.initialize()
-	app.use passport.session()
-
+	app.use everyauth.middleware()
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
-			req.session.passport.user = user
+			req.session.user = user
 		next()
-
 	app.use app.router
 	app.use pipeline.middleware()
 	app.use (req, res) ->
