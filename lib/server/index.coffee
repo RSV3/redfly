@@ -1,7 +1,6 @@
 http = require 'http'
 path = require 'path'
 express = require 'express'
-RedisStore = require('connect-redis') express
 everyauth = require 'everyauth'
 
 util = require './util'
@@ -13,12 +12,14 @@ server = http.createServer app
 root = path.dirname path.dirname __dirname
 pipeline = require('./pipeline') root
 
-key = 'express.sid'
-store = new RedisStore do ->
+RedisStore = require('connect-redis') express
+redisConfig = do ->
 	url = require('url').parse process.env.REDISTOGO_URL
 	host: url.hostname
 	port: url.port
 	pass: url.auth.split(':')[1]
+key = 'express.sid'
+store = new RedisStore redisConfig
 
 everyauth.google.configure
 	appId: process.env.GOOGLE_API_ID
@@ -123,12 +124,26 @@ app.configure 'production', ->
 
 io = require('socket.io').listen server
 
-io.configure ->
-	# Heroku doesn't support websockets, force long polling.
-	# TODO remove this line if moving to ec2
-	io.set 'transports', ['xhr-polling']
-	io.set 'polling duration', 10
-	io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
+# Heroku doesn't support websockets, force long polling.
+io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
+io.set 'polling duration', 10
+io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
+
+io.set 'store', do ->
+	SocketioRedisStore = require 'socket.io/lib/stores/redis'
+	redis = require 'socket.io/node_modules/redis'
+	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
+	for client in clients
+		client.auth redisConfig.pass, (err) ->
+			throw err if err
+		client.on 'error', (err) ->
+			throw err
+
+	new SocketioRedisStore
+		redis: redis
+		redisPub: clients[0]
+		redisSub: clients[1]
+		redisClient: clients[2]
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
