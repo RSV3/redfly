@@ -7,10 +7,10 @@ module.exports = (app, socket) ->
 	models = require './models'
 
 
+	session = socket.handshake.session
+
 
 	socket.on 'session', (fn) ->
-		session = {}
-		session.user = '508e9765fafcc802000000a3'
 		fn session
 
 	socket.on 'logout', (fn) ->
