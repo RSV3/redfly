@@ -1,3 +1,10 @@
+_ = require 'underscore'
+xoa2 = require 'xoauth2'
+imap = require 'imap-jtnt-xoa2'
+models = require './models'
+mailer = require './mail'
+
+
 module.exports = (app, user, notifications = {}, cb) ->
 	_ = require 'underscore'
 
@@ -24,7 +31,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 			server.connect (err) ->
 				if err
-					console.warn err
 					return cb new Error 'Problem connecting to gmail.'
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
@@ -90,11 +96,24 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 
 	enqueue = (app, user, notifications, mails, cb) ->
-		models = require './models'
-		mailer = require('./mail') app
 
 		newContacts = []
+
+		finishedParsing = () ->
+			thismailer = mailer(app);
+			user.lastParsed = new Date
+			user.save (err) ->
+				throw err if err
+
+				if newContacts and newContacts.length isnt 0
+					thismailer.sendNudge user, newContacts[...10], cb
+				else
+					thismailer.sendNewsletter user, cb
+
 		sift = (index = 0) ->
+			if mails.length is 0
+				return finishedParsing user
+
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
@@ -107,8 +126,8 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 					newContacts.push contact
 					notifications.foundNewContact?()
-				contact.knows.addToSet user
 
+				contact.knows.addToSet user
 				contact.save (err) ->
 					throw err if err
 					mail.sender = user
@@ -129,21 +148,8 @@ module.exports = (app, user, notifications = {}, cb) ->
 								.value()
 						newContacts.reverse()
 						user.queue.unshift newContacts...
+						finishedParsing user, newContacts
 
-						user.lastParsed = new Date
-						user.save (err) ->
-							throw err if err
-
-							if newContacts.length isnt 0
-								mailer.sendNudge user, newContacts[...10], cb
-							else
-								mailer.sendNewsletter user, cb
-		# TO-DO hacky and awful, all of sift() needs to be refactored
-		if mails.length is 0
-			user.lastParsed = new Date
-			user.save (err) ->
-				throw err if err
-			return mailer.sendNewsletter user, cb
 		sift()
 
 
