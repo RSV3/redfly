@@ -1,11 +1,14 @@
 config = 
 	# all:
 
+	swxmode:
+		GOOGLE_API_ID: '297124502120-1spa86f6oiughdj4usj566ck89aonqs4.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'T2fQpV9uXEU0z_Gl2hxrcyNh'
 
 	development:
 		HOST: 'localhost:5000'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'd@r-w.in'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
 
@@ -14,22 +17,29 @@ config =
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 
-		GOOGLE_API_ID: '297124502120.apps.googleusercontent.com'
-		GOOGLE_API_SECRET: 'HkTxwXiUzlWMRhc6UTQgMvpo'
+		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
+
+		LINKEDIN_API_KEY: '1g1zfsv0gan1'
+		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
+		LINKEDIN_OAUTH_TOKEN: '99d49737-d040-40c9-b1eb-a955e44e017d'
+		LINKEDIN_OAUTH_SECRET: 'b20f5dae-02df-4d63-848b-f7c6aaa1b525'
 
 
 	test:
 		HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
+		INTERCEPT_EMAIL: 'd@r-w.in'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
 
+		GOOGLE_API_ID: '297124502120.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'HkTxwXiUzlWMRhc6UTQgMvpo'
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
+		INTERCEPT_EMAIL: 'd@r-w.in'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
 
@@ -51,6 +61,10 @@ config =
 
 		NUDGE_DAY: 'Friday'
 
+		LINKEDIN_API_KEY: ''
+		LINKEDIN_API_SECRET: ''
+		LINKEDIN_OAUTH_TOKEN: ''
+		LINKEDIN_OAUTH_SECRET: ''
 
 
 process.env.APP_ENV ?= 'development'

@@ -1,8 +1,30 @@
 passport = require 'passport'
 GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+LinkedInStrategy = require('passport-linkedin').Strategy
 
 util = require './util'
 models = require './models'
+request = require 'request'
+
+
+notifications = (user, socket) ->
+	{
+		foundName: (name) ->
+			if not user.name
+				user.name = name
+				user.save (err) ->
+					throw err if err
+					socket.emit 'parse.name'
+		foundTotal: (total) ->
+			socket.emit 'parse.total', total
+		completedEmail: ->
+			socket.emit 'parse.mail'
+		completedAllEmails: ->
+			socket.emit 'parse.queueing'
+		foundNewContact: ->
+			socket.emit 'parse.enqueued'
+	}
+
 
 module.exports = (app, socket) ->
 	_ = require 'underscore'
@@ -12,8 +34,29 @@ module.exports = (app, socket) ->
 
 	session = socket.handshake.session
 
+	linkCallBack = (token, secret, profile, done) ->
+		li =
+			id: profile.id
+			token: token
+			secret: secret
+		session.linkedin_auth = li
+		session.save()
+		models.User.findOne _id: session.passport.user, (err, user) ->
+			if err or not user
+				console.log "ERROR: #{err} linking in for #{session.passport.user}"
+				done err, null
+			else
+				if not user.picture and not profile._json.pictureUrl.match(/no_photo/)
+					user.picture = profile._json.pictureUrl
+				user.linkedin = profile.id
+				user.save (err) ->
+					done err, user, li
+
+
 	authCallBack = (access, refresh, profile, done) ->
-		if profile._json.email isnt session.email
+		if not profile
+			done false, null
+		else if profile._json.email isnt session.email
 			session.wrongemail = profile._json.email
 			session.save()
 			done false, null
@@ -26,6 +69,7 @@ module.exports = (app, socket) ->
 				user.oauth = {}
 			user.oauth.accessToken = access
 			if refresh
+				console.log("got refresh #{refresh} compares to #{user.oauth.refreshToken}")
 				user.oauth.refreshToken = refresh
 			user.save (err) ->
 				done err, user
@@ -35,6 +79,16 @@ module.exports = (app, socket) ->
 			clientSecret: process.env.GOOGLE_API_SECRET
 			callbackURL: util.baseUrl + '/authorized'
 		}, authCallBack)
+
+	passport.use(new LinkedInStrategy {
+			consumerKey: process.env.LINKEDIN_API_KEY
+			consumerSecret: process.env.LINKEDIN_API_SECRET
+			callbackURL: util.baseUrl + '/linked'
+			scope:['r_basicprofile', 'r_fullprofile', 'r_network']
+			fetch:['picture-url', 'id']
+		}, linkCallBack)
+
+
 
 	app.get '/force-authorize', passport.authenticate('google', 
 		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
@@ -53,7 +107,7 @@ module.exports = (app, socket) ->
 	app.get '/authorized', (req, res, next) ->
 		passport.authenticate('google',  (err, user, info) ->
 			if not user
-				console.log('wrong email: ' + session.wrongemail)
+				console.log 'wrong email: #{session.wrongemail}'
 				res.redirect '/profile'
 			else 
 				req.login user, {}, (err) ->
@@ -62,13 +116,71 @@ module.exports = (app, socket) ->
 						console.log 'attempting to force new refresh token'
 						return res.redirect '/force-authorize'
 					else 
+						url = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=#{user.oauth.accessToken}"
+						request.get
+							url: url
+							json: true
+						, (error, response, body) ->
+							if body.picture and not user.picture
+								console.log "if #{body.picture} and not #{user.picture}"
+								user.picture = body.picture
+								user.save (err) ->
+									if err
+										console.log "error saving user picture from gmail"
+										console.dir err
+
+						###
+						#
+						# notes:
+						# this google contacts api picks out name and email:
+						# need to do something to get image url
+						#
+						# even then, it's another api call, which allows us to download data.
+						# do we wanna store images locally?
+
+						GoogleContacts = require('Google-Contacts').GoogleContacts;
+						c = new GoogleContacts
+							token: user.oauth.accessToken
+							refreshToken: user.oauth.refreshToken
+							consumerKey: process.env.GOOGLE_API_ID
+							consumerSecret: process.env.GOOGLE_API_SECRET
+
+						c.on 'error', (e) ->
+							  console.log('Google Contacts error: ', e);
+
+						c.on 'contactsReceived', (contacts) ->
+							  console.log 'contacts: '
+							  console.dir contacts
+
+						try
+							c.getContacts (err, contacts) ->
+								if err then console.log "error #{err}"
+								console.dir contacts
+						catch e
+							console.log "getContacts error #{e}"
+
+						###
+						
 						if user.lastParsed 
 							yesterday = new Date()
 							yesterday.setDate(yesterday.getDate() - 1)
 							if user.lastParsed > yesterday
 								return res.redirect "/profile"
+
 						return res.redirect "/load"
 		) req, res, next
+
+
+	app.get '/linker', passport.authenticate('linkedin'), (err, user, info) ->
+		console.log 'never gets here'
+
+	app.get '/linked', (req, res, next) ->
+		passport.authenticate('linkedin',  (err, user, info) ->
+			if not err and user
+				# session.linkedin_auth = info # jTNT : race condition. need to save info earlier 
+				return res.redirect "/link"
+		) req, res, next
+
 
 	socket.on 'session', (fn) ->
 		fn session
@@ -357,25 +469,24 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-			notifications =
-				foundName: (name) ->
-					if not user.name
-						user.name = name
-						user.save (err) ->
-							throw err if err
-							socket.emit 'parse.name'
-				foundTotal: (total) ->
-					socket.emit 'parse.total', total
-				completedEmail: ->
-					socket.emit 'parse.mail'
-				completedAllEmails: ->
-					socket.emit 'parse.queueing'
-				foundNewContact: ->
-					socket.emit 'parse.enqueued'
-
 			try
-				require('./parser') app, user, notifications, fn
+				require('./parser') app, user, notifications(user, socket), fn
 			catch e
 				console.log "PARSER ERR"
+				console.log e
+
+	socket.on 'linkin', (id, fn) ->
+		console.dir session
+		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
+		models.User.findById id, (err, user) ->
+			throw err if err
+			# TODO temporary, in case this gets called and there's not logged in user
+			if not user
+				return fn()
+
+			try
+				require('./linker') app, user, session.linkedin_auth, notifications(user, socket), fn
+			catch e
+				console.log "LINKIN ERR"
 				console.log e
 

@@ -125,6 +125,15 @@ module.exports = (Ember, App, socket) ->
 				redirectsTo: 'userProfile'
 
 
+			link: Ember.Route.extend
+				route: '/link'	# Public url so the http-based authorize flow can hook in.
+				enter: (manager) ->
+					# TO-DO probably set a session variable or something to ensure linking doesn't happen twice by back button or anything.
+					view = App.LinkerView.create()
+					view.append()
+				redirectsTo: 'userProfile'
+
+
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
@@ -168,6 +177,11 @@ module.exports = (Ember, App, socket) ->
 							# interceptedPath = null
 						else
 							controller.set 'loginError', data
+
+
+			doLinkedInLinking: (router, context) ->
+				window.location.href = '/linker'
+
 
 			doLogout: (router, context) ->
 				socket.emit 'logout', ->

@@ -20,12 +20,12 @@ socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
 	window.location.reload()
 
-# Handlebars.registerHelper 'date', (property, options) ->
-# 	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
-# 	return value
-# 	# moment = require 'moment'
-# 	# moment(date).format('MMMM Do, YYYY')
-# 	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
+Handlebars.registerHelper 'truncatedate', (property, options) ->
+	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
+	moment = require 'moment'
+	m = moment(value).format('MMMM Do, YYYY')
+	d = '' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
+	return d
 
 Handlebars.registerHelper 'debug', (optionalValue) ->
 	console.log 'Current Context'

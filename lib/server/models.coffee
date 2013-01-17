@@ -18,6 +18,7 @@ UserSchema = new Schema
 		accessToken: type: String
 		refreshToken: type: String
 	lastParsed: type: Date
+	linkedin: type: String
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]
 
@@ -26,6 +27,8 @@ ContactSchema = new Schema
 	emails: [ type: String ]
 	names: [ type: String ]
 	picture: type: String, trim: true, validate: validators.isUrl
+	position: type: String
+	company: type: String
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
@@ -52,6 +55,18 @@ MergeSchema = new Schema
 	contacts: [Types.Mixed]
 
 
+LinkedInSchema = new Schema
+	positions: [ type: String ]
+	companies: [ type: String ]
+	industries: [ type: String ]
+	specialties: [ type: String ]
+	contact: type: Types.ObjectId, ref: 'Contact'
+	linkedinid: type: String
+	summary: type: String
+	headline: type: String
+
+
+
 common = (schema) ->
 	schema.add
 		date: type: Date, required: true, default: Date.now
@@ -68,6 +83,8 @@ MailSchema.plugin common
 
 MergeSchema.plugin common
 
+LinkedInSchema.plugin common
+
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
@@ -79,3 +96,4 @@ exports.Note = db.model 'Note', NoteSchema
 exports.Mail = db.model 'Mail', MailSchema
 
 exports.Merge = db.model 'Merge', MergeSchema
+exports.LinkedIn = db.model 'LinkedIn', LinkedInSchema

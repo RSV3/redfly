@@ -133,22 +133,15 @@ getContent = () ->
 	return c
 
 content = ''
-compressedcontent = ''
-if process.env.NODE_ENV isnt 'development'
+if true or process.env.NODE_ENV is 'production'
 	content = getContent()
 	content = require('uglify-js').minify(content, {fromString:true}).code
-	require('zlib').gzip content, (err, buff) ->
-		if not err
-			compressedcontent = buff
 
 app.get '/app.js', (req, res) ->
 	h =
 		'Content-Type': 'application/javascript'
-	if process.env.NODE_ENV is 'development'
+	if false or process.env.NODE_ENV is 'development'
 		c = getContent()
-	else if compressedcontent.length and req.headers['accept-encoding'].match(/gzip/)
-		c = compressedcontent
-		h['content-encoding'] = 'gzip'
 	else
 		c = content
 	res.writeHead 200, h

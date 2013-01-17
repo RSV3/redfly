@@ -40,6 +40,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/tag')(Ember, App, socket)
 	require('./controllers/components/tagger')(Ember, App, socket)
 	require('./controllers/components/loader')(Ember, App, socket)
+	require('./controllers/components/linker')(Ember, App, socket)
 	require('./controllers/components/edit-picture')(Ember, App, socket)
 
 	require('./controllers/application')(Ember, App, socket)
