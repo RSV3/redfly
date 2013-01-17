@@ -22,11 +22,15 @@ key = 'express.sid'
 store = new RedisStore redisConfig
 
 
+
 everyauth.google.configure
 	appId: process.env.GOOGLE_API_ID
 	appSecret: process.env.GOOGLE_API_SECRET
 	entryPath: '/authorize'
 	callbackPath: '/authorized'
+	authQueryParam:
+		access_type: 'offline'
+		approval_prompt: 'force'
 	scope: [
 			'https://www.googleapis.com/auth/userinfo.profile'
 			'https://www.googleapis.com/auth/userinfo.email'
@@ -44,28 +48,33 @@ everyauth.google.configure
 			return {}
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
+			token = accessTokenExtra.refresh_token
 			if user
-				# promise.fulfill user
 				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 				if not user.oauth
 					user.name = googleUserMetadata.name
 					if picture = googleUserMetadata.picture
 						user.picture = picture
-					user.oauth = accessTokenExtra.refresh_token
+					user.oauth = token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				# END TEMPORARY ###########
+				# Update the refresh token if google gave us a new one.
+				else if user.oauth isnt token
+					user.oauth = token
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user
 				else
 					promise.fulfill user
-				# END TEMPORARY ###########
 			else
 				user = new models.User
 				user.email = email
 				user.name = googleUserMetadata.name
 				if picture = googleUserMetadata.picture
 					user.picture = picture
-				user.oauth = accessTokenExtra.refresh_token
+				user.oauth = token
 				user.save (err) ->
 					throw err if err
 					promise.fulfill user
