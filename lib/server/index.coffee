@@ -15,7 +15,6 @@ passport.deserializeUser (id, done) ->			# needed to get this setup early
 util = require './util'
 
 
-
 app = express()
 server = http.createServer app
 root = path.dirname path.dirname __dirname
@@ -30,6 +29,7 @@ redisConfig = do ->
 key = 'express.sid'
 store = new RedisStore redisConfig
 
+everyauth.google.authQueryParam({ access_type:'online', approval_prompt:'auto' });
 everyauth.google.configure
 	appId: process.env.GOOGLE_API_ID
 	appSecret: process.env.GOOGLE_API_SECRET
@@ -52,14 +52,19 @@ everyauth.google.configure
 			return {}
 		models.User.findOne email: email, (err, user) ->
 			throw err if err
-			throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
+			# throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
 			if user
 				# promise.fulfill user
 				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 				if not user.oauth
 					user.name = googleUserMetadata.name
-					if picture = googleUserMetadata.picture
+					if not user.picture and picture = googleUserMetadata.picture
 						user.picture = picture
+					user.oauth = accessTokenExtra.refresh_token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				else if accessTokenExtra.refresh_token isnt user.oauth
 					user.oauth = accessTokenExtra.refresh_token
 					user.save (err) ->
 						throw err if err
@@ -86,7 +91,7 @@ everyauth.google.configure
 			return res.redirect '/invalid'
 		if not user.lastParsed
 			return res.redirect '/load'
-		res.redirect '/profile'
+		res.redirect "/profile"
 
 
 app.configure ->
