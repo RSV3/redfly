@@ -1,15 +1,26 @@
 _ = require 'underscore'
+<<<<<<< HEAD
 xoa2 = require 'xoauth2'
 imap = require 'imap-jtnt-xoa2'
 util = require './util'
 models = require './models'
 mailer = require './mail'
 validators = require('validator').validators
+=======
+oauth = require 'oauth-gmail'
+xoa2 = require 'xoauth2'
+imap = require 'imap'
+util = require './util'
+>>>>>>> master
 
 
 module.exports = (app, user, notifications = {}, cb) ->
 
 	parse = (app, user, notifications, cb) ->
+<<<<<<< HEAD
+=======
+		validators = require('validator').validators
+>>>>>>> master
 
 		opts =
 			user: user.email
@@ -19,6 +30,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 		client = xoa2.createXOAuth2Generator opts
 
 		client.getToken (err, token) ->
+<<<<<<< HEAD
 
 			opts = 
 				host: 'imap.gmail.com'
@@ -26,6 +38,15 @@ module.exports = (app, user, notifications = {}, cb) ->
 				secure: true
 				xoauth2: token
 
+=======
+
+			opts = 
+				host: 'imap.gmail.com'
+				port: 993
+				secure: true
+				xoauth2: token
+
+>>>>>>> master
 			server = new imap.ImapConnection opts
 
 			server.connect (err) ->
@@ -33,8 +54,11 @@ module.exports = (app, user, notifications = {}, cb) ->
 				if err
 					console.log "ERR in server"
 					console.warn err
+<<<<<<< HEAD
 					console.dir opts
 					return;
+=======
+>>>>>>> master
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
 					if err
