@@ -145,6 +145,14 @@ module.exports = (Ember, App, socket) ->
 							pnotify.css top: '60px'
 				redirectsTo: 'index'
 
+			link: Ember.Route.extend
+				route: '/link'	# Public url so the http-based authorize flow can hook in.
+				enter: (manager) ->
+					# TO-DO probably set a session variable or something to ensure linking doesn't happen twice by back button or anything.
+					view = App.LinkerView.create()
+					view.append()
+				redirectsTo: 'userProfile'
+
 
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
@@ -158,6 +166,41 @@ module.exports = (Ember, App, socket) ->
 			goCreate: Ember.Route.transitionTo 'create'
 			goClassify: Ember.Route.transitionTo 'classify'
 			goImport: Ember.Route.transitionTo 'import'
+
+
+			doSignup: (router, context) ->
+				if identity = util.trim App.user.get 'signupIdentity'
+					controller = context.view.get 'controller'
+					App.user.set 'signupIdentity', null
+					_s = require 'underscore.string'
+
+					if _s.contains(identity, '@') and not _s.endsWith(identity, '@redstar.com') 
+					 	return controller.set 'signupError', 'Use your Redstar email kthx.'
+
+					socket.emit 'signup', util.identity(identity), (success, data) ->
+						if success
+							controller.set 'signupError', null
+							window.location.href = data
+						else
+							controller.set 'signupError', data
+
+			doLogin: (router, context) ->
+				if identity = util.trim App.user.get 'loginIdentity'
+					controller = context.view.get 'controller'
+					App.user.set 'loginIdentity', null
+					socket.emit 'login', util.identity(identity), (success, data) ->
+						if success
+							controller.set 'loginError', null
+							window.location.href = data
+							# App.auth.login data
+							# router.transitionTo interceptedPath or 'userProfile'
+							# interceptedPath = null
+						else
+							controller.set 'loginError', data
+
+
+			doLinkedInLinking: (router, context) ->
+				window.location.href = '/linker'
 
 
 			doLogout: (router, context) ->

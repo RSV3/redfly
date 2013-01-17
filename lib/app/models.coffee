@@ -43,6 +43,8 @@ module.exports = (DS, App) ->
 		names: DS.attr 'array'
 		emails: DS.attr 'array'
 		picture: DS.attr 'string'
+		company: DS.attr 'string'
+		position: DS.attr 'string'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
