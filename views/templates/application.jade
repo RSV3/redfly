@@ -49,23 +49,7 @@
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
-				| <form class="navbar-form" {{action doLogin on="submit"}}>
-				| <span {{bindAttr class=":control-group loginError:error"}}>
-				| {{#if loginError}}
-				span.help-inline {{loginError}} 
-				| {{/if}}
-				span.input-prepend
-					span.add-on
-						i.icon-envelope
-					| {{view Ember.TextField class="span2" placeholder="Email" valueBinding="App.user.loginIdentity"}}
-				| </span>
-				// <input type="password" class="input-small" placeholder="Password">
-				//
-					<label class="checkbox">
-					<input type="checkbox"> Remember me
-					</label> 
-				button.btn(type='submit') Log In
-				| </form>
+				a.btn(href='/authorize') Log In
 				| {{else}}
 				.btn-group
 					| <a class="btn" {{action goUserProfile href=true}}>

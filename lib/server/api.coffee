@@ -1,10 +1,7 @@
 passport = require 'passport'
 GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-<<<<<<< HEAD
 LinkedInStrategy = require('passport-linkedin').Strategy
 
-util = require './util'
-models = require './models'
 request = require 'request'
 
 
@@ -26,21 +23,17 @@ notifications = (user, socket) ->
 			socket.emit 'parse.enqueued'
 	}
 
-=======
-
-util = require './util'
-models = require './models'
->>>>>>> master
 
 module.exports = (app, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
 	logic = require './logic'
+	util = require './util'
+	models = require './models'
 
 	session = socket.handshake.session
 
-<<<<<<< HEAD
 	linkCallBack = (token, secret, profile, done) ->
 		li =
 			id: profile.id
@@ -61,31 +54,12 @@ module.exports = (app, socket) ->
 
 
 	authCallBack = (access, refresh, profile, done) ->
-		if not profile
-			done false, null
-		else if profile._json.email isnt session.email
-=======
-	authCallBack = (access, refresh, profile, done) ->
 		if profile._json.email isnt session.email
->>>>>>> master
 			session.wrongemail = profile._json.email
 			session.save()
 			done false, null
 		else models.User.findOne email: profile._json.email, (err, user) ->
 			throw err if err
-<<<<<<< HEAD
-			if not user
-				user = new models.User
-				user.email = profile._json.email
-				user.name = profile._json.name
-				user.oauth = {}
-			user.oauth.accessToken = access
-			if refresh
-				console.log("got refresh #{refresh} compares to #{user.oauth.refreshToken}")
-				user.oauth.refreshToken = refresh
-			user.save (err) ->
-				done err, user
-=======
 			if user
 				done err, user
 			else
@@ -97,7 +71,7 @@ module.exports = (app, socket) ->
 					refreshToken: refresh
 				user.save (err) ->
 					done err, user
->>>>>>> master
+
 
 	passport.use(new GoogleStrategy {
 			clientID: process.env.GOOGLE_API_ID
@@ -105,7 +79,6 @@ module.exports = (app, socket) ->
 			callbackURL: util.baseUrl + '/authorized'
 		}, authCallBack)
 
-<<<<<<< HEAD
 	passport.use(new LinkedInStrategy {
 			consumerKey: process.env.LINKEDIN_API_KEY
 			consumerSecret: process.env.LINKEDIN_API_SECRET
@@ -123,8 +96,6 @@ module.exports = (app, socket) ->
 	), (err, user, info) ->
 			console.log 'never gets here'
 
-=======
->>>>>>> master
 	app.get '/authorize', passport.authenticate('google', 
 		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
 #		approvalPrompt: 'force'
@@ -135,16 +106,11 @@ module.exports = (app, socket) ->
 	app.get '/authorized', (req, res, next) ->
 		passport.authenticate('google',  (err, user, info) ->
 			if not user
-<<<<<<< HEAD
 				console.log 'wrong email: #{session.wrongemail}'
-=======
-				console.log('wrong email: ' + session.wrongemail)
->>>>>>> master
 				res.redirect '/profile'
 			else 
 				req.login user, {}, (err) ->
 					if err then return next err
-<<<<<<< HEAD
 					if not user.oauth.refreshToken
 						console.log 'attempting to force new refresh token'
 						return res.redirect '/force-authorize'
@@ -215,20 +181,24 @@ module.exports = (app, socket) ->
 		) req, res, next
 
 
-=======
-					if user.lastParsed 
-						yesterday = new Date()
-						yesterday.setDate(yesterday.getDate() - 1)
-						if user.lastParsed > yesterday
-							return res.redirect "/profile"
-					return res.redirect "/load"
-		) req, res, next
 
->>>>>>> master
 	socket.on 'session', (fn) ->
 		fn session
 
+	socket.on 'logout', (fn) ->
+		session.destroy()
+		fn()
+
+
 	socket.on 'db', (data, fn) ->
+		feed = (doc) ->
+			socket.broadcast.emit 'feed',
+				type: data.type
+				id: doc.id
+			socket.emit 'feed',
+				type: data.type
+				id: doc.id
+
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -255,7 +225,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						fn doc
 						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
-							feed data, doc
+							feed doc
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
@@ -273,7 +243,7 @@ module.exports = (app, socket) ->
 							throw err if err
 							fn doc
 							if broadcast
-								feed data, doc
+								feed doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -304,11 +274,7 @@ module.exports = (app, socket) ->
 				return fn false, 'A user with that email already exists.'
 			session.email = email
 			session.save()
-<<<<<<< HEAD
 			return fn true, '/force-authorize'
-=======
-			return fn true, '/authorize'
->>>>>>> master
 
 
 	socket.on 'login', (email, fn) ->
@@ -318,13 +284,9 @@ module.exports = (app, socket) ->
 				return fn false, 'User not found: Once more, with feeling!'
 			session.email = email
 			session.save()
-<<<<<<< HEAD
 			if user.oauth.refreshToken
 				return fn true, '/authorize'
 			return fn true, '/force-authorize'
-=======
-			return fn true, '/authorize'
->>>>>>> master
 
 	socket.on 'logout', (fn) ->
 		session.destroy()
@@ -355,7 +317,6 @@ module.exports = (app, socket) ->
 
 	socket.on 'summary.user', (fn) ->
 		fn 'Joe Chung'
-
 
 
 	socket.on 'search', (query, moreConditions, fn) ->
@@ -520,7 +481,6 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-<<<<<<< HEAD
 			try
 				require('./parser') app, user, notifications(user, socket), fn
 			catch e
@@ -540,27 +500,3 @@ module.exports = (app, socket) ->
 				require('./linker') app, user, session.linkedin_auth, notifications(user, socket), fn
 			catch e
 				console.log "LINKIN ERR"
-=======
-			notifications =
-				foundName: (name) ->
-					if not user.name
-						user.name = name
-						user.save (err) ->
-							throw err if err
-							socket.emit 'parse.name'
-				foundTotal: (total) ->
-					socket.emit 'parse.total', total
-				completedEmail: ->
-					socket.emit 'parse.mail'
-				completedAllEmails: ->
-					socket.emit 'parse.queueing'
-				foundNewContact: ->
-					socket.emit 'parse.enqueued'
-
-			try
-				require('./parser') app, user, notifications, fn
-			catch e
-				console.log "PARSER ERR"
->>>>>>> master
-				console.log e
-

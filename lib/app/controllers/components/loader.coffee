@@ -63,9 +63,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateQueueing', true
 				@set 'stateDone', false
 
-			socket.on 'parse.name', =>
-				App.refresh App.user.get('content')	# We just figured out the logged-in user's name, refesh.
-
 
 		percent: (->
 				current = @get 'current'

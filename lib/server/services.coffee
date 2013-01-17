@@ -3,6 +3,8 @@ exports.getDb = ->
 	if not db
 		db = require 'mongoose'
 		db.set 'debug', process.env.NODE_ENV is 'development'
+		db.connection.setProfiling 1, (err) ->
+			throw err if err
 		db.connect process.env.MONGOLAB_URI
 	db
 

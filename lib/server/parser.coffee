@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 _ = require 'underscore'
 <<<<<<< HEAD
 xoa2 = require 'xoauth2'
@@ -14,9 +15,14 @@ util = require './util'
 >>>>>>> master
 
 
+=======
+>>>>>>> origin/master
 module.exports = (app, user, notifications = {}, cb) ->
+	_ = require 'underscore'
+
 
 	parse = (app, user, notifications, cb) ->
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 		validators = require('validator').validators
@@ -33,11 +39,28 @@ module.exports = (app, user, notifications = {}, cb) ->
 <<<<<<< HEAD
 
 			opts = 
+=======
+		util = require './util'
+		validators = require('validator').validators
+
+		generator = require('xoauth2').createXOAuth2Generator
+			user: user.email
+			clientId: process.env.GOOGLE_API_ID
+			clientSecret: process.env.GOOGLE_API_SECRET
+			refreshToken: user.oauth
+
+		generator.getToken (err, token) ->
+			throw err if err
+
+			imap = require 'imap-jtnt-xoa2'
+			server = new imap.ImapConnection
+>>>>>>> origin/master
 				host: 'imap.gmail.com'
 				port: 993
 				secure: true
 				xoauth2: token
 
+<<<<<<< HEAD
 =======
 
 			opts = 
@@ -65,15 +88,30 @@ module.exports = (app, user, notifications = {}, cb) ->
 						console.log "ERR in openBox"
 						console.log err
 						throw err
+=======
+			server.connect (err) ->
+				if err
+					console.warn err
+					return cb new Error 'Problem connecting to gmail.'
+				
+				server.openBox '[Gmail]/All Mail', true, (err, box) ->
+					if err
+						console.warn err
+						return cb new Error 'Problem opening mailbox.'
+>>>>>>> origin/master
 
 					criteria = [['FROM', user.email]]
 					if previous = user.lastParsed
 						criteria.unshift ['SINCE', previous]
 
 					server.search criteria, (err, results) ->
+<<<<<<< HEAD
 						if err
 							console.log "search err"
 							console.dir err
+=======
+						throw err if err
+>>>>>>> origin/master
 
 						mimelib = require 'mimelib'
 						mails = []
@@ -119,6 +157,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 											sent: new Date msg.headers.date?[0]
 											recipientEmail: email
 											recipientName: name
+<<<<<<< HEAD
 									else
 										console.log 'blacklisting'
 										console.dir
@@ -134,11 +173,20 @@ module.exports = (app, user, notifications = {}, cb) ->
 								{name} = mimelib.parseAddresses(msg.headers.from[0])[0]
 								notifications.foundName? name
 
+=======
+								notifications.completedEmail?()
+
+>>>>>>> origin/master
 						fetch.on 'end', ->
 							return finish()
 
 
 	enqueue = (app, user, notifications, mails, cb) ->
+<<<<<<< HEAD
+=======
+		models = require './models'
+		mailer = require('./mail') app
+>>>>>>> origin/master
 
 		newContacts = []
 
@@ -154,9 +202,12 @@ module.exports = (app, user, notifications = {}, cb) ->
 					thismailer.sendNewsletter user, cb
 
 		sift = (index = 0) ->
+<<<<<<< HEAD
 			if mails.length is 0
 				return finishedParsing user
 
+=======
+>>>>>>> origin/master
 			mail = mails[index]
 
 			# Find an existing contact with one of the same emails or names.
@@ -193,7 +244,24 @@ module.exports = (app, user, notifications = {}, cb) ->
 						newContacts.reverse()
 						user.queue.unshift newContacts...
 
+<<<<<<< HEAD
 						finishedParsing user, newContacts
+=======
+						user.lastParsed = new Date
+						user.save (err) ->
+							throw err if err
+
+							if newContacts.length isnt 0
+								mailer.sendNudge user, newContacts[...10], cb
+							else
+								mailer.sendNewsletter user, cb
+		# TO-DO hacky and awful, all of sift() needs to be refactored
+		if mails.length is 0
+			user.lastParsed = new Date
+			user.save (err) ->
+				throw err if err
+			return mailer.sendNewsletter user, cb
+>>>>>>> origin/master
 		sift()
 
 

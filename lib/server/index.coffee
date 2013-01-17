@@ -1,8 +1,7 @@
 http = require 'http'
 path = require 'path'
 express = require 'express'
-gzippo = require 'gzippo'
-RedisStore = require('connect-redis') express
+everyauth = require 'everyauth'
 
 passport = require 'passport'
 
@@ -15,8 +14,6 @@ passport.deserializeUser (id, done) ->			# needed to get this setup early
 
 util = require './util'
 
-require 'mongoose'	# Mongo driver borks if not loaded up before other stuff.
-
 
 
 app = express()
@@ -24,12 +21,72 @@ server = http.createServer app
 root = path.dirname path.dirname __dirname
 pipeline = require('./pipeline') root
 
-key = 'express.sid'
-store = new RedisStore do ->
+RedisStore = require('connect-redis') express
+redisConfig = do ->
 	url = require('url').parse process.env.REDISTOGO_URL
 	host: url.hostname
 	port: url.port
 	pass: url.auth.split(':')[1]
+key = 'express.sid'
+store = new RedisStore redisConfig
+
+everyauth.google.configure
+	appId: process.env.GOOGLE_API_ID
+	appSecret: process.env.GOOGLE_API_SECRET
+	entryPath: '/authorize'
+	callbackPath: '/authorized'
+	scope: [
+			'https://www.googleapis.com/auth/userinfo.profile'
+			'https://www.googleapis.com/auth/userinfo.email'
+			'https://mail.google.com/'
+			'https://www.google.com/m8/feeds'
+		].join ' '
+	handleAuthCallbackError: (req, res) ->
+		res.redirect '/unauthorized'
+	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
+		_s = require 'underscore.string'
+		models = require './models'
+
+		email = googleUserMetadata.email.toLowerCase()
+		if not _s.endsWith(email, '@redstar.com')
+			return {}
+		models.User.findOne email: email, (err, user) ->
+			throw err if err
+			throw new Error('No refresh token!') if not accessTokenExtra.refresh_token	# TODO remove this line when I'm convinced I always get a token.
+			if user
+				# promise.fulfill user
+				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
+				if not user.oauth
+					user.name = googleUserMetadata.name
+					if picture = googleUserMetadata.picture
+						user.picture = picture
+					user.oauth = accessTokenExtra.refresh_token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				else
+					promise.fulfill user
+				# END TEMPORARY ###########
+			else
+				user = new models.User
+				user.email = email
+				user.name = googleUserMetadata.name
+				if picture = googleUserMetadata.picture
+					user.picture = picture
+				user.oauth = accessTokenExtra.refresh_token
+				user.save (err) ->
+					throw err if err
+					promise.fulfill user
+		promise = @Promise()
+	addToSession: (session, auth) ->
+		session.user = auth.user.id
+	sendResponse: (res, data) ->
+		user = data.user
+		if not user.id
+			return res.redirect '/invalid'
+		if not user.lastParsed
+			return res.redirect '/load'
+		res.redirect '/profile'
 
 
 app.configure ->
@@ -48,11 +105,8 @@ app.configure ->
 	# app.use express.logger('dev')
 	# app.use express.profiler()
 	app.use express.favicon(path.join(root, 'favicon.ico'))
-	# app.use gzippo.staticGzip(path.join(root, 'public'))	# TODO comment in when gzippo works
-	app.use express.static(path.join(root, 'public'))	# TODO delete when gzippo works
 	app.use express.compress()
-
-	# jTNT - I don't think we're ever relying on these
+	app.use express.static(path.join(root, 'public'))
 	# app.use express.bodyParser()
 	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
@@ -61,11 +115,11 @@ app.configure ->
 	app.use passport.initialize()
 	app.use passport.session()
 
+	app.use everyauth.middleware()
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
 			req.session.user = user
 		next()
-
 	app.use app.router
 	app.use pipeline.middleware()
 	app.use (req, res) ->
@@ -82,14 +136,25 @@ app.configure 'production', ->
 
 io = require('socket.io').listen server
 
-io.configure ->
-	# Heroku doesn't support websockets, force long polling.
-	# but for ec2, we can omit this, and default to websocket
-	# io.set 'transports', ['xhr-polling']
-	io.set 'polling duration', 10
-	if process.env.NODE_ENV is 'production'
-		io.set 'log level', 1
-	io.set 'log level', 1 #jTNT
+# Heroku doesn't support websockets, force long polling.
+io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
+io.set 'polling duration', 10
+io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
+
+io.set 'store', do ->
+	SocketioRedisStore = require 'socket.io/lib/stores/redis'
+	redis = require 'socket.io/node_modules/redis'
+	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
+	for client in clients
+		client.auth redisConfig.pass, (err) ->
+			throw err if err
+
+	new SocketioRedisStore
+		redis: redis
+		redisPub: clients[0]
+		redisSub: clients[1]
+		redisClient: clients[2]
+
 
 io.set 'authorization', (data, accept) ->
 	if not data.headers.cookie
@@ -112,41 +177,30 @@ io.sockets.on 'connection', (socket) ->
 	pipeline.on 'invalidate', ->
 		socket.emit 'reloadStyles'
 
-bundle = require('browserify')
-	watch: process.env.NODE_ENV is 'development'
-	cache: true
-	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
-	exports: 'process'
-bundle.register '.jade', (body, file) ->
-	result = null
-	app.render file, (err, data) ->
-		throw err if err
-		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
-		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-	result
-bundle.addEntry 'lib/app/index.coffee'
+app.get '/app.js', do ->
+	bundle = require('browserify')
+		watch: process.env.NODE_ENV is 'development'
+		# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
+		exports: 'process'
+	bundle.register '.jade', (body, file) ->
+		result = null
+		app.render file, (err, data) ->
+			throw err if err
+			data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+			result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+		result
+	bundle.addEntry 'lib/app/index.coffee'
 
-getContent = () ->
-	c = bundle.bundle()
+	content = bundle.bundle()
 	for variable in ['NODE_ENV', 'HOST']
-		c = c.replace '[' + variable + ']', process.env[variable]
-	return c
+		content = content.replace '[' + variable + ']', process.env[variable]
+	# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
+	if process.env.NODE_ENV is 'production'
+		content = require('uglify-js').minify(content, fromString: true).code
 
-content = ''
-if true or process.env.NODE_ENV is 'production'
-	content = getContent()
-	content = require('uglify-js').minify(content, {fromString:true}).code
-
-app.get '/app.js', (req, res) ->
-	h =
-		'Content-Type': 'application/javascript'
-	if false or process.env.NODE_ENV is 'development'
-		c = getContent()
-	else
-		c = content
-	res.writeHead 200, h
-	res.end c
-
+	(req, res) ->
+		res.set 'Content-Type', 'application/javascript'
+		res.send content
 
 
 server.listen app.get('port'), ->

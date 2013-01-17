@@ -10,8 +10,7 @@ i.icon-pencil.icon-large
 	.alert.alert-info
 		| Another contact has the {{view.primaryAttribute}} "{{view.duplicate}}".
 		br
-		a(href='#') Merge duplicate
-		|  (coming soon).
+		| <a href="#" {{action initiateMerge target="view"}}>Merge duplicate.</a>
 	| {{/if}}
 	| <a href="#" class="close" {{action toggle target="view"}}>×</a>
 	.nav-header {{view.prettyPrimaryAttribute}}

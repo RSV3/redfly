@@ -6,5 +6,3 @@ module.exports = (Ember, App, socket) ->
 	App.HomeView = Ember.View.extend
 		template: require '../../../views/templates/home'
 		classNames: ['home']
-		toggle: ->
-			@get('controller').set 'showConnect', true

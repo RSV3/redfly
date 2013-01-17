@@ -14,24 +14,5 @@
 		strong Remember, with great power comes great something something.
 .row-fluid.signup
 	| {{#unless App.user.content}}
-	| {{#unless showConnect}}
-	| 	<a class="btn btn-primary btn-large" {{action toggle target="view"}}>Connect through email</a>
-	| {{else}}
-	| <form class="well span5" {{action doSignup on="submit"}}>
-	.input-prepend
-		span.add-on: i.icon-envelope
-		| {{view Ember.TextField placeholder="hugh.jass@redstar.com" valueBinding="App.user.signupIdentity"}}
-		// <input type="password" placeholder="Password">
-	| {{#if signupError}}
-	.alert.alert-error
-		| {{signupError}}
-	| {{/if}}
-	span.help-block Type your Redstar username or email.
-	//
-		<label class="checkbox">
-		<input type="checkbox"> Check me out
-		</label> 
-	button.btn(type='submit') Sign Up
-	| </form>
-	| {{/unless}}
+	a.btn.btn-primary.btn-large(href='/authorize') Sign up through email
 	| {{/unless}}
