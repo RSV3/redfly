@@ -12,6 +12,7 @@ baseFontSize = 14px
 baseLineHeight = 20px
 navbarText = #777
 linkColor = #08c
+baseBorderRadius = 4px
 
 
 // Implicit Bootstrap abstractions.
@@ -44,8 +45,8 @@ redstar = #e51937
 	position relative
 	.img-polaroid
 		// TO-DO make these maxes be dependent on bootstrap vars.
+		height 200px
 		max-width 200px
-		max-height 200px
 	.edit
 		position absolute
 		top 2px
@@ -204,6 +205,7 @@ body
 		.tagger .main
 			min-height 82px
 			border lightBorder
+			border-radius baseBorderRadius
 	.media
 		margin-bottom horizontalMargin * 2
 		.media-object
