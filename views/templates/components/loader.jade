@@ -2,7 +2,7 @@
 	#loadingStarted
 		| {{#if stateConnecting}}
 		| Makin' pals with gmail...
-		img.pull-right(src='http://www.updown.com/facebook/g/loading.gif')
+		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
 		| {{#if stateParsing}}
 		div {{current}} of {{total}}
