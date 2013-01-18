@@ -82,6 +82,14 @@ tagger(fontSize)
 		.main
 			line-height fontSize * 1.42
 			tag(fontSize)
+			position relative
+			.background
+				position absolute
+				color #eee
+				font-size baseFontSize * 6
+				z-index -1
+				text-align center
+				width 100%
 			.tag
 				margin taggerMargin 0 0 taggerMargin
 				.close
@@ -99,6 +107,7 @@ tagger(fontSize)
 					box-shadow none
 					width auto
 					margin 0
+					background transparent
 		.cloud
 			margin-top 10px
 			a:hover
@@ -194,7 +203,7 @@ body
 		tagger(baseFontSize)
 		.tagger .main
 			min-height 82px
-			border mediumBorder
+			border lightBorder
 	.media
 		margin-bottom horizontalMargin * 2
 		.media-object
