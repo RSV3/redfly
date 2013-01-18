@@ -25,7 +25,7 @@ module.exports = (Ember, App, socket) ->
 				@_filterTags @get('_popularTags')
 			).property 'category', 'tags.@each', '_popularTags.@each'
 		_filterTags: (tags) ->
-				if not @get('tags')
+				if not @get('tags')	# Not really sure why this ever comes up blank.
 					return []
 				tags = _.reject tags, (candidate) =>
 					for tag in @get('tags').mapProperty('body')
