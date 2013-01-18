@@ -1,4 +1,8 @@
 .main
+	| {{#if view.full}}
+	.background
+		i.icon-tags
+	| {{/if}}
 	// TO-DO this would be more efficient with the #collection helper, but requires code changes to both tag.coffee and tagger.coffee
 	| {{#each view.tags}}
 	| {{#view view.tagView}}
@@ -12,7 +16,7 @@
 	| {{view view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"}}
 	| </form>
 
-| {{#if view.cloud}}
+| {{#if view.full}}
 .cloud
 	| {{#collection contentBinding="view.cloudTags" itemViewClass="view.cloudTagView"}}
 	| <a href="#" {{action use target="view"}}><span class="label"><i class="icon-plus"></i> {{view.content}}</span></a> 

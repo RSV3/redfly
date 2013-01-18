@@ -50,19 +50,19 @@
 	.span6
 		.row-fluid.tag-category
 			p.lead Redstar Tags
-			| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true" tabindex="1"}}
+			| {{view App.TaggerView contactBinding="this" category="redstar" full="true" tabindex="1"}}
 		.row-fluid.tag-category
 			p.lead Industry Tags
-			| {{view App.TaggerView contactBinding="this" category="industry" cloud="true" tabindex="2"}}
+			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
 		//-
 			ul.nav.nav-pills
 				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
 				li: a(href='#industry', data-toggle='pill') Industry Tags
 			.tab-content
 				#redstar.tab-pane.fade.active.in
-					| {{view App.TaggerView contactBinding="this" category="redstar" cloud="true"}}
+					| {{view App.TaggerView contactBinding="this" category="redstar" full="true"}}
 				#industry.tab-pane.fade
-					| {{view App.TaggerView contactBinding="this" category="industry" cloud="true"}}
+					| {{view App.TaggerView contactBinding="this" category="industry" full="true"}}
 	.span6
 		.row-fluid
 			p.lead Notes
