@@ -126,7 +126,7 @@ module.exports = (Ember, App, socket) ->
 				).observes 'parentView.autocompleteTags.@each'
 			attributeBindings: ['size', 'autocomplete', 'tabindex']
 			size: (->
-					2 + @get('currentTag.length')
+					2 + (@get('currentTag.length') or 0)
 				).property 'currentTag'
 			autocomplete: 'off'
 			tabindex: (->
