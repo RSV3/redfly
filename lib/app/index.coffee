@@ -78,6 +78,13 @@ socket.emit 'session', (session) ->
 	App.initialize()
 
 
+socket.on 'reloadApp', ->
+	window.location.reload()
 socket.on 'reloadStyles', ->
 	stylesheet = $('link[href="/app.css"]')
 	stylesheet.attr 'href', 'app.css?timestamp=' + Date.now()
+
+
+
+# Buffer needs to be available globally to use the csv module as-is.
+window.Buffer = require('buffer').Buffer

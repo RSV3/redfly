@@ -21,6 +21,7 @@ redisConfig = do ->
 key = 'express.sid'
 store = new RedisStore redisConfig
 
+
 everyauth.google.configure
 	appId: process.env.GOOGLE_API_ID
 	appSecret: process.env.GOOGLE_API_SECRET
@@ -80,6 +81,7 @@ everyauth.google.configure
 		res.redirect '/profile'
 
 
+
 app.configure ->
 	app.set 'port', process.env.PORT or 5000
 
@@ -122,6 +124,22 @@ app.configure 'production', ->
 		res.render 'error'
 
 
+
+bundle = require('browserify')
+	watch: process.env.NODE_ENV is 'development'
+	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
+	exports: 'process'
+bundle.register '.jade', (body, file) ->
+	result = null
+	app.render file, (err, data) ->
+		throw err if err
+		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
+	result
+bundle.addEntry 'lib/app/index.coffee'
+
+
+
 io = require('socket.io').listen server
 
 # Heroku doesn't support websockets, force long polling.
@@ -161,34 +179,29 @@ io.set 'authorization', (data, accept) ->
 io.sockets.on 'connection', (socket) ->
 	require('./api') app, socket
 
+	bundle.on 'bundle', ->
+		socket.emit 'reloadApp'
 	pipeline.on 'invalidate', ->
 		socket.emit 'reloadStyles'
 
 
 app.get '/app.js', do ->
-	bundle = require('browserify')
-		watch: process.env.NODE_ENV is 'development'
-		# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
-		exports: 'process'
-	bundle.register '.jade', (body, file) ->
-		result = null
-		app.render file, (err, data) ->
-			throw err if err
-			data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
-			result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-		result
-	bundle.addEntry 'lib/app/index.coffee'
+	processCode = ->
+		content = bundle.bundle()
+		for variable in ['NODE_ENV', 'HOST']
+			content = content.replace '[' + variable + ']', process.env[variable]
+		# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
+		if process.env.NODE_ENV is 'production'
+			content = require('uglify-js').minify(content, fromString: true).code
+		content
 
-	content = bundle.bundle()
-	for variable in ['NODE_ENV', 'HOST']
-		content = content.replace '[' + variable + ']', process.env[variable]
-	# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
-	if process.env.NODE_ENV is 'production'
-		content = require('uglify-js').minify(content, fromString: true).code
+	code = processCode()
+	bundle.on 'bundle', ->
+		code = processCode()
 
 	(req, res) ->
-		res.set 'Content-Type', 'application/javascript'
-		res.send content
+		res.set 'content-Type', 'application/javascript'
+		res.send code
 
 
 
