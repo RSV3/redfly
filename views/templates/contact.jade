@@ -31,6 +31,14 @@
 				em "{{firstHistory.subject}}"
 				| .
 		| {{/if}}
+		.row-fluid
+			p
+				| {{#view view.socialView}}
+				| <a id="social-linkedin" {{bindAttr class=":social controller.hasLinkedin"}} {{bindAttr href="controller.linkedin"}} target="_blank"><span class="icon-linkedin-sign"/></a>
+				| <a id="social-twitter" {{bindAttr class=":social controller.hasTwitter"}} {{bindAttr href="controller.twitter"}} target="_blank"><span class="icon-twitter-sign"/></a>
+				| <a id="social-facebook" {{bindAttr class=":social controller.hasFacebook"}} {{bindAttr href="controller.facebook"}} target="_blank"><span class="icon-facebook-sign"/></a>
+				| <input {{action socialEdit on="change" target="view"}} class="maybeedit" />
+				| {{/view}}
 	.span3
 		| {{#if isKnown}}
 		.row-fluid.actions

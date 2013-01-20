@@ -25,6 +25,9 @@ ContactSchema = new Schema
 	names: [ type: String ]
 	picture: type: String, trim: true, validate: validators.isUrl
 	knows: [ type: Types.ObjectId, ref: 'User' ]
+	linkedin: type: String
+	twitter: type: String
+	facebook: type: String
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
 
