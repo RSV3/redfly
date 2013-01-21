@@ -113,19 +113,25 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 		if not contact.company and not contact.position
 			contact.company = details.positions[0].company.name
 			contact.position = details.positions[0].title
+			dirtycontact = true
 		else if not contact.company
 			contact.company = _.select(details.positions, (p) -> p.position is contact.title)?.company.name
+			dirtycontact = true
 		else if not contact.position
 			contact.position = _.select(details.positions, (p) -> p.company.name is contact.company)?.title
+			dirtycontact = true
 
 		# still no matches?
 		if not contact.company
 			contact.company = details.positions[0].company.name
+			dirtycontact = true
 		else if not contact.position
+			dirtycontact = true
 			contact.position = details.positions[0].title
 
 	if not contact.picture and details.pictureUrl
 		contact.picture = details.pictureUrl
+		dirtycontact = true
 
 	if specialties and specialties.length
 		addTags user, contact, 'redstar', specialties
@@ -133,6 +139,14 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 
 	if (_.indexOf user._id, contact.knows) < 0
 		contact.knows.addToSet user
+		dirtycontact = true
+
+	linklink = "http://www.linkedin.com/profile/view?id=#{details.id}"
+	if contact.linkedin isnt linklink
+		contact.linkedin = linklink
+		dirtycontact = true
+	
+	if dirtycontact
 		contact.save (err) ->
 
 
@@ -198,8 +212,6 @@ module.exports = (app, user, info, notifications, fn) ->
 		today = new Date()
 		user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
 
-		console.log "running #{parturl} on:"
-		console.dir info
 		oauth = 
 			consumer_key: process.env.LINKEDIN_API_KEY
 			consumer_secret: process.env.LINKEDIN_API_SECRET

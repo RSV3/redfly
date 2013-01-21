@@ -1,3 +1,4 @@
+
 passport = require 'passport'
 LinkedInStrategy = require('passport-linkedin').Strategy
 
@@ -22,6 +23,7 @@ notifications = (user, socket) ->
 			socket.emit 'parse.enqueued'
 	}
 
+module.exports = (app, socket) ->
 
 	_ = require 'underscore'
 	_s = require 'underscore.string'
@@ -37,11 +39,9 @@ notifications = (user, socket) ->
 			id: profile.id
 			token: token
 			secret: secret
-		session.linkedin_auth = li
-		session.save()
-		models.User.findOne _id: session.passport.user, (err, user) ->
+		models.User.findOne _id: session.user, (err, user) ->
 			if err or not user
-				console.log "ERROR: #{err} linking in for #{session.passport.user}"
+				console.log "ERROR: #{err} linking in for #{session.user}"
 				done err, null
 			else
 				if not user.picture and not profile._json.pictureUrl.match(/no_photo/)
@@ -140,6 +140,9 @@ notifications = (user, socket) ->
 
 	app.get '/linked', (req, res, next) ->
 		passport.authenticate('linkedin',  (err, user, info) ->
+			session.linkedin_auth = info
+			session.save()
+			req.session.linkedin_auth = info
 			if not err and user
 				return res.redirect "/link"
 		) req, res, next
@@ -426,6 +429,9 @@ notifications = (user, socket) ->
 				return fn()
 
 			try
+				console.log "calling with:"
+				console.dir session.linkedin_auth
+				console.log "in session.linkedin_auth"
 				require('./linker') app, user, session.linkedin_auth, notifications(user, socket), fn
 			catch e
 				console.log "LINKIN ERR"
