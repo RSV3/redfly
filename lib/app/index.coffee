@@ -20,12 +20,9 @@ socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
 	window.location.reload()
 
-Handlebars.registerHelper 'truncatedate', (property, options) ->
-	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
-	moment = require 'moment'
-	m = moment(value).format('MMMM Do, YYYY')
-	d = '' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
-	return d
+Handlebars.registerHelper 'truncatedate', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
+	value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
+	return '' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
 Handlebars.registerHelper 'debug', (optionalValue) ->
 	console.log 'Current Context'
