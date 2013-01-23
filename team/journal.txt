@@ -3,11 +3,6 @@ validation utility:
 - validate functions intentionally don't allow returning arrays of errors, because the error messages are intended to be displayed on a field-by-field
   basis (not one big list for the whole form).
 
-things I want out of my asset pipeline:
-- watch files for changes
-- compile all my assets (coffee to js, stylus to css) and serve from memory, not generated files
-- concatenate all assets together and serve just one js, css, and html file.
-- minify js/css/html
 
 - A contact must have at least one entry in its 'names' OR one entry in its 'emails'
   - tighter constraint: email required is being enforced in the frontend now
@@ -25,20 +20,6 @@ things I want out of my asset pipeline:
 - lots of bindings stuff only SEEMS to work because the model data happens to be loaded already. Notable places this happens are the activity
   feed implicitly loading a few contacts and the search box loading many more
 - you must use an object, not an id, when making a belongsTo relationship
-
-
-
-Needed Features (ember/angular/knockout/derby research):
-  - speedy loading with browser push/pop states (ideally only refreshing parts of the page that it has to), or more generally avoiding roundtrips to the server
-  - bindings(auto-updating) in the view template
-  - auto-persistance of view bindgings into a database
-  - which is more appropriate for a "one-page" web application. While we won't always be making one-page web apps, the principles involved in making one (lots of rendering and route-handling on the client-side, etc) are great to have available
-    - template composition
-  - the ability to respond to events (user/dom events of course, also know when a PARTICULAR MODEL is changed so I can respond. Derby didn't allow this and it made using js plugins difficult)
-  - realtime between clients of the app via bindings (probably can't get this without derby)
-  - the ability to use any templating engine
-
-
 
 
 
