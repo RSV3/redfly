@@ -187,7 +187,7 @@ matchContact = (user, first, last, formatted, cb) ->
 	r_name = new RegExp('^'+name+'$', "i")
 	models.Contact.find {names: r_name}, (err, contacts) ->
 		console.log "err: #{err}" if err
-		if not contacts.length and not formatted.match(r_name)
+		if not contacts.length and not formatted?.match(r_name)
 			r_name = new RegExp('^'+formatted+'$', "i")
 			models.Contact.find {names: r_name}, (err, contacts) ->
 				console.log "err: #{err}" if err
