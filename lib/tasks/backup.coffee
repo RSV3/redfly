@@ -1,9 +1,9 @@
 util = require '../server/util'
 
-url = require('url').parse process.env.MONGOLAB_URI
-auth = url.auth.split ':'
+options = do ->
+	url = require('url').parse process.env.MONGOLAB_URI
+	auth = url.auth.split ':'
 
-options =
 	mongodb:
 		host: url.hostname
 		port: url.port
