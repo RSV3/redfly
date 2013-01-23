@@ -35,6 +35,8 @@ module.exports = (app, socket) ->
 	session = socket.handshake.session
 
 	linkCallBack = (token, secret, profile, done) ->
+		if not profile
+			return done "No profile", null
 		li =
 			id: profile.id
 			token: token
@@ -44,8 +46,8 @@ module.exports = (app, socket) ->
 				console.log "ERROR: #{err} linking in for #{session.user}"
 				return done err, null
 			else
-				if not user.picture and profile._json.pictureUrl and not profile._json.pictureUrl.match(/no_photo/)
-					user.picture = profile._json.pictureUrl
+				if not user.picture and not profile._json?.pictureUrl?.match(/no_photo/)
+					user.picture = profile._json?.pictureUrl
 					dirtyflag = true
 				if not user.linkedin or user.linkedin isnt profile.id
 					user.linkedin = profile.id
