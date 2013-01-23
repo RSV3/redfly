@@ -17,8 +17,6 @@
 		"nodemailer": "0.3.37",
 		"imap-jtnt-xoa2": "0.6.1",
 		"everyauth": "0.3.1",
-		"passport": "0.1.15",
-		"passport-google-oauth": "0.1.4",
 		"xoauth2": "0.1.4",
 		"passport": "0.1.15",
 		"passport-linkedin": "0.1.2",
