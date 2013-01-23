@@ -59,14 +59,18 @@ module.exports = (app, socket) ->
 					return done null, user, li
 
 
+	li_opts=
+		consumerKey: process.env.LINKEDIN_API_KEY
+		consumerSecret: process.env.LINKEDIN_API_SECRET
+		callbackURL: util.baseUrl + '/linked'
+		scope:['r_basicprofile', 'r_fullprofile', 'r_network']
+		fetch:['picture-url', 'id']
 
-	passport.use(new LinkedInStrategy {
-			consumerKey: process.env.LINKEDIN_API_KEY
-			consumerSecret: process.env.LINKEDIN_API_SECRET
-			callbackURL: util.baseUrl + '/linked'
-			scope:['r_basicprofile', 'r_fullprofile', 'r_network']
-			fetch:['picture-url', 'id']
-		}, linkCallBack)
+	console.log ""
+	console.log "using passport to link in with:"
+	console.dir li_opts
+	console.log ""
+	passport.use(new LinkedInStrategy li_opts, linkCallBack)
 
 
 
