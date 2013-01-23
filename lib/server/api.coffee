@@ -1,6 +1,6 @@
 
 passport = require 'passport'
-LinkedInStrategy = require('passport-linkedin').Strategy
+LinkedInStrategy = require('passport-jtnt-linkedin').Strategy
 
 request = require 'request'
 
