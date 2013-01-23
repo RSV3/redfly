@@ -44,11 +44,17 @@ module.exports = (app, socket) ->
 				console.log "ERROR: #{err} linking in for #{session.user}"
 				done err, null
 			else
-				if not user.picture and not profile._json.pictureUrl.match(/no_photo/)
+				if not user.picture and profile._json.pictureUrl and not profile._json.pictureUrl.match(/no_photo/)
 					user.picture = profile._json.pictureUrl
-				user.linkedin = profile.id
-				user.save (err) ->
-					done err, user, li
+					dirtyflag = true
+				if not user.linkedin or user.linkedin isnt profile.id
+					user.linkedin = profile.id
+					dirtyflag = true
+				if dirtyflag
+					user.save (err) ->
+						done err, user, li
+				else
+					done null, user, li
 
 
 	passport.use(new LinkedInStrategy {
