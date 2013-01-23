@@ -131,12 +131,15 @@ module.exports = (app, socket) ->
 		console.log 'never gets here'
 
 	app.get '/linked', (req, res, next) ->
+		if req.params.oauth_problem is 'user_refused'
+			return res.redirect "/profile"
 		passport.authenticate('linkedin',  (err, user, info) ->
 			session.linkedin_auth = info
 			session.save()
 			req.session.linkedin_auth = info
 			if not err and user
 				return res.redirect "/link"
+			return res.redirect "/profile"
 		) req, res, next
 
 
