@@ -13,7 +13,7 @@
 			h1 {{canonicalName}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
-			| <br>{{position}}, {{company}}
+			| <br>{{position}}{{#if position}},{{/if}}} {{company}}
 			| {{/if}}
 		.row-fluid
 			| {{#if isKnown}}
