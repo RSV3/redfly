@@ -98,12 +98,13 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 		for detail, list of listedDetails
 			if list and list.length
 				for item in list
-					if not linkedin[detail]
-						linkedin[detail] = [item]
-						altered = true
-					else if (_.indexOf item, linkedin[detail]) < 0
-						linkedin[detail].addToSet item
-						altered = true
+					if item and item.length
+						if not linkedin[detail]
+							linkedin[detail] = [item]
+							altered = true
+						else if (_.indexOf item, linkedin[detail]) < 0
+							linkedin[detail].addToSet item
+							altered = true
 
 		if altered
 			linkedin.save (err) ->
