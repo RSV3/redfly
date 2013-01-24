@@ -10,15 +10,15 @@ config =
 		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
 
+		LINKEDIN_API_KEY: '1g1zfsv0gan1'
+		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
+
 		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
 
 		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
-
-		LINKEDIN_API_KEY: '1g1zfsv0gan1'
-		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
 
 
 	# test:

@@ -170,6 +170,14 @@ _matchContact = (contacts, cb) ->
 	cb contacts				# oh dear, what a challenge: more than one? work it out later ...
 
 
+
+###
+#   escape a string in preparation for building a regular expression
+###
+REescape = (str) ->
+	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+
+
 ###
 find a contact for this user that matches "first last" or "formatted"
 and send best match to the callback.
@@ -184,11 +192,11 @@ TODO: one option might be to make a (n+1)-th contact, and let the user merge (if
 ###
 matchContact = (user, first, last, formatted, cb) ->
 	name = "#{first} #{last}"
-	r_name = new RegExp('^'+name+'$', "i")
+	r_name = new RegExp('^'+REescape(name)+'$', "i")
 	models.Contact.find {names: r_name}, (err, contacts) ->
 		console.log "err: #{err}" if err
-		if not contacts.length and not formatted.match(r_name)
-			r_name = new RegExp('^'+formatted+'$', "i")
+		if not contacts.length and not formatted?.match(r_name)
+			r_name = new RegExp('^'+REescape(formatted)+'$', "i")
 			models.Contact.find {names: r_name}, (err, contacts) ->
 				console.log "err: #{err}" if err
 				_matchContact contacts, cb

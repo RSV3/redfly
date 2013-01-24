@@ -20,9 +20,9 @@ socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
 	window.location.reload()
 
-Handlebars.registerHelper 'truncatedate', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
+Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
 	value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
-	return '' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
+	'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
 Handlebars.registerHelper 'debug', (optionalValue) ->
 	console.log 'Current Context'
