@@ -5,23 +5,6 @@ LinkedInStrategy = require('passport-jtnt-linkedin').Strategy
 request = require 'request'
 
 
-notifications = (user, socket) ->
-	{
-		foundName: (name) ->
-			if not user.name
-				user.name = name
-				user.save (err) ->
-					throw err if err
-					socket.emit 'parse.name'
-		foundTotal: (total) ->
-			socket.emit 'parse.total', total
-		completedEmail: ->
-			socket.emit 'parse.mail'
-		completedAllEmails: ->
-			socket.emit 'parse.queueing'
-		foundNewContact: ->
-			socket.emit 'parse.enqueued'
-	}
 
 module.exports = (app, socket) ->
 
@@ -152,12 +135,15 @@ module.exports = (app, socket) ->
 		console.log 'never gets here'
 
 	app.get '/linked', (req, res, next) ->
+		if req.params.oauth_problem is 'user_refused'
+			return res.redirect "/profile"
 		passport.authenticate('linkedin',  (err, user, info) ->
 			session.linkedin_auth = info
 			session.save()
 			req.session.linkedin_auth = info
 			if not err and user
 				return res.redirect "/link"
+			return res.redirect "/profile"
 		) req, res, next
 
 
@@ -426,11 +412,17 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-			try
-				require('./parser') app, user, notifications(user, socket), fn
-			catch e
-				console.log "PARSER ERR"
-				console.log e
+			notifications = ->
+				foundTotal: (total) ->
+					socket.emit 'parse.total', total
+				completedEmail: ->
+					socket.emit 'parse.mail'
+				completedAllEmails: ->
+					socket.emit 'parse.queueing'
+				foundNewContact: ->
+					socket.emit 'parse.enqueued'
+
+			require('./parser') app, user, notifications, fn
 
 	socket.on 'linkin', (id, fn) ->
 		console.dir session
@@ -441,12 +433,15 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-			try
-				console.log "calling with:"
-				console.dir session.linkedin_auth
-				console.log "in session.linkedin_auth"
-				require('./linker') app, user, session.linkedin_auth, notifications(user, socket), fn
-			catch e
-				console.log "LINKIN ERR"
-				console.log e
+			notifications = ->
+				foundTotal: (total) ->
+					socket.emit 'parse.total', total
+				completedEmail: ->
+					socket.emit 'parse.mail'
+				completedAllEmails: ->
+					socket.emit 'parse.queueing'
+				foundNewContact: ->
+					socket.emit 'parse.enqueued'
+
+			require('./linker') app, user, session.linkedin_auth, notifications, fn
 

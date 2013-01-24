@@ -1,8 +1,8 @@
 .hide
 	#linkingStarted
 		| {{#if stateConnecting}}
-		| Makin' pals with linkedin...
-		img.pull-right(src='http://www.updown.com/facebook/g/loading.gif')
+		| Makin' pals with LinkedIn...
+		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
 		| {{#if stateParsing}}
 		div {{current}} of {{total}}
@@ -21,6 +21,6 @@
 		button.close(type='button', data-dismiss='modal') ×
 		h3 You're all set!
 	.modal-body
-		p You've successfully connected to linkedin.
+		p You've successfully connected to LinkedIn.
 	.modal-footer
 		button.btn(data-dismiss='modal') Close
