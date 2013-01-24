@@ -111,19 +111,19 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 addDeets2Contact = (user, contact, details, specialties, industries) ->
 	if details.positions and details.positions.length
 		if not contact.company and not contact.position
-			contact.company = details.positions[0].company.name
+			contact.company = details.positions[0].company?.name
 			contact.position = details.positions[0].title
 			dirtycontact = true
 		else if not contact.company
-			contact.company = _.select(details.positions, (p) -> p.title is contact.position)?.company.name
+			contact.company = _.select(details.positions, (p) -> p.title is contact.position)?.company?.name
 			dirtycontact = true
 		else if not contact.position
-			contact.position = _.select(details.positions, (p) -> p.company.name is contact.company)?.title
+			contact.position = _.select(details.positions, (p) -> p.company?.name is contact.company)?.title
 			dirtycontact = true
 
 		# still no matches?
 		if not contact.company
-			contact.company = details.positions[0].company.name
+			contact.company = details.positions[0].company?.name
 			dirtycontact = true
 		else if not contact.position
 			dirtycontact = true
