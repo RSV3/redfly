@@ -175,6 +175,7 @@ _matchContact = (contacts, cb) ->
 #   escape a string in preparation for building a regular expression
 ###
 REescape = (str) ->
+	if not str return ""
 	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
 
@@ -195,7 +196,7 @@ matchContact = (user, first, last, formatted, cb) ->
 	r_name = new RegExp('^'+REescape(name)+'$', "i")
 	models.Contact.find {names: r_name}, (err, contacts) ->
 		console.log "err: #{err}" if err
-		if not contacts.length and not formatted?.match(r_name)
+		if not contacts.length and formatted and not formatted?.match(r_name)
 			r_name = new RegExp('^'+REescape(formatted)+'$', "i")
 			models.Contact.find {names: r_name}, (err, contacts) ->
 				console.log "err: #{err}" if err
