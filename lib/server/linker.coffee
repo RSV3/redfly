@@ -115,7 +115,7 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 			contact.position = details.positions[0].title
 			dirtycontact = true
 		else if not contact.company
-			contact.company = _.select(details.positions, (p) -> p.position is contact.title)?.company.name
+			contact.company = _.select(details.positions, (p) -> p.position.title is contact.position)?.company.name
 			dirtycontact = true
 		else if not contact.position
 			contact.position = _.select(details.positions, (p) -> p.company.name is contact.company)?.title
