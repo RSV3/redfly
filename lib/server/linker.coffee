@@ -175,7 +175,7 @@ _matchContact = (contacts, cb) ->
 #   escape a string in preparation for building a regular expression
 ###
 REescape = (str) ->
-	if not str return ""
+	if not str then return ""
 	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
 
