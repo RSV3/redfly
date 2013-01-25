@@ -59,17 +59,103 @@ addTags = (user, contact, category, alist) ->
 		_addTags user, contact, category, _.pluck(existing, 'body'), alist
 
 
+#
+# Given two linkedin startDate/ endDate objects
+# { month:month, year:year }
+# return difference in months
+# 
+liCountMonths = (d_from, d_to) ->
+	if not d_to or not d_to.year or not d_from or not d_from.year
+		return 0
+	months = (d_to.year - d_from.year) * 12 
+	if d_to.month
+		months += d_to.month
+	if d_from.month
+		months -= d_from.month
+	months
+
+
+#
+# Given two linkedin start_date/ end-date objects
+# { month:month, year:year }
+# return:
+# -1 if d1<d2
+# +1 if d1>d2
+# 0 if d1==d2
+#
+liDateCompare = (d1, d2) ->
+	if not d1 or not d2 
+		return 0
+	if d1.year < d2.year
+		return -1
+	if d1.year > d2.year
+		return 1
+	if d1.month < d2.month
+		return -1
+	if d1.month > d2.month
+		return 1
+	return 0
+
+
+###
+# 
+# calculate years of experience for this contact.
+# 
+# get the industry tags of the contact's (primary) current position
+# get the years in current position from the start date
+# find all past and preset positions that share industry tags with the primary current position
+# make a list of start end dates for those past positions
+# flatten that list, mindful of overlaps to get total years experience
+# 
+###
+calculateXperience  = (contact, details) ->
+	months = 0
+
+	for position in details.positions
+		if position.title is contact.position and position.company.name is contact.company
+			whichpos = position
+	if not whichpos then return months
+
+	for position in details.positions
+		if position isnt whichpos
+			if position.company.industry == whichpos.company.industry
+				if liDateCompare(position.startDate, whichpos.startDate) < 0
+					whichpos = position
+
+	d = new Date()
+	first_d =
+		month: d.getMonth()
+		year: d.getFullYear()
+	latest_d = whichpos.startDate
+	months += liCountMonths latest_d, first_d
+	
+	for position in details.pastpositions
+		if position.company.industry is whichpos.company.industry
+			if liDateCompare(position.startDate, latest_d) < 0
+				if liDateCompare(position.endDate, latest_d) < 0
+					latest_d = position.endDate
+				months += liCountMonths position.startDate, latest_d
+				latest_d = position.startDate
+
+	Math.round(months/12)
+
+
 ###
 add new contact details to the queue for this user
 ###
 push2linkQ = (user, contact, details) ->
 	if details.specialties
-		specialties = details.specialties.split(',')
+		commacount = details.specialties.match /,/g
+		dashcount = details.specialties.match /\-/g
+		splitchar = if dashcount > commacount then '-' else ','
+		specialties = details.specialties.split splitchar
+
 	positions = _.pluck details.positions, 'title'
 	companies = _.pluck details.positions, 'company'
 	industries = _.pluck companies, 'industry'
 	industries.unshift details.industry
 	companies = _.pluck companies, 'name'
+
 	addDeets2Linkedin user, contact, details, 
 		specialties:specialties
 		industries:industries
@@ -147,6 +233,12 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 		contact.linkedin = linklink
 		dirtycontact = true
 	
+	years = calculateXperience contact, details
+	console.log "calculating: #{years}"
+	if contact.yearsXperience isnt years
+		contact.yearsXperience = years
+		dirtycontact = true
+
 	if dirtycontact
 		contact.save (err) ->
 
@@ -255,6 +347,7 @@ linker = (app, user, info, notifications, fn) ->
 							for key, val of deets
 								if key is 'positions'
 									item[key] = _.select val.values, (p) -> p.isCurrent
+									item.pastpositions = _.select val.values, (p) -> not p.isCurrent
 								else
 									item[key] = val
 							push2linkQ user, contact, item

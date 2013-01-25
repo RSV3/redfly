@@ -9,9 +9,6 @@
 		.progress.progress-striped.active
 			| <div class="bar" {{bindAttr style="percent"}}></div>
 		| {{/if}}
-		| {{#if stateQueueing}}
-		div contacts found: {{totalQueued}}
-		| {{/if}}
 		| {{#if stateDone}}
 		| All done! <a href="#" {{action profile href=true}}>Done</a>.
 		| {{/if}}

@@ -31,6 +31,7 @@ ContactSchema = new Schema
 	linkedin: type: String
 	twitter: type: String
 	facebook: type: String
+	yearsXperience: type: Number
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
 
