@@ -155,7 +155,7 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 #
 # after submitting a query on contact name, try to narrow down the results ...
 #
-_matchContact = (contacts, cb) ->
+_matchContact = (user, contacts, cb) ->
 	if not contacts.length
 		cb null
 	if (contacts.length > 1)
@@ -181,6 +181,22 @@ REescape = (str) ->
 
 
 ###
+# first tries to match contacts with name
+# if that fails, tries again with case insensitive regexp (that we know fails on unicode)
+###
+matchInsensitiveContact = (name, cb) ->
+	models.Contact.find {names: name}, (err, contacts) ->
+		if err
+			console.log "Error on matchContact #{name}: #{err}" if err
+		if contacts.length
+			cb contacts
+		else
+			r_name = new RegExp('^'+REescape(name)+'$', "i")
+			models.Contact.find {names: r_name}, (err, contacts) ->
+				console.log "Error on matchContact /#{name}/: #{err}" if err
+				cb contacts
+
+###
 find a contact for this user that matches "first last" or "formatted"
 and send best match to the callback.
 
@@ -194,24 +210,17 @@ TODO: one option might be to make a (n+1)-th contact, and let the user merge (if
 ###
 matchContact = (user, first, last, formatted, cb) ->
 	name = "#{first} #{last}"
-	r_name = new RegExp('^'+REescape(name)+'$', "i")
-	models.Contact.find {names: r_name}, (err, contacts) ->
-		console.log "err: #{err}" if err
-		if not contacts.length and formatted and not formatted?.match(r_name)
-			r_name = new RegExp('^'+REescape(formatted)+'$', "i")
-			models.Contact.find {names: r_name}, (err, contacts) ->
-				console.log "err: #{err}" if err
-				_matchContact contacts, cb
-		else
-			_matchContact contacts, cb
+	matchInsensitiveContact name, (contacts) ->
+		if contacts or name is formatted then _matchContact user, contacts, cb
+		else matchInsensitiveContact formatted, (contacts) ->
+			_matchContact user, contacts, cb
 
 
 
-module.exports = (app, user, info, notifications, fn) ->
 
-	linker = (app, user, info, notifications, fn) ->
+linker = (app, user, info, notifications, fn) ->
 
-		parturl = '/~/connections:(id,first-name,last-name,formatted-name)'
+	parturl = '/~/connections:(id,first-name,last-name,formatted-name)'
 #
 #	TODO : what if we have linkedin contacts before we ever email them?
 #	if they never updated their linkedin, we'd never pick out their data ...
@@ -219,39 +228,42 @@ module.exports = (app, user, info, notifications, fn) ->
 #		if user.lastlink
 #			parturl += "?modified-since=#{user.lastlink}"
 
-		today = new Date()
-		user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
+	today = new Date()
+	user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
 
-		oauth = 
-			consumer_key: process.env.LINKEDIN_API_KEY
-			consumer_secret: process.env.LINKEDIN_API_SECRET
-			token: info.token
-			token_secret: info.secret
+	oauth = 
+		consumer_key: process.env.LINKEDIN_API_KEY
+		consumer_secret: process.env.LINKEDIN_API_SECRET
+		token: info.token
+		token_secret: info.secret
 
-		getLinked parturl, oauth, (network) ->
-			if not network
-				console.log "#{parturl} failed"
-			if network
-				notifications.foundTotal? network._total
-				syncForEach network.values, (item, cb) ->
-					notifications.completedEmail?()
-					matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-						if not contact
+	getLinked parturl, oauth, (network) ->
+		if not network
+			console.log "#{parturl} failed"
+		if network
+			notifications.foundTotal? network._total
+			syncForEach network.values, (item, cb) ->
+				notifications.completedEmail?()
+				matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
+					if not contact
+						cb()
+					else if _.isArray contact
+						"found multiple contacts matching #{item.firstName} #{item.lastName}"
+						cb()
+					else
+						getDeets item.id, oauth, (deets) ->
+							for key, val of deets
+								if key is 'positions'
+									item[key] = _.select val.values, (p) -> p.isCurrent
+								else
+									item[key] = val
+							push2linkQ user, contact, item
 							cb()
-						else if _.isArray contact
-							"found multiple contacts matching #{item.firstName} #{item.lastName}"
-							cb()
-						else
-							getDeets item.id, oauth, (deets) ->
-								for key, val of deets
-									if key is 'positions'
-										item[key] = _.select val.values, (p) -> p.isCurrent
-									else
-										item[key] = val
-								push2linkQ user, contact, item
-								cb()
-				, () ->
-					# is there any further user interaction necessary?
-					fn()
+			, () ->
+				# is there any further user interaction necessary?
+				fn()
 
-	linker app, user, info, notifications, fn
+module.exports =
+	linker: linker
+	matchContact: matchContact
+

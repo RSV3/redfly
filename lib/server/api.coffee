@@ -439,5 +439,5 @@ module.exports = (app, socket) ->
 				foundNewContact: ->
 					socket.emit 'parse.enqueued'
 
-			require('./linker') app, user, session.linkedin_auth, notifications, fn
+			require('./linker').linker app, user, session.linkedin_auth, notifications, fn
 
