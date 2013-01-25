@@ -359,4 +359,5 @@ linker = (app, user, info, notifications, fn) ->
 module.exports =
 	linker: linker
 	matchContact: matchContact
+	calculateXperience: calculateXperience
 
