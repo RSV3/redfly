@@ -47,6 +47,9 @@ module.exports = (Ember, App, socket) ->
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
+		gmailSearch: (->
+				encodeURI '//gmail.com#search/to:' + @get('email')
+			).property 'email'
 		directMailto: (->
 				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
 			).property 'canonicalName', 'email'

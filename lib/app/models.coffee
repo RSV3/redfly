@@ -55,7 +55,7 @@ module.exports = (DS, App) ->
 		email: (->
 				@get 'emails.firstObject'
 			).property 'emails.firstObject'
-		otherEmails: ( ->
+		otherEmails: (->
 				_.rest @get('emails')
 			).property 'emails.@each'
 		canonicalName: (->
