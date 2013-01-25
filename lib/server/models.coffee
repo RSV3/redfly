@@ -28,6 +28,10 @@ ContactSchema = new Schema
 	position: type: String
 	company: type: String
 	knows: [ type: Types.ObjectId, ref: 'User' ]
+	linkedin: type: String
+	twitter: type: String
+	facebook: type: String
+	yearsXperience: type: Number
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
 
