@@ -14,3 +14,12 @@ describe 'test matchC', ->
 		for contact in csv
 			linker.matchContact {user_id:0}, contact[0], contact[1], contact[0]+contact[1], (o) ->
 				console.dir o
+
+describe 'test experience calculation', ->
+	it 'should calculate accurately', ->
+		contact = 
+			position: 'shelf stacker'
+			company: 'testos'
+		details = require './fakedeets.coffee'
+		linker.calculateXperience(contact, details).should.equal 6
+
