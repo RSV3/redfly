@@ -15,9 +15,10 @@ module.exports = (app, user, notifications = {}, cb) ->
 			refreshToken: user.oauth
 
 		generator.getToken (err, token) ->
-			console.warn err
-			# Just send the newsletter and quit if the user can't be parsed.
-			return mailer.sendNewsletter user, cb
+			if err
+				console.warn err
+				# Just send the newsletter and quit if the user can't be parsed.
+				return cb()
 
 			imap = require 'imap-jtnt-xoa2'
 			server = new imap.ImapConnection
