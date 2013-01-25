@@ -1,5 +1,7 @@
+# TO-DO pretty sure I don't need to be threading (app, user, notifications, cb) through all the inner fuctions...
 module.exports = (app, user, notifications = {}, cb) ->
 	_ = require 'underscore'
+	mailer = require('./mail') app
 
 
 	parse = (app, user, notifications, cb) ->
@@ -13,7 +15,9 @@ module.exports = (app, user, notifications = {}, cb) ->
 			refreshToken: user.oauth
 
 		generator.getToken (err, token) ->
-			throw err if err
+			console.warn err
+			# Just send the newsletter and quit if the user can't be parsed.
+			return mailer.sendNewsletter user, cb
 
 			imap = require 'imap-jtnt-xoa2'
 			server = new imap.ImapConnection
@@ -91,7 +95,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 	enqueue = (app, user, notifications, mails, cb) ->
 		models = require './models'
-		mailer = require('./mail') app
 
 		newContacts = []
 		sift = (index = 0) ->
