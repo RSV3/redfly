@@ -48,6 +48,7 @@ module.exports = (DS, App) ->
 		linkedin: DS.attr 'string'
 		facebook: DS.attr 'string'
 		twitter: DS.attr 'string'
+		yearsXperience: DS.attr 'number'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
