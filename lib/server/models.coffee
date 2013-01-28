@@ -58,11 +58,16 @@ MergeSchema = new Schema
 
 
 LinkedInSchema = new Schema
+	name:
+		firstName: type: String
+		lastName: type: String
+		formattedName: type: String
 	positions: [ type: String ]
 	companies: [ type: String ]
 	industries: [ type: String ]
 	specialties: [ type: String ]
 	contact: type: Types.ObjectId, ref: 'Contact'
+	user: type: Types.ObjectId, ref: 'User'
 	linkedinid: type: String
 	summary: type: String
 	headline: type: String
