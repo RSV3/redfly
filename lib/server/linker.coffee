@@ -161,39 +161,59 @@ push2linkQ = (user, contact, details) ->
 		industries:industries
 		companies:companies
 		positions:positions
-	addDeets2Contact user, contact, details, specialties, industries
+
+	if contact and not _.isArray(contact)	# only if we're certain which contact this matches,
+		addDeets2Contact user, contact, details, specialties, industries
+
+
+saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
+	altered = false
+	if not linkedin
+		linkedin = new models.LinkedIn
+		linkedin.contact = contact
+		linkedin.linkedinid = details.id
+		linkedin.user = user
+		if not contact
+			linkedin.name = 
+				firstName: details.firstName
+				lastName: details.lastName
+				formattedName: details.formattedName
+		altered = true
+
+	if details.summary and linkedin.summary isnt details.summary
+		linkedin.summary = details.summary
+		altered = true
+	if details.headline and linkedin.headline isnt details.headline
+		linkedin.headline = details.headline
+		altered = true
+
+	for detail, list of listedDetails
+		if list and list.length
+			for item in list
+				if item and item.length
+					if not linkedin[detail]
+						linkedin[detail] = [item]
+						altered = true
+					else if (_.indexOf item, linkedin[detail]) < 0
+						linkedin[detail].addToSet item
+						altered = true
+
+	if altered
+		linkedin.save (err) ->
 
 
 addDeets2Linkedin = (user, contact, details, listedDetails) ->
-	models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
-		throw err if err
-		altered = false
-		if not linkedin
-			linkedin = new models.LinkedIn
-			linkedin.contact = contact
-			linkedin.liid = details.id
-			altered = true
+	if _.isArray(contact)	# if this linkedin connection matches multiple contacts,
+		contact = null		# just store the deets, without trying to match
+	if contact
+		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
+			throw err if err
+			saveLinkedin details, listedDetails, user, contact, linkedin
+	else 
+		models.LinkedIn.findOne {linkedinid: details.id}, (err, linkedin) ->
+			throw err if err
+			saveLinkedin details, listedDetails, user, contact, linkedin
 
-		if details.summary and linkedin.summary isnt details.summary
-			linkedin.summary = details.summary
-			altered = true
-		if details.headline and linkedin.headline isnt details.headline
-			linkedin.headline = details.headline
-			altered = true
-
-		for detail, list of listedDetails
-			if list and list.length
-				for item in list
-					if item and item.length
-						if not linkedin[detail]
-							linkedin[detail] = [item]
-							altered = true
-						else if (_.indexOf item, linkedin[detail]) < 0
-							linkedin[detail].addToSet item
-							altered = true
-
-		if altered
-			linkedin.save (err) ->
 
 addDeets2Contact = (user, contact, details, specialties, industries) ->
 	if details.positions and details.positions.length
@@ -249,7 +269,7 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 #
 _matchContact = (user, contacts, cb) ->
 	if not contacts.length
-		cb null
+		return cb null
 	if (contacts.length > 1)
 		nc = _.select contacts, (c) -> (_.indexOf user._id, c.knows) >= 0
 		if nc.length
@@ -258,9 +278,9 @@ _matchContact = (user, contacts, cb) ->
 		nc = _.select contacts, (i) -> i.addedBy is user._id
 		if nc.length
 			contacts = nc
-	if (contacts.length == 1)
-		cb contacts[0]
-	cb contacts				# oh dear, what a challenge: more than one? work it out later ...
+	if (contacts.length > 1)
+		return cb contacts				# oh dear, what a challenge: more than one? work it out later ...
+	cb contacts[0]
 
 
 
@@ -337,21 +357,15 @@ linker = (app, user, info, notifications, fn) ->
 			syncForEach network.values, (item, cb) ->
 				notifications.completedEmail?()
 				matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-					if not contact
+					getDeets item.id, oauth, (deets) ->
+						for key, val of deets
+							if key is 'positions'
+								item[key] = _.select val.values, (p) -> p.isCurrent
+								item.pastpositions = _.select val.values, (p) -> not p.isCurrent
+							else
+								item[key] = val
+						push2linkQ user, contact, item
 						cb()
-					else if _.isArray contact
-						"found multiple contacts matching #{item.firstName} #{item.lastName}"
-						cb()
-					else
-						getDeets item.id, oauth, (deets) ->
-							for key, val of deets
-								if key is 'positions'
-									item[key] = _.select val.values, (p) -> p.isCurrent
-									item.pastpositions = _.select val.values, (p) -> not p.isCurrent
-								else
-									item[key] = val
-							push2linkQ user, contact, item
-							cb()
 			, () ->
 				# is there any further user interaction necessary?
 				fn()
