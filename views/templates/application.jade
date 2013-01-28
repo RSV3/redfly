@@ -120,6 +120,16 @@
 						| on {{added}}
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
+					| {{#if typeLinkedin}}
+					| <a {{action goContact this href=true}}>
+					h4 {{canonicalName}}
+					| </a>
+					p
+						| Was just updated with LinkedIn data by 
+						| <a {{action goProfile updatedBy href=true}}>{{updatedBy.canonicalName}}</a>
+						| .
+					| {{view App.TaggerView contactBinding="this"}}
+					| {{/if}}
 					| {{#if typeContact}}
 					| <a {{action goContact this href=true}}>
 					h4 {{canonicalName}}

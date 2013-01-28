@@ -87,12 +87,11 @@ ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
-
 MergeSchema.plugin common
-
 LinkedInSchema.plugin common
 
-
+LinkedInSchema.index {contact:1}
+LinkedInSchema.index {linkedinid:1}
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 
