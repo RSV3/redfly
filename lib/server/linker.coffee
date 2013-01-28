@@ -143,7 +143,7 @@ calculateXperience  = (contact, details) ->
 ###
 add new contact details to the queue for this user
 ###
-push2linkQ = (user, contact, details) ->
+push2linkQ = (notifications, user, contact, details) ->
 	if details.specialties
 		commacount = details.specialties.match /,/g
 		dashcount = details.specialties.match /\-/g
@@ -163,7 +163,7 @@ push2linkQ = (user, contact, details) ->
 		positions:positions
 
 	if contact and not _.isArray(contact)	# only if we're certain which contact this matches,
-		addDeets2Contact user, contact, details, specialties, industries
+		addDeets2Contact notifications, user, contact, details, specialties, industries
 
 
 saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
@@ -215,7 +215,7 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 			saveLinkedin details, listedDetails, user, contact, linkedin
 
 
-addDeets2Contact = (user, contact, details, specialties, industries) ->
+addDeets2Contact = (notifications, user, contact, details, specialties, industries) ->
 	if details.positions and details.positions.length
 		if not contact.company and not contact.position
 			contact.company = details.positions[0].company?.name
@@ -254,13 +254,13 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 		dirtycontact = true
 	
 	years = calculateXperience contact, details
-	console.log "calculating: #{years}"
 	if contact.yearsXperience isnt years
 		contact.yearsXperience = years
 		dirtycontact = true
 
 	if dirtycontact
 		contact.save (err) ->
+			notifications.bcastLinkedin? contact
 
 
 
@@ -364,7 +364,7 @@ linker = (app, user, info, notifications, fn) ->
 								item.pastpositions = _.select val.values, (p) -> not p.isCurrent
 							else
 								item[key] = val
-						push2linkQ user, contact, item
+						push2linkQ notifications, user, contact, item
 						cb()
 			, () ->
 				# is there any further user interaction necessary?
