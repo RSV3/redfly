@@ -229,7 +229,7 @@ module.exports = (Ember, App, socket) ->
 
 			socialPrefixes :
 				twitter: 'twitter.com/'
-				facebook: 'facebook.com/'
+				facebook: 'www.facebook.com/'
 				linkedin: 'www.linkedin.com/profile/view?id='
 
 			handleClix : (e, editflag) ->
@@ -239,7 +239,7 @@ module.exports = (Ember, App, socket) ->
 					name = name.substr(7); # id is social-networkname
 					url = @get('controller.' +name)
 					if editflag or not url or not url.length
-						$('editThisSocial').removeClass 'editThisSocial'
+						$('.editThisSocial').removeClass 'editThisSocial'
 						$p.addClass 'editThisSocial'
 						$i = $p.parent().find('input')
 						$i.attr('placeholder', "Please enter a link or ID for " + name)
@@ -254,17 +254,26 @@ module.exports = (Ember, App, socket) ->
 			contextMenu: (e) ->
 				@.handleClix e, true
 
-			focus: (e) ->
+			focusIn: (e) ->
 				if $(e.target).hasClass 'maybeedit'
 					$(e.target).removeClass 'errorinput'
+
 			socialEdit: (e) ->
 				$t = $(e.target);
 				if $t.hasClass 'maybeedit'
 					name = $('.editThisSocial').attr 'id'
 					name = name.substr 7
 					v = $t.val()
+
 					if v.match /^http[s]?:\/\//
 						v = v.substr(v.indexOf('/')+2)
+					if v.match /^www\./
+						if not @socialPrefixes[name].match /^www\./
+							v = "www." + v
+					else
+						if @socialPrefixes[name].match /^www\./
+							v = v.substr(4);
+
 					if v.substr(0, @socialPrefixes[name].length) is @socialPrefixes[name] and v.substr(@socialPrefixes[name].length).match @socialPatterns[name]
 						@set 'controller.' + name, 'http://' + v
 						App.store.commit()

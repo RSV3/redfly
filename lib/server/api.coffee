@@ -438,6 +438,14 @@ module.exports = (app, socket) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
 					socket.emit 'parse.mail'
+				bcastLinkedin: (contact) ->
+					msg = 
+						type: 'Contact'
+						id: contact.id
+						user: id
+						linkedin: true
+					socket.broadcast.emit 'feed', msg
+					socket.emit 'feed', msg
 
 			require('./linker').linker app, user, session.linkedin_auth, notifications, fn
 
