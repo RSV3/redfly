@@ -248,9 +248,8 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		contact.knows.addToSet user
 		dirtycontact = true
 
-	linklink = "http://www.linkedin.com/profile/view?id=#{details.id}"
-	if contact.linkedin isnt linklink
-		contact.linkedin = linklink
+	if contact.linkedin isnt details.profileid
+		contact.linkedin = details.profileid
 		dirtycontact = true
 	
 	years = calculateXperience contact, details
@@ -332,7 +331,7 @@ matchContact = (user, first, last, formatted, cb) ->
 
 linker = (app, user, info, notifications, fn) ->
 
-	parturl = '/~/connections:(id,first-name,last-name,formatted-name)'
+	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
 #
 #	TODO : what if we have linkedin contacts before we ever email them?
 #	if they never updated their linkedin, we'd never pick out their data ...
@@ -355,6 +354,10 @@ linker = (app, user, info, notifications, fn) ->
 		if network
 			notifications.foundTotal? network._total
 			syncForEach network.values, (item, cb) ->
+				item.profileid = item.siteStandardProfileRequest?.url
+				item.profileid = item.profileid?.substr (item.profileid.indexOf('key=')+4)
+				item.profileid = item.profileid?.substr 0, item.profileid.indexOf('&')
+				console.log "#{item.profileid} from #{item.siteStandardProfileRequest.url}"
 				notifications.completedEmail?()
 				matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
 					getDeets item.id, oauth, (deets) ->
