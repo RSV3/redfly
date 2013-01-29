@@ -22,16 +22,16 @@ module.exports = (Ember, App, socket) ->
 					moment(sent).fromNow()
 			).property 'histories.lastObject.sent'
 		hasLinkedin: (->
-				url = @get('linkedin')
-				if url and url.length then null else 'antisocial'
+				linkedin = @get('linkedin')
+				if linkedin and linkedin.length then null else 'antisocial'
 			).property 'linkedin'
 		hasFacebook: (->
-				url = @get('facebook')
-				if url and url.length then null else 'antisocial'
+				facebook = @get('facebook')
+				if facebook and facebook.length then null else 'antisocial'
 			).property 'facebook'
 		hasTwitter: (->
-				url = @get('twitter')
-				if url and url.length then null else 'antisocial'
+				twitter = @get('twitter')
+				if twitter and twitter.length then null else 'antisocial'
 			).property 'twitter'
 		isKnown: (->
 				@get('knows')?.find (user) ->
@@ -265,27 +265,26 @@ module.exports = (Ember, App, socket) ->
 					name = name.substr 7
 					v = $t.val()
 
-					if v.match /^http[s]?:\/\//
-						v = v.substr(v.indexOf('/')+2)
-					if v.match /^www\./
-						if not @socialPrefixes[name].match /^www\./
-							v = "www." + v
-					else
-						if @socialPrefixes[name].match /^www\./
-							v = v.substr(4);
-
-					if v.substr(0, @socialPrefixes[name].length) is @socialPrefixes[name] and v.substr(@socialPrefixes[name].length).match @socialPatterns[name]
-						@set 'controller.' + name, 'http://' + v
-						App.store.commit()
-						$t.hide()
-					else if v.match @socialPatterns[name]
-						if v.length
-							v = 'http://' + @socialPrefixes[name] + v
+					if v.match @socialPatterns[name]
 						@set 'controller.' + name, v
 						App.store.commit()
 						$t.hide()
-					else
-						$t.addClass 'errorinput'
+					else 
+						if v.match /^http[s]?:\/\//
+							v = v.substr(v.indexOf('/')+2)
+						if v.match /^www\./
+							if not @socialPrefixes[name].match /^www\./
+								v = v.substr(4);
+						else
+							if @socialPrefixes[name].match /^www\./
+								v = "www." + v
+
+						if v.substr(0, @socialPrefixes[name].length) is @socialPrefixes[name] and v.substr(@socialPrefixes[name].length).match @socialPatterns[name]
+							@set 'controller.' + name, v.substr(@socialPrefixes[name].length)
+							App.store.commit()
+							$t.hide()
+						else
+							$t.addClass 'errorinput'
 
 
 		noteView: Ember.View.extend
