@@ -27,15 +27,6 @@ socket.on 'error', ->
 # 	# moment(date).format('MMMM Do, YYYY')
 # 	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
 
-Handlebars.registerHelper 'debug', (optionalValue) ->
-	console.log 'Current Context'
-	console.log '===================='
-	console.log @
-	if optionalValue
-		console.log 'Value'
-		console.log '===================='
-		console.log optionalValue
-
 
 App.user = Ember.ObjectProxy.create
 	classifyCount: 0
