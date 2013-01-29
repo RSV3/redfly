@@ -163,7 +163,9 @@ push2linkQ = (notifications, user, contact, details) ->
 		positions:positions
 
 	if contact and not _.isArray(contact)	# only if we're certain which contact this matches,
-		addDeets2Contact notifications, user, contact, details, specialties, industries
+		return addDeets2Contact notifications, user, contact, details, specialties, industries
+
+	null
 
 
 saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
@@ -260,6 +262,9 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 	if dirtycontact
 		contact.save (err) ->
 			notifications.bcastLinkedin? contact
+		return contact._id
+
+	null
 
 
 
@@ -349,6 +354,7 @@ linker = (app, user, info, notifications, fn) ->
 		token_secret: info.secret
 
 	getLinked parturl, oauth, (network) ->
+		changed = []		# build an array of changed contacts to broadcast
 		if not network
 			console.log "#{parturl} failed"
 		if network
@@ -367,11 +373,11 @@ linker = (app, user, info, notifications, fn) ->
 								item.pastpositions = _.select val.values, (p) -> not p.isCurrent
 							else
 								item[key] = val
-						push2linkQ notifications, user, contact, item
+						id = push2linkQ notifications, user, contact, item
+						if id then changed.push id
 						cb()
 			, () ->
-				# is there any further user interaction necessary?
-				fn()
+				fn(changed)
 
 module.exports =
 	linker: linker
