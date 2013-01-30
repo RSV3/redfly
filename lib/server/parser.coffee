@@ -99,7 +99,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 		newContacts = []
 
-		finishedParsing = () ->
+		finishedParsing = (user, newContacts) ->
 			thismailer = mailer(app);
 			user.lastParsed = new Date
 			user.save (err) ->

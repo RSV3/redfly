@@ -1,3 +1,5 @@
+_ = require 'underscore'
+
 module.exports = (Ember, App, socket) ->
 	util = require '../../util'
 
@@ -22,7 +24,7 @@ module.exports = (Ember, App, socket) ->
 					pnotify.css top: '60px'
 					@$('#linkingStarted').appendTo '#loading'
 
-			socket.emit 'linkin', App.user.get('id'), (err) =>
+			socket.emit 'linkin', App.user.get('id'), (err, changes) =>
 				if err
 					return alert err.message + 'Are you connected to the internet? Did you allow access to LinkedIn?'
 				@set 'stateConnecting', false
@@ -31,6 +33,11 @@ module.exports = (Ember, App, socket) ->
 				@get('notification').effect 'bounce'
 				@get('notification').pnotify type: 'success', closer: true
 				@get('modal').modal 'hide'
+				if changes
+					changes = _.filter(changes, (c) -> App.store.recordIsLoaded(App.Contact, c))
+					if changes.length
+						App.adapter.findMany App.store, App.Contact, changes
+
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0

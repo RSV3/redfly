@@ -68,7 +68,7 @@ LinkedInSchema = new Schema
 	specialties: [ type: String ]
 	contact: type: Types.ObjectId, ref: 'Contact'
 	user: type: Types.ObjectId, ref: 'User'
-	linkedinid: type: String
+	linkedinId: type: String, required: true, unique:true
 	summary: type: String
 	headline: type: String
 

@@ -38,9 +38,9 @@
 		.row-fluid
 			p
 				| {{#view view.socialView}}
-				| <a id="social-linkedin" {{bindAttr class=":social controller.hasLinkedin"}} {{bindAttr href="controller.linkedinurl"}} target="_blank"><span class="icon-linkedin-sign"/></a>
-				| <a id="social-twitter" {{bindAttr class=":social controller.hasTwitter"}} {{bindAttr href="controller.twitterurl"}} target="_blank"><span class="icon-twitter-sign"/></a>
-				| <a id="social-facebook" {{bindAttr class=":social controller.hasFacebook"}} {{bindAttr href="controller.facebookurl"}} target="_blank"><span class="icon-facebook-sign"/></a>
+				| <a id="social-linkedin" {{bindAttr class=":social :icon-large controller.hasLinkedin"}} {{bindAttr href="controller.linkedinurl"}} target="_blank"><span class="icon-linkedin-sign"/></a>
+				| <a id="social-twitter" {{bindAttr class=":social :icon-large controller.hasTwitter"}} {{bindAttr href="controller.twitterurl"}} target="_blank"><span class="icon-twitter-sign"/></a>
+				| <a id="social-facebook" {{bindAttr class=":social :icon-large controller.hasFacebook"}} {{bindAttr href="controller.facebookurl"}} target="_blank"><span class="icon-facebook-sign"/></a>
 				| <input {{action socialEdit on="change" target="view"}} class="maybeedit" />
 				| {{/view}}
 	.span3

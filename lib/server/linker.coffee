@@ -140,15 +140,30 @@ calculateXperience  = (contact, details) ->
 	Math.round(months/12)
 
 
+#
+# split a string by commas, dashes or bullets,
+# whichever is dominant ...
+#
+splitSpecials = (specialties) ->
+	if specialties
+		splitchar = ','
+		splitcount = specialties.match(/,/g)?.length
+		othercount = specialties.match(/-/g)?.length
+		if splitcount < othercount
+			splitchar = '-'
+			splitcount = othercount
+		othercount = specialties.match(/\u2022/g)?.length
+		if splitcount < othercount
+			splitchar = '\u2022'
+			splitcount = othercount
+		specialties.split splitchar
+
+
 ###
 add new contact details to the queue for this user
 ###
 push2linkQ = (notifications, user, contact, details) ->
-	if details.specialties
-		commacount = details.specialties.match /,/g
-		dashcount = details.specialties.match /\-/g
-		splitchar = if dashcount > commacount then '-' else ','
-		specialties = details.specialties.split splitchar
+	specialties = splitSpecials details.specialties
 
 	positions = _.pluck details.positions, 'title'
 	companies = _.pluck details.positions, 'company'
@@ -173,7 +188,7 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 	if not linkedin
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
-		linkedin.linkedinid = details.id
+		linkedin.linkedinId = details.id
 		linkedin.user = user
 		if not contact
 			linkedin.name = 
@@ -212,7 +227,7 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
 	else 
-		models.LinkedIn.findOne {linkedinid: details.id}, (err, linkedin) ->
+		models.LinkedIn.findOne {linkedinId: details.id}, (err, linkedin) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
 
@@ -332,6 +347,14 @@ matchContact = (user, first, last, formatted, cb) ->
 			_matchContact user, contacts, cb
 
 
+#
+# gets the profile ID from an item returned from a linkedin profile query
+# as used in various site URLs
+#
+profileIdFrom = (item) ->
+	id = item.siteStandardProfileRequest?.url
+	id = id?.substr (id.indexOf('key=')+4)
+	id?.substr 0, id.indexOf('&')
 
 
 linker = (app, user, info, notifications, fn) ->
@@ -354,30 +377,34 @@ linker = (app, user, info, notifications, fn) ->
 		token_secret: info.secret
 
 	getLinked parturl, oauth, (network) ->
-		changed = []		# build an array of changed contacts to broadcast
 		if not network
-			console.log "#{parturl} failed"
-		if network
-			notifications.foundTotal? network._total
-			syncForEach network.values, (item, cb) ->
-				item.profileid = item.siteStandardProfileRequest?.url
-				item.profileid = item.profileid?.substr (item.profileid.indexOf('key=')+4)
-				item.profileid = item.profileid?.substr 0, item.profileid.indexOf('&')
-				console.log "#{item.profileid} from #{item.siteStandardProfileRequest.url}"
-				notifications.completedEmail?()
-				matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-					getDeets item.id, oauth, (deets) ->
-						for key, val of deets
-							if key is 'positions'
-								item[key] = _.select val.values, (p) -> p.isCurrent
-								item.pastpositions = _.select val.values, (p) -> not p.isCurrent
-							else
-								item[key] = val
-						id = push2linkQ notifications, user, contact, item
-						if id then changed.push id
-						cb()
-			, () ->
-				fn(changed)
+			return console.log "#{parturl} failed"
+
+		changed = []		# build an array of changed contacts to broadcast
+		notifications.foundTotal? network._total
+		countSomeFeed = 3		# only add a maximum of three new items to the feed
+		if network._total < countSomeFeed
+			countSomeFeed = network._total
+
+		syncForEach network.values, (item, cb) ->
+			item.profileid = profileIdFrom item
+			notifications.completedEmail?()
+			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
+				getDeets item.id, oauth, (deets) ->
+					for key, val of deets		# copy profile, splitting past and present positions
+						if key is 'positions'
+							item[key] = _.select val.values, (p) -> p.isCurrent
+							item.pastpositions = _.select val.values, (p) -> not p.isCurrent
+						else
+							item[key] = val
+
+					if not countSomeFeed--
+						notifications.bcastLinkedin = null
+					id = push2linkQ notifications, user, contact, item
+					if id then changed.push id
+					cb()
+		, () ->
+			fn(changed)
 
 module.exports =
 	linker: linker
