@@ -1,12 +1,9 @@
-_ = require 'underscore'
-xoa2 = require 'xoauth2'
-imap = require 'imap-jtnt-xoa2'
-models = require './models'
-mailer = require './mail'
-
-
+# TO-DO pretty sure I don't need to be threading (app, user, notifications, cb) through all the inner fuctions...
 module.exports = (app, user, notifications = {}, cb) ->
 	_ = require 'underscore'
+	xoa2 = require 'xoauth2'
+	imap = require 'imap-jtnt-xoa2'
+	mailer = require('./mail') app
 
 
 	parse = (app, user, notifications, cb) ->
@@ -20,7 +17,10 @@ module.exports = (app, user, notifications = {}, cb) ->
 			refreshToken: user.oauth
 
 		generator.getToken (err, token) ->
-			throw err if err
+			if err
+				console.warn err
+				# Just send the newsletter and quit if the user can't be parsed.
+				return mailer.sendNewsletter user, cb
 
 			imap = require 'imap-jtnt-xoa2'
 			server = new imap.ImapConnection
@@ -92,27 +92,27 @@ module.exports = (app, user, notifications = {}, cb) ->
 								notifications.completedEmail?()
 
 						fetch.on 'end', ->
-							return finish()
+							finish()
 
 
 	enqueue = (app, user, notifications, mails, cb) ->
+		models = require './models'
 
 		newContacts = []
 
-		finishedParsing = (user, newContacts) ->
-			thismailer = mailer(app);
+		finish = ->
 			user.lastParsed = new Date
 			user.save (err) ->
 				throw err if err
-
-				if newContacts and newContacts.length isnt 0
-					thismailer.sendNudge user, newContacts[...10], cb
+				if newContacts.length isnt 0
+					mailer.sendNudge user, newContacts[...10], cb
 				else
-					thismailer.sendNewsletter user, cb
+					mailer.sendNewsletter user, cb
 
 		sift = (index = 0) ->
+			# TO-DO hacky and awful, all of sift() needs to be refactored
 			if mails.length is 0
-				return finishedParsing user
+				return finish()
 
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
@@ -148,7 +148,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 								.value()
 						newContacts.reverse()
 						user.queue.unshift newContacts...
-						finishedParsing user, newContacts
+						finish()
 
 		sift()
 

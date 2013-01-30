@@ -27,7 +27,7 @@
 		| {{#if firstHistory}}
 		.row-fluid
 			p
-				| You've emailed each other {{histories.length}} times and last spoke 
+				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
 				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
 			p

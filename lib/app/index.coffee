@@ -24,15 +24,6 @@ Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgra
 	value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
 	'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
-Handlebars.registerHelper 'debug', (optionalValue) ->
-	console.log 'Current Context'
-	console.log '===================='
-	console.log @
-	if optionalValue
-		console.log 'Value'
-		console.log '===================='
-		console.log optionalValue
-
 
 App.user = Ember.ObjectProxy.create
 	classifyCount: 0
