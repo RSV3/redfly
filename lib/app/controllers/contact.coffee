@@ -21,6 +21,18 @@ module.exports = (Ember, App, socket) ->
 					moment = require 'moment'
 					moment(sent).fromNow()
 			).property 'histories.lastObject.sent'
+		hasLinkedin: (->
+				linkedin = @get('linkedin')
+				if linkedin and linkedin.length then null else 'antisocial'
+			).property 'linkedin'
+		hasFacebook: (->
+				facebook = @get('facebook')
+				if facebook and facebook.length then null else 'antisocial'
+			).property 'facebook'
+		hasTwitter: (->
+				twitter = @get('twitter')
+				if twitter and twitter.length then null else 'antisocial'
+			).property 'twitter'
 		isKnown: (->
 				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
@@ -206,6 +218,74 @@ module.exports = (Ember, App, socket) ->
 				).observes 'controller.addedBy.nickname'
 			attributeBindings: ['rel']
 			rel: 'tooltip'
+
+
+		socialView: Ember.View.extend
+
+			socialPatterns :
+				linkedin: /^[0-9]*$/
+				facebook: /^[\w\-\.]*$/
+				twitter: /^[\w\-\.]*$/
+
+			socialPrefixes :
+				twitter: 'twitter.com/'
+				facebook: 'www.facebook.com/'
+				linkedin: 'www.linkedin.com/profile/view?id='
+
+			handleClix : (e, editflag) ->
+				$p = $(e.target).parent()
+				if $p and $p.hasClass('social')
+					name = $p.attr('id')
+					name = name.substr(7); # id is social-networkname
+					url = @get('controller.' +name)
+					if editflag or not url or not url.length
+						$('.editThisSocial').removeClass 'editThisSocial'
+						$p.addClass 'editThisSocial'
+						$i = $p.parent().find('input')
+						$i.attr('placeholder', "Please enter a link or ID for " + name)
+						$i.val $p.attr 'href'
+						$i.show()
+						return false
+					else return true
+
+			click: (e) ->
+				@.handleClix e, false
+
+			contextMenu: (e) ->
+				@.handleClix e, true
+
+			focusIn: (e) ->
+				if $(e.target).hasClass 'maybeedit'
+					$(e.target).removeClass 'errorinput'
+
+			socialEdit: (e) ->
+				$t = $(e.target);
+				if $t.hasClass 'maybeedit'
+					name = $('.editThisSocial').attr 'id'
+					name = name.substr 7
+					v = $t.val()
+
+					if v.match @socialPatterns[name]
+						@set 'controller.' + name, v
+						App.store.commit()
+						$t.hide()
+					else 
+						if v.match /^http[s]?:\/\//
+							v = v.substr(v.indexOf('/')+2)
+						if v.match /^www\./
+							if not @socialPrefixes[name].match /^www\./
+								v = v.substr(4);
+						else
+							if @socialPrefixes[name].match /^www\./
+								v = "www." + v
+
+						if v.substr(0, @socialPrefixes[name].length) is @socialPrefixes[name] and v.substr(@socialPrefixes[name].length).match @socialPatterns[name]
+							@set 'controller.' + name, v.substr(@socialPrefixes[name].length)
+							App.store.commit()
+							$t.hide()
+						else
+							$t.addClass 'errorinput'
+
 
 		noteView: Ember.View.extend
 			classNames: ['media']
