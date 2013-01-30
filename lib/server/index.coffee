@@ -96,7 +96,7 @@ app.configure ->
 
 	app.set 'views', path.join(root, 'views')
 	app.set 'view engine', 'jade'
-	app.locals.pretty = process.env.NODE_ENV is 'development'
+	app.locals.pretty = true
 
 	app.use (req, res, next) ->
 		if req.headers.host isnt process.env.HOST
@@ -138,14 +138,15 @@ bundle = require('browserify')
 	watch: process.env.NODE_ENV is 'development'
 	# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
 	exports: 'process'
-bundle.register '.jade', (body, file) ->
-	result = null
-	app.render file, (err, data) ->
-		throw err if err
-		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
-		result = 'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-	result
+bundle.register '.jade', (body, filename) ->
+	include = 'include ' + path.relative(path.dirname(filename), path.join(root, 'views/handlebars')) + '\n'
+	data = require('jade').compile(include + body, filename: filename)()
+	data = data.replace /(action|bindAttr)="(.*?)"/g, (all, name, args) -> '{{' + name + ' ' + args.replace(/&quot;/g, '"') + '}}'
+	data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
+	'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
 bundle.addEntry 'lib/app/index.coffee'
+bundle.on 'syntaxError', (err) ->
+	throw new Error err
 
 
 
