@@ -42,18 +42,14 @@ module.exports = (app, socket) ->
 					return done null, user, li
 
 
-	li_opts=
-		consumerKey: process.env.LINKEDIN_API_KEY
-		consumerSecret: process.env.LINKEDIN_API_SECRET
-		callbackURL: util.baseUrl + '/linked'
-		scope:['r_basicprofile', 'r_fullprofile', 'r_network']
-		fetch:['picture-url', 'id']
 
-	console.log ""
-	console.log "using passport to link in with:"
-	console.dir li_opts
-	console.log ""
-	passport.use(new LinkedInStrategy li_opts, linkCallBack)
+	passport.use(new LinkedInStrategy {
+			consumerKey: process.env.LINKEDIN_API_KEY
+			consumerSecret: process.env.LINKEDIN_API_SECRET
+			callbackURL: util.baseUrl + '/linked'
+			scope:['r_basicprofile', 'r_fullprofile', 'r_network']
+			fetch:['picture-url', 'id']
+		}, linkCallBack)
 
 
 
@@ -425,13 +421,13 @@ module.exports = (app, socket) ->
 			require('./parser') app, user, notifications, fn
 
 	socket.on 'linkin', (id, fn) ->
-		console.dir session
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
+			console.log "looking for #{#id}"
 			throw err if err
 			# TODO temporary, in case this gets called and there's not logged in user
 			if not user
-				return fn()
+				return fn "user not found ! ! !"
 
 			notifications =
 				foundTotal: (total) ->
@@ -447,5 +443,8 @@ module.exports = (app, socket) ->
 					socket.broadcast.emit 'feed', msg
 					socket.emit 'feed', msg
 
-			require('./linker').linker app, user, session.linkedin_auth, notifications, fn
+			require('./linker').linker app, user, session.linkedin_auth, notifications, (changes) ->
+				fn null, changes
+				if changes and changes.length
+					socket.broadcast.emit 'linked', changes
 

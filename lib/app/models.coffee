@@ -79,7 +79,7 @@ module.exports = (DS, App) ->
 
 		linkedinmail: (->
 				if linkedin = @get('linkedin')
-					return "http://www.linkedin.com/requestList?displayProposal=&destID=" + linkedin + "&creationType=DC";
+					return 'http://www.linkedin.com/requestList?displayProposal=&destID=' + linkedin + '&creationType=DC'
 				null
 			).property 'linkedin'
 		linkedinurl: (->

@@ -47,6 +47,14 @@ module.exports = (Ember, App, socket) ->
 					item['type' + data.type] = true
 				@get('controller.feed').unshiftObject item
 
+			# jTNT
+			# handle the broadcast list of linkedin updates
+			socket.on 'linked', (changes) =>
+				if changes and changes.length
+					changes = _.filter(changes, (c) -> App.store.recordIsLoaded(App.Contact, c))
+					if changes.length
+						App.adapter.findMany App.store, App.Contact, changes
+
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.contacts', (count) =>
 				@set 'controller.contactsQueued', count
