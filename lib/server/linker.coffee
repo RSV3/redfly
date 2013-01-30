@@ -59,57 +59,163 @@ addTags = (user, contact, category, alist) ->
 		_addTags user, contact, category, _.pluck(existing, 'body'), alist
 
 
+#
+# Given two linkedin startDate/ endDate objects
+# { month:month, year:year }
+# return difference in months
+# 
+liCountMonths = (d_from, d_to) ->
+	if not d_to or not d_to.year or not d_from or not d_from.year
+		return 0
+	months = (d_to.year - d_from.year) * 12 
+	if d_to.month
+		months += d_to.month
+	if d_from.month
+		months -= d_from.month
+	months
+
+
+#
+# Given two linkedin start_date/ end-date objects
+# { month:month, year:year }
+# return:
+# -1 if d1<d2
+# +1 if d1>d2
+# 0 if d1==d2
+#
+liDateCompare = (d1, d2) ->
+	if not d1 or not d2 
+		return 0
+	if d1.year < d2.year
+		return -1
+	if d1.year > d2.year
+		return 1
+	if d1.month < d2.month
+		return -1
+	if d1.month > d2.month
+		return 1
+	return 0
+
+
+###
+# 
+# calculate years of experience for this contact.
+# 
+# get the industry tags of the contact's (primary) current position
+# get the years in current position from the start date
+# find all past and preset positions that share industry tags with the primary current position
+# make a list of start end dates for those past positions
+# flatten that list, mindful of overlaps to get total years experience
+# 
+###
+calculateXperience  = (contact, details) ->
+	months = 0
+
+	for position in details.positions
+		if position.title is contact.position and position.company.name is contact.company
+			whichpos = position
+	if not whichpos then return months
+
+	for position in details.positions
+		if position isnt whichpos
+			if position.company.industry == whichpos.company.industry
+				if liDateCompare(position.startDate, whichpos.startDate) < 0
+					whichpos = position
+
+	d = new Date()
+	first_d =
+		month: d.getMonth()
+		year: d.getFullYear()
+	latest_d = whichpos.startDate
+	months += liCountMonths latest_d, first_d
+	
+	for position in details.pastpositions
+		if position.company.industry is whichpos.company.industry
+			if liDateCompare(position.startDate, latest_d) < 0
+				if liDateCompare(position.endDate, latest_d) < 0
+					latest_d = position.endDate
+				months += liCountMonths position.startDate, latest_d
+				latest_d = position.startDate
+
+	Math.round(months/12)
+
+
 ###
 add new contact details to the queue for this user
 ###
-push2linkQ = (user, contact, details) ->
+push2linkQ = (notifications, user, contact, details) ->
 	if details.specialties
-		specialties = details.specialties.split(',')
+		commacount = details.specialties.match /,/g
+		dashcount = details.specialties.match /\-/g
+		splitchar = if dashcount > commacount then '-' else ','
+		specialties = details.specialties.split splitchar
+
 	positions = _.pluck details.positions, 'title'
 	companies = _.pluck details.positions, 'company'
 	industries = _.pluck companies, 'industry'
 	industries.unshift details.industry
 	companies = _.pluck companies, 'name'
+
 	addDeets2Linkedin user, contact, details, 
 		specialties:specialties
 		industries:industries
 		companies:companies
 		positions:positions
-	addDeets2Contact user, contact, details, specialties, industries
+
+	if contact and not _.isArray(contact)	# only if we're certain which contact this matches,
+		addDeets2Contact notifications, user, contact, details, specialties, industries
+
+
+saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
+	altered = false
+	if not linkedin
+		linkedin = new models.LinkedIn
+		linkedin.contact = contact
+		linkedin.linkedinid = details.id
+		linkedin.user = user
+		if not contact
+			linkedin.name = 
+				firstName: details.firstName
+				lastName: details.lastName
+				formattedName: details.formattedName
+		altered = true
+
+	if details.summary and linkedin.summary isnt details.summary
+		linkedin.summary = details.summary
+		altered = true
+	if details.headline and linkedin.headline isnt details.headline
+		linkedin.headline = details.headline
+		altered = true
+
+	for detail, list of listedDetails
+		if list and list.length
+			for item in list
+				if item and item.length
+					if not linkedin[detail]
+						linkedin[detail] = [item]
+						altered = true
+					else if (_.indexOf item, linkedin[detail]) < 0
+						linkedin[detail].addToSet item
+						altered = true
+
+	if altered
+		linkedin.save (err) ->
 
 
 addDeets2Linkedin = (user, contact, details, listedDetails) ->
-	models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
-		throw err if err
-		altered = false
-		if not linkedin
-			linkedin = new models.LinkedIn
-			linkedin.contact = contact
-			linkedin.liid = details.id
-			altered = true
+	if _.isArray(contact)	# if this linkedin connection matches multiple contacts,
+		contact = null		# just store the deets, without trying to match
+	if contact
+		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
+			throw err if err
+			saveLinkedin details, listedDetails, user, contact, linkedin
+	else 
+		models.LinkedIn.findOne {linkedinid: details.id}, (err, linkedin) ->
+			throw err if err
+			saveLinkedin details, listedDetails, user, contact, linkedin
 
-		if details.summary and linkedin.summary isnt details.summary
-			linkedin.summary = details.summary
-			altered = true
-		if details.headline and linkedin.headline isnt details.headline
-			linkedin.headline = details.headline
-			altered = true
 
-		for detail, list of listedDetails
-			if list and list.length
-				for item in list
-					if item and item.length
-						if not linkedin[detail]
-							linkedin[detail] = [item]
-							altered = true
-						else if (_.indexOf item, linkedin[detail]) < 0
-							linkedin[detail].addToSet item
-							altered = true
-
-		if altered
-			linkedin.save (err) ->
-
-addDeets2Contact = (user, contact, details, specialties, industries) ->
+addDeets2Contact = (notifications, user, contact, details, specialties, industries) ->
 	if details.positions and details.positions.length
 		if not contact.company and not contact.position
 			contact.company = details.positions[0].company?.name
@@ -142,22 +248,27 @@ addDeets2Contact = (user, contact, details, specialties, industries) ->
 		contact.knows.addToSet user
 		dirtycontact = true
 
-	linklink = "http://www.linkedin.com/profile/view?id=#{details.id}"
-	if contact.linkedin isnt linklink
-		contact.linkedin = linklink
+	if contact.linkedin isnt details.profileid
+		contact.linkedin = details.profileid
 		dirtycontact = true
 	
+	years = calculateXperience contact, details
+	if contact.yearsXperience isnt years
+		contact.yearsXperience = years
+		dirtycontact = true
+
 	if dirtycontact
 		contact.save (err) ->
+			notifications.bcastLinkedin? contact
 
 
 
 #
 # after submitting a query on contact name, try to narrow down the results ...
 #
-_matchContact = (contacts, cb) ->
+_matchContact = (user, contacts, cb) ->
 	if not contacts.length
-		cb null
+		return cb null
 	if (contacts.length > 1)
 		nc = _.select contacts, (c) -> (_.indexOf user._id, c.knows) >= 0
 		if nc.length
@@ -166,9 +277,9 @@ _matchContact = (contacts, cb) ->
 		nc = _.select contacts, (i) -> i.addedBy is user._id
 		if nc.length
 			contacts = nc
-	if (contacts.length == 1)
-		cb contacts[0]
-	cb contacts				# oh dear, what a challenge: more than one? work it out later ...
+	if (contacts.length > 1)
+		return cb contacts				# oh dear, what a challenge: more than one? work it out later ...
+	cb contacts[0]
 
 
 
@@ -179,6 +290,22 @@ REescape = (str) ->
 	if not str then return ""
 	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
+
+###
+# first tries to match contacts with name
+# if that fails, tries again with case insensitive regexp (that we know fails on unicode)
+###
+matchInsensitiveContact = (name, cb) ->
+	models.Contact.find {names: name}, (err, contacts) ->
+		if err
+			console.log "Error on matchContact #{name}: #{err}" if err
+		if contacts.length
+			cb contacts
+		else
+			r_name = new RegExp('^'+REescape(name)+'$', "i")
+			models.Contact.find {names: r_name}, (err, contacts) ->
+				console.log "Error on matchContact /#{name}/: #{err}" if err
+				cb contacts
 
 ###
 find a contact for this user that matches "first last" or "formatted"
@@ -194,24 +321,17 @@ TODO: one option might be to make a (n+1)-th contact, and let the user merge (if
 ###
 matchContact = (user, first, last, formatted, cb) ->
 	name = "#{first} #{last}"
-	r_name = new RegExp('^'+REescape(name)+'$', "i")
-	models.Contact.find {names: r_name}, (err, contacts) ->
-		console.log "err: #{err}" if err
-		if not contacts.length and formatted and not formatted?.match(r_name)
-			r_name = new RegExp('^'+REescape(formatted)+'$', "i")
-			models.Contact.find {names: r_name}, (err, contacts) ->
-				console.log "err: #{err}" if err
-				_matchContact contacts, cb
-		else
-			_matchContact contacts, cb
+	matchInsensitiveContact name, (contacts) ->
+		if contacts or name is formatted then _matchContact user, contacts, cb
+		else matchInsensitiveContact formatted, (contacts) ->
+			_matchContact user, contacts, cb
 
 
 
-module.exports = (app, user, info, notifications, fn) ->
 
-	linker = (app, user, info, notifications, fn) ->
+linker = (app, user, info, notifications, fn) ->
 
-		parturl = '/~/connections:(id,first-name,last-name,formatted-name)'
+	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
 #
 #	TODO : what if we have linkedin contacts before we ever email them?
 #	if they never updated their linkedin, we'd never pick out their data ...
@@ -219,39 +339,42 @@ module.exports = (app, user, info, notifications, fn) ->
 #		if user.lastlink
 #			parturl += "?modified-since=#{user.lastlink}"
 
-		today = new Date()
-		user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
+	today = new Date()
+	user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
 
-		oauth = 
-			consumer_key: process.env.LINKEDIN_API_KEY
-			consumer_secret: process.env.LINKEDIN_API_SECRET
-			token: info.token
-			token_secret: info.secret
+	oauth = 
+		consumer_key: process.env.LINKEDIN_API_KEY
+		consumer_secret: process.env.LINKEDIN_API_SECRET
+		token: info.token
+		token_secret: info.secret
 
-		getLinked parturl, oauth, (network) ->
-			if not network
-				console.log "#{parturl} failed"
-			if network
-				notifications.foundTotal? network._total
-				syncForEach network.values, (item, cb) ->
-					notifications.completedEmail?()
-					matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-						if not contact
-							cb()
-						else if _.isArray contact
-							"found multiple contacts matching #{item.firstName} #{item.lastName}"
-							cb()
-						else
-							getDeets item.id, oauth, (deets) ->
-								for key, val of deets
-									if key is 'positions'
-										item[key] = _.select val.values, (p) -> p.isCurrent
-									else
-										item[key] = val
-								push2linkQ user, contact, item
-								cb()
-				, () ->
-					# is there any further user interaction necessary?
-					fn()
+	getLinked parturl, oauth, (network) ->
+		if not network
+			console.log "#{parturl} failed"
+		if network
+			notifications.foundTotal? network._total
+			syncForEach network.values, (item, cb) ->
+				item.profileid = item.siteStandardProfileRequest?.url
+				item.profileid = item.profileid?.substr (item.profileid.indexOf('key=')+4)
+				item.profileid = item.profileid?.substr 0, item.profileid.indexOf('&')
+				console.log "#{item.profileid} from #{item.siteStandardProfileRequest.url}"
+				notifications.completedEmail?()
+				matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
+					getDeets item.id, oauth, (deets) ->
+						for key, val of deets
+							if key is 'positions'
+								item[key] = _.select val.values, (p) -> p.isCurrent
+								item.pastpositions = _.select val.values, (p) -> not p.isCurrent
+							else
+								item[key] = val
+						push2linkQ notifications, user, contact, item
+						cb()
+			, () ->
+				# is there any further user interaction necessary?
+				fn()
 
-	linker app, user, info, notifications, fn
+module.exports =
+	linker: linker
+	matchContact: matchContact
+	calculateXperience: calculateXperience
+

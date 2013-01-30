@@ -408,7 +408,7 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-			notifications = ->
+			notifications =
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
@@ -429,15 +429,19 @@ module.exports = (app, socket) ->
 			if not user
 				return fn()
 
-			notifications = ->
+			notifications =
 				foundTotal: (total) ->
 					socket.emit 'parse.total', total
 				completedEmail: ->
 					socket.emit 'parse.mail'
-				completedAllEmails: ->
-					socket.emit 'parse.queueing'
-				foundNewContact: ->
-					socket.emit 'parse.enqueued'
+				bcastLinkedin: (contact) ->
+					msg = 
+						type: 'Contact'
+						id: contact.id
+						user: id
+						linkedin: true
+					socket.broadcast.emit 'feed', msg
+					socket.emit 'feed', msg
 
-			require('./linker') app, user, session.linkedin_auth, notifications, fn
+			require('./linker').linker app, user, session.linkedin_auth, notifications, fn
 

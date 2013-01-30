@@ -32,6 +32,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'at' + _s.capitalize(tab), false
 				@set 'at' + _s.capitalize(state), true
 			).observes 'App.router.currentState.name'
+
 		didInsertElement: ->
 			# setTimeout ->
 			# 		throw new Error 'penis penis'
@@ -39,7 +40,11 @@ module.exports = (Ember, App, socket) ->
 			socket.on 'feed', (data) =>
 				item = Ember.ObjectProxy.create
 					content: App.get(data.type).find data.id
-				item['type' + data.type] = true
+				if data.linkedin
+					item['typeLinkedin'] = true
+					item['updatedBy'] = App.get('User').find data.user
+				else
+					item['type' + data.type] = true
 				@get('controller.feed').unshiftObject item
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.

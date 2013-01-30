@@ -28,6 +28,10 @@ ContactSchema = new Schema
 	position: type: String
 	company: type: String
 	knows: [ type: Types.ObjectId, ref: 'User' ]
+	linkedin: type: String
+	twitter: type: String
+	facebook: type: String
+	yearsXperience: type: Number
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
 
@@ -54,11 +58,16 @@ MergeSchema = new Schema
 
 
 LinkedInSchema = new Schema
+	name:
+		firstName: type: String
+		lastName: type: String
+		formattedName: type: String
 	positions: [ type: String ]
 	companies: [ type: String ]
 	industries: [ type: String ]
 	specialties: [ type: String ]
 	contact: type: Types.ObjectId, ref: 'Contact'
+	user: type: Types.ObjectId, ref: 'User'
 	linkedinid: type: String
 	summary: type: String
 	headline: type: String
@@ -78,12 +87,11 @@ ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
-
 MergeSchema.plugin common
-
 LinkedInSchema.plugin common
 
-
+LinkedInSchema.index {contact:1}
+LinkedInSchema.index {linkedinid:1}
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 
