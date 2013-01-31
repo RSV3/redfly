@@ -21,18 +21,6 @@ module.exports = (Ember, App, socket) ->
 					moment = require 'moment'
 					moment(sent).fromNow()
 			).property 'histories.lastObject.sent'
-		hasLinkedin: (->
-				linkedin = @get('linkedin')
-				if linkedin and linkedin.length then null else 'antisocial'
-			).property 'linkedin'
-		hasFacebook: (->
-				facebook = @get('facebook')
-				if facebook and facebook.length then null else 'antisocial'
-			).property 'facebook'
-		hasTwitter: (->
-				twitter = @get('twitter')
-				if twitter and twitter.length then null else 'antisocial'
-			).property 'twitter'
 		isKnown: (->
 				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
@@ -75,6 +63,9 @@ module.exports = (Ember, App, socket) ->
 					'This fella right here:' + carriage + carriage + encodeURI(url) +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
 			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
+		linkedinMail: (->
+				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
 
 
 	App.ContactView = Ember.View.extend
@@ -224,70 +215,47 @@ module.exports = (Ember, App, socket) ->
 
 
 		socialView: Ember.View.extend
+			prefixes: (->
+					linkedin: 'www.linkedin.com/profile/view?id='
+					twitter: 'twitter.com/'
+					facebook: 'www.facebook.com/'
+				).property()
+			openFacebook: ->
+				@_open 'facebook'
+			openLinkedin: ->
+				@_open 'linkedin'
+			openTwitter: ->
+				@_open 'twitter'
+			_open: (name) ->
+				if network = @get('controller.' + name)
+					window.open 'http://' + @get('prefixes')[name] + network
 
-			socialPatterns :
-				linkedin: /^[0-9]*$/
-				facebook: /^[\w\-\.]*$/
-				twitter: /^[\w\-\.]*$/
+			editView: Ember.View.extend
+				tagName: 'span'
+				classNames: ['overlay', 'edit-social']
+				prefixesBinding: 'parentView.prefixes'
 
-			socialPrefixes :
-				twitter: 'twitter.com/'
-				facebook: 'www.facebook.com/'
-				linkedin: 'www.linkedin.com/profile/view?id='
-
-			handleClix : (e, editflag) ->
-				$p = $(e.target).parent()
-				if $p and $p.hasClass('social')
-					name = $p.attr('id')
-					name = name.substr(7); # id is social-networkname
-					url = @get('controller.' +name)
-					if editflag or not url or not url.length
-						$('.editThisSocial').removeClass 'editThisSocial'
-						$p.addClass 'editThisSocial'
-						$i = $p.parent().find('input')
-						$i.attr('placeholder', "Please enter a link or ID for " + name)
-						$i.val $p.attr 'href'
-						$i.show()
-						return false
-					else return true
-
-			click: (e) ->
-				@.handleClix e, false
-
-			contextMenu: (e) ->
-				@.handleClix e, true
-
-			focusIn: (e) ->
-				if $(e.target).hasClass 'maybeedit'
-					$(e.target).removeClass 'errorinput'
-
-			socialEdit: (e) ->
-				$t = $(e.target);
-				if $t.hasClass 'maybeedit'
-					name = $('.editThisSocial').attr 'id'
-					name = name.substr 7
-					v = $t.val()
-
-					if v.match @socialPatterns[name]
-						@set 'controller.' + name, v
+				field: Ember.TextField.extend
+					focusIn: ->
+						@set 'error', null
+					focusOut: ->
+						@_fire()
+					_fire: ->
+						network = @get 'network'
+						if (value = @get('value')) and not value.match(util.socialPatterns[network])
+							_s = require 'underscore.string'
+							@set 'error', 'That doesn\'t look like a ' + _s.capitalize(network) + ' URL.'
+				toggle: ->
+					if not @toggleProperty('show')
+						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.
+				save: ->
+					@set 'working', true
+					for field in ['linkedinFieldInstance', 'twitterFieldInstance', 'facebookFieldInstance']
+						@get(field)._fire()
+					if not (@get('linkedinFieldInstance.error') or @get('twitterFieldInstance.error') or @get('facebookFieldInstance.error'))
 						App.store.commit()
-						$t.hide()
-					else 
-						if v.match /^http[s]?:\/\//
-							v = v.substr(v.indexOf('/')+2)
-						if v.match /^www\./
-							if not @socialPrefixes[name].match /^www\./
-								v = v.substr(4);
-						else
-							if @socialPrefixes[name].match /^www\./
-								v = "www." + v
-
-						if v.substr(0, @socialPrefixes[name].length) is @socialPrefixes[name] and v.substr(@socialPrefixes[name].length).match @socialPatterns[name]
-							@set 'controller.' + name, v.substr(@socialPrefixes[name].length)
-							App.store.commit()
-							$t.hide()
-						else
-							$t.addClass 'errorinput'
+						@toggleProperty 'show'
+					@set 'working', false
 
 
 		noteView: Ember.View.extend

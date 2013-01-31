@@ -153,9 +153,9 @@ module.exports = (app, socket) ->
 
 	socket.on 'db', (data, fn) ->
 		feed = (doc) ->
-			socket.broadcast.emit 'feed',
-				type: data.type
-				id: doc.id
+			# socket.broadcast.emit 'feed',
+			# 	type: data.type
+			# 	id: doc.id
 			socket.emit 'feed',
 				type: data.type
 				id: doc.id
@@ -198,12 +198,12 @@ module.exports = (app, socket) ->
 					model.findById record.id, (err, doc) ->
 						throw err if err
 						_.extend doc, record
-						broadcast = (model is models.Contact) and ('added' in doc.modifiedPaths())
+						updateFeeds = (model is models.Contact) and ('added' in doc.modifiedPaths())
 						# Important to do updates through the 'save' call so middleware and validators happen.
 						doc.save (err) ->
 							throw err if err
 							fn doc
-							if broadcast
+							if updateFeeds
 								feed doc
 				else
 					throw new Error 'unimplemented'
@@ -404,7 +404,7 @@ module.exports = (app, socket) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
 			throw err if err
-			# TODO temporary, in case this gets called and there's not logged in user
+			# temporary, in case this gets called and there's not logged in user
 			if not user
 				return fn()
 
@@ -421,30 +421,24 @@ module.exports = (app, socket) ->
 			require('./parser') app, user, notifications, fn
 
 	socket.on 'linkin', (id, fn) ->
-		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
-			console.log "looking for #{#id}"
 			throw err if err
-			# TODO temporary, in case this gets called and there's not logged in user
+			# temporary, in case this gets called and there's not logged in user
 			if not user
-				return fn "user not found ! ! !"
+				return fn()
 
 			notifications =
 				foundTotal: (total) ->
-					socket.emit 'parse.total', total
-				completedEmail: ->
-					socket.emit 'parse.mail'
-				bcastLinkedin: (contact) ->
-					msg = 
-						type: 'Contact'
+					socket.emit 'link.total', total
+				completedConnection: ->
+					socket.emit 'link.connection'
+				updateFeeds: (contact) ->
+					socket.emit 'feed',
+						type: 'linkedin'
 						id: contact.id
-						user: id
-						linkedin: true
-					socket.broadcast.emit 'feed', msg
-					socket.emit 'feed', msg
+						updater: id
 
 			require('./linker').linker app, user, session.linkedin_auth, notifications, (changes) ->
-				fn null, changes
-				if changes and changes.length
+				if not _.isEmpty changes
 					socket.broadcast.emit 'linked', changes
-
+				fn()

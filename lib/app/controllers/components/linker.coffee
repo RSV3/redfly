@@ -7,7 +7,6 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../views/templates/components/linker'
 
 		didInsertElement: ->
-			@set 'modal', $(@$()).modal()	# TO-DO when fixing this, also check out the contacts merge modal
 			@set 'stateConnecting', true
 			@set 'stateParsing', false
 			@set 'stateDone', false
@@ -24,28 +23,27 @@ module.exports = (Ember, App, socket) ->
 					pnotify.css top: '60px'
 					@$('#linkingStarted').appendTo '#loading'
 
-			socket.emit 'linkin', App.user.get('id'), (err, changes) =>
+			socket.emit 'linkin', App.user.get('id'), (err) =>
 				if err
-					return alert err.message + 'Are you connected to the internet? Did you allow access to LinkedIn?'
+					# linker doesn't return any errors, this never happens
+					return alert err.message + ' Are you connected to the internet? Did you allow access to LinkedIn?'
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
 				@set 'stateDone', true
 				@get('notification').effect 'bounce'
-				@get('notification').pnotify type: 'success', closer: true
-				@get('modal').modal 'hide'
 				if changes
 					changes = _.filter(changes, (c) -> App.store.recordIsLoaded(App.Contact, c))
 					if changes.length
 						App.adapter.findMany App.store, App.Contact, changes
+				@get('notification').pnotify type: 'success', closer: true, hide: true
 
-
-			socket.on 'parse.total', (total) =>
+			socket.on 'link.total', (total) =>
 				@set 'current', 0
 				@set 'total', total
 				@set 'stateConnecting', false
 				@set 'stateParsing', true
 				@set 'stateDone', false
-				socket.on 'parse.mail', =>
+				socket.on 'link.connection', =>
 					@incrementProperty 'current'
 
 		percent: (->
@@ -56,10 +54,3 @@ module.exports = (Ember, App, socket) ->
 					percentage = Math.round (current / total) * 100
 				'width: ' + percentage + '%;'
 			).property 'current', 'total'
-
-
-		profile: ->
-			@get('modal').modal 'hide'
-			@get('notification').pnotify_remove()
-			
-			App.get('router').send 'goUserProfile'

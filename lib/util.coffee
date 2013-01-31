@@ -18,3 +18,10 @@ exports.nickname = (name, email) ->
 		return name
 	if email
 		return _.first email.split('@')
+
+exports.socialPatterns = 
+	linkedin: /^[0-9]*$/
+	twitter: /^[\w\-\.]*$/
+	facebook: /^[\w\-\.]*$/
+
+	

@@ -270,13 +270,13 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		dirtycontact = true
 	
 	years = calculateXperience contact, details
-	if contact.yearsXperience isnt years
-		contact.yearsXperience = years
+	if contact.yearsExperience isnt years
+		contact.yearsExperience = years
 		dirtycontact = true
 
 	if dirtycontact
 		contact.save (err) ->
-			notifications.bcastLinkedin? contact
+			notifications.updateFeeds? contact
 		return contact._id
 
 	null
@@ -388,7 +388,7 @@ linker = (app, user, info, notifications, fn) ->
 
 		syncForEach network.values, (item, cb) ->
 			item.profileid = profileIdFrom item
-			notifications.completedEmail?()
+			notifications.completedConnection?()
 			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
 				getDeets item.id, oauth, (deets) ->
 					for key, val of deets		# copy profile, splitting past and present positions

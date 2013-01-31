@@ -1,8 +1,6 @@
 # TO-DO pretty sure I don't need to be threading (app, user, notifications, cb) through all the inner fuctions...
 module.exports = (app, user, notifications = {}, cb) ->
 	_ = require 'underscore'
-	xoa2 = require 'xoauth2'
-	imap = require 'imap-jtnt-xoa2'
 	mailer = require('./mail') app
 
 

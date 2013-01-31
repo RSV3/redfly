@@ -40,18 +40,18 @@ module.exports = (DS, App) ->
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
-		names: DS.attr 'array'
 		emails: DS.attr 'array'
+		names: DS.attr 'array'
 		picture: DS.attr 'string'
-		company: DS.attr 'string'
-		position: DS.attr 'string'
-		linkedin: DS.attr 'string'
-		facebook: DS.attr 'string'
-		twitter: DS.attr 'string'
-		yearsXperience: DS.attr 'number'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
+		position: DS.attr 'string'
+		company: DS.attr 'string'
+		yearsExperience: DS.attr 'number'
+		linkedin: DS.attr 'string'
+		twitter: DS.attr 'string'
+		facebook: DS.attr 'string'
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
@@ -76,28 +76,6 @@ module.exports = (DS, App) ->
 		nickname: (->
 				util.nickname @get('name'), @get('email')
 			).property 'name', 'email'
-
-		linkedinmail: (->
-				if linkedin = @get('linkedin')
-					return 'http://www.linkedin.com/requestList?displayProposal=&destID=' + linkedin + '&creationType=DC'
-				null
-			).property 'linkedin'
-		linkedinurl: (->
-				if linkedin = @get('linkedin')
-					return 'http://www.linkedin.com/profile/view?id=' + linkedin
-				null
-			).property 'linkedin'
-		facebookurl: (->
-				if facebook = @get('facebook')
-					return 'http://www.facebook.com/' + facebook
-				null
-			).property 'facebook'
-		twitterurl: (->
-				if twitter = @get('twitter')
-					return 'http://twitter.com/' + twitter
-				null
-			).property 'twitter'
-
 		canonicalPicture: (->
 				# https://lh4.googleusercontent.com/-CG7j6tomnZg/AAAAAAAAAAI/AAAAAAAAHAk/kDhN-Z5gNJc/s250-c-k/photo.jpg
 				@get('picture') or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
