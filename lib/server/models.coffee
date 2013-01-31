@@ -1,6 +1,7 @@
 validators = require('validator').validators
 
 db = require('./services').getDb()
+util = require './util'
 
 Schema = db.Schema
 Types = Schema.Types
@@ -15,8 +16,8 @@ UserSchema = new Schema
 	name: type: String, required: true, trim: true
 	picture: type: String, trim: true, validate: validators.isUrl
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
-	lastParsed: type: Date
 	linkedin: type: String
+	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]
 
@@ -25,15 +26,15 @@ ContactSchema = new Schema
 	emails: [ type: String ]
 	names: [ type: String ]
 	picture: type: String, trim: true, validate: validators.isUrl
-	position: type: String
-	company: type: String
 	knows: [ type: Types.ObjectId, ref: 'User' ]
-	linkedin: type: String
-	twitter: type: String
-	facebook: type: String
-	yearsXperience: type: Number
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
+	position: type: String, trim: true
+	company: type: String, trim: true
+	yearsExperience: type: Number
+	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin
+	twitter: type: String, trim: true, match: util.socialPatterns.twitter
+	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 TagSchema = new Schema
 	creator: type: Types.ObjectId, ref: 'User', required: true
@@ -49,15 +50,13 @@ NoteSchema = new Schema
 MailSchema = new Schema
 	sender: type: Types.ObjectId, ref: 'User', required: true
 	recipient: type: Types.ObjectId, ref: 'Contact', required: true
-	subject: type: String
+	subject: type: String, trim: true
 	sent: type: Date
 
-
-MergeSchema = new Schema
-	contacts: [Types.Mixed]
-
-
 LinkedInSchema = new Schema
+	user: type: Types.ObjectId, ref: 'User'
+	contact: type: Types.ObjectId, ref: 'Contact'
+	linkedinId: type: String, required: true, unique: true
 	name:
 		firstName: type: String
 		lastName: type: String
@@ -66,11 +65,12 @@ LinkedInSchema = new Schema
 	companies: [ type: String ]
 	industries: [ type: String ]
 	specialties: [ type: String ]
-	contact: type: Types.ObjectId, ref: 'Contact'
-	user: type: Types.ObjectId, ref: 'User'
-	linkedinId: type: String, required: true, unique:true
-	summary: type: String
-	headline: type: String
+	summary: type: String, trim: true
+	headline: type: String, trim: true
+
+
+MergeSchema = new Schema
+	contacts: [Types.Mixed]
 
 
 
@@ -87,11 +87,11 @@ ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
-MergeSchema.plugin common
 LinkedInSchema.plugin common
 
-LinkedInSchema.index {contact:1}
-LinkedInSchema.index {linkedinid:1}
+MergeSchema.plugin common
+
+
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 

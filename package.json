@@ -34,6 +34,9 @@
 		"mongodb_s3_backup": "0.0.4",
 		"uglify-js": "2.2.3"
 	},
+	"devDependencies": {
+		"chai": "1.4.2"
+	},
 	"engines": {
 		"node": "0.8.14",
 		"npm":  "1.1.65"

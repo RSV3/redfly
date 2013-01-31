@@ -21,6 +21,11 @@ mixin view(args)
 	else
 		| {{view !{args}}}
 
+
+mixin else
+	| {{else}}
+
+
 //- This can be removed after collection helper is deprecated
 mixin collection(args)
 	| {{#collection !{args}}}

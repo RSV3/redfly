@@ -22,8 +22,7 @@ horizontalMargin = baseLineHeight * 0.5
 // Global variables.
 smallFontSize = baseFontSize * 0.7
 
-lightBorder = 1px solid #EEE
-mediumBorder = 1px solid #C6C6C6
+lightBorder = #EEE
 
 redstar = #e51937
 
@@ -37,6 +36,7 @@ redstar = #e51937
 	position relative
 	.popover
 		display block	// Bootstrap tries to make popover initial state hidden.
+		width auto
 		padding 10px
 		.nav-header
 			padding-left 0
@@ -143,7 +143,7 @@ body
 		font-size smallFontSize
 		tagger(smallFontSize)
 		.feed-item
-			border-bottom lightBorder
+			border-bottom 1px solid lightBorder
 			padding-bottom 10px
 			h4
 				font-weight 300
@@ -187,7 +187,7 @@ body
 			margin-right 10px
 		padding-bottom 30px
 		margin-bottom 30px
-		border-bottom lightBorder
+		border-bottom 1px solid lightBorder
 		// .tab-content
 		// overflow visible
 		.edit
@@ -196,6 +196,13 @@ body
 				i
 					margin 3px
 					margin-top 5px
+		.edit-social
+			.popover
+				width 457px
+				.help-inline
+					width 227px
+					text-align right
+					margin-right 5px
 		.actions
 			margin-bottom horizontalMargin
 	.lead
@@ -205,7 +212,7 @@ body
 		tagger(baseFontSize)
 		.tagger .main
 			min-height 82px
-			border lightBorder
+			border 1px dashed lightBorder
 			border-radius baseBorderRadius
 	.media
 		margin-bottom horizontalMargin * 2
@@ -295,19 +302,3 @@ tag(baseFontSize)
 // 		display inline-block
 // 		line-height 21px
 // 		padding 0 12px
-
-
-.social
-	margin: 2px
-
-.antisocial
-	color: #abc
-
-.maybeedit
-	display: none
-	width: 75%
-
-.maybeedit.errorinput
-	background-color: #fcc
-
-

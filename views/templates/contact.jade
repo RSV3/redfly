@@ -14,10 +14,11 @@
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
-			| <br>{{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsXperience}} with {{yearsXperience}} years experience {{/if}}
-			| {{#if linkedinmail}}
-			| <br><a {{bindAttr href="linkedinmail"}}>Send a LinkedIn inmail</a>
-			| {{/if}}
+			br
+			| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+			+if('linkedin')
+				br
+				a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
 			| {{#if isKnown}}
 			h4
@@ -37,12 +38,44 @@
 		| {{/if}}
 		.row-fluid
 			p
-				| {{#view view.socialView}}
-				| <a id="social-linkedin" {{bindAttr class=":social :icon-large controller.hasLinkedin"}} {{bindAttr href="controller.linkedinurl"}} target="_blank"><span class="icon-linkedin-sign"/></a>
-				| <a id="social-twitter" {{bindAttr class=":social :icon-large controller.hasTwitter"}} {{bindAttr href="controller.twitterurl"}} target="_blank"><span class="icon-twitter-sign"/></a>
-				| <a id="social-facebook" {{bindAttr class=":social :icon-large controller.hasFacebook"}} {{bindAttr href="controller.facebookurl"}} target="_blank"><span class="icon-facebook-sign"/></a>
-				| <input {{action socialEdit on="change" target="view"}} class="maybeedit" />
-				| {{/view}}
+				+view('view.socialView')
+					a(bindAttr='class="linkedin::muted"', action='openLinkedin target="view"')
+						i.icon-linkedin-sign.icon-large
+						|  
+					a(bindAttr='class="twitter::muted"', action='openTwitter target="view"')
+						i.icon-twitter-sign.icon-large
+						|  
+					a(bindAttr='class="facebook::muted"', action='openFacebook target="view"')
+						i.icon-facebook-sign.icon-large
+						|  
+					| &nbsp;&nbsp;
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.icon-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"') ×
+								.nav-header Social Links
+								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.linkedin}}
+									+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
+									span.help-block {{view.linkedinFieldInstance.error}}
+								div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.twitter}}
+									+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
+									span.help-block {{view.twitterFieldInstance.error}}
+								div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.facebook}}
+									+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
+									span.help-block {{view.facebookFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.icon-ok
+										+else
+										i.icon-spinner.icon-spin
+
 	.span3
 		| {{#if isKnown}}
 		.row-fluid.actions

@@ -38,22 +38,24 @@ module.exports = (Ember, App, socket) ->
 			# 		throw new Error 'penis penis'
 			# 	, 3000
 			socket.on 'feed', (data) =>
+				type = data.type
+				model = type
+				if type is 'linkedin'
+					model = 'Contact'
+
 				item = Ember.ObjectProxy.create
-					content: App.get(data.type).find data.id
-				if data.linkedin
-					item['typeLinkedin'] = true
-					item['updatedBy'] = App.get('User').find data.user
-				else
-					item['type' + data.type] = true
+					content: App.get(model).find data.id
+				item['type' + _s.capitalize(type)] = true
+				if type is 'linkedin'
+					item['updater'] = App.User.find data.updater
 				@get('controller.feed').unshiftObject item
 
-			# jTNT
-			# handle the broadcast list of linkedin updates
+			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
-				if changes and changes.length
-					changes = _.filter(changes, (c) -> App.store.recordIsLoaded(App.Contact, c))
-					if changes.length
-						App.adapter.findMany App.store, App.Contact, changes
+				changes = _.filter changes, (change) ->
+					App.store.recordIsLoaded App.Contact, change
+				if not _.isEmpty changes
+					App.adapter.findMany App.store, App.Contact, changes
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.contacts', (count) =>
