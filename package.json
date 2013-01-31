@@ -18,8 +18,6 @@
 		"imap-jtnt-xoa2": "0.6.1",
 		"everyauth": "0.3.1",
 		"xoauth2": "0.1.4",
-		"passport": "0.1.15",
-		"passport-jtnt-linkedin": "0.1.2",
 		"mimelib": "0.2.10",
 		"connect-redis": "1.4.5",
 		"validator": "0.4.22",
