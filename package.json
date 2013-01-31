@@ -30,6 +30,8 @@
 		"convoy-stylus": "0.1.4",
 		"less": "1.3.3",
 		"mongodb_s3_backup": "0.0.4",
+		"passport": "0.1.15",
+		"passport-jtnt-linkedin": "0.1.2",
 		"uglify-js": "2.2.3"
 	},
 	"devDependencies": {
