@@ -29,7 +29,6 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 			server.connect (err) ->
 				if err
-					console.warn err
 					return cb new Error 'Problem connecting to gmail.'
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
@@ -91,14 +90,28 @@ module.exports = (app, user, notifications = {}, cb) ->
 								notifications.completedEmail?()
 
 						fetch.on 'end', ->
-							return finish()
+							finish()
 
 
 	enqueue = (app, user, notifications, mails, cb) ->
 		models = require './models'
 
 		newContacts = []
+
+		finish = ->
+			user.lastParsed = new Date
+			user.save (err) ->
+				throw err if err
+				if newContacts.length isnt 0
+					mailer.sendNudge user, newContacts[...10], cb
+				else
+					mailer.sendNewsletter user, cb
+
 		sift = (index = 0) ->
+			# TO-DO hacky and awful, all of sift() needs to be refactored
+			if mails.length is 0
+				return finish()
+
 			mail = mails[index]
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
@@ -111,8 +124,8 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 					newContacts.push contact
 					notifications.foundNewContact?()
-				contact.knows.addToSet user
 
+				contact.knows.addToSet user
 				contact.save (err) ->
 					throw err if err
 					mail.sender = user
@@ -133,21 +146,8 @@ module.exports = (app, user, notifications = {}, cb) ->
 								.value()
 						newContacts.reverse()
 						user.queue.unshift newContacts...
+						finish()
 
-						user.lastParsed = new Date
-						user.save (err) ->
-							throw err if err
-
-							if newContacts.length isnt 0
-								mailer.sendNudge user, newContacts[...10], cb
-							else
-								mailer.sendNewsletter user, cb
-		# TO-DO hacky and awful, all of sift() needs to be refactored
-		if mails.length is 0
-			user.lastParsed = new Date
-			user.save (err) ->
-				throw err if err
-			return mailer.sendNewsletter user, cb
 		sift()
 
 

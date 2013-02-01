@@ -1,6 +1,7 @@
 validators = require('validator').validators
 
 db = require('./services').getDb()
+util = require './util'
 
 Schema = db.Schema
 Types = Schema.Types
@@ -18,6 +19,7 @@ UserSchema = new Schema
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]
+	linkedin: type: String
 
 
 ContactSchema = new Schema
@@ -27,6 +29,12 @@ ContactSchema = new Schema
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
+	position: type: String, trim: true
+	company: type: String, trim: true
+	yearsExperience: type: Number
+	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin
+	twitter: type: String, trim: true, match: util.socialPatterns.twitter
+	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 TagSchema = new Schema
 	creator: type: Types.ObjectId, ref: 'User', required: true
@@ -42,12 +50,29 @@ NoteSchema = new Schema
 MailSchema = new Schema
 	sender: type: Types.ObjectId, ref: 'User', required: true
 	recipient: type: Types.ObjectId, ref: 'Contact', required: true
-	subject: type: String
+	subject: type: String, trim: true
 	sent: type: Date
+
+LinkedInSchema = new Schema
+	user: type: Types.ObjectId, ref: 'User'
+	contact: type: Types.ObjectId, ref: 'Contact'
+	linkedinId: type: String, required: true, unique: true
+	name:
+		firstName: type: String
+		lastName: type: String
+		formattedName: type: String
+	positions: [ type: String ]
+	companies: [ type: String ]
+	industries: [ type: String ]
+	specialties: [ type: String ]
+	summary: type: String, trim: true
+	headline: type: String, trim: true
+	lastLink: type: Date
 
 
 MergeSchema = new Schema
 	contacts: [Types.Mixed]
+
 
 
 common = (schema) ->
@@ -63,6 +88,7 @@ ContactSchema.plugin common
 TagSchema.plugin common
 NoteSchema.plugin common
 MailSchema.plugin common
+LinkedInSchema.plugin common
 
 MergeSchema.plugin common
 
@@ -77,3 +103,4 @@ exports.Note = db.model 'Note', NoteSchema
 exports.Mail = db.model 'Mail', MailSchema
 
 exports.Merge = db.model 'Merge', MergeSchema
+exports.LinkedIn = db.model 'LinkedIn', LinkedInSchema

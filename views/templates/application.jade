@@ -69,6 +69,11 @@
 						//- 	| <a {{action goImport href=true}}>File Import</a>
 						li.divider
 						li
+							a(href='/linker')
+								| Sync Linked
+								i.icon-linkedin-sign.icon-large
+						li.divider
+						li
 							| <a href="#" {{action doLogout}}>Log Out</a>
 				| {{/unless}}
 				
@@ -126,10 +131,16 @@
 						| !
 					| {{view App.TaggerView contactBinding="this"}}
 					| {{/if}}
+					| {{#if typeLinkedin}}
+					| <a {{action goProfile updater href=true}}>{{updater.canonicalName}}</a> 
+					| augmented <a {{action goContact this href=true}}>{{canonicalName}}</a> with Linked
+					i.icon-linkedin-sign
+					|  data.
+					| {{/if}}
 					| {{#if typeTag}}
 					| <a {{action goProfile creator href=true}}>{{creator.canonicalName}}</a> 
 					| added the tag 
-					em "{{body}}"
+					em "{{body}}" 
 					| to 
 					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
 					| .
