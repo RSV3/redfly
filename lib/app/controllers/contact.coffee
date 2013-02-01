@@ -63,6 +63,9 @@ module.exports = (Ember, App, socket) ->
 					'This fella right here:' + carriage + carriage + encodeURI(url) +
 					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
 			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
+		linkedinMail: (->
+				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
 
 
 	App.ContactView = Ember.View.extend
@@ -209,6 +212,51 @@ module.exports = (Ember, App, socket) ->
 				).observes 'controller.addedBy.nickname'
 			attributeBindings: ['rel']
 			rel: 'tooltip'
+
+
+		socialView: Ember.View.extend
+			prefixes: (->
+					linkedin: 'www.linkedin.com/profile/view?id='
+					twitter: 'twitter.com/'
+					facebook: 'www.facebook.com/'
+				).property()
+			openFacebook: ->
+				@_open 'facebook'
+			openLinkedin: ->
+				@_open 'linkedin'
+			openTwitter: ->
+				@_open 'twitter'
+			_open: (name) ->
+				if network = @get('controller.' + name)
+					window.open 'http://' + @get('prefixes')[name] + network
+
+			editView: Ember.View.extend
+				tagName: 'span'
+				classNames: ['overlay', 'edit-social']
+				prefixesBinding: 'parentView.prefixes'
+
+				field: Ember.TextField.extend
+					focusIn: ->
+						@set 'error', null
+					focusOut: ->
+						@_fire()
+					_fire: ->
+						network = @get 'network'
+						if (value = @get('value')) and not value.match(util.socialPatterns[network])
+							_s = require 'underscore.string'
+							@set 'error', 'That doesn\'t look like a ' + _s.capitalize(network) + ' URL.'
+				toggle: ->
+					if not @toggleProperty('show')
+						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.
+				save: ->
+					@set 'working', true
+					for field in ['linkedinFieldInstance', 'twitterFieldInstance', 'facebookFieldInstance']
+						@get(field)._fire()
+					if not (@get('linkedinFieldInstance.error') or @get('twitterFieldInstance.error') or @get('facebookFieldInstance.error'))
+						App.store.commit()
+						@toggleProperty 'show'
+					@set 'working', false
+
 
 		noteView: Ember.View.extend
 			classNames: ['media']

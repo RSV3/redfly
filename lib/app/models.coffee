@@ -40,12 +40,18 @@ module.exports = (DS, App) ->
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
-		names: DS.attr 'array'
 		emails: DS.attr 'array'
+		names: DS.attr 'array'
 		picture: DS.attr 'string'
 		knows: DS.hasMany 'App.User'
 		added: DS.attr 'date'
 		addedBy: DS.belongsTo 'App.User'
+		position: DS.attr 'string'
+		company: DS.attr 'string'
+		yearsExperience: DS.attr 'number'
+		linkedin: DS.attr 'string'
+		twitter: DS.attr 'string'
+		facebook: DS.attr 'string'
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'

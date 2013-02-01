@@ -20,12 +20,9 @@ socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
 	window.location.reload()
 
-# Handlebars.registerHelper 'date', (property, options) ->
-# 	value = Ember.Handlebars.getPath @, property, options	# TODO is this bindings aware? Doesn't work with profile page
-# 	return value
-# 	# moment = require 'moment'
-# 	# moment(date).format('MMMM Do, YYYY')
-# 	# '' + property.getDate() + '-' + (property.getMonth() + 1) + '-' + property.getFullYear()
+Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
+	value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
+	'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
 
 App.user = Ember.ObjectProxy.create

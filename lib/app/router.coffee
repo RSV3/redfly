@@ -146,6 +146,14 @@ module.exports = (Ember, App, socket) ->
 				redirectsTo: 'index'
 
 
+			link: Ember.Route.extend
+				route: '/link'	# Public url so the http-based linkedin flow can hook in.
+				enter: (manager) ->
+					view = App.LinkerView.create()
+					view.append()
+				redirectsTo: 'userProfile'
+
+
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
