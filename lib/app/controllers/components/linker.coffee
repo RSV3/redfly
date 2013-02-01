@@ -5,6 +5,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.LinkerView = Ember.View.extend
 		template: require '../../../../views/templates/components/linker'
+		classNames:['linker']
 
 		didInsertElement: ->
 			@set 'stateConnecting', true
@@ -33,7 +34,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateParsing', false
 				@set 'stateDone', true
 				@get('notification').effect 'bounce'
-				@get('notification').pnotify type: 'success', closer: true
+				@get('notification').pnotify type: 'success', closer: true, hide: true
 
 			socket.on 'link.total', (total) =>
 				@set 'current', 0
