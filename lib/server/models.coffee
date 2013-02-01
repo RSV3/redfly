@@ -67,6 +67,7 @@ LinkedInSchema = new Schema
 	specialties: [ type: String ]
 	summary: type: String, trim: true
 	headline: type: String, trim: true
+	lastLink: type: Date
 
 
 MergeSchema = new Schema

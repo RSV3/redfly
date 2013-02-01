@@ -430,15 +430,19 @@ module.exports = (app, socket) ->
 			notifications =
 				foundTotal: (total) ->
 					socket.emit 'link.total', total
-				completedConnection: ->
-					socket.emit 'link.connection'
+				completedLinkedin: ->
+					socket.emit 'link.linkedin'
+				completedContact: ->
+					socket.emit 'link.contact'
 				updateFeeds: (contact) ->
-					socket.emit 'feed',
-						type: 'linkedin'
+					socket.emit 'feed'
+						type: 'Linkedin'
 						id: contact.id
 						updater: id
 
 			require('./linker').linker app, user, session.linkedin_auth, notifications, (changes) ->
 				if not _.isEmpty changes
 					socket.broadcast.emit 'linked', changes
+					socket.emit 'linked', changes
 				fn()
+
