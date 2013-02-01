@@ -40,13 +40,13 @@ module.exports = (Ember, App, socket) ->
 			socket.on 'feed', (data) =>
 				type = data.type
 				model = type
-				if type is 'linkedin'
+				if type is 'Linkedin'
 					model = 'Contact'
 
 				item = Ember.ObjectProxy.create
 					content: App.get(model).find data.id
 				item['type' + _s.capitalize(type)] = true
-				if type is 'linkedin'
+				if type is 'Linkedin'
 					item['updater'] = App.User.find data.updater
 				@get('controller.feed').unshiftObject item
 
