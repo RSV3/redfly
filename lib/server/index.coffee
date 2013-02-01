@@ -1,7 +1,6 @@
 http = require 'http'
 path = require 'path'
 express = require 'express'
-everyauth = require 'everyauth'
 
 util = require './util'
 
@@ -21,74 +20,7 @@ redisConfig = do ->
 key = 'express.sid'
 store = new RedisStore redisConfig
 
-
-
-everyauth.google.configure
-	appId: process.env.GOOGLE_API_ID
-	appSecret: process.env.GOOGLE_API_SECRET
-	entryPath: '/authorize'
-	callbackPath: '/authorized'
-	authQueryParam:
-		access_type: 'offline'
-		approval_prompt: 'force'
-	scope: [
-			'https://www.googleapis.com/auth/userinfo.profile'
-			'https://www.googleapis.com/auth/userinfo.email'
-			'https://mail.google.com/'
-			'https://www.google.com/m8/feeds'
-		].join ' '
-	handleAuthCallbackError: (req, res) ->
-		res.redirect '/unauthorized'
-	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
-		_s = require 'underscore.string'
-		models = require './models'
-
-		email = googleUserMetadata.email.toLowerCase()
-		if not _s.endsWith(email, '@redstar.com')
-			return {}
-		models.User.findOne email: email, (err, user) ->
-			throw err if err
-			token = accessTokenExtra.refresh_token
-			if user
-				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
-				if not user.oauth
-					user.name = googleUserMetadata.name
-					if picture = googleUserMetadata.picture
-						user.picture = picture
-					user.oauth = token
-					user.save (err) ->
-						throw err if err
-						promise.fulfill user
-				# END TEMPORARY ###########
-				# Update the refresh token if google gave us a new one.
-				else if user.oauth isnt token
-					user.oauth = token
-					user.save (err) ->
-						throw err if err
-						promise.fulfill user
-				else
-					promise.fulfill user
-			else
-				user = new models.User
-				user.email = email
-				user.name = googleUserMetadata.name
-				if picture = googleUserMetadata.picture
-					user.picture = picture
-				user.oauth = token
-				user.save (err) ->
-					throw err if err
-					promise.fulfill user
-		promise = @Promise()
-	addToSession: (session, auth) ->
-		session.user = auth.user.id
-	sendResponse: (res, data) ->
-		user = data.user
-		if not user.id
-			return res.redirect '/invalid'
-		if not user.lastParsed
-			return res.redirect '/load'
-		res.redirect '/profile'
-
+require './auth'
 
 
 app.configure ->
@@ -113,7 +45,7 @@ app.configure ->
 	# app.use express.methodOverride()
 	app.use express.cookieParser 'cat on a keyboard in space'
 	app.use express.session(key: key, store: store)
-	app.use everyauth.middleware()
+	app.use require('everyauth').middleware()
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
 			req.session.user = user
@@ -212,7 +144,6 @@ app.get '/app.js', do ->
 	(req, res) ->
 		res.set 'content-Type', 'application/javascript'
 		res.send code
-
 
 
 server.listen app.get('port'), ->
