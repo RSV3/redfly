@@ -26,13 +26,42 @@ getLinked = (partial, oa, cb) ->
 		json: true
 	, (error, response, body) ->
 		if not error and response.statusCode is 200
-			return cb body
-		cb null
+			cb null, body
+		else
+			if not error or _.isString(error)
+				error = 
+					message: error
+			error.statusCode = response.statusCode
+			cb error, null
 
 
-getDeets = (id, oa, cb) ->
-	u = ('/id=' + id + ':(industry,specialties,positions,picture-url,headline,summary)')
-	getLinked u, oa, cb
+#
+# confirm whether the linkedin id, or matched contact, have already been done this week
+#
+alreadyLinked = (id, contact, confirm) ->
+	lastWeek = new Date()
+	lastWeek.setDate(lastWeek.getDate() - 7)
+	if contact
+		query = {contact:contact}
+	else
+		query = {linkedinId: id}
+	models.LinkedIn.findOne query, {lastLink:true}, (err, linkedin) ->
+		if err or not linkedin
+			return confirm false
+		if not linkedin.lastLink or linkedin.lastLink < lastWeek
+			return confirm false
+		confirm true
+
+
+#
+# confirm whether the linkedin id, or matched contact, have already been done today
+#
+getDeets = (id, contact, oa, cb) ->
+	alreadyLinked id, contact, (test) ->
+		if test
+			return cb null, null
+		u = ('/id=' + id + ':(industry,specialties,positions,picture-url,headline,summary)')
+		getLinked u, oa, cb
 
 
 _addTags = (user, contact, category, existing, alist) ->
@@ -181,7 +210,7 @@ push2linkQ = (notifications, user, contact, details) ->
 
 
 saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
-	altered = false
+
 	if not linkedin
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
@@ -192,14 +221,11 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 				firstName: details.firstName
 				lastName: details.lastName
 				formattedName: details.formattedName
-		altered = true
 
 	if details.summary and linkedin.summary isnt details.summary
 		linkedin.summary = details.summary
-		altered = true
 	if details.headline and linkedin.headline isnt details.headline
 		linkedin.headline = details.headline
-		altered = true
 
 	for detail, list of listedDetails
 		if list and list.length
@@ -207,13 +233,11 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 				if item and item.length
 					if not linkedin[detail]
 						linkedin[detail] = [item]
-						altered = true
 					else if (_.indexOf item, linkedin[detail]) < 0
 						linkedin[detail].addToSet item
-						altered = true
 
-	if altered
-		linkedin.save (err) ->
+	linkedin.lastLink = new Date()
+	linkedin.save (err) ->
 
 
 addDeets2Linkedin = (user, contact, details, listedDetails) ->
@@ -255,7 +279,7 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		dirtycontact = true
 
 	if specialties and specialties.length
-		addTags user, contact, 'redstar', specialties
+		addTags user, contact, 'industry', specialties
 	addTags user, contact, 'industry', industries
 
 	if (_.indexOf user._id, contact.knows) < 0
@@ -313,15 +337,17 @@ REescape = (str) ->
 # if that fails, tries again with case insensitive regexp (that we know fails on unicode)
 ###
 matchInsensitiveContact = (name, cb) ->
+	###
 	models.Contact.find names: name, (err, contacts) ->
 		throw err if err
 		if not _.isEmpty contacts
 			cb contacts
 		else
-			rName = new RegExp('^' + REescape(name) + '$', 'i')
-			models.Contact.find names: rName, (err, contacts) ->
-				throw err if err
-				cb contacts
+	###
+	rName = new RegExp('^' + REescape(name) + '$', 'i')
+	models.Contact.find names: rName, (err, contacts) ->
+		throw err if err
+		cb contacts
 
 ###
 find a contact for this user that matches "first last" or "formatted"
@@ -349,7 +375,12 @@ matchContact = (user, first, last, formatted, cb) ->
 #
 profileIdFrom = (item) ->
 	id = item.siteStandardProfileRequest?.url
-	id = id?.substr (id.indexOf('key=')+4)
+	if id
+		i = id.indexOf('key=')
+		if i < 0
+			i = id.indexOf('id=')+3
+		else i+=4
+		id = id.substr i
 	id?.substr 0, id.indexOf('&')
 
 
@@ -372,21 +403,24 @@ linker = (user, auth, notifications, fn) ->
 		token: auth.token
 		token_secret: auth.secret
 
-	getLinked parturl, oauth, (network) ->
-		if not network
+	getLinked parturl, oauth, (err, network) ->
+		if err or not network
 			return console.warn parturl + ' failed.'
 
 		changed = []		# build an array of changed contacts to broadcast
-		notifications.foundTotal? network._total
-		countSomeFeed = 3		# only add a maximum of three new items to the feed
-		if network._total < countSomeFeed
-			countSomeFeed = network._total
+		notifications.foundTotal? network.values.length
+		countSomeFeed = 9		# only add the first few new items to the feed
 
-		syncForEach network.values, (item, cb) ->
-			item.profileid = profileIdFrom item
-			notifications.completedConnection?()
-			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-				getDeets item.id, oauth, (deets) ->
+		liProcess = (item, contact, cb) ->
+			getDeets item.id, contact, oauth, (err, deets) ->
+				notifications.completedContact?()
+				if err or not deets
+					if err
+						console.log "error in linkedin process"
+						console.dir err
+					if err and err.statusCode is 403
+						return fn changed
+				else
 					for key, val of deets		# copy profile, splitting past and present positions
 						if key is 'positions'
 							item[key] = _.select val.values, (p) -> p.isCurrent
@@ -394,13 +428,31 @@ linker = (user, auth, notifications, fn) ->
 						else
 							item[key] = val
 
-					if not countSomeFeed--
-						notifications.bcastLinkedin = null
+					if countSomeFeed
+						countSomeFeed--
+					else
+						notifications.updateFeeds = null
 					id = push2linkQ notifications, user, contact, item
 					if id then changed.push id
+				cb()
+
+		maybeMore = []
+		syncForEach network.values, (item, cb) ->
+			item.profileid = profileIdFrom item
+			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
+				notifications.completedLinkedin?()
+				if not contact
+					maybeMore.push item
 					cb()
+				else
+					liProcess item, contact, cb
 		, () ->
-			fn(changed)
+			if not maybeMore.length
+				return fn changed
+			syncForEach maybeMore, (item, cb) ->
+				liProcess item, null, cb
+			, () ->
+				return fn changed
 
 module.exports =
 	linker: linker
