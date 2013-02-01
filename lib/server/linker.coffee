@@ -19,7 +19,7 @@ syncForEach = (list, iterator, final_cb) ->
 
 
 getLinked = (partial, oa, cb) ->
-	url = 'http://api.linkedin.com/v1/people#{partial}?format=json'
+	url = 'http://api.linkedin.com/v1/people' + partial + '?format=json'
 	request.get
 		url: url
 		oauth: oa
