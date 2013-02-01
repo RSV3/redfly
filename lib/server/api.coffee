@@ -1,13 +1,4 @@
-
-passport = require 'passport'
-LinkedInStrategy = require('passport-jtnt-linkedin').Strategy
-
-request = require 'request'
-
-
-
 module.exports = (app, socket) ->
-
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
@@ -15,132 +6,8 @@ module.exports = (app, socket) ->
 	util = require './util'
 	models = require './models'
 
+
 	session = socket.handshake.session
-
-	linkCallBack = (token, secret, profile, done) ->
-		if not profile
-			return done "No profile", null
-		li =
-			id: profile.id
-			token: token
-			secret: secret
-		models.User.findOne _id: session.user, (err, user) ->
-			if err or not user
-				console.log "ERROR: #{err} linking in for #{session.user}"
-				return done err, null
-			else
-				if not user.picture and not profile._json?.pictureUrl?.match(/no_photo/)
-					user.picture = profile._json?.pictureUrl
-					dirtyflag = true
-				if not user.linkedin or user.linkedin isnt profile.id
-					user.linkedin = profile.id
-					dirtyflag = true
-				if dirtyflag
-					user.save (err) ->
-						return done err, user, li
-				else
-					return done null, user, li
-
-
-
-	passport.use(new LinkedInStrategy {
-			consumerKey: process.env.LINKEDIN_API_KEY
-			consumerSecret: process.env.LINKEDIN_API_SECRET
-			callbackURL: util.baseUrl + '/linked'
-			scope:['r_basicprofile', 'r_fullprofile', 'r_network']
-			fetch:['picture-url', 'id']
-		}, linkCallBack)
-
-
-
-	app.get '/force-authorize', passport.authenticate('google', 
-		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
-		approvalPrompt: 'force'
-		accessType: 'offline'
-	), (err, user, info) ->
-			console.log 'never gets here'
-
-	app.get '/authorized', (req, res, next) ->
-		passport.authenticate('google',  (err, user, info) ->
-			if not user
-				console.log 'wrong email: #{session.wrongemail}'
-				res.redirect '/profile'
-			else 
-				req.login user, {}, (err) ->
-					if err then return next err
-					if not user.oauth.refreshToken
-						console.log 'attempting to force new refresh token'
-						return res.redirect '/force-authorize'
-					else 
-						url = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=#{user.oauth.accessToken}"
-						request.get
-							url: url
-							json: true
-						, (error, response, body) ->
-							if body.picture and not user.picture
-								console.log "if #{body.picture} and not #{user.picture}"
-								user.picture = body.picture
-								user.save (err) ->
-									if err
-										console.log "error saving user picture from gmail"
-										console.dir err
-
-						###
-						#
-						# notes:
-						# this google contacts api picks out name and email:
-						# need to do something to get image url
-						#
-						# even then, it's another api call, which allows us to download data.
-						# do we wanna store images locally?
-
-						GoogleContacts = require('Google-Contacts').GoogleContacts;
-						c = new GoogleContacts
-							token: user.oauth.accessToken
-							refreshToken: user.oauth.refreshToken
-							consumerKey: process.env.GOOGLE_API_ID
-							consumerSecret: process.env.GOOGLE_API_SECRET
-
-						c.on 'error', (e) ->
-							  console.log('Google Contacts error: ', e);
-
-						c.on 'contactsReceived', (contacts) ->
-							  console.log 'contacts: '
-							  console.dir contacts
-
-						try
-							c.getContacts (err, contacts) ->
-								if err then console.log "error #{err}"
-								console.dir contacts
-						catch e
-							console.log "getContacts error #{e}"
-
-						###
-						
-						if user.lastParsed 
-							yesterday = new Date()
-							yesterday.setDate(yesterday.getDate() - 1)
-							if user.lastParsed > yesterday
-								return res.redirect "/profile"
-
-						return res.redirect "/load"
-		) req, res, next
-
-
-	app.get '/linker', passport.authenticate('linkedin'), (err, user, info) ->
-		console.log 'never gets here'
-
-	app.get '/linked', (req, res, next) ->
-		if req.params.oauth_problem is 'user_refused'
-			return res.redirect "/profile"
-		passport.authenticate('linkedin',  (err, user, info) ->
-			session.linkedin_auth = info
-			session.save()
-			req.session.linkedin_auth = info
-			if not err and user
-				return res.redirect "/link"
-			return res.redirect "/profile"
-		) req, res, next
 
 
 	socket.on 'session', (fn) ->
@@ -438,7 +305,7 @@ module.exports = (app, socket) ->
 						id: contact.id
 						updater: id
 
-			require('./linker').linker app, user, session.linkedin_auth, notifications, (changes) ->
+			require('./linker').linker user, session.linkedinAuth, notifications, (changes) ->
 				if not _.isEmpty changes
 					socket.broadcast.emit 'linked', changes
 				fn()
