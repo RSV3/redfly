@@ -19,19 +19,15 @@ syncForEach = (list, iterator, final_cb) ->
 
 
 getLinked = (partial, oa, cb) ->
-	url = "http://api.linkedin.com/v1/people#{partial}?format=json"
+	url = 'http://api.linkedin.com/v1/people#{partial}?format=json'
 	request.get
 		url: url
 		oauth: oa
 		json: true
 	, (error, response, body) ->
 		if not error and response.statusCode is 200
-			cb body
-		else
-			console.log "got error #{error} and #{response.statusCode} looking for #{partial}"
-			console.dir response.body
-			console.dir oa
-			cb null
+			return cb body
+		cb null
 
 
 getDeets = (id, oa, cb) ->
@@ -108,13 +104,14 @@ liDateCompare = (d1, d2) ->
 # flatten that list, mindful of overlaps to get total years experience
 # 
 ###
-calculateXperience  = (contact, details) ->
+calculateExperience  = (contact, details) ->
 	months = 0
 
 	for position in details.positions
 		if position.title is contact.position and position.company.name is contact.company
 			whichpos = position
-	if not whichpos then return months
+	if not whichpos
+		return months
 
 	for position in details.positions
 		if position isnt whichpos
@@ -269,7 +266,7 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		contact.linkedin = details.profileid
 		dirtycontact = true
 	
-	years = calculateXperience contact, details
+	years = calculateExperience contact, details
 	if contact.yearsExperience isnt years
 		contact.yearsExperience = years
 		dirtycontact = true
@@ -316,15 +313,14 @@ REescape = (str) ->
 # if that fails, tries again with case insensitive regexp (that we know fails on unicode)
 ###
 matchInsensitiveContact = (name, cb) ->
-	models.Contact.find {names: name}, (err, contacts) ->
-		if err
-			console.log "Error on matchContact #{name}: #{err}" if err
-		if contacts.length
+	models.Contact.find names: name, (err, contacts) ->
+		throw err if err
+		if not _.isEmpty contacts
 			cb contacts
 		else
-			r_name = new RegExp('^'+REescape(name)+'$', "i")
-			models.Contact.find {names: r_name}, (err, contacts) ->
-				console.log "Error on matchContact /#{name}/: #{err}" if err
+			rName = new RegExp('^' + REescape(name) + '$', 'i')
+			models.Contact.find names: rName, (err, contacts) ->
+				throw err if err
 				cb contacts
 
 ###
@@ -340,7 +336,7 @@ but if this won't work, return an array of possible matches, and let spongebob s
 TODO: one option might be to make a (n+1)-th contact, and let the user merge (if they can ...)
 ###
 matchContact = (user, first, last, formatted, cb) ->
-	name = "#{first} #{last}"
+	name = first + ' ' + last
 	matchInsensitiveContact name, (contacts) ->
 		if contacts or name is formatted then _matchContact user, contacts, cb
 		else matchInsensitiveContact formatted, (contacts) ->
@@ -357,7 +353,7 @@ profileIdFrom = (item) ->
 	id?.substr 0, id.indexOf('&')
 
 
-linker = (app, user, info, notifications, fn) ->
+linker = (user, auth, notifications, fn) ->
 
 	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
 #
@@ -367,18 +363,18 @@ linker = (app, user, info, notifications, fn) ->
 #		if user.lastlink
 #			parturl += "?modified-since=#{user.lastlink}"
 
-	today = new Date()
-	user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
+	# today = new Date()
+	# user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
 
 	oauth = 
 		consumer_key: process.env.LINKEDIN_API_KEY
 		consumer_secret: process.env.LINKEDIN_API_SECRET
-		token: info.token
-		token_secret: info.secret
+		token: auth.token
+		token_secret: auth.secret
 
 	getLinked parturl, oauth, (network) ->
 		if not network
-			return console.log "#{parturl} failed"
+			return console.warn parturl + ' failed.'
 
 		changed = []		# build an array of changed contacts to broadcast
 		notifications.foundTotal? network._total
@@ -409,5 +405,5 @@ linker = (app, user, info, notifications, fn) ->
 module.exports =
 	linker: linker
 	matchContact: matchContact
-	calculateXperience: calculateXperience
+	calculateExperience: calculateExperience
 

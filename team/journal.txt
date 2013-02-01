@@ -24,3 +24,37 @@ validation utility:
 
 
 i.icon-star(style='position: relative; top: -38px; left: 55px; color: #e51937')
+
+
+
+###
+#
+# notes:
+# this google contacts api picks out name and email:
+# need to do something to get image url
+#
+# even then, it's another api call, which allows us to download data.
+# do we wanna store images locally?
+
+GoogleContacts = require('Google-Contacts').GoogleContacts;
+c = new GoogleContacts
+  token: user.oauth.accessToken
+  refreshToken: user.oauth.refreshToken
+  consumerKey: process.env.GOOGLE_API_ID
+  consumerSecret: process.env.GOOGLE_API_SECRET
+
+c.on 'error', (e) ->
+    console.log('Google Contacts error: ', e);
+
+c.on 'contactsReceived', (contacts) ->
+    console.log 'contacts: '
+    console.dir contacts
+
+try
+  c.getContacts (err, contacts) ->
+    if err then console.log "error #{err}"
+    console.dir contacts
+catch e
+  console.log "getContacts error #{e}"
+
+###
