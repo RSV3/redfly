@@ -303,13 +303,12 @@ module.exports = (app, socket) ->
 					socket.emit 'link.contact'
 				updateFeeds: (contact) ->
 					socket.emit 'feed'
-						type: 'Linkedin'
+						type: 'linkedin'
 						id: contact.id
 						updater: id
 
 			require('./linker').linker user, session.linkedinAuth, notifications, (changes) ->
 				if not _.isEmpty changes
-					socket.broadcast.emit 'linked', changes
 					socket.emit 'linked', changes
 				fn()
 
