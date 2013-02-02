@@ -59,6 +59,15 @@ redstar = #e51937
 
 
 
+
+// Utility classes.
+.center
+	margin-left auto
+	margin-right auto
+
+
+
+
 // Mixins (basically components, with arguements!).
 tag(fontSize)
 	.tag
@@ -273,6 +282,17 @@ body
 		text-align center
 		font-size 200px
 		color redstar
+
+.import
+	table
+		table-layout fixed
+		th
+			&:nth-last-of-type(2)
+				width 40%
+			&:nth-last-of-type(1)
+				width 20%
+	.form-actions button
+		margin-left 5px
 
 
 
