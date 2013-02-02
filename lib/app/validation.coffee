@@ -1,7 +1,7 @@
 module.exports = (socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-
+	async = require 'async'
 	validators = require('validator').validators
 
 	util = require '../util'
@@ -9,6 +9,8 @@ module.exports = (socket) ->
 
 	messages =
 		required: 'Dudebro, you have to enter something dude, bro.'
+		requiredSet: (value) ->
+			'A contact must have at least one ' + value + '.'
 		format: (value) ->
 			'Pretty sure that\'s not a valid ' + value + '.'
 		unique: (value) ->
@@ -23,15 +25,21 @@ module.exports = (socket) ->
 						picture = 'http://' + picture
 					picture
 		contact:
-			# emails: (emails) ->
-			# 	_.chain(emails)
-			# 		.map (item) ->
-			# 			util.trim item
-			# 		.compact()
-			# 		.value()
+			emails: (emails) ->
+				_.chain(emails)
+					.map (item) =>
+						@email item
+					.compact()
+					.value()
 			email: (email) ->
 				if email
 					util.trim email.toLowerCase()
+			names: (names) ->
+				_.chain(names)
+					.map (item) =>
+						@name item
+					.compact()
+					.value()
 			name: (name) ->
 				util.trim name
 	validate:
@@ -40,9 +48,10 @@ module.exports = (socket) ->
 				if not validators.isUrl picture
 					return messages.format 'URL'
 		contact:
-			# emails: (emails) ->
-			# 	if _.isEmpty emails
-			# 		message.required
+			emails: (emails, cb) ->
+				if _.isEmpty emails
+					return cb messages.requiredSet 'email'
+				async.forEach emails, @email, cb
 			email: (email, cb) ->
 				if not email
 					return cb messages.required
@@ -52,9 +61,10 @@ module.exports = (socket) ->
 					if duplicate
 						return cb messages.unique 'email'
 					cb()
-			# names: (names) ->
-			# 	if _.isEmpty names
-			# 		message.required
+			names: (names, cb) ->
+				if _.isEmpty names
+					return cb messages.requiredSet 'name'
+				async.forEach names, @name, cb
 			name: (name, cb) ->
 				if not name
 					return cb messages.required
