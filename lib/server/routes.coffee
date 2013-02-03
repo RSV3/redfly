@@ -1,4 +1,4 @@
-module.exports = (app, socket) ->
+module.exports = (app) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
@@ -7,23 +7,22 @@ module.exports = (app, socket) ->
 	models = require './models'
 
 
-	session = socket.handshake.session
+	route = (name, cb) ->
+		app.io.route name, (req) ->
+			cb req.io.respond, req.data, req.io, req.session
 
 
-	socket.on 'session', (fn) ->
+	route 'session', (fn, data, io, session) ->
 		fn session
 
-	socket.on 'logout', (fn) ->
+	route 'logout', (fn, data, io, session) ->
 		session.destroy()
 		fn()
 
 
-	socket.on 'db', (data, fn) ->
+	route 'db', (fn, data) ->
 		feed = (doc) ->
-			# socket.broadcast.emit 'feed',
-			# 	type: data.type
-			# 	id: doc.id
-			socket.emit 'feed',
+			app.io.broadcast 'feed',
 				type: data.type
 				id: doc.id
 
@@ -87,34 +86,34 @@ module.exports = (app, socket) ->
 				throw new Error
 
 
-	socket.on 'summary.contacts', (fn) ->
+	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.tags', (fn) ->
+	route 'summary.tags', (fn) ->
 		logic.summaryTags (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.notes', (fn) ->
+	route 'summary.notes', (fn) ->
 		logic.summaryNotes (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.verbose', (fn) ->
+	route 'summary.verbose', (fn) ->
 		models.Tag.find().sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) ->
 				tag.body.length
 			fn verbose?.body
 
-	socket.on 'summary.user', (fn) ->
+	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
 
-	socket.on 'search', (query, moreConditions, fn) ->
-		terms = _.uniq _.compact query.split(' ')
+	route 'search', (fn, data) ->
+		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
 		for type in availableTypes
@@ -148,9 +147,9 @@ module.exports = (app, socket) ->
 
 								if model is 'Contact'
 									conditions.added = $exists: true
-									_.extend conditions, moreConditions
+									_.extend conditions, data.moreConditions
 								# else
-								# 	for k, v of moreConditions
+								# 	for k, v of data.moreConditions
 								# 		conditions['contact.' + k] = v
 								
 								models[model].find(conditions).limit(10).exec @parallel()
@@ -171,28 +170,28 @@ module.exports = (app, socket) ->
 							doc.id
 				return fn results
 
-	socket.on 'verifyUniqueness', (field, value, fn) ->
-		field += 's'
+	route 'verifyUniqueness', (fn, data) ->
+		field = data.field + 's'
 		conditions = {}
-		conditions[field] = value
+		conditions[field] = data.value
 		models.Contact.findOne conditions, (err, contact) ->
 			throw err if err
 			fn contact?[field][0]
 
-	socket.on 'deprecatedVerifyUniqueness', (id, field, candidates, fn) ->	# Deprecated, bitches
-		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
+	route 'deprecatedVerifyUniqueness', (fn, data) ->	# Deprecated, bitches
+		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
-			fn _.chain(contact?[field])
-				.intersection(candidates)
+			fn _.chain(contact?[data.field])
+				.intersection(data.candidates)
 				.first()
 				.value()
 
-	socket.on 'tags.all', (conditions, fn) ->
+	route 'tags.all', (fn, conditions) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
 			throw err if err
 			fn bodies
 
-	socket.on 'tags.popular', (conditions, fn) ->
+	route 'tags.popular', (fn, conditions) ->
 		models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', count: $sum: 1},
 			{$sort: count: -1},
@@ -202,7 +201,7 @@ module.exports = (app, socket) ->
 				throw err if err
 				fn _.pluck results, 'body'
 
-	socket.on 'tags.stats', (fn) ->
+	route 'tags.stats', (fn) ->
 		group =
 			$group:
 				_id: '$body'
@@ -226,10 +225,10 @@ module.exports = (app, socket) ->
 		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
 		# ]
 
-	socket.on 'merge', (contactId, mergeIds, fn) ->
-		models.Contact.findById contactId, (err, contact) ->
+	route 'merge', (fn, data) ->
+		models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
-			models.Contact.find().in('_id', mergeIds).exec (err, merges) ->
+			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
 				throw err if err
 
 				history = new models.Merge
@@ -267,9 +266,9 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn()
 
-	socket.on 'parse', (id, fn) ->
+	route 'parse', (fn, data, io) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
-		models.User.findById id, (err, user) ->
+		models.User.findById data.id, (err, user) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
@@ -277,18 +276,18 @@ module.exports = (app, socket) ->
 
 			notifications =
 				foundTotal: (total) ->
-					socket.emit 'parse.total', total
+					io.emit 'parse.total', total
 				completedEmail: ->
-					socket.emit 'parse.mail'
+					io.emit 'parse.mail'
 				completedAllEmails: ->
-					socket.emit 'parse.queueing'
+					io.emit 'parse.queueing'
 				foundNewContact: ->
-					socket.emit 'parse.enqueued'
+					io.emit 'parse.enqueued'
 
 			require('./parser') app, user, notifications, fn
 
-	socket.on 'linkin', (id, fn) ->
-		models.User.findById id, (err, user) ->
+	route 'linkin', (fn, data, io, session) ->
+		models.User.findById data.id, (err, user) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
@@ -296,19 +295,19 @@ module.exports = (app, socket) ->
 
 			notifications =
 				foundTotal: (total) ->
-					socket.emit 'link.total', total
+					io.emit 'link.total', total
 				completedLinkedin: ->
-					socket.emit 'link.linkedin'
+					io.emit 'link.linkedin'
 				completedContact: ->
-					socket.emit 'link.contact'
+					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					socket.emit 'feed'
+					io.emit 'feed'
 						type: 'linkedin'
 						id: contact.id
-						updater: id
+						updater: user.id
 
 			require('./linker').linker user, session.linkedinAuth, notifications, (changes) ->
 				if not _.isEmpty changes
-					socket.emit 'linked', changes
+					io.emit 'linked', changes
 				fn()
 
