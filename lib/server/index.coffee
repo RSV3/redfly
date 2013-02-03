@@ -9,6 +9,13 @@ io = app.io
 root = path.dirname path.dirname __dirname
 pipeline = require('./pipeline') root
 
+RedisStore = require('connect-redis') express
+redisConfig = do ->
+	url = require('url').parse process.env.REDISTOGO_URL
+	host: url.hostname
+	port: url.port
+	pass: url.auth.split(':')[1]
+
 require './auth'
 
 
@@ -33,7 +40,7 @@ app.configure ->
 	# app.use express.bodyParser()
 	# app.use express.methodOverride()
 	app.use express.cookieParser()
-	app.use express.session(secret: 'cat on a keyboard in space')
+	app.use express.session(store: new RedisStore(redisConfig), secret: 'cat on a keyboard in space')
 	app.use require('everyauth').middleware()
 	app.use (req, res, next) ->
 		if user = process.env.AUTO_AUTH
@@ -76,14 +83,9 @@ io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
 io.set 'store', do ->
 	redis = require 'redis'
-	config = do ->
-		url = require('url').parse process.env.REDISTOGO_URL
-		host: url.hostname
-		port: url.port
-		pass: url.auth.split(':')[1]
-	clients = (redis.createClient(config.port, config.host) for i in [1..3])
+	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
 	for client in clients
-		client.auth config.pass, (err) ->
+		client.auth redisConfig.pass, (err) ->
 			throw err if err
 	new express.io.RedisStore
 		redis: redis
