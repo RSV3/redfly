@@ -31,8 +31,10 @@ module.exports = (Ember, App, socket) ->
 					# linker doesn't return any errors, this never happens
 					@get('notification').pnotify_remove()
 					return alert err.message + ' Are you connected to the internet? Did you allow access to LinkedIn?'
+				@set 'stateConnecting', false
 				@set 'stateParsing', false
 				@set 'stateDone', true
+				@set 'stateThrottled', false
 				@get('notification').effect 'bounce'
 				@get('notification').pnotify type: 'success', closer: true, hide: true
 
@@ -43,6 +45,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateConnecting', false
 				@set 'stateParsing', true
 				@set 'stateDone', false
+				@set 'stateThrottled', false
 				socket.on 'link.linkedin', =>
 					@incrementProperty 'current2'
 					current = @get 'current2'
