@@ -3,31 +3,30 @@ module.exports = (root, app, variables) ->
 
 
 	bundle = require('browserify')
-		watch: process.env.NODE_ENV is 'development'
-		# debug: true	# TODO see if this helps EITHER devtools debugging or better stacktrace reporting on prod. Remove if neither.
 		exports: 'process'
+		filter: if process.env.NODE_ENV is 'production' then require('uglify-js')
+		watch: process.env.NODE_ENV is 'development'
+		# debug: true
 	bundle.register '.jade', (body, filename) ->
 		include = 'include ' + path.relative(path.dirname(filename), path.join(root, 'views/handlebars')) + '\n'
 		data = require('jade').compile(include + body, filename: filename)()
 		data = data.replace /(action|bindAttr)="(.*?)"/g, (all, name, args) -> '{{' + name + ' ' + args.replace(/&quot;/g, '"') + '}}'
 		data = data.replace(/(\r\n|\n|\r)/g, '').replace(/'/g, '&apos;')
 		'module.exports = Ember.Handlebars.compile(\'' + data + '\');'
-	bundle.addEntry 'lib/app/index.coffee'
+	bundle.register (body) ->
+		_ = require 'underscore'
+		config = _.reduce variables, (memo, variable) ->
+				memo + 'process.env.' + variable + ' = \'' + process.env[variable] + '\';\n'
+			, ''
+		body.replace 'CONFIG_VARIABLES', config
 	bundle.on 'syntaxError', (err) ->
 		throw new Error err
+	bundle.addEntry 'lib/app/index.coffee'
 
 	app.get '/app.js', do ->
-		processCode = ->
-			content = bundle.bundle()
-			for variable in variables
-				content = content.replace '[' + variable + ']', process.env[variable]
-			# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
-			if process.env.NODE_ENV is 'production'
-				content = require('uglify-js').minify(content, fromString: true).code
-			content
-		code = processCode()
+		code = bundle.bundle()
 		bundle.on 'bundle', ->
-			code = processCode()
+			code = bundle.bundle()
 		(req, res) ->
 			res.header 'Content-Type', 'application/javascript'
 			res.send code

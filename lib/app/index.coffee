@@ -1,9 +1,6 @@
-# These values get subbed in by the build process.
-process.env.NODE_ENV = '[NODE_ENV]'
-process.env.HOST = '[HOST]'
-
 require '../vendor'
 
+CONFIG_VARIABLES
 
 # TraceKit.report.subscribe (stacktrace) ->
 # 	# TODO log the stacktrace, logged in user, and router path
@@ -49,8 +46,7 @@ socket.emit 'session', (session) ->
 	if id = session.user
 		App.auth.login id
 	else
-		App.auth.logout()
-		
+		App.auth.logout()	
 	App.initialize()
 
 
