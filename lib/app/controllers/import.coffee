@@ -24,6 +24,9 @@ module.exports = (Ember, App, socket) ->
 			).property()
 
 		_process: ->
+			# Buffer needs to be available globally to use the csv module as-written. On well.
+			window.Buffer = require('buffer').Buffer
+
 			reader = new FileReader
 			reader.onload = (upload) =>
 				fields = []
