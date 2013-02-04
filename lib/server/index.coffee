@@ -4,9 +4,8 @@ express = require 'express.io'
 util = require './util'
 
 
-app = express().http().io()
-io = app.io
 root = path.dirname path.dirname __dirname
+app = express().http().io()
 assets = require('./assets') root, app
 RedisStore = require('connect-redis') express
 redisConfig = do ->
@@ -61,17 +60,17 @@ app.configure 'production', ->
 
 
 # Heroku doesn't support websockets, force long polling.
-io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
-io.set 'polling duration', 10
-io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
+app.io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
+app.io.set 'polling duration', 10
+app.io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
-io.set 'store', do ->
+app.io.set 'store', do ->
 	redis = require 'redis'
 	clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
 	for client in clients
 		client.auth redisConfig.pass, (err) ->
 			throw err if err
-	new express.io.RedisStore
+	new express.app.io.RedisStore
 		redis: redis
 		redisPub: clients[0]
 		redisSub: clients[1]
@@ -79,9 +78,9 @@ io.set 'store', do ->
 
 require('./routes') app
 assets.bundle.on 'bundle', ->
-	io.broadcast 'reloadApp'
+	app.io.broadcast 'reloadApp'
 assets.pipeline.on 'invalidate', ->
-	io.broadcast 'reloadStyles'
+	app.io.broadcast 'reloadStyles'
 
 
 app.listen app.get('port'), ->
