@@ -23,7 +23,6 @@
 		"validator": "0.4.22",
 		"mongoose": "3.5.4",
 		"request": "git://github.com/mikeal/request.git#28e8be5175793ac99236df88e26c0139a143e32d",
-		"socket.io": "0.9.13",
 		"socket.io-client": "0.9.11",
 		"browserify": "1.17.2",
 		"convoy": "0.4.1",

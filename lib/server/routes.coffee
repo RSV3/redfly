@@ -266,9 +266,9 @@ module.exports = (app) ->
 						throw err if err
 						return fn()
 
-	route 'parse', (fn, data, io) ->
+	route 'parse', (fn, id, io) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
-		models.User.findById data.id, (err, user) ->
+		models.User.findById id, (err, user) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
@@ -286,8 +286,8 @@ module.exports = (app) ->
 
 			require('./parser') app, user, notifications, fn
 
-	route 'linkin', (fn, data, io, session) ->
-		models.User.findById data.id, (err, user) ->
+	route 'linkin', (fn, id, io, session) ->
+		models.User.findById id, (err, user) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
