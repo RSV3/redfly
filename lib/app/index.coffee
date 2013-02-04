@@ -40,7 +40,7 @@ App.store = DS.Store.create
 	revision: 6
 	adapter: App.adapter
 
-require('./ember') DS, App
+require('./ember') Ember, App
 require('./models') DS, App
 require('./controllers') Ember, App, socket
 require('./router') Ember, App, socket
