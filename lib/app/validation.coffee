@@ -57,7 +57,7 @@ module.exports = (socket) ->
 					return cb messages.required
 				if not validators.isEmail email
 					return cb messages.format 'email'
-				socket.emit 'verifyUniqueness', 'email', email, (duplicate) ->
+				socket.emit 'verifyUniqueness', field: 'email', value: email, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'email'
 					cb()
@@ -68,7 +68,7 @@ module.exports = (socket) ->
 			name: (name, cb) ->
 				if not name
 					return cb messages.required
-				socket.emit 'verifyUniqueness', 'name', name, (duplicate) ->
+				socket.emit 'verifyUniqueness', field: 'name', value: name, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'name'
 					cb()
