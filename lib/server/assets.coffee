@@ -1,7 +1,5 @@
-module.exports = (root, app) ->
+module.exports = (root, app, variables) ->
 	path = require 'path'
-	convoy = require 'convoy'
-	less = require 'less'
 
 
 	bundle = require('browserify')
@@ -21,7 +19,7 @@ module.exports = (root, app) ->
 	app.get '/app.js', do ->
 		processCode = ->
 			content = bundle.bundle()
-			for variable in ['NODE_ENV', 'HOST']
+			for variable in variables
 				content = content.replace '[' + variable + ']', process.env[variable]
 			# TODO Maybe remove (also uglify dependency) in favor of in-tact line numbers for clientside error reporting. Or only minify non-app code.
 			if process.env.NODE_ENV is 'production'
@@ -31,10 +29,10 @@ module.exports = (root, app) ->
 		bundle.on 'bundle', ->
 			code = processCode()
 		(req, res) ->
-			res.set 'content-Type', 'application/javascript'
+			res.header 'Content-Type', 'application/javascript'
 			res.send code
 
-	pipeline = convoy
+	pipeline = require('convoy')
 		watch: process.env.NODE_ENV is 'development'
 		'app.css':
 			main: root + '/styles'
@@ -44,6 +42,7 @@ module.exports = (root, app) ->
 				fs = require 'fs'
 				fs.readFile basePath, 'utf8', (err, body) ->
 					return done err if err
+					less = require 'less'
 					options =
 						filename: basePath
 						paths: [path.dirname(basePath)]

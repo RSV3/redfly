@@ -6,7 +6,7 @@ util = require './util'
 
 root = path.dirname path.dirname __dirname
 app = express().http().io()
-assets = require('./assets') root, app
+assets = require('./assets') root, app, ['NODE_ENV', 'HOST']
 RedisStore = require('connect-redis') express
 redisConfig = do ->
 	url = require('url').parse process.env.REDISTOGO_URL
@@ -70,7 +70,7 @@ app.io.set 'store', do ->
 	for client in clients
 		client.auth redisConfig.pass, (err) ->
 			throw err if err
-	new express.app.io.RedisStore
+	new express.io.RedisStore
 		redis: redis
 		redisPub: clients[0]
 		redisSub: clients[1]
