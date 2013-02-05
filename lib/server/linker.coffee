@@ -411,15 +411,20 @@ linker = (user, auth, notifications, fn) ->
 		notifications.foundTotal? network.values.length
 		countSomeFeed = 9		# only add the first few new items to the feed
 
-		liProcess = (item, contact, cb) ->
+		liProcess = (item, contact, cb, notYetContacts=false) ->
 			getDeets item.id, contact, oauth, (err, deets) ->
 				notifications.completedContact?()
 				if err or not deets
-					if err
+					if err and err.statusCode is 403
+						if notYetContacts		# was this during the second parse?
+							err = null			# if so, don't report throttle
+						else
+							console.log "linkedin process throttled"
+							console.dir err
+						return fn err, changed
+					else if err
 						console.log "error in linkedin process"
 						console.dir err
-					if err and err.statusCode is 403
-						return fn changed
 				else
 					for key, val of deets		# copy profile, splitting past and present positions
 						if key is 'positions'
@@ -448,11 +453,11 @@ linker = (user, auth, notifications, fn) ->
 					liProcess item, contact, cb
 		, () ->
 			if not maybeMore.length
-				return fn changed
+				return fn null, changed
 			syncForEach maybeMore, (item, cb) ->
-				liProcess item, null, cb
+				liProcess item, null, cb, true			# this true flag means we won't report throttle
 			, () ->
-				return fn changed
+				return fn null, changed
 
 module.exports =
 	linker: linker
