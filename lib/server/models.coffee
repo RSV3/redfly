@@ -16,10 +16,10 @@ UserSchema = new Schema
 	name: type: String, required: true, trim: true
 	picture: type: String, trim: true, validate: validators.isUrl
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
-	linkedin: type: String
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
 	excludes: [excludeSchema]
+	linkedin: type: String
 
 
 ContactSchema = new Schema
@@ -67,6 +67,7 @@ LinkedInSchema = new Schema
 	specialties: [ type: String ]
 	summary: type: String, trim: true
 	headline: type: String, trim: true
+	lastLink: type: Date
 
 
 MergeSchema = new Schema

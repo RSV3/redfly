@@ -145,10 +145,10 @@ module.exports = (Ember, App, socket) ->
 							pnotify.css top: '60px'
 				redirectsTo: 'index'
 
+
 			link: Ember.Route.extend
-				route: '/link'	# Public url so the http-based authorize flow can hook in.
+				route: '/link'	# Public url so the http-based linkedin flow can hook in.
 				enter: (manager) ->
-					# TO-DO probably set a session variable or something to ensure linking doesn't happen twice by back button or anything.
 					view = App.LinkerView.create()
 					view.append()
 				redirectsTo: 'userProfile'

@@ -169,7 +169,7 @@ module.exports = (Ember, App, socket) ->
 						pnotify.css top: '60px'
 				
 				selections = @get 'selections'
-				socket.emit 'merge', @get('controller.id'), selections.getEach('id'), =>
+				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), =>
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data. Issue
 					# a delete instead even though they're already deleted in the database.
 					selections.forEach (selection) ->

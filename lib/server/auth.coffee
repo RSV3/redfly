@@ -66,3 +66,34 @@ everyauth.google.configure
 		if not user.lastParsed
 			return res.redirect '/load'
 		res.redirect '/profile'
+
+
+everyauth.linkedin.configure
+	consumerKey: process.env.LINKEDIN_API_KEY
+	consumerSecret: process.env.LINKEDIN_API_SECRET
+	entryPath: '/linker'
+	callbackPath: '/linked'
+	handleAuthCallbackError: (req, res) ->
+		# TODO this doesn't seem to work. If a user cancels signing in to linkedin he gets a nasty response.
+		# if req.params.oauth_problem
+		res.redirect '/profile'
+	findOrCreateUser: (session, accessToken, accessTokenSecret, linkedinUserMetadata) ->
+		models = require './models'
+		models.User.findById session.user, (err, user) ->
+			throw err if err
+			if not user.linkedin or (user.linkedin isnt linkedinUserMetadata.id)
+				user.linkedin = linkedinUserMetadata.id
+				user.save (err) ->
+					throw err if err
+					promise.fulfill user
+			else
+				promise.fulfill user
+		promise = @Promise()
+	addToSession: (session, auth) ->
+		session.linkedinAuth =
+			token: auth.accessToken
+			secret: auth.accessTokenSecret
+	redirectPath: '/link'
+everyauth.linkedin
+	.requestTokenQueryParam('scope', ['r_basicprofile', 'r_fullprofile', 'r_network'].join(' '))
+	.requestTokenQueryParam('fetch', ['picture-url', 'id'].join(' '))
