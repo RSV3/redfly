@@ -15,7 +15,7 @@ module.exports = (Ember, App, socket) ->
 
 			@set 'notification', util.notify
 				title: 'LinkedIn parsing status'
-				text: '<div id="loading"></div>'
+				text: '<div id="linking"></div>'
 				type: 'info'
 				hide: false
 				closer: false
@@ -23,18 +23,18 @@ module.exports = (Ember, App, socket) ->
 				icon: 'icon-linkedin-sign'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
-					@$('#linkingStarted').appendTo '#loading'
+					@$('#linkingStarted').appendTo '#linking'
 
 
 			socket.emit 'linkin', App.user.get('id'), (err) =>
 				if err
-					# linker doesn't return any errors, this never happens
-					@get('notification').pnotify_remove()
-					return alert err.message + ' Are you connected to the internet? Did you allow access to LinkedIn?'
+					@set 'stateThrottled', true
+					@set 'stateDone', false
+				else
+					@set 'stateDone', true
+					@set 'stateThrottled', false
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
-				@set 'stateDone', true
-				@set 'stateThrottled', false
 				@get('notification').effect 'bounce'
 				@get('notification').pnotify type: 'success', closer: true, hide: true
 
