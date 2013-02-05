@@ -12,7 +12,10 @@
 	p.lead
 		| You'll be able to view the curated contacts of other team members and they'll be able to view yours. 
 		strong Remember, with great power comes great something something.
-.row-fluid.signup
-	| {{#unless App.user.content}}
-	a.btn.btn-primary.btn-large(href='/authorize') Sign up through email
-	| {{/unless}}
+	.decorator
+		img.icon-spin(src='/images/rays.png')
+		i.i.icon-star
+//- .row-fluid.signup
+//- 	| {{#unless App.user.content}}
+//- 	a.btn.btn-primary.btn-large(href='/authorize') Sign up through email
+//- 	| {{/unless}}

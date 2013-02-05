@@ -18,7 +18,9 @@ window.App = Ember.Application.create autoinit: false
 io = require 'socket.io-client'
 socket = io.connect require('./util').baseUrl
 socket.on 'error', ->
-	window.location.reload()
+	# TODO remove once I'm convinced this never happens
+	alert 'Unable to establish connection, please refresh.'
+	# window.location.reload()
 
 Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
 	value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page

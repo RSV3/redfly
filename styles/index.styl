@@ -59,6 +59,15 @@ redstar = #e51937
 
 
 
+
+// Utility classes.
+.center
+	margin-left auto
+	margin-right auto
+
+
+
+
 // Mixins (basically components, with arguements!).
 tag(fontSize)
 	.tag
@@ -169,6 +178,18 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
+	.decorator
+		color redstar
+		text-align center
+		font-size baseFontSize * 15
+		img
+			position absolute
+			margin-left -150px
+			margin-top -150px
+			animation spin 40s infinite linear
+			z-index -1
+
+
 
 .contact
 	.top
@@ -196,6 +217,13 @@ body
 				i
 					margin 3px
 					margin-top 5px
+		.social
+			margin 3px
+			font-size 130%
+			&:hover
+				text-decoration none
+		.social.muted:hover
+				cursor default
 		.edit-social
 			.popover
 				width 457px
@@ -271,6 +299,17 @@ body
 		font-size 200px
 		color redstar
 
+.import
+	table
+		table-layout fixed
+		th
+			&:nth-last-of-type(2)
+				width 40%
+			&:nth-last-of-type(1)
+				width 20%
+	.form-actions button
+		margin-left 5px
+
 
 
 // Components.
@@ -278,6 +317,18 @@ body
 .search
 	.search-results
 		display block	// Always show the dropdown.
+
+div#linking
+	.progress.progress1 .bar
+		position absolute
+		height 20px
+		border-radius 4px
+
+	.progress.progress2 .bar
+		opacity 0.5
+
+	.progress.progress1
+		position relative
 
 
 
