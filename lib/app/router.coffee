@@ -42,6 +42,15 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router, user) ->
 					router.get('applicationController').connectOutlet 'profile', user
 
+			results: Ember.Route.extend
+				route: '/results'
+				connectOutlets: (router) ->
+					router.get('applicationController').connectOutlet 'results', fullContent
+					fullContent = Ember.ArrayProxy.create 
+						content: router.get('resultsController').get 'results.contact'
+					router.get('resultsController').set 'fullContent', fullContent
+
+
 			contact: Ember.Route.extend
 				# TODO bring back all email serialization, also:
 				# http://stackoverflow.com/questions/12064765/initialization-with-serialize-deserialize-ember-js
@@ -157,6 +166,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goResults: Ember.Route.transitionTo 'results'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
