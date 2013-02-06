@@ -1,13 +1,4 @@
-
-passport = require 'passport'
-LinkedInStrategy = require('passport-jtnt-linkedin').Strategy
-
-request = require 'request'
-
-
-
-module.exports = (app, socket) ->
-
+module.exports = (app) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
@@ -15,148 +6,23 @@ module.exports = (app, socket) ->
 	util = require './util'
 	models = require './models'
 
-	session = socket.handshake.session
 
-	linkCallBack = (token, secret, profile, done) ->
-		if not profile
-			return done "No profile", null
-		li =
-			id: profile.id
-			token: token
-			secret: secret
-		models.User.findOne _id: session.user, (err, user) ->
-			if err or not user
-				console.log "ERROR: #{err} linking in for #{session.user}"
-				return done err, null
-			else
-				if not user.picture and not profile._json?.pictureUrl?.match(/no_photo/)
-					user.picture = profile._json?.pictureUrl
-					dirtyflag = true
-				if not user.linkedin or user.linkedin isnt profile.id
-					user.linkedin = profile.id
-					dirtyflag = true
-				if dirtyflag
-					user.save (err) ->
-						return done err, user, li
-				else
-					return done null, user, li
+	route = (name, cb) ->
+		app.io.route name, (req) ->
+			cb req.io.respond, req.data, req.io, req.session
 
 
-
-	passport.use(new LinkedInStrategy {
-			consumerKey: process.env.LINKEDIN_API_KEY
-			consumerSecret: process.env.LINKEDIN_API_SECRET
-			callbackURL: util.baseUrl + '/linked'
-			scope:['r_basicprofile', 'r_fullprofile', 'r_network']
-			fetch:['picture-url', 'id']
-		}, linkCallBack)
-
-
-
-	app.get '/force-authorize', passport.authenticate('google', 
-		scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'https://mail.google.com/', 'https://www.google.com/m8/feeds'] 
-		approvalPrompt: 'force'
-		accessType: 'offline'
-	), (err, user, info) ->
-			console.log 'never gets here'
-
-	app.get '/authorized', (req, res, next) ->
-		passport.authenticate('google',  (err, user, info) ->
-			if not user
-				console.log 'wrong email: #{session.wrongemail}'
-				res.redirect '/profile'
-			else 
-				req.login user, {}, (err) ->
-					if err then return next err
-					if not user.oauth.refreshToken
-						console.log 'attempting to force new refresh token'
-						return res.redirect '/force-authorize'
-					else 
-						url = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=#{user.oauth.accessToken}"
-						request.get
-							url: url
-							json: true
-						, (error, response, body) ->
-							if body.picture and not user.picture
-								console.log "if #{body.picture} and not #{user.picture}"
-								user.picture = body.picture
-								user.save (err) ->
-									if err
-										console.log "error saving user picture from gmail"
-										console.dir err
-
-						###
-						#
-						# notes:
-						# this google contacts api picks out name and email:
-						# need to do something to get image url
-						#
-						# even then, it's another api call, which allows us to download data.
-						# do we wanna store images locally?
-
-						GoogleContacts = require('Google-Contacts').GoogleContacts;
-						c = new GoogleContacts
-							token: user.oauth.accessToken
-							refreshToken: user.oauth.refreshToken
-							consumerKey: process.env.GOOGLE_API_ID
-							consumerSecret: process.env.GOOGLE_API_SECRET
-
-						c.on 'error', (e) ->
-							  console.log('Google Contacts error: ', e);
-
-						c.on 'contactsReceived', (contacts) ->
-							  console.log 'contacts: '
-							  console.dir contacts
-
-						try
-							c.getContacts (err, contacts) ->
-								if err then console.log "error #{err}"
-								console.dir contacts
-						catch e
-							console.log "getContacts error #{e}"
-
-						###
-						
-						if user.lastParsed 
-							yesterday = new Date()
-							yesterday.setDate(yesterday.getDate() - 1)
-							if user.lastParsed > yesterday
-								return res.redirect "/profile"
-
-						return res.redirect "/load"
-		) req, res, next
-
-
-	app.get '/linker', passport.authenticate('linkedin'), (err, user, info) ->
-		console.log 'never gets here'
-
-	app.get '/linked', (req, res, next) ->
-		if req.params.oauth_problem is 'user_refused'
-			return res.redirect "/profile"
-		passport.authenticate('linkedin',  (err, user, info) ->
-			session.linkedin_auth = info
-			session.save()
-			req.session.linkedin_auth = info
-			if not err and user
-				return res.redirect "/link"
-			return res.redirect "/profile"
-		) req, res, next
-
-
-	socket.on 'session', (fn) ->
+	route 'session', (fn, data, io, session) ->
 		fn session
 
-	socket.on 'logout', (fn) ->
+	route 'logout', (fn, data, io, session) ->
 		session.destroy()
 		fn()
 
 
-	socket.on 'db', (data, fn) ->
+	route 'db', (fn, data) ->
 		feed = (doc) ->
-			# socket.broadcast.emit 'feed',
-			# 	type: data.type
-			# 	id: doc.id
-			socket.emit 'feed',
+			app.io.broadcast 'feed',
 				type: data.type
 				id: doc.id
 
@@ -220,34 +86,34 @@ module.exports = (app, socket) ->
 				throw new Error
 
 
-	socket.on 'summary.contacts', (fn) ->
+	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.tags', (fn) ->
+	route 'summary.tags', (fn) ->
 		logic.summaryTags (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.notes', (fn) ->
+	route 'summary.notes', (fn) ->
 		logic.summaryNotes (err, count) ->
 			throw err if err
 			fn count
 
-	socket.on 'summary.verbose', (fn) ->
+	route 'summary.verbose', (fn) ->
 		models.Tag.find().sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) ->
 				tag.body.length
 			fn verbose?.body
 
-	socket.on 'summary.user', (fn) ->
+	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
 
-	socket.on 'search', (query, moreConditions, fn) ->
-		terms = _.uniq _.compact query.split(' ')
+	route 'search', (fn, data) ->
+		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
 		for type in availableTypes
@@ -281,9 +147,9 @@ module.exports = (app, socket) ->
 
 								if model is 'Contact'
 									conditions.added = $exists: true
-									_.extend conditions, moreConditions
+									_.extend conditions, data.moreConditions
 								# else
-								# 	for k, v of moreConditions
+								# 	for k, v of data.moreConditions
 								# 		conditions['contact.' + k] = v
 								
 								models[model].find(conditions).limit(10).exec @parallel()
@@ -304,28 +170,28 @@ module.exports = (app, socket) ->
 							doc.id
 				return fn results
 
-	socket.on 'verifyUniqueness', (field, value, fn) ->
-		field += 's'
+	route 'verifyUniqueness', (fn, data) ->
+		field = data.field + 's'
 		conditions = {}
-		conditions[field] = value
+		conditions[field] = data.value
 		models.Contact.findOne conditions, (err, contact) ->
 			throw err if err
 			fn contact?[field][0]
 
-	socket.on 'deprecatedVerifyUniqueness', (id, field, candidates, fn) ->	# Deprecated, bitches
-		models.Contact.findOne().ne('_id', id).in(field, candidates).exec (err, contact) ->
+	route 'deprecatedVerifyUniqueness', (fn, data) ->	# Deprecated, bitches
+		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
-			fn _.chain(contact?[field])
-				.intersection(candidates)
+			fn _.chain(contact?[data.field])
+				.intersection(data.candidates)
 				.first()
 				.value()
 
-	socket.on 'tags.all', (conditions, fn) ->
+	route 'tags.all', (fn, conditions) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
 			throw err if err
 			fn bodies
 
-	socket.on 'tags.popular', (conditions, fn) ->
+	route 'tags.popular', (fn, conditions) ->
 		models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', count: $sum: 1},
 			{$sort: count: -1},
@@ -335,7 +201,7 @@ module.exports = (app, socket) ->
 				throw err if err
 				fn _.pluck results, 'body'
 
-	socket.on 'tags.stats', (fn) ->
+	route 'tags.stats', (fn) ->
 		group =
 			$group:
 				_id: '$body'
@@ -359,10 +225,10 @@ module.exports = (app, socket) ->
 		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
 		# ]
 
-	socket.on 'merge', (contactId, mergeIds, fn) ->
-		models.Contact.findById contactId, (err, contact) ->
+	route 'merge', (fn, data) ->
+		models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
-			models.Contact.find().in('_id', mergeIds).exec (err, merges) ->
+			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
 				throw err if err
 
 				history = new models.Merge
@@ -400,7 +266,7 @@ module.exports = (app, socket) ->
 						throw err if err
 						return fn()
 
-	socket.on 'parse', (id, fn) ->
+	route 'parse', (fn, id, io) ->
 		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
 			throw err if err
@@ -410,35 +276,38 @@ module.exports = (app, socket) ->
 
 			notifications =
 				foundTotal: (total) ->
-					socket.emit 'parse.total', total
+					io.emit 'parse.total', total
 				completedEmail: ->
-					socket.emit 'parse.mail'
+					io.emit 'parse.mail'
 				completedAllEmails: ->
-					socket.emit 'parse.queueing'
+					io.emit 'parse.queueing'
 				foundNewContact: ->
-					socket.emit 'parse.enqueued'
+					io.emit 'parse.enqueued'
 
 			require('./parser') app, user, notifications, fn
 
-	socket.on 'linkin', (id, fn) ->
+	route 'linkin', (fn, id, io, session) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
-				return fn()
+				return fn(err)
 
 			notifications =
 				foundTotal: (total) ->
-					socket.emit 'link.total', total
-				completedConnection: ->
-					socket.emit 'link.connection'
+					io.emit 'link.total', total
+				completedLinkedin: ->
+					io.emit 'link.linkedin'
+				completedContact: ->
+					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					socket.emit 'feed',
+					io.emit 'feed'
 						type: 'linkedin'
 						id: contact.id
-						updater: id
+						updater: user.id
 
-			require('./linker').linker app, user, session.linkedin_auth, notifications, (changes) ->
+			require('./linker').linker user, session.linkedinAuth, notifications, (err, changes) ->
 				if not _.isEmpty changes
-					socket.broadcast.emit 'linked', changes
-				fn()
+					io.emit 'linked', changes
+				fn(err)
+

@@ -20,6 +20,5 @@ describe 'test experience calculation', ->
 		contact = 
 			position: 'shelf stacker'
 			company: 'testos'
-		details = require './fakedeets.coffee'
-		linker.calculateXperience(contact, details).should.equal 6
-
+		details = require './fixtures.coffee'
+		linker.calculateExperience(contact, details).should.equal 6
