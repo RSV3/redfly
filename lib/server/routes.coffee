@@ -291,7 +291,7 @@ module.exports = (app) ->
 			throw err if err
 			# temporary, in case this gets called and there's not logged in user
 			if not user
-				return fn()
+				return fn(err)
 
 			notifications =
 				foundTotal: (total) ->
@@ -306,8 +306,8 @@ module.exports = (app) ->
 						id: contact.id
 						updater: user.id
 
-			require('./linker').linker user, session.linkedinAuth, notifications, (changes) ->
+			require('./linker').linker user, session.linkedinAuth, notifications, (err, changes) ->
 				if not _.isEmpty changes
 					io.emit 'linked', changes
-				fn()
+				fn(err)
 
