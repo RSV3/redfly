@@ -1,0 +1,1 @@
+db.linkedins.update({}, {$rename: {'linkedinid': 'linkedinId'}})

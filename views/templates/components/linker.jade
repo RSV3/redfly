@@ -6,9 +6,14 @@
 		| {{/if}}
 		| {{#if stateParsing}}
 		div {{current}} of {{total}}
-		.progress.progress-striped.active
+		.progress1.progress.progress-striped.active
 			| <div class="bar" {{bindAttr style="percent"}}></div>
+			.progress2.progress.active
+				| <div class="bar" {{bindAttr style="percent2"}}></div>
 		| {{/if}}
 		| {{#if stateDone}}
 		| All done!
+		| {{/if}}
+		| {{#if stateThrottled}}
+		| <br>That's enough for today:<br>come back and do some more tomorrow.
 		| {{/if}}

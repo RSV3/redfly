@@ -39,13 +39,13 @@
 		.row-fluid
 			p
 				+view('view.socialView')
-					a(bindAttr='class="linkedin::muted"', action='openLinkedin target="view"')
+					a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
 						i.icon-linkedin-sign.icon-large
 						|  
-					a(bindAttr='class="twitter::muted"', action='openTwitter target="view"')
+					a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
 						i.icon-twitter-sign.icon-large
 						|  
-					a(bindAttr='class="facebook::muted"', action='openFacebook target="view"')
+					a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
 						i.icon-facebook-sign.icon-large
 						|  
 					| &nbsp;&nbsp;
