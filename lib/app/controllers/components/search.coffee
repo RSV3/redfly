@@ -14,13 +14,20 @@ module.exports = (Ember, App, socket) ->
 		role: 'menu'
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				@get('using') and @get('results')
+				@get('using') and not _.isEmpty(@get('results'))
 			).property 'using', 'results'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
 			if event.which is 27	# Escape.
 				@$(':focus').blur()
+		submit: ->
+			@$(':focus').blur()
+			@set 'using', false
+			if not _.isEmpty(@get('results'))
+				App.get('router').send 'goResults'
+			return false
+
 		focusIn: ->
 			@set 'using', true
 		focusOut: ->
