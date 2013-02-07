@@ -45,10 +45,7 @@ module.exports = (Ember, App, socket) ->
 			results: Ember.Route.extend
 				route: '/results'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'results', fullContent
-					fullContent = Ember.ArrayProxy.create 
-						content: router.get('resultsController').get 'results.contact'
-					router.get('resultsController').set 'fullContent', fullContent
+					router.get('applicationController').connectOutlet 'results'
 
 
 			contact: Ember.Route.extend
