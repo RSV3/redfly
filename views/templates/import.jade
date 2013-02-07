@@ -39,7 +39,7 @@
 					th Status
 			tbody
 				| {{#each processed.results}}
-				| <tr {{bindAttr class="status.new:success status.duplicate:info status.error:error"}}>
+				| <tr {{bindAttr class="status.new:success status.blacklisted:info status.error:error"}}>
 				| {{#collection contentBinding="controller.processed.fields" itemViewClass="view.resultFieldView"}}
 				//- TO-DO lots of copypasta
 				| {{#if view.typeEmails}}
@@ -75,9 +75,9 @@
 					| {{#if status.new}}
 					| 	OK
 					| {{/if}}
-					//- | {{#if status.duplicate}}
-					//- | 	A contact with the {{status.duplicate.field}} "{{status.duplicate.value}}" exists, entry will be ignored.
-					//- | {{/if}}
+					| {{#if status.blacklisted}}
+					| 	That&apos;s a Redstar person and will be ignored.
+					| {{/if}}
 					| {{#if status.error}}
 					|	{{status.error}}
 					br
