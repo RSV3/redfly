@@ -1,15 +1,13 @@
 .resultheader
-	Search results
+	span Search results
 .result
 	| {{#each controller}}
 	.row-fluid.top
-		.span1.picture
-			| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
-		.span5
+		.span2.picture
+			| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+		.span4
 			.row-fluid
-				p.bullhorn
-					| <a {{bindAttr href="introMailto"}} target="_blank"></a>
-				h1 {{canonicalName}}
+				h3 {{canonicalName}}
 				br
 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 				+if('linkedin')

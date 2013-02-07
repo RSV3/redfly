@@ -1,4 +1,6 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
+	_s = require 'underscore.string'
 	util = require './util'
 
 
@@ -45,10 +47,12 @@ module.exports = (Ember, App, socket) ->
 			results: Ember.Route.extend
 				route: '/results'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'results', fullContent
-					fullContent = Ember.ArrayProxy.create 
-						content: router.get('resultsController').get 'results.contact'
-					router.get('resultsController').set 'fullContent', fullContent
+					router.get('applicationController').connectOutlet 'results'
+					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
+					socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
+						fullContent = Ember.ArrayProxy.create 
+							content: App.Contact.find(_id: $in: results)
+						router.get('resultsController').set 'fullContent', fullContent
 
 
 			contact: Ember.Route.extend
@@ -71,7 +75,7 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', fullContent
+					router.get('applicationController').connectOutlet 'contacts'
 					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
 						content: App.Contact.find(added: $exists: true)
 						sortProperties: ['added']

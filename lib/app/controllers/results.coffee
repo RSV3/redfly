@@ -2,6 +2,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ResultsController = Ember.ArrayController.extend App.Pagination,
+		itemsPerPage: 3
 		content: []
 
 
