@@ -3,7 +3,6 @@ module.exports = (Ember, App, socket) ->
 	App.Pagination = Ember.Mixin.create
 		rangeStart: 0
 		totalBinding: 'fullContent.length'
-		itemsPerPage: 10
 
 		rangeStop: (->
 				Math.min @get('rangeStart') + @get('itemsPerPage'), @get('total')
