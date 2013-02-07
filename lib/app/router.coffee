@@ -62,7 +62,7 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', fullContent
+					router.get('applicationController').connectOutlet 'contacts'
 					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
 						content: App.Contact.find(added: $exists: true)
 						sortProperties: ['added']
