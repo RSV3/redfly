@@ -5,3 +5,7 @@ module.exports = (Ember, App, socket) ->
 	App.ResultsView = Ember.View.extend
 		template: require '../../../views/templates/results'
 		# classNames: ['results']
+
+		didInsertElement: ->
+			searchBox = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
+			console.log searchBox.get 'results'
