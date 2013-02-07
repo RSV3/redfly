@@ -1,42 +1,42 @@
-.resultheader
-	Search results
-.result
-	| {{#each controller}}
-	.row-fluid.top
-		.span1.picture
-			| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
-		.span5
-			.row-fluid
-				p.bullhorn
-					| <a {{bindAttr href="introMailto"}} target="_blank"></a>
-				h1 {{canonicalName}}
-				br
-				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-				+if('linkedin')
-					br
-					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
+//- .resultheader
+//- 	| Search results
+//- .result
+//- 	| {{#each controller}}
+//- 	.row-fluid.top
+//- 		.span1.picture
+//- 			| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+//- 		.span5
+//- 			.row-fluid
+//- 				p.bullhorn
+//- 					| <a {{bindAttr href="introMailto"}} target="_blank"></a>
+//- 				h1 {{canonicalName}}
+//- 				br
+//- 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+//- 				+if('linkedin')
+//- 					br
+//- 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 
-	.row-fluid
-		.span6
-			.row-fluid
-				p.lead Notes
-	| {{/each}}
+//- 	.row-fluid
+//- 		.span6
+//- 			.row-fluid
+//- 				p.lead Notes
+//- 	| {{/each}}
 
-ul.pager
-	| {{#if hasPrevious}}
-	li.previous
-		| <a href="#" {{action previousPage target="controller"}}>&larr; Newer</a>
-	| {{/if}}
-	| {{#if hasNext}}
-	li.next
-		| <a href="#" {{action nextPage target="controller"}}>Older &rarr;</a>
-	| {{/if}}
+//- ul.pager
+//- 	| {{#if hasPrevious}}
+//- 	li.previous
+//- 		| <a href="#" {{action previousPage target="controller"}}>&larr; Newer</a>
+//- 	| {{/if}}
+//- 	| {{#if hasNext}}
+//- 	li.next
+//- 		| <a href="#" {{action nextPage target="controller"}}>Older &rarr;</a>
+//- 	| {{/if}}
 
-//-
-	.pagination.pagination-centered
-		ul
-			li: a «
-			li: a 1
-			li: a 2
-			li: a »
+//- //-
+//- 	.pagination.pagination-centered
+//- 		ul
+//- 			li: a «
+//- 			li: a 1
+//- 			li: a 2
+//- 			li: a »
 
