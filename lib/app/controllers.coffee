@@ -41,6 +41,10 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/loader')(Ember, App, socket)
 	require('./controllers/components/linker')(Ember, App, socket)
 	require('./controllers/components/edit-picture')(Ember, App, socket)
+	require('./controllers/components/intro')(Ember, App, socket)
+	require('./controllers/components/social')(Ember, App, socket)
+	require('./controllers/components/note')(Ember, App, socket)
+	require('./controllers/components/somecontact')(Ember, App, socket)
 
 	require('./controllers/application')(Ember, App, socket)
 	require('./controllers/home')(Ember, App, socket)

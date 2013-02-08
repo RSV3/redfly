@@ -44,15 +44,22 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router, user) ->
 					router.get('applicationController').connectOutlet 'profile', user
 
+			searching: Ember.Route.extend
+				route: '/searching'
+				redirectsTo: 'results'
+
 			results: Ember.Route.extend
 				route: '/results'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'results'
 					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
 					socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-						fullContent = Ember.ArrayProxy.create 
-							content: App.Contact.find(_id: $in: results)
-						router.get('resultsController').set 'fullContent', fullContent
+						if results and results.length is 1
+							router.route '/contact/'+ results[0]
+						else
+							fullContent = Ember.ArrayProxy.create 
+								content: App.Contact.find(_id: $in: results)
+							router.get('resultsController').set 'fullContent', fullContent
 
 
 			contact: Ember.Route.extend
@@ -170,7 +177,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
-			goResults: Ember.Route.transitionTo 'results'
+			goSearch: Ember.Route.transitionTo 'searching'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
