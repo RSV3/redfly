@@ -25,7 +25,7 @@ module.exports = (Ember, App, socket) ->
 			@$(':focus').blur()
 			@set 'using', false
 			if not _.isEmpty(@get('results'))
-				App.get('router').send 'goResults'
+				App.get('router').send 'goSearch'
 			return false
 
 		focusIn: ->

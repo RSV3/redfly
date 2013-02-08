@@ -1,26 +1,9 @@
-.resultheader
-	span Search results
 .result
-	| {{#each controller}}
-	.row-fluid.top
-		.span2.picture
-			| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-		.span4
-			.row-fluid
-				h3 {{canonicalName}}
-				br
-				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-				+if('linkedin')
-					br
-					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
-
-	.row-fluid
-		.span6
-			.row-fluid
-				p.lead Notes
+	| {{#each result in controller}}
+	{{view App.ResultView contentBinding="result"}}
 	| {{/each}}
 
-ul.pager
+	ul.pager
 	| {{#if hasPrevious}}
 	li.previous
 		| <a href="#" {{action previousPage target="controller"}}>&larr; Newer</a>
@@ -29,12 +12,4 @@ ul.pager
 	li.next
 		| <a href="#" {{action nextPage target="controller"}}>Older &rarr;</a>
 	| {{/if}}
-
-//-
-	.pagination.pagination-centered
-		ul
-			li: a «
-			li: a 1
-			li: a 2
-			li: a »
 

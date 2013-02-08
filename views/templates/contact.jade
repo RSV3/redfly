@@ -1,36 +1,36 @@
 .row-fluid.top
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
-		| {{#if isKnown}}
+		| {{#if view.isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
 	.span6
 		.row-fluid
-			| {{#unless isKnown}}
+			| {{#unless view.isKnown}}
 			p.bullhorn
-				| <a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
+				| <a {{bindAttr href="view.introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
 			| {{/unless}}
 			h1 {{canonicalName}}
-			| {{#if isKnown}}
+			| {{#if view.isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
 			br
 			| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 			+if('linkedin')
 				br
-				a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
+				a(bindAttr='href="view.linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
-			| {{#if isKnown}}
+			| {{#if view.isKnown}}
 			h4
-				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
+				| <a {{bindAttr href="view.directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
 			p
-				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
+				| You've <a {{bindAttr href="view.gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
-				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
+				| . <a {{bindAttr href="view.directMailto"}} target="_blank">Catch up.</a> 
 			p
 				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
 				em "{{firstHistory.subject}}"
@@ -77,7 +77,7 @@
 										i.icon-spinner.icon-spin
 
 	.span3
-		| {{#if isKnown}}
+		| {{#if view.isKnown}}
 		.row-fluid.actions
 			| <a class="btn" role="button" {{action showMerge target="view"}}>
 			i.icon-signin
