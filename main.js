@@ -1,5 +1,5 @@
-require('coffee-script');
 require('longjohn');
+require('coffee-script');
 
 require('./config');
 

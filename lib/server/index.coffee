@@ -77,7 +77,7 @@ bundle.on 'syntaxError', (err) ->
 
 
 # Heroku doesn't support websockets, force long polling.
-io.set 'transports', ['xhr-polling']	# TODO remove this line if moving to ec2
+io.set 'transports', ['websocket']	# TODO remove this line if moving to ec2
 io.set 'polling duration', 10
 io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
 
