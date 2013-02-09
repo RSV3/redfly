@@ -2,14 +2,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.SomeContactMethods = Ember.Mixin.create
 		isKnown: (->
-				console.log ('isknown called')
-				console.log @get('controller')
-				console.log @get('view')
 				@get('controller.knows')?.find (user) ->
-					console.log ('isknown:')
-					console.log user
-					if user then console.log user.get('id')
-					console.log App.user.get('id')
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
 			).property 'controller.knows.@each.id'
 		gmailSearch: (->
