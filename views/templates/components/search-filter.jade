@@ -1,0 +1,26 @@
+h3
+	| Filters
+.filters
+	| healthcare<br>
+	| entrepreneur<br>
+	| senior<br>
+h4
+	| Experience
+{{view Ember.Select
+|	contentBinding="yearsToSelect"
+|	optionValuePath="content.years"
+|	optionLabelPath="content.label"
+|	valueBinding="years"
+|	prompt="Select a minimum ..."
+}}
+h4
+	| Proximity
+.proximity
+	| strong<br>
+	| weak<br>
+h4
+	| Influence
+.influence
+	| strong<br>
+	| weak<br>
+
