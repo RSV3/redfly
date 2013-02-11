@@ -35,7 +35,7 @@ config =
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
+		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
