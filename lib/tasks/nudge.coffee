@@ -9,7 +9,7 @@ models.User.find (err, users) ->
 	throw err if err
 
 	# TODO sucky
-	app = require('express')()
+	app = require('express.io')()
 	path = require 'path'
 	root = path.dirname path.dirname __dirname
 	app.configure ->
