@@ -29,29 +29,22 @@ module.exports = (app) ->
 		model = models[data.type]
 		switch data.op
 			when 'find'
-				try
-					if id = data.id
-						model.findById id, (err, doc) ->
-							throw err if err
-							return fn doc
-					else if ids = data.ids
-						model.find _id: $in: ids, (err, docs) ->
-							throw err if err
-							return fn docs
-					else if query = data.query
-						model.find query.conditions, null, query.options, (err, docs) ->
-							throw err if err
-							return fn docs
-					else
-						model.find (err, docs) ->
-							throw err if err
-							return fn docs
-				catch e
-					console.log "near fatal error on db find:"
-					console.dir data
-					console.dir e
-					return fn null
-
+				if id = data.id
+					model.findById id, (err, doc) ->
+						throw err if err
+						return fn doc
+				else if ids = data.ids
+					model.find _id: $in: ids, (err, docs) ->
+						throw err if err
+						return fn docs
+				else if query = data.query
+					model.find query.conditions, null, query.options, (err, docs) ->
+						throw err if err
+						return fn docs
+				else
+					model.find (err, docs) ->
+						throw err if err
+						return fn docs
 			when 'create'
 				record = data.record
 				if not _.isArray record
