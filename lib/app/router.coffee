@@ -53,13 +53,14 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'results'
 					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-					socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-						if results and results.length is 1
-							router.route '/contact/'+ results[0]
-						else
-							fullContent = Ember.ArrayProxy.create 
-								content: App.Contact.find(_id: $in: results)
-							router.get('resultsController').set 'fullContent', fullContent
+					if search
+						socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
+							if results and results.length is 1
+								router.route '/contact/'+ results[0]
+							else
+								fullContent = Ember.ArrayProxy.create 
+									content: App.Contact.find(_id: $in: results)
+								router.get('resultsController').set 'fullContent', fullContent
 
 
 			contact: Ember.Route.extend

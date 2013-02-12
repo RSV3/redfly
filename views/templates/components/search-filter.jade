@@ -1,9 +1,11 @@
 h3
 	| Filters
 .filters
-	| healthcare<br>
-	| entrepreneur<br>
-	| senior<br>
+	{{#each item in controller.tagsToSelect}}
+	.checkfilter
+		|<input type="checkbox" {{action tagfilter target="controller"}} {{bindAttr value="item.id" name="item.id" id="item.id"}}/>
+		|<label {{bindAttr for="item.id"}}>{{item.label}}</label>
+	{{/each}}
 h4
 	| Experience
 {{view Ember.Select
@@ -13,14 +15,25 @@ h4
 |	valueBinding="years"
 |	prompt="Select a minimum ..."
 }}
+h3
+	| Sort
+.filters
 h4
 	| Proximity
-.proximity
-	| strong<br>
-	| weak<br>
+.proximity.sort
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-up.icon-large
+	| </a>
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-down.icon-large
+	| </a>
 h4
 	| Influence
-.influence
-	| strong<br>
-	| weak<br>
+.influence.sort
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-up.icon-large
+	| </a>
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-down.icon-large
+	| </a>
 

@@ -50,7 +50,7 @@ module.exports = (app) ->
 					console.log "near fatal error on db find:"
 					console.dir data
 					console.dir e
-					return fn null
+					return fn {}
 
 			when 'create'
 				record = data.record
