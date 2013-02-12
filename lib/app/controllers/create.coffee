@@ -62,11 +62,8 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 
 					@$().addClass 'animated lightSpeedOut'
-					#  TODO Hack, wait for animation to complete so the contact has and ID for URL building by the time we reach the next page. Maybe I
-					# could just wait for the commit to complete?
-					setTimeout ->
-							App.get('router').send 'goContact', contact
-						, 1000
+					contact.addObserver 'id', ->
+						App.get('router').send 'goContact', contact
 		reset: ->
 			for field in fields
 				@set field, null
