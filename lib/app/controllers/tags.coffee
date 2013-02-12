@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 
-	App.TagsController = Ember.ArrayController.extend App.Pagination,
+	App.TagsController = Ember.ArrayController.extend App.DeprecatedPaginationMixin,
 		content: []
 
 	App.TagsView = Ember.View.extend
