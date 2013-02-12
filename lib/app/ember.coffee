@@ -43,8 +43,8 @@ module.exports = (Ember, App) ->
 
 		pageChanged: (->
 				if @get('rangeStart') > @get('total')
-					@set 'rangeStart', 0
 					@set 'rangeStop', @get 'itemsPerPage'
+					@set 'rangeStart', 0
 				content = @get('fullContent').slice @get('rangeStart'), @get('rangeStop')
 				@replace 0, @get('length'), content
-			).observes 'total', 'rangeStart', 'rangeStop'
+			).observes 'total', 'rangeStart'

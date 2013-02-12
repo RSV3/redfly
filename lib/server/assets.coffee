@@ -5,7 +5,7 @@ module.exports = (root, app, variables) ->
 	bundle = require('browserify')
 		exports: 'process'
 		filter: if process.env.NODE_ENV is 'production' then require('uglify-js')
-		watch: process.env.NODE_ENV is 'development'
+		watch: false # jTNT: process.env.NODE_ENV is 'development'
 		# debug: true
 	bundle.register '.jade', (body, filename) ->
 		include = 'include ' + path.relative(path.dirname(filename), path.join(root, 'views/handlebars')) + '\n'
@@ -32,7 +32,7 @@ module.exports = (root, app, variables) ->
 			res.send code
 
 	pipeline = require('convoy')
-		watch: process.env.NODE_ENV is 'development'
+		watch: false # jTNT: process.env.NODE_ENV is 'development'
 		'app.css':
 			main: root + '/styles'
 			packager: require 'convoy-stylus'

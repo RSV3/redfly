@@ -7,5 +7,4 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['search-filter', 'overlay', 'span4']
 		didInsertElement: ->
 			$f = $('.search-filter')
-			$f.css {opacity:1, marginLeft: '-'+$f.width()+'px'}
-			$f.animate {marginLeft:0}, 666
+			$f.animate {marginLeft: '-'+$f.width()+'px'}
