@@ -25,7 +25,3 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 		else
 			App.auth.logout()
 		App.initialize()
-
-
-	App.ready = ->
-		$('.initializing').remove()
