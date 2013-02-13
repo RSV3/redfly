@@ -1,0 +1,13 @@
+extends layout
+
+
+block content
+	p(style='color: #e51937') NEW THIS WEEK: Connect your Linkedin contacts to Redfly! Select "Sync Linkedin" from your personal menu in the upper-right corner!
+	br
+
+	p Contacts in the queue: #{contactsQueued}
+	p Tags created: #{tagsCreated}
+	p Notes authored: #{notesAuthored}
+	br
+	p Although we don't have any new people for you to classify at the moment, why don't you come back to Redfly and check out our massive and ever-growing list of useful contacts?
+	a(href='#{path('/contacts')}', style="font-size: 18px; text-decoration: none; background-color: #556C90; padding: 5px 10px; border-radius: 5px; color: #D9FFFD") IMMEDIATELY GOOD SIR

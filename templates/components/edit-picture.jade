@@ -1,0 +1,21 @@
+| <a href="#" {{action toggle target="view"}}>
+i.icon-edit.icon-large
+| </a>
+| {{#if view.show}}
+.popover
+	| {{#if view.error}}
+	.alert.alert-error {{view.error}}
+	| {{/if}}
+	| <a href="#" class="close" {{action toggle target="view"}}>×</a>
+	.nav-header Picture URL
+	| {{view Ember.TextField valueBinding="view.newPicture"}}
+	.pull-right
+		| {{#unless view.working}}
+		| <a href="#" {{action save target="view"}}>
+		| Save 
+		i.icon-ok
+		| </a>
+		| {{else}}
+		i.icon-spinner.icon-spin
+		| {{/unless}}
+| {{/if}}

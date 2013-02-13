@@ -69,14 +69,14 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ContactView = Ember.View.extend
-		template: require '../../../views/templates/contact'
+		template: require '../../../templates/contact'
 		classNames: ['contact']
 
 		showMerge: ->
 			@get('mergeViewInstance')._launch()
 
 		editView: Ember.View.extend
-			template: require '../../../views/templates/components/edit'
+			template: require '../../../templates/components/edit'
 			tagName: 'span'
 			classNames: ['edit', 'overlay']
 			primary: ((key, value) ->

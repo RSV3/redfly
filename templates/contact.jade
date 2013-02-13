@@ -1,0 +1,160 @@
+.row-fluid.top
+	.span3.picture
+		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		| {{#if isKnown}}
+		| {{view App.EditPictureView pictureBinding="picture"}}
+		| {{/if}}
+	.span6
+		.row-fluid
+			| {{#unless isKnown}}
+			p.bullhorn
+				| <a {{bindAttr href="introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
+			| {{/unless}}
+			h1 {{canonicalName}}
+			| {{#if isKnown}}
+			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
+			| {{/if}}
+			br
+			| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+			+if('linkedin')
+				br
+				a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
+		.row-fluid
+			| {{#if isKnown}}
+			h4
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
+			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
+			| {{/if}}
+		| {{#if firstHistory}}
+		.row-fluid
+			p
+				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
+				strong {{lastTalked}}
+				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
+			p
+				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
+				em "{{firstHistory.subject}}"
+				| .
+		| {{/if}}
+		.row-fluid
+			p
+				+view('view.socialView')
+					a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+						i.icon-linkedin-sign.icon-large
+						|  
+					a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+						i.icon-twitter-sign.icon-large
+						|  
+					a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+						i.icon-facebook-sign.icon-large
+						|  
+					| &nbsp;&nbsp;
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.icon-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"') ×
+								.nav-header Social Links
+								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.linkedin}}
+									+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
+									span.help-block {{view.linkedinFieldInstance.error}}
+								div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.twitter}}
+									+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
+									span.help-block {{view.twitterFieldInstance.error}}
+								div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.facebook}}
+									+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
+									span.help-block {{view.facebookFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.icon-ok
+										+else
+										i.icon-spinner.icon-spin
+
+	.span3
+		| {{#if isKnown}}
+		.row-fluid.actions
+			| <a class="btn" role="button" {{action showMerge target="view"}}>
+			i.icon-signin
+			| &nbsp;&nbsp;Merge
+			| </a>
+		| {{/if}}
+		.row-fluid
+			h5 People who know {{nickname}}
+			ul
+				| {{#each knows}}
+				li
+					| <a {{action goProfile this href=true}}>{{canonicalName}}</a>
+				| {{/each}}
+.row-fluid
+	.span6
+		.row-fluid.tag-category
+			p.lead Redstar Tags
+			| {{view App.TaggerView contactBinding="this" category="redstar" full="true" tabindex="1"}}
+		.row-fluid.tag-category
+			p.lead Industry Tags
+			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
+		//-
+			ul.nav.nav-pills
+				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
+				li: a(href='#industry', data-toggle='pill') Industry Tags
+			.tab-content
+				#redstar.tab-pane.fade.active.in
+					| {{view App.TaggerView contactBinding="this" category="redstar" full="true"}}
+				#industry.tab-pane.fade
+					| {{view App.TaggerView contactBinding="this" category="industry" full="true"}}
+	.span6
+		.row-fluid
+			p.lead Notes
+			| {{#collection contentBinding="notes" itemViewClass="view.noteView"}}
+			| <a href="#" class="pull-left" {{action goProfile view.content.author}}>
+			| 	<img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
+			| </a>
+			// TO-DO do nl2br with bindings
+			.media-body
+				p {{view.content.body}}
+				small.muted {{view.content.author.canonicalName}} | {{view.content.date}}
+				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
+			//- | {{else}}
+			//- span {{emptyNotesText}}
+			| {{/collection}}
+		.row-fluid
+			| <form {{action add on="submit" target="controller"}}>
+			| {{view view.newNoteView valueBinding="controller.currentNote"}}
+			| <button class="btn pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
+			i.icon-comment  
+			| Add Note
+			| </button>
+			| </form>
+
+
+
+| {{#view view.mergeView viewName="mergeViewInstance"}}
+.modal.hide.fade(tabindex='-1', role='dialog', aria-labelledby='mergeModalLabel', aria-hidden='true')
+	.modal-header
+		button.close(type='button', data-dismiss='modal') ×
+		h3#mergeModalLabel Merge with {{canonicalName}}
+	.modal-body
+		.muted Search your contacts by name or email.
+		.row-fluid
+			| {{view view.mergeSearchView}}
+		| {{#if view.selections.length}}
+		.row-fluid
+			ul.selections
+				| {{#each view.selections}}
+				li
+					| {{canonicalName}} &mdash; {{email}}
+				| {{/each}}
+		.alert.alert-block.alert-error
+			h4.alert-heading Merging is irreversible!
+			p Make absolutely sure you selected the right contacts.
+			p
+				button.btn(data-dismiss='modal') Cancel
+				|  <a href="#" class="btn btn-danger" {{action merge target="view"}}>I understand, let's do this</a>
+		| {{/if}}
+| {{/view}}

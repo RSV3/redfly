@@ -1,10 +1,10 @@
-# TO-DO pretty sure I don't need to be threading (app, user, notifications, cb) through all the inner fuctions...
-module.exports = (app, user, notifications = {}, cb) ->
+# TO-DO pretty sure I don't need to be threading (user, notifications, cb) through all the inner fuctions...
+module.exports = (user, notifications = {}, cb) ->
 	_ = require 'underscore'
-	mailer = require('./mail') app
+	mailer = require './mail'
 
 
-	parse = (app, user, notifications, cb) ->
+	parse = (user, notifications, cb) ->
 		util = require './util'
 		validators = require('validator').validators
 
@@ -49,7 +49,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 
 						finish = ->
 							notifications.completedAllEmails?()
-							enqueue app, user, notifications, mails, cb
+							enqueue user, notifications, mails, cb
 							server.logout()
 
 						if results.length is 0
@@ -93,7 +93,7 @@ module.exports = (app, user, notifications = {}, cb) ->
 							finish()
 
 
-	enqueue = (app, user, notifications, mails, cb) ->
+	enqueue = (user, notifications, mails, cb) ->
 		models = require './models'
 
 		newContacts = []
@@ -151,4 +151,4 @@ module.exports = (app, user, notifications = {}, cb) ->
 		sift()
 
 
-	parse app, user, notifications, cb
+	parse user, notifications, cb

@@ -1,4 +1,4 @@
-config = 
+module.exports =
 	# all:
 
 
@@ -65,31 +65,3 @@ config =
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
 		NUDGE_DAY: 'Friday'
-
-
-
-process.env.APP_ENV ?= 'development'
-
-scopes = [config.all, config[process.env.APP_ENV]]
-try
-	local = require './config-local'
-	scopes.push local
-catch err
-
-for scope in scopes
-	for variable of scope
-		process.env[variable] = scope[variable]
-
-
-
-#	request = require 'request'
-# 	if process.env.APP_ENV is 'development'
-# 		request
-# 			uri: 'https://api.heroku.com/apps/' +  + '/config_vars'
-# 			headers:
-# 				Accept: 'application/json'
-# 			auth: ':' + 
-# 			(err, res, body) ->
-# 				throw err if err
-# 				throw new Error if res.statusCode isnt 200
-# 				scopes.unshift JSON.parse body

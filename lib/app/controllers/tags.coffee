@@ -4,5 +4,5 @@ module.exports = (Ember, App, socket) ->
 		content: []
 
 	App.TagsView = Ember.View.extend
-		template: require '../../../views/templates/tags'
+		template: require '../../../templates/tags'
 		classNames: ['tags']

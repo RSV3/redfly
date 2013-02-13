@@ -5,7 +5,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.SearchView = Ember.View.extend
-		template: require '../../../../views/templates/components/search'
+		template: require '../../../../templates/components/search'
 		classNames: ['search', 'dropdown']
 		didInsertElement: ->
 			$(@$('[rel=popover]')).popover()
@@ -27,10 +27,10 @@ module.exports = (Ember, App, socket) ->
 			# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results (after a small delay
 			# in case of mousedown).
 			setTimeout =>
-					focused = $(document.activeElement)
-					if not _.first @$().has(focused)
-						@set 'using', false
-				, 150
+				focused = $(document.activeElement)
+				if not _.first @$().has(focused)
+					@set 'using', false
+			, 150
 
 		searchBoxView: Ember.TextField.extend
 			resultsBinding: 'parentView.results'
