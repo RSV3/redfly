@@ -3,7 +3,7 @@ config =
 
 
 	development:
-		HOST: 'redsite.com:5000'
+		HOST: 'localhost:5000'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
 		AUTO_AUTH: '50ed206d4919709c08000002'
