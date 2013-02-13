@@ -16,13 +16,13 @@
 
 				$(this).wrap("<span style='position:relative;' class='add-clear-span'>");
 
-				// CUSTOMIZATION: Use fontawesome glyph.
+				// CHANGED: Use fontawesome glyph.
 				$(".add-clear-span").append("<a href='#clear'><i class='icon-large icon-remove-sign'></i></a>");
 				// $(".add-clear-span").append("<a href='#clear'>clear</a>");
 
 				$("a[href='#clear']").css({
 
-					// CUSTOMIZATION: No image.
+					// CHANGED: No image.
 					// 'background' : 'transparent url('+options.closeImage+') 0 0 no-repeat',
 
 					'display' : 'none',
@@ -31,7 +31,7 @@
 					'position' : 'absolute',
 					'right' : options.right+'px',
 
-					// CUSTOMIZATION: Show the text and make it gray.
+					// CHANGED: Show the text and make it gray.
 					// 'text-indent' : '-9999px',
 					'color' : 'gray',
 
