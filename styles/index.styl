@@ -112,6 +112,18 @@ tagger(fontSize)
 
 // Layout.
 
+.initializing
+	color redstar
+	margin-top 90px	  // so lazy
+	text-align center
+	font-size baseFontSize * 15
+	img
+		position absolute
+		margin-left -150px
+		margin-top -150px
+		animation spin 40s infinite linear
+		z-index -1
+
 body
 	padding-top 70px	// Make the container go all the way to the bottom of the topbar.
 
@@ -163,16 +175,6 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
-	.decorator
-		color redstar
-		text-align center
-		font-size baseFontSize * 15
-		img
-			position absolute
-			margin-left -150px
-			margin-top -150px
-			animation spin 40s infinite linear
-			z-index -1
 .contact
 	.top
 		.bullhorn
