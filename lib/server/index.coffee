@@ -1,4 +1,3 @@
-middleware = require('everyauth').middleware()
+auth = require './auth'
 
-require('phrenetic/lib/server') [middleware], ->
-	require './auth'
+require('phrenetic/lib/server') [auth.middleware()]
