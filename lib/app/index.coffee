@@ -18,10 +18,3 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	require('./models') DS, App
 	require('./controllers') Ember, App, socket
 	require('./router') Ember, App, socket
-
-	socket.emit 'session', (session) ->
-		if id = session.user
-			App.auth.login id
-		else
-			App.auth.logout()
-		App.initialize()

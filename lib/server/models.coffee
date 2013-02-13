@@ -1,5 +1,4 @@
-models = module.exports = require 'phrenetic/lib/server/models'
-
+models = require 'phrenetic/lib/server/models'
 validators = require('validator').validators
 util = require './util'
 
@@ -88,10 +87,10 @@ MergeSchema.plugin models.common
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 
-models.User = models.db.model 'User', UserSchema
-models.Contact = models.db.model 'Contact', ContactSchema
-models.Tag = models.db.model 'Tag', TagSchema
-models.Note = models.db.model 'Note', NoteSchema
-models.Mail = models.db.model 'Mail', MailSchema
-models.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
-models.Merge = models.db.model 'Merge', MergeSchema
+exports.User = models.db.model 'User', UserSchema
+exports.Contact = models.db.model 'Contact', ContactSchema
+exports.Tag = models.db.model 'Tag', TagSchema
+exports.Note = models.db.model 'Note', NoteSchema
+exports.Mail = models.db.model 'Mail', MailSchema
+exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
+exports.Merge = models.db.model 'Merge', MergeSchema
