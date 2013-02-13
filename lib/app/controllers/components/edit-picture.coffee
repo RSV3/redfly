@@ -7,7 +7,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.EditPictureView = Ember.View.extend
-		template: require '../../../views/templates/components/edit-picture'
+		template: require '../../../templates/components/edit-picture'
 		tagName: 'span'
 		classNames: ['edit', 'overlay']
 		newPicture: ((key, value) ->

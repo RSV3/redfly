@@ -18,7 +18,7 @@ module.exports = (Ember, App, socket) ->
 	App.CreateController = Ember.Controller.extend()
 	
 	App.CreateView = Ember.View.extend
-		template: require '../../../views/templates/create'
+		template: require '../../../templates/create'
 		classNames: ['create']
 
 		nameField: FormField.extend

@@ -451,12 +451,12 @@ linker = (user, auth, notifications, fn) ->
 					cb()
 				else
 					liProcess item, contact, cb
-		, () ->
+		, ->
 			if not maybeMore.length
 				return fn null, changed
 			syncForEach maybeMore, (item, cb) ->
 				liProcess item, null, cb, true			# this true flag means we won't report throttle
-			, () ->
+			, ->
 				return fn null, changed
 
 module.exports =

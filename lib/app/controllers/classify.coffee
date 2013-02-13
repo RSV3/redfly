@@ -64,7 +64,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ClassifyView = Ember.View.extend
-		template: require '../../../views/templates/classify'
+		template: require '../../../templates/classify'
 		classNames: ['classify']
 
 

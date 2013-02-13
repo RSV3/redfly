@@ -128,7 +128,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ImportView = Ember.View.extend
-		template: require '../../../views/templates/import'
+		template: require '../../../templates/import'
 		classNames: ['import']
 
 		startView: Ember.View.extend

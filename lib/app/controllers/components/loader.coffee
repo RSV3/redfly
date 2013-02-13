@@ -3,7 +3,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.LoaderView = Ember.View.extend
-		template: require '../../../../views/templates/components/loader'
+		template: require '../../../../templates/components/loader'
 
 		didInsertElement: ->
 			@set 'modal', $(@$()).modal()	# TO-DO when fixing this, also check out the contacts merge modal

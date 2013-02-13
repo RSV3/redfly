@@ -1,0 +1,26 @@
+.hide
+	#loadingStarted
+		| {{#if stateConnecting}}
+		| Makin' pals with gmail...
+		i.icon-spinner.icon-spin.pull-right
+		| {{/if}}
+		| {{#if stateParsing}}
+		div {{current}} of {{total}}
+		.progress.progress-striped.active
+			| <div class="bar" {{bindAttr style="percent"}}></div>
+		| {{/if}}
+		| {{#if stateQueueing}}
+		div New contacts found: {{totalQueued}}
+		| {{/if}}
+		| {{#if stateDone}}
+		| All done! <a href="#" {{action classify href=true}}>Start classifying</a>, dude.
+		| {{/if}}
+
+.modal.fade.hide(tabindex='-1', role='dialog')
+	.modal-header
+		button.close(type='button', data-dismiss='modal') ×
+		h3 You're all set!
+	.modal-body
+		p You've successfully connected your email, when parsing is complete you'll be able to classify the people Redfly finds.
+	.modal-footer
+		button.btn(data-dismiss='modal') Close

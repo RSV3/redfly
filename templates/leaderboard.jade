@@ -1,0 +1,16 @@
+.row-fluid
+	h1 All Users
+	table.table.table-hover
+		thead
+			tr
+				th Name
+				th Email
+				th Signed Up
+		tbody
+			| {{#each controller}}
+			| <tr {{action goProfile this href=true}}>
+			td {{canonicalName}}
+			td {{email}}
+			td {{date}}
+			| </tr>
+			| {{/each}}

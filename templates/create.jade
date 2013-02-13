@@ -1,0 +1,30 @@
+.row-fluid
+	h1 Create Contact
+
+	| <form class="form-horizontal" {{action create on="submit" target="view"}}>
+	| <div {{bindAttr class=":control-group view.nameFieldInstance.error:error"}}>
+	label.control-label Name
+	.controls
+		| {{view view.nameField valueBinding="view.name" viewName="nameFieldInstance"}}
+		span.help-inline {{view.nameFieldInstance.error}}
+	| </div>
+	| <div {{bindAttr class=":control-group view.emailFieldInstance.error:error"}}>
+	label.control-label Email
+	.controls
+		| {{view view.emailField valueBinding="view.email" viewName="emailFieldInstance"}}
+		span.help-inline {{view.emailFieldInstance.error}}
+	| </div>
+	fieldset
+		legend.muted Optional
+		| <div {{bindAttr class=":control-group view.pictureFieldInstance.error:error"}}>
+		label.control-label Picture URL
+		.controls
+			| {{view view.pictureField valueBinding="view.picture" viewName="pictureFieldInstance"}}
+			span.help-inline {{view.pictureFieldInstance.error}}
+		| </div>
+
+	.form-actions
+		button.btn.btn-primary(type='submit') Make it so!
+		| &nbsp;
+		| <button type="button" class="btn" {{action reset target="view"}}>Reset</button>
+	| </form>
