@@ -3,8 +3,10 @@ h3
 .filters
 	{{#each item in controller.tagsToSelect}}
 	.checkfilter
-		|<input type="checkbox" {{action tagfilter target="controller"}} {{bindAttr value="item.id" name="item.id" id="item.id"}}/>
-		|<label {{bindAttr for="item.id"}}>{{item.label}}</label>
+		|<label>
+		{{view Ember.Checkbox checkedBinding="item.checked"}}
+		{{item.label}}
+		|</label>
 	{{/each}}
 h4
 	| Experience

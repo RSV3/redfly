@@ -12,6 +12,9 @@ module.exports = (Ember, App, socket) ->
 		years: 0
 		unfilteredContent: null
 
+		###
+		#TODO: I know this was very Wrong. I will change this to work The Ember Way.
+		###
 		doSort: (dir, weightF) ->
 			if (oC = @get 'fullContent.content')
 				newC = oC.slice(0)
@@ -40,19 +43,6 @@ module.exports = (Ember, App, socket) ->
 						rec.get('knows.length')
 				@doSort (if $t.hasClass('icon-caret-up') then 1 else -1), weightF
 
-
-		tagfilter: (ev) ->
-			id = $(ev.target).attr 'id'
-			tags = @get 'tagsToSelect'
-			for item in tags
-				if item.id is id
-					if (item.checked = not item.checked)
-						$(ev.target).prop 'checked', 'checked'
-					else
-						$(ev.target).prop 'checked', ''
-					break
-			@selectYears()
-			false
 
 
 		setTags: (oC) ->
@@ -107,12 +97,12 @@ module.exports = (Ember, App, socket) ->
 			else
 				return oC
 
-		selectYears: (->
+		changeFilters: (->
 				if newC = @setYears @unfilteredContent
 					newC = @setTags newC
 					@set 'fullContent.content', newC
 					@set('rangeStart', 0)
-			).observes 'years'
+			).observes 'years', 'tagsToSelect.@each.checked'
 
 		maxyrs: ->
 			my = 0
@@ -135,7 +125,7 @@ module.exports = (Ember, App, socket) ->
 				$f = $('.search-filter')
 				$f.css {opacity:1}
 				$f.animate {marginLeft:"0"}, 666
-		).observes 'total'
+			).observes 'total'
 
 	App.ResultsView = Ember.View.extend
 		template: require '../../../views/templates/results'

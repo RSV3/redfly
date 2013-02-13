@@ -17,19 +17,16 @@ module.exports = (Ember, App) ->
 		totalBinding: 'fullContent.length'
 		itemsPerPage: 10
 
-		rangeStop: (->
-				Math.min @get('rangeStart') + @get('itemsPerPage'), @get('total')
-			).property 'total', 'rangeStart', 'itemsPerPage'
-
 		hasPrevious: (->
 				@get('rangeStart') > 0
 			).property 'rangeStart'
 		hasNext: (->
-				@get('rangeStop') < @get('total')
-			).property 'rangeStop', 'itemsPerPage'
+				@get('rangeStart') + @get('itemsPerPage') < @get('total')
+			).property 'rangeStart', 'itemsPerPage', 'total'
 
 		previousPage: ->
 			@decrementProperty 'rangeStart', @get('itemsPerPage')
+
 		nextPage: ->
 			@incrementProperty 'rangeStart', @get('itemsPerPage')
 
@@ -43,8 +40,9 @@ module.exports = (Ember, App) ->
 
 		pageChanged: (->
 				if @get('rangeStart') > @get('total')
-					@set 'rangeStop', @get 'itemsPerPage'
 					@set 'rangeStart', 0
-				content = @get('fullContent').slice @get('rangeStart'), @get('rangeStop')
-				@replace 0, @get('length'), content
+				else
+					rStop = Math.min @get('rangeStart') + @get('itemsPerPage'), @get('total')
+					content = @get('fullContent').slice @get('rangeStart'), rStop
+					@replace 0, @get('length'), content
 			).observes 'total', 'rangeStart'
