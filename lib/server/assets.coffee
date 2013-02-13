@@ -4,7 +4,8 @@ module.exports = (root, app, variables) ->
 
 	bundle = require('browserify')
 		exports: 'process'
-		filter: if process.env.NODE_ENV is 'production' then require('uglify-js')
+		filter: (c) ->
+			require('uglify-js').minify(c, {fromString:true}).code
 		watch: false # jTNT: process.env.NODE_ENV is 'development'
 		# debug: true
 	bundle.register '.jade', (body, filename) ->
