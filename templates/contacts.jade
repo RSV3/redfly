@@ -10,7 +10,7 @@
 				th Added On
 				th Added By
 		tbody
-			| {{#each controller}}
+			| {{#each controller.paginatedItems}}
 			| <tr {{action goContact this href=true}}>
 			td {{canonicalName}}
 			td {{email}}
