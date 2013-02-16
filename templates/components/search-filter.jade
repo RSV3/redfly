@@ -1,0 +1,41 @@
+h3
+	| Filters
+.filters
+	{{#each item in controller.tagsToSelect}}
+	.checkfilter
+		|<label>
+		{{view Ember.Checkbox checkedBinding="item.checked"}}
+		{{item.label}}
+		|</label>
+	{{/each}}
+h4
+	| Experience
+{{view Ember.Select
+|	contentBinding="yearsToSelect"
+|	optionValuePath="content.years"
+|	optionLabelPath="content.label"
+|	valueBinding="years"
+|	prompt="Select a minimum ..."
+}}
+h3
+	| Sort
+.filters
+h4
+	| Proximity
+.proximity.sort
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-up.icon-large
+	| </a>
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-down.icon-large
+	| </a>
+h4
+	| Influence
+.influence.sort
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-up.icon-large
+	| </a>
+	| <a href="#" {{action sort target="controller"}}>
+	i.icon-caret-down.icon-large
+	| </a>
+

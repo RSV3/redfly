@@ -1,7 +1,7 @@
 .row-fluid
 	h1 All Tags
 
-	| {{#each controller}}
+	| {{#each controller.paginatedItems}}
 	.row-fluid
 		.span6.bodies
 			| {{view App.TagView}} 
