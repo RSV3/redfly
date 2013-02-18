@@ -14,13 +14,19 @@ module.exports = (Ember, App, socket) ->
 		role: 'menu'
 		showResults: (->
 				# TODO check the substructure of results to make sure there actually are some.
-				@get('using') and @get('results')
+				@get('using') and not _.isEmpty(@get('results'))
 			).property 'using', 'results'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
 			if event.which is 27	# Escape.
 				@$(':focus').blur()
+		submit: ->
+			@$(':focus').blur()
+			@set 'using', false
+			App.get('router').send 'goSearch'
+			return false
+
 		focusIn: ->
 			@set 'using', true
 		focusOut: ->
@@ -34,8 +40,12 @@ module.exports = (Ember, App, socket) ->
 
 		searchBoxView: Ember.TextField.extend
 			resultsBinding: 'parentView.results'
+			noresultsBinding: 'parentView.noresults'
+			searchingBinding: 'parentView.searching'
 			valueChanged: (->
 					query = util.trim @get('value')
+					@set 'searching', false
+					@set 'noresults', false
 					if not query
 						@set 'results', null
 					else
