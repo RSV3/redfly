@@ -59,11 +59,10 @@ module.exports = (Ember, App, socket) ->
 					if search
 						if search.get 'searching'
 							socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-								router.get('applicationController').connectOutlet 'results'
-								search.set 'searching', false
 								if results and results.length is 1
 									router.route '/contact/'+ results[0]
 								else if results and results.length
+									router.get('applicationController').connectOutlet 'results'
 									router.get('resultsController').set 'results', Ember.ArrayProxy.create 
 										content: App.Contact.find(_id: $in: results)
 								else

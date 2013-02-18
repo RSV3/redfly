@@ -18,29 +18,42 @@ module.exports = (Ember, App, socket) ->
 
 		getTags: () ->
 			o = {}
-			toptags = []
+			toptags = []			# build a list of the most common tags to filter by
+			newtags = []			# reduce the list of gottags to those used in filters
 			if (oC = @results)
 				contactIDs = _.pluck(oC.slice(0), 'id')
 
-				gottags = Ember.ArrayProxy.create 
-					content: App.Tag.find(contact: $in: contactIDs)
-				gottags.addObserver('content.isLoaded', this, () ->
-					tags = gottags.get('content').slice(0)
+				@gottags = Ember.ArrayProxy.create 
+					content: App.Tag.find({category: 'redstar', contact: $in: contactIDs})
+				@gottags.addObserver('content.isLoaded', this, () ->
+					tags = @gottags.slice(0)
 					if tags.length
 						for t in tags
-							if t.get('category') is 'redstar'
-								b = t.get 'body'
-								if not o[b] then o[b]=1
-								else o[b]++
+							b = t.get 'body'
+							if not o[b] then o[b]=1
+							else o[b]++
 						for t of o
-							id = t.split(' ')[0]
+							id = t
 							lab = _s.capitalize(t)
 							if lab.length > 40
 								lab = lab.substr(0,40) + '...'
 							toptags.push { chkboxdata: {id:id, checked:false, label:lab}, count: o[t] }
 						toptags.sort((a,b) -> b.count - a.count)
 						toptags = _.pluck toptags.slice(0,7), 'chkboxdata'
+
+						tagnames = []
+						for t in toptags
+							tagnames.push t.id
+						for t in tags
+							if _.contains tagnames, t.get('body')
+								newtags.push t
+						@gottags = newtags
+
 						@set 'tagsToSelect', toptags
+						$('div.filters').show()
+						search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
+						if search
+							search.set 'searching', false
 				)
 
 		maxyrs: ->
@@ -101,21 +114,36 @@ module.exports = (Ember, App, socket) ->
 						rec.get('knows.length')
 				@set 'dir', (if $t.hasClass('icon-caret-up') then 1 else -1)
 
+		tagFilter: (oldc, newc, filterF, finalF) ->
+			if _.isEmpty oldc
+				return finalF newc
+			c = oldc.shift()
+			if filterF(c) then newc.push c
+			_.defer =>
+				@tagFilter oldc, newc, filterF, finalF		# defer each contact to avoid compute bind
+
 		setTags: (oC) ->
 			filterTags = []
 			for item in @get 'tagsToSelect'
 				if item.checked
-					filterTags.push item.label
+					filterTags.push item.id
 			if oC and filterTags.length
+				search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
+				if search
+					search.set 'searching', true
 				newC = []
-				for c in oC
-					tags = App.filter App.Tag, {field:'date'}, {category: 'redstar', contact:c.get('id')}, (m,x,e) ->
-						m.get('contact.id') is c.get('id') and m.get('category') is 'redstar' and _.contains(filterTags, _s.capitalize(m.get('body')))
-					if tags.get 'length'
-						newC.push c
+				oldC = oC.slice 0
+				@tagFilter oldC, newC, (c) =>	# needed a defer-able async mechanism to avoid compute bound loop
+					for t in @gottags
+						if t.get('contact.id') is c.get('id') and  _.contains(filterTags, t.get('body'))
+							return true
+					return false
+				, (newc) =>
+					@set 'pluckedresults', newc
+					if search
+						search.set 'searching', false
 			else
-				newC = oC
-			newC
+				@set 'pluckedresults', oC
 
 		setYears: (oC) ->
 			newC = []
@@ -127,14 +155,17 @@ module.exports = (Ember, App, socket) ->
 				newC = oC
 			newC
 
-		changeFilters: (->
+		changeFilters: (->		# note: defer for prompt event feedback (checkbox tick)
 				_.defer =>
-					@set 'pluckedresults', @setTags @setYears @backupresults.slice 0
+					@setTags @setYears @backupresults.slice 0
+				false
 			).observes 'years', 'tagsToSelect.@each.checked'
 
 
 	App.ResultsView = Ember.View.extend
 		template: require '../../../templates/results'
+		didInsertElement: ->
+			$('div.filters').hide()
 
 	App.ResultController = Ember.Controller.extend
 
