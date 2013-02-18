@@ -13,7 +13,6 @@ module.exports = (Ember, App, socket) ->
 		results: null
 		pluckedresults: null
 		backupresults: null
-		itemsPerPage: 6
 
 		gottags: {}
 
@@ -34,7 +33,11 @@ module.exports = (Ember, App, socket) ->
 								if not o[b] then o[b]=1
 								else o[b]++
 						for t of o
-							toptags.push { chkboxdata: {id:t.split(' ')[0], checked:false, label:_s.capitalize(t)}, count: o[t] }
+							id = t.split(' ')[0]
+							lab = _s.capitalize(t)
+							if lab.length > 40
+								lab = lab.substr(0,40) + '...'
+							toptags.push { chkboxdata: {id:id, checked:false, label:lab}, count: o[t] }
 						toptags.sort((a,b) -> b.count - a.count)
 						toptags = _.pluck toptags.slice(0,7), 'chkboxdata'
 						@set 'tagsToSelect', toptags
@@ -57,9 +60,6 @@ module.exports = (Ember, App, socket) ->
 						for i in [max..1]
 							@get('yearsToSelect').push Ember.Object.create({label: 'at least '+i+' years', years:i})
 					@getTags()
-					$f = $('.search-filter')
-					$f.css {opacity:1}
-					$f.animate {marginLeft:"0"}, 666
 					@.set 'pluckedresults', @results.slice 0
 					@.set 'backupresults', @results.slice 0
 				)
@@ -135,9 +135,6 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsView = Ember.View.extend
 		template: require '../../../templates/results'
-		didInsertElement: ->
-			console.log 'insertpage'
-		#	@.get('controller').initPage()
 
 	App.ResultController = Ember.Controller.extend
 

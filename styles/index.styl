@@ -131,6 +131,11 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
+		.searchingspinner
+			margin-left	-3em
+			color	#ff8
+		.search-query.noresults
+			background	#f99
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
@@ -331,7 +336,6 @@ body
 	bottom	0
 	height  100%
 	background-color  #fff
-	opacity	0
 	h3
 		padding-top	2em
 	h4

@@ -46,6 +46,10 @@ module.exports = (Ember, App, socket) ->
 
 			searching: Ember.Route.extend
 				route: '/searching'
+				enter: (manager) ->
+					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
+					if search
+						search.set 'searching', true
 				redirectsTo: 'results'
 
 			results: Ember.Route.extend
@@ -53,13 +57,20 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
 					if search
-						router.get('applicationController').connectOutlet 'results'
-						socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-							if results and results.length is 1
-								router.route '/contact/'+ results[0]
-							else
-								router.get('resultsController').set 'results', Ember.ArrayProxy.create 
-									content: App.Contact.find(_id: $in: results)
+						if search.get 'searching'
+							socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
+								router.get('applicationController').connectOutlet 'results'
+								search.set 'searching', false
+								if results and results.length is 1
+									router.route '/contact/'+ results[0]
+								else if results and results.length
+									router.get('resultsController').set 'results', Ember.ArrayProxy.create 
+										content: App.Contact.find(_id: $in: results)
+								else
+									search.set 'noresults', true
+						else
+							router.get('applicationController').connectOutlet 'results'
+
 
 
 			contact: Ember.Route.extend
