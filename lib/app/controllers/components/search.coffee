@@ -24,8 +24,7 @@ module.exports = (Ember, App, socket) ->
 		submit: ->
 			@$(':focus').blur()
 			@set 'using', false
-			if not _.isEmpty(@get('results'))
-				App.get('router').send 'goSearch'
+			App.get('router').send 'goSearch'
 			return false
 
 		focusIn: ->
@@ -41,8 +40,12 @@ module.exports = (Ember, App, socket) ->
 
 		searchBoxView: Ember.TextField.extend
 			resultsBinding: 'parentView.results'
+			noresultsBinding: 'parentView.noresults'
+			searchingBinding: 'parentView.searching'
 			valueChanged: (->
 					query = util.trim @get('value')
+					@set 'searching', false
+					@set 'noresults', false
 					if not query
 						@set 'results', null
 					else
