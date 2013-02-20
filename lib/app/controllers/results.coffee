@@ -13,6 +13,7 @@ module.exports = (Ember, App, socket) ->
 		results: null
 		pluckedresults: null
 		backupresults: null
+		hiding: 0
 
 		gottags: {}
 
@@ -73,16 +74,23 @@ module.exports = (Ember, App, socket) ->
 						for i in [max..1]
 							@get('yearsToSelect').push Ember.Object.create({label: 'at least '+i+' years', years:i})
 					@getTags()
-					@.set 'pluckedresults', @results.slice 0
-					@.set 'backupresults', @results.slice 0
+					@set 'pluckedresults', @results.slice 0
+					@set 'backupresults', @results.slice 0
+					@set 'hiding', 0
 				)
 				Ember.ArrayProxy.create
 					content: @results
 		).property 'results'
 
+		scrollUp: (->
+			$('html, body').animate {scrollTop: 0}, 666
+		).observes 'rangeStart'
+
 		doSort: ( ->
 			oC = @.get('pluckedresults').slice 0
 			if oC isnt null
+				if @backupresults
+					@set 'hiding', @backupresults.length - @pluckedresults.length
 				newC = oC.slice(0)
 				if @dir and @weightF
 					newC.sort((first,second) => @dir * (@weightF(first) - @weightF(second)))
