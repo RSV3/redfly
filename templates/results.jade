@@ -1,15 +1,93 @@
-.result
-	| {{view App.SearchFilterView}}
-	| {{#each controller.paginatedItems}}
-	{{view App.ResultView controllerBinding="this"}}
-	| {{/each}}
+.row-fluid
+	.span4.search-filters
+		h3 Filters
+		+each ('tagsToSelect')
+			.checkfilter
+				label
+					| {{view Ember.Checkbox checkedBinding="checked"}}
+					| {{label}}
 
-	ul.pager
-		| {{#if hasPrevious}}
-		li.previous
-			| <a href="#" {{action previousPage target="controller"}}>&larr; Prev</a>
-		| {{/if}}
-		| {{#if hasNext}}
-		li.next
-			| <a href="#" {{action nextPage target="controller"}}>Next &rarr;</a>
-		| {{/if}}
+		h3 Sort
+			br
+			+each ('sorts')
+				| {{this}}
+				a(href='#', action='sortUp this target="controller"')
+					i.icon-caret-up.icon-large
+				a(href='#', action='sortDown this target="controller"')
+					i.icon-caret-down.icon-large
+				br
+
+
+		//- h3 Experience
+		//- | {{view Ember.Select contentBinding="experience" optionValuePath="content.years" optionLabelPath="content.label" valueBinding="yearsFilter" prompt="Select a minimum..."}}
+
+		//- h3 Proximity
+		//- .proximity.sort
+		//- 	| <a href="#" {{action sort target="controller"}}>
+		//- 	i.icon-caret-up.icon-large
+		//- 	| </a>
+		//- 	| <a href="#" {{action sort target="controller"}}>
+		//- 	i.icon-caret-down.icon-large
+		//- 	| </a>
+
+		//- h3 Influence
+		//- .influence.sort
+		//- 	| <a href="#" {{action sort target="controller"}}>
+		//- 	i.icon-caret-up.icon-large
+		//- 	| </a>
+		//- 	| <a href="#" {{action sort target="controller"}}>
+		//- 	i.icon-caret-down.icon-large
+		//- 	| </a>
+
+	.span8
+		+unless ('paginator.paginatedItems')
+			.loading
+				i.icon-spinner.icon-spin
+		+each ('paginator.paginatedItems')
+			+view ('view.resultView')
+				.row-fluid.top
+					.span2.picture
+						| <a {{action goContact this target="App.router" href=true}}>
+						| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+						| </a>
+					.span7
+						.row-fluid
+							.span8
+								| <a {{action goContact this target="App.router" href=true}}>
+								h3 {{canonicalName}}
+								| </a>
+								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+							.span4
+								span.mailORintro
+									| {{#unless view.isKnown}}
+									| <a {{bindAttr href="view.introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+									| {{/unless}}
+									| {{#if view.isKnown}}
+									| <a {{bindAttr href="view.directMailto"}} target="_blank">
+									i.icon-envelope.icon-large
+									| </a>
+									| {{/if}}
+								+view ('App.SocialView')
+									a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+										i.icon-linkedin-sign.icon-large
+										|
+									a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+										i.icon-twitter-sign.icon-large
+										|
+									a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+										i.icon-facebook-sign.icon-large
+										|
+								div
+									+if ('linkedin')
+										br
+										a(bindAttr='href="view.linkedinMail"', target='_blank') Send a Linkedin inMail
+						.row-fluid
+					.span3
+
+		ul.pager
+			+if ('paginator.hasPrevious')
+				li.previous
+					a(href='#', action='previousPage target="paginator"') &larr; Prev
+			+if ('paginator.hasNext')
+				li.next
+					a(href='#', action='nextPage target="paginator"') Next &rarr;

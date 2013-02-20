@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 
-	App.SomeContactMethods = Ember.Mixin.create
+	App.ContactMixin = Ember.Mixin.create
 		isKnown: (->
 				@get('controller.knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
@@ -24,4 +24,3 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('controller.linkedin') + '&creationType=DC'
 			).property 'controller.linkedin'
-

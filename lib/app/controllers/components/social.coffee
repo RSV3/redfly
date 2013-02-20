@@ -15,4 +15,3 @@ module.exports = (Ember, App, socket) ->
 			@_open 'linkedin'
 		openTwitter: ->
 			@_open 'twitter'
-

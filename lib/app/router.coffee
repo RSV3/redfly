@@ -44,34 +44,6 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router, user) ->
 					router.get('applicationController').connectOutlet 'profile', user
 
-			searching: Ember.Route.extend
-				route: '/searching'
-				enter: (manager) ->
-					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-					if search
-						search.set 'searching', true
-				redirectsTo: 'results'
-
-			results: Ember.Route.extend
-				route: '/results'
-				connectOutlets: (router) ->
-					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-					if search
-						if search.get 'searching'
-							socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-								if results and results.length is 1
-									router.route '/contact/'+ results[0]
-								else if results and results.length
-									router.get('applicationController').connectOutlet 'results'
-									router.get('resultsController').set 'results', Ember.ArrayProxy.create 
-										content: App.Contact.find(_id: $in: results)
-								else
-									search.set 'noresults', true
-						else
-							router.get('applicationController').connectOutlet 'results'
-
-
-
 			contact: Ember.Route.extend
 				# TODO bring back all email serialization, also:
 				# http://stackoverflow.com/questions/12064765/initialization-with-serialize-deserialize-ember-js
@@ -89,17 +61,21 @@ module.exports = (Ember, App, socket) ->
 				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
 
+			results: Ember.Route.extend
+				route: '/results/:query'
+				connectOutlets: (router, query) ->
+					router.get('applicationController').connectOutlet 'results'
+					socket.emit 'fullSearch', query: query, (results) =>
+						router.get('resultsController').set 'all', App.Contact.find _id: $in: results
+				serialize: (router, context) ->
+					query: context
+				deserialize: (router, params) ->
+					params.query
+
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'contacts'
-					###
-					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
-						content: App.Contact.find(added: $exists: true)
-						sortProperties: ['added']
-						sortAscending: false
-					router.get('contactsController').set 'content', fullContent
-					###
 
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
@@ -185,7 +161,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
-			goSearch: Ember.Route.transitionTo 'searching'
+			goResults: Ember.Route.transitionTo 'results'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'
