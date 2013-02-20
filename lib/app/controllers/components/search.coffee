@@ -12,10 +12,12 @@ module.exports = (Ember, App, socket) ->
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
+		hasResults: (->
+				not _.isEmpty(@get('results'))
+			).property 'results'
 		showResults: (->
-				# TODO check the substructure of results to make sure there actually are some.
-				@get('using') and not _.isEmpty(@get('results'))
-			).property 'using', 'results'
+				@get('using') and @get('hasResults')
+			).property 'using', 'hasResults'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
@@ -23,9 +25,23 @@ module.exports = (Ember, App, socket) ->
 				@$(':focus').blur()
 		submit: ->
 			@$(':focus').blur()
-			@set 'using', false
-			App.get('router').send 'goSearch'
-			return false
+
+			allResults = Ember.ArrayProxy.create content: []
+			allResults.addObjects resultsType for resultsType in _.values(@get('results'))
+			allResults = allResults.map (item) ->
+				if item instanceof App.Contact
+					return item
+				item.get 'contact'
+			total = allResults.get('length')
+
+			if total is 0
+				# TODO noresults  search.set 'noresults', true
+			else if total is 1
+				App.get('router').send 'goContact', allResults.get('firstObject')
+			else
+				App.get('router').send 'goResults', util.trim(@get('query'))
+
+			return false   # Prevent a form submit.
 
 		focusIn: ->
 			@set 'using', true
@@ -39,13 +55,15 @@ module.exports = (Ember, App, socket) ->
 			, 150
 
 		searchBoxView: Ember.TextField.extend
+			classNameBindings: [':search-query', 'noResultsFeedback:no-results']
+			noResultsFeedback: (->
+					@get('parentView.using') and not @get('parentView.hasResults')
+				).property 'parentView.using', 'parentView.hasResults'
+
 			resultsBinding: 'parentView.results'
-			noresultsBinding: 'parentView.noresults'
-			searchingBinding: 'parentView.searching'
+			valueBinding: 'parentView.query'
 			valueChanged: (->
 					query = util.trim @get('value')
-					@set 'searching', false
-					@set 'noresults', false
 					if not query
 						@set 'results', null
 					else

@@ -131,11 +131,8 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
-		.searchingspinner
-			margin-left	-3em
-			color	#ffa
-		.search-query.noresults
-			background	#f99
+		.no-results
+			background #f99
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
@@ -181,9 +178,37 @@ body
 	.signup
 		margin-top 30px
 
-.result
+.results
 	margin-top	-1em
+	a:hover
+		text-decoration	none
+	.search-filter
+		position  fixed
+		left  0
+		padding  2em
+		bottom	0
+		height  100%
+		background-color  #fff
+		h3
+			padding-top	2em
+		h4
+			padding-top	1em
+		.checkfilter
+			input
+				display	inline
+				margin 10px
+				margin-top 7px
+			label
+				display	inline
+				margin-left	1em
+		.sort
+			i
+				margin-left	20px
+			.icon-large:hover
+				text-decoration	none
 	.contact
+		h3
+			margin-top -10px
 		.top
 			margin	5px
 			padding	5px
@@ -192,6 +217,11 @@ body
 			span.mailORintro
 				float	right
 				margin-right	1em
+	.pager
+		position relative
+		width 25%
+		left 50%
+		margin-left -25%
 .contact
 	.top
 		.bullhorn
@@ -309,19 +339,6 @@ body
 
 
 
-.result
-	a:hover
-		text-decoration	none
-	.contact
-		h3
-			margin-top -10px
-	.pager
-		position relative
-		width 25%
-		left 50%
-		margin-left -25%
-
-
 
 // Components.
 
@@ -329,30 +346,10 @@ body
 	.search-results
 		display block	// Always show the dropdown.
 
-.search-filter
-	position  fixed
-	left  0
-	padding  2em
-	bottom	0
-	height  100%
-	background-color  #fff
-	h3
-		padding-top	2em
-	h4
-		padding-top	1em
-	.checkfilter
-		input
-			display	inline
-			margin 10px
-			margin-top 7px
-		label
-			display	inline
-			margin-left	1em
-	.sort
-		i
-			margin-left	20px
-		.icon-large:hover
-			text-decoration	none
+.loading
+	margin-top horizontalMargin * 10 // TO-DO so lazy, make this vertically centered. Possibly after I figure out if body will have height 100%
+	text-align center
+	font-size baseFontSize * 6
 
 #linking
 	.progress.progress1
