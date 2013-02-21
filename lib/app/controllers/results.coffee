@@ -51,6 +51,7 @@ module.exports = (Ember, App, socket) ->
 						@gottags = newtags
 
 						@set 'tagsToSelect', toptags
+						@set 'years', 0
 						$('div.filters').show()
 						search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
 						if search
