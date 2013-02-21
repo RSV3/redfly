@@ -74,8 +74,12 @@ everyauth.linkedin.configure
 	entryPath: '/linker'
 	callbackPath: '/linked'
 	handleAuthCallbackError: (req, res) ->
+		#
 		# TODO this doesn't seem to work. If a user cancels signing in to linkedin he gets a nasty response.
+		# see https://github.com/bnoguchi/everyauth/issues/101
+		#
 		# if req.params.oauth_problem
+		#
 		res.redirect '/profile'
 	findOrCreateUser: (session, accessToken, accessTokenSecret, linkedinUserMetadata) ->
 		models = require './models'
