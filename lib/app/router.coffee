@@ -7,6 +7,12 @@ module.exports = (Ember, App, socket) ->
 	interceptedPath = null	# TO-DO this doesn't work any more. The paradigm is flawed: we have to save this to the session to survive auth flow.
 
 	Ember.Router.reopen
+		connectem: (outlet, data) ->
+			@get('applicationController').connectOutlet outlet, data
+			if outlet is 'results'
+				@get('applicationController').connectOutlet 'sidebar', 'SearchFilter'
+			else
+				@get('applicationController').connectOutlet 'sidebar', 'feed'
 		transitionTo: (path, context) ->
 			_ = require 'underscore'
 
@@ -37,12 +43,12 @@ module.exports = (Ember, App, socket) ->
 			index: Ember.Route.extend
 				route: '/'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'home'
+					router.connectem 'home'
 
 			profile: Ember.Route.extend
 				route: '/profile/:user_id'
 				connectOutlets: (router, user) ->
-					router.get('applicationController').connectOutlet 'profile', user
+					router.connectem 'profile', user
 
 			searching: Ember.Route.extend
 				route: '/searching'
@@ -62,15 +68,13 @@ module.exports = (Ember, App, socket) ->
 								if results and results.length is 1
 									router.route '/contact/'+ results[0]
 								else if results and results.length
-									router.get('applicationController').connectOutlet 'results'
+									router.connectem 'results'
 									router.get('resultsController').set 'results', Ember.ArrayProxy.create 
 										content: App.Contact.find(_id: $in: results)
 								else
 									search.set 'noresults', true
 						else
-							router.get('applicationController').connectOutlet 'results'
-
-
+							router.connectem 'results'
 
 			contact: Ember.Route.extend
 				# TODO bring back all email serialization, also:
@@ -78,7 +82,7 @@ module.exports = (Ember, App, socket) ->
 				# route: '/contact/:identity'
 				route: '/contact/:contact_id'
 				connectOutlets: (router, contact) ->
-					router.get('applicationController').connectOutlet 'contact', contact
+					router.connectem 'contact', contact
 				# TODO try just doing 'contact_email' instead. Except that now it's 'emails'
 				# serialize: (router, context) ->
 				# 	identity: context.get 'email'
@@ -92,7 +96,7 @@ module.exports = (Ember, App, socket) ->
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts'
+					router.connectem 'contacts'
 					###
 					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
 						content: App.Contact.find(added: $exists: true)
@@ -104,12 +108,12 @@ module.exports = (Ember, App, socket) ->
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'leaderboard', App.User.find()
+					router.connectem 'leaderboard', App.User.find()
 
 			tags: Ember.Route.extend
 				route: '/tags'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'tags'
+					router.connectem 'tags'
 					socket.emit 'tags.stats', (stats) =>
 						for stat in stats
 							stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
@@ -118,30 +122,30 @@ module.exports = (Ember, App, socket) ->
 			report: Ember.Route.extend
 				route: '/report'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'report'
+					router.connectem 'report'
 
 
 			userProfile: Ember.Route.extend
 				route: '/profile'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'profile', App.user
+					router.connectem 'profile', App.user
 					router.get('profileController').set 'self', true
 
 			create: Ember.Route.extend
 				route: '/create'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'create'
+					router.connectem 'create'
 
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'classify'
+					router.connectem 'classify'
 					router.get('classifyController').connectOutlet 'contact'
 
 			import: Ember.Route.extend
 				route: '/import'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'import'
+					router.connectem 'import'
 
 
 			load: Ember.Route.extend
