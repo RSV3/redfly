@@ -2,6 +2,10 @@
 
 require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 
+	Handlebars.registerHelper 'plusOne', (property, options) ->
+		value = Ember.Handlebars.getPath @, property, options
+		1 + parseInt(value, 10)
+
 	Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
 		value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
 		'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
