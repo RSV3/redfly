@@ -87,6 +87,10 @@ module.exports = (Ember, App, socket) ->
 			$('html, body').animate {scrollTop: 0}, 666
 		).observes 'rangeStart'
 
+		startplusone: (->
+			1 + parseInt(@get('rangeStart'), 10)
+		).property 'rangeStart'
+
 		doSort: ( ->
 			oC = @.get('pluckedresults').slice 0
 			if oC isnt null
