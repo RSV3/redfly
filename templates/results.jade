@@ -1,0 +1,19 @@
+.result
+	| {{view App.SearchFilterView}}
+	| {{#each controller.paginatedItems}}
+	{{view App.ResultView controllerBinding="this"}}
+	| {{/each}}
+
+	ul.pager
+		| {{#if hasPrevious}}
+		li.previous
+			| <a href="#" {{action previousPage target="controller"}}>&larr; Prev</a>
+		| {{/if}}
+		| {{#if total}}
+		div.pagenums
+			{{startplusone}}-{{rangeStop}} / {{total}}
+		| {{/if}}
+		| {{#if hasNext}}
+		li.next
+			| <a href="#" {{action nextPage target="controller"}}>Next &rarr;</a>
+		| {{/if}}

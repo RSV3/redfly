@@ -3,6 +3,8 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 
 
+	App.ApplicationController = Ember.Controller
+	###
 	App.ApplicationController = Ember.Controller.extend
 		feed: (->
 				mutable = []
@@ -20,6 +22,7 @@ module.exports = (Ember, App, socket) ->
 						sort: added: -1
 						limit: 5
 			).property()
+	###
 
 
 	App.ApplicationView = Ember.View.extend
@@ -37,6 +40,7 @@ module.exports = (Ember, App, socket) ->
 			# setTimeout ->
 			# 		throw new Error 'penis penis'
 			# 	, 3000
+			###
 			socket.on 'feed', (data) =>
 				type = data.type
 				model = type
@@ -49,6 +53,7 @@ module.exports = (Ember, App, socket) ->
 				if type is 'linkedin'
 					item['updater'] = App.User.find data.updater
 				@get('controller.feed').unshiftObject item
+			###
 
 			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
@@ -69,10 +74,12 @@ module.exports = (Ember, App, socket) ->
 			socket.emit 'summary.user', (user) =>
 				@set 'controller.mostActiveUser', user
 
+		###
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
+		###
 
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'

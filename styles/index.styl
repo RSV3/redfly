@@ -131,6 +131,11 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
+		.searchingspinner
+			margin-left	-3em
+			color	#ffa
+		.search-query.noresults
+			background	#f99
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
@@ -175,6 +180,18 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
+
+.result
+	margin-top	-1em
+	.contact
+		.top
+			margin	5px
+			padding	5px
+			.picture img
+				height	99px
+			span.mailORintro
+				float	right
+				margin-right	1em
 .contact
 	.top
 		.bullhorn
@@ -292,11 +309,54 @@ body
 
 
 
+.result
+	a:hover
+		text-decoration	none
+	.contact
+		h3
+			margin-top -10px
+	.pager
+		position relative
+		width 33%
+		left 50%
+		margin-left -25%
+		.pagenums
+			color	#069
+			margin-top	0.5em
+			display	inline-block
+
+
+
 // Components.
 
 .search
 	.search-results
 		display block	// Always show the dropdown.
+
+.search-filter
+	position  absolute
+	left  0
+	padding  2em
+	top	2em
+	height  100%
+	background-color  #fff
+	h3
+		padding-top	1em
+	h4
+		padding-top	1em
+	.checkfilter
+		input
+			display	inline
+			margin 10px
+			margin-top 7px
+		label
+			display	inline
+			margin-left	1em
+	.sort
+		i
+			margin-left	20px
+		.icon-large:hover
+			text-decoration	none
 
 #linking
 	.progress.progress1
