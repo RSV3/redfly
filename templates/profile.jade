@@ -1,0 +1,27 @@
+.row-fluid
+	.span9
+		h1 {{name}}
+		p Signed up on {{date}}
+		br
+		p Added {{contacts.length}} contact{{#unless_eq contacts.length compare=1}}s{{/unless_eq}} so far.
+		ul
+			| {{#each contacts.paginatedItems}}
+			li
+				| <a {{action goContact this href=true}}>{{canonicalName}}</a>
+			| {{/each}}
+		.row-fluid
+			.span4
+				ul.pager
+					| {{#if contacts.hasPrevious}}
+					li.previous
+						| <a href="#" {{action previousPage target="contacts"}}>&larr; Newer</a>
+					| {{/if}}
+					| {{#if contacts.hasNext}}
+					li.next
+						| <a href="#" {{action nextPage target="contacts"}}>Older &rarr;</a>
+					| {{/if}}
+	.span3.picture
+		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		| {{#if self}}
+		| {{view App.EditPictureView pictureBinding="picture"}}
+		| {{/if}}

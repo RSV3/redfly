@@ -3,5 +3,5 @@ module.exports = (Ember, App, socket) ->
 	App.ReportController = Ember.Controller.extend()
 
 	App.ReportView = Ember.View.extend
-		template: require '../../../views/templates/report'
+		template: require '../../../templates/report'
 		# classNames: ['report']

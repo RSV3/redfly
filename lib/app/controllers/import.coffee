@@ -110,7 +110,9 @@ module.exports = (Ember, App, socket) ->
 							require('async').forEach ['emails', 'names'], (field, cb) ->
 								validate.contact[field] result[field], cb
 							, (message) =>
-								if message
+								if message is 'This is a Redstar person.'	# hacky
+									result.status.blacklisted = true
+								else if message
 									result.status.error = message
 								else
 									result.status.new = true
@@ -126,7 +128,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ImportView = Ember.View.extend
-		template: require '../../../views/templates/import'
+		template: require '../../../templates/import'
 		classNames: ['import']
 
 		startView: Ember.View.extend
@@ -159,7 +161,7 @@ module.exports = (Ember, App, socket) ->
 				@get('controller.stateMachine').transitionTo 'start'
 			import: ->
 				@get('controller.processed.results').forEach (result) ->
-					if result.status.error
+					if not result.status.new
 						return
 					contact = App.Contact.createRecord
 						emails: result.emails
@@ -169,22 +171,21 @@ module.exports = (Ember, App, socket) ->
 						addedBy: App.user
 					contact.get('knows').pushObject App.user.get('content')
 					App.store.commit()
-					# TODO hack, wait for the contact.id to get set after saving. I could do this with a manual listener maybe, but I have a hunch
-					# newer versions of ember-data might let you batch commits with inter-foreign-key depenencies eventually.
-					setTimeout ->
-							result.tags.forEach (tag) ->
-								App.Tag.createRecord
-									creator: App.user
-									contact: contact
-									category: 'industry'
-									body: tag
-							result.notes.forEach (note) ->
-								App.Note.createRecord
-									author: App.user
-									contact: contact
-									body: note
-							App.store.commit()
-						, 1000
+					# TODO might have side effects, but I won't think about this too much harder because I have a hunch newer versions of
+					# ember-data might let you batch commits with inter-foreign-key depenencies eventually.
+					contact.addObserver 'id', ->
+						result.tags.forEach (tag) ->
+							App.Tag.createRecord
+								creator: App.user
+								contact: contact
+								category: 'industry'
+								body: tag
+						result.notes.forEach (note) ->
+							App.Note.createRecord
+								author: App.user
+								contact: contact
+								body: note
+						App.store.commit()
 				@get('controller.stateMachine').transitionTo 'start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300

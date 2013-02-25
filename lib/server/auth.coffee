@@ -1,4 +1,4 @@
-everyauth = require 'everyauth'
+everyauth = module.exports = require 'everyauth'
 
 
 everyauth.google.configure

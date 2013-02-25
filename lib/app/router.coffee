@@ -1,4 +1,6 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
+	_s = require 'underscore.string'
 	util = require './util'
 
 
@@ -59,15 +61,21 @@ module.exports = (Ember, App, socket) ->
 				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
 
+			results: Ember.Route.extend
+				route: '/results/:query'
+				connectOutlets: (router, query) ->
+					router.get('applicationController').connectOutlet 'results'
+					socket.emit 'fullSearch', query: query, (results) =>
+						router.get('resultsController').set 'all', App.Contact.find _id: $in: results
+				serialize: (router, context) ->
+					query: context
+				deserialize: (router, params) ->
+					params.query
+
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.get('applicationController').connectOutlet 'contacts', fullContent
-					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
-						content: App.Contact.find(added: $exists: true)
-						sortProperties: ['added']
-						sortAscending: false
-					router.get('contactsController').set 'fullContent', fullContent
+					router.get('applicationController').connectOutlet 'contacts'
 
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
@@ -81,11 +89,7 @@ module.exports = (Ember, App, socket) ->
 					socket.emit 'tags.stats', (stats) =>
 						for stat in stats
 							stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
-						fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
-							content: stats
-							sortProperties: ['count']
-							sortAscending: false
-						router.get('tagsController').set 'fullContent', fullContent
+						router.get('tagsController').set 'stats', stats
 
 			report: Ember.Route.extend
 				route: '/report'
@@ -157,6 +161,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
+			goResults: Ember.Route.transitionTo 'results'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'

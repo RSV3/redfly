@@ -4,7 +4,7 @@ module.exports = (Ember, App, socket) ->
 	util = require '../../util'
 
 	App.LinkerView = Ember.View.extend
-		template: require '../../../../views/templates/components/linker'
+		template: require '../../../../templates/components/linker'
 		classNames:['linker']
 
 		didInsertElement: ->

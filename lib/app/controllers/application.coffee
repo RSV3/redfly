@@ -23,7 +23,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ApplicationView = Ember.View.extend
-		template: require '../../../views/templates/application'
+		template: require '../../../templates/application'
 
 		changeActiveTab: (->
 				state = App.get 'router.currentState.name'

@@ -4,7 +4,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.TaggerView = Ember.View.extend
-		template: require '../../../../views/templates/components/tagger'
+		template: require '../../../../templates/components/tagger'
 		classNames: ['tagger']
 		tags: (->
 				sort = field: 'date'
@@ -64,9 +64,9 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				$(event.target).parent().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
-						tag.deleteRecord()
-						App.store.commit()
-					, 1000
+					tag.deleteRecord()
+					App.store.commit()
+				, 1000
 			didInsertElement: ->
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false

@@ -1,9 +1,10 @@
-config = 
+module.exports =
 	# all:
 
 
 	development:
-		HOST: 'localhost:5000'
+		HOST: '10.0.0.2:5000'
+		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
 
@@ -35,7 +36,7 @@ config =
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com'
+		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
@@ -65,31 +66,3 @@ config =
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
 		NUDGE_DAY: 'Friday'
-
-
-
-process.env.APP_ENV ?= 'development'
-
-scopes = [config.all, config[process.env.APP_ENV]]
-try
-	local = require './config-local'
-	scopes.push local
-catch err
-
-for scope in scopes
-	for variable of scope
-		process.env[variable] = scope[variable]
-
-
-
-#	request = require 'request'
-# 	if process.env.APP_ENV is 'development'
-# 		request
-# 			uri: 'https://api.heroku.com/apps/' +  + '/config_vars'
-# 			headers:
-# 				Accept: 'application/json'
-# 			auth: ':' + 
-# 			(err, res, body) ->
-# 				throw err if err
-# 				throw new Error if res.statusCode isnt 200
-# 				scopes.unshift JSON.parse body

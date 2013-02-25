@@ -1,23 +1,7 @@
-module.exports = (app) ->
+module.exports = (app, route) ->
 	_ = require 'underscore'
-	_s = require 'underscore.string'
-
 	logic = require './logic'
-	util = require './util'
 	models = require './models'
-
-
-	route = (name, cb) ->
-		app.io.route name, (req) ->
-			cb req.io.respond, req.data, req.io, req.session
-
-
-	route 'session', (fn, data, io, session) ->
-		fn session
-
-	route 'logout', (fn, data, io, session) ->
-		session.destroy()
-		fn()
 
 
 	route 'db', (fn, data) ->
@@ -29,22 +13,27 @@ module.exports = (app) ->
 		model = models[data.type]
 		switch data.op
 			when 'find'
-				if id = data.id
-					model.findById id, (err, doc) ->
-						throw err if err
-						return fn doc
-				else if ids = data.ids
-					model.find _id: $in: ids, (err, docs) ->
-						throw err if err
-						return fn docs
-				else if query = data.query
-					model.find query.conditions, null, query.options, (err, docs) ->
-						throw err if err
-						return fn docs
-				else
-					model.find (err, docs) ->
-						throw err if err
-						return fn docs
+				# TODO
+				try
+					if id = data.id
+						model.findById id, (err, doc) ->
+							throw err if err
+							return fn doc
+					else if ids = data.ids
+						model.find _id: $in: ids, (err, docs) ->
+							throw err if err
+							return fn docs
+					else if query = data.query
+						model.find query.conditions, null, query.options, (err, docs) ->
+							throw err if err
+							return fn docs
+					else
+						model.find (err, docs) ->
+							throw err if err
+							return fn docs
+				catch err
+					console.error 'Error in db API: ' + err
+					return fn()
 			when 'create'
 				record = data.record
 				if not _.isArray record
@@ -112,7 +101,10 @@ module.exports = (app) ->
 		fn 'Joe Chung'
 
 
-	route 'search', (fn, data) ->
+	# refactored searcH:
+	# optional limit for the dynamic searchbox,
+	# and a final callback where we can decide what attributes to package for returning
+	doSearch = (fn, data, searchMap, limit=0) ->
 		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
@@ -135,6 +127,7 @@ module.exports = (app) ->
 					model = 'Contact'
 					field = type + 's'
 					if type is 'tag' or type is 'note'
+						_s = require 'underscore.string'
 						model = _s.capitalize type
 						field = 'body'
 					step ->
@@ -151,24 +144,108 @@ module.exports = (app) ->
 								# else
 								# 	for k, v of data.moreConditions
 								# 		conditions['contact.' + k] = v
-								
-								models[model].find(conditions).limit(10).exec @parallel()
+
+								models[model].find(conditions).limit(limit).exec @parallel()
 								return undefined	# Step library is insane.
 						, @parallel()
 				return undefined	# Still insane? Yes? Fine.
 			, (err, docs...) ->
 				throw err if err
-
-				results = {}
+				results = null
+				availableTypes = ['name', 'email', 'tag', 'note']
 				availableTypes.forEach (type, index) ->
-					typeDocs = docs[index]
-					if not _.isEmpty typeDocs
-						if type is 'tag' or type is 'note'
-							typeDocs = _.uniq typeDocs, false, (typeDoc) ->
-								typeDoc.contact.toString()	# Convert ObjectId to a simple string.
-						results[type] = _.map typeDocs, (doc) ->
-							doc.id
+					if not _.isEmpty docs[index]
+						results = searchMap type, docs[index], results
 				return fn results
+
+
+	route 'fullSearch', (fn, data) ->
+		doSearch fn, data
+		, (type, typeDocs, results=[]) ->
+			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
+				if type is 'tag' or type is 'note'
+					doc.contact
+				else
+					doc.id
+			), true, (id) -> String(id)
+			return results
+
+
+	route 'search', (fn, data) ->
+		doSearch fn, data
+		, (type, typeDocs, results={}) ->
+			if type is 'tag' or type is 'note'
+				typeDocs = _.uniq typeDocs, false, (typeDoc) ->
+					typeDoc.contact.toString()	# Convert ObjectId to a simple string.
+			results[type] = _.map typeDocs, (doc) ->
+				doc.id
+			return results
+		, 10	# limit
+
+
+	###
+
+	route 'search', (fn, data) ->
+		terms = _.uniq _.compact data.query.split(' ')
+		search = {}
+		availableTypes = ['name', 'email', 'tag', 'note']
+		for type in availableTypes
+			search[type] = []
+			for term in terms
+				compound = _.compact term.split ':'
+				if compound.length > 1
+					# TODO
+					search[type].push compound[1]
+					# if type is _.first compound
+					# 	search[type].push compound[1]
+				else
+					search[type].push term
+		step = require 'step'
+		step ->
+			for type in availableTypes
+				terms = search[type]
+
+				model = 'Contact'
+				field = type + 's'
+				if type is 'tag' or type is 'note'
+					_s = require 'underscore.string'
+					model = _s.capitalize type
+					field = 'body'
+				step ->
+					for term in terms
+						conditions = {}
+						try
+							conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
+						catch err
+							continue	# User typed an invlid regular expression, just ignore it.
+
+						if model is 'Contact'
+							conditions.added = $exists: true
+							_.extend conditions, data.moreConditions
+						# else
+						# 	for k, v of data.moreConditions
+						# 		conditions['contact.' + k] = v
+
+						models[model].find(conditions).limit(10).exec @parallel()
+						return undefined	# Step library is insane.
+				, @parallel()
+			return undefined	# Still insane? Yes? Fine.
+		, (err, docs...) ->
+			throw err if err
+
+			results = {}
+			availableTypes.forEach (type, index) ->
+				typeDocs = docs[index]
+				if not _.isEmpty typeDocs
+					if type is 'tag' or type is 'note'
+						typeDocs = _.uniq typeDocs, false, (typeDoc) ->
+							typeDoc.contact.toString()	# Convert ObjectId to a simple string.
+					results[type] = _.map typeDocs, (doc) ->
+						doc.id
+			return fn results
+
+	###
+
 
 	route 'verifyUniqueness', (fn, data) ->
 		field = data.field + 's'
@@ -284,7 +361,7 @@ module.exports = (app) ->
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
 
-			require('./parser') app, user, notifications, fn
+			require('./parser') user, notifications, fn
 
 	route 'linkin', (fn, id, io, session) ->
 		models.User.findById id, (err, user) ->

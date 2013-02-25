@@ -4,6 +4,7 @@ module.exports = (socket) ->
 	async = require 'async'
 	validators = require('validator').validators
 
+	blacklist = require '../blacklist'
 	util = require '../util'
 
 
@@ -15,6 +16,7 @@ module.exports = (socket) ->
 			'Pretty sure that\'s not a valid ' + value + '.'
 		unique: (value) ->
 			'There is another contact with that ' + value + '.'
+		blacklisted: 'This is a Redstar person.'
 	
 	filter:
 		general:
@@ -57,6 +59,9 @@ module.exports = (socket) ->
 					return cb messages.required
 				if not validators.isEmail email
 					return cb messages.format 'email'
+				if (_.last(email.split('@')) in blacklist.domains) or
+						(email in blacklist.emails)
+					return cb messages.blacklisted
 				socket.emit 'verifyUniqueness', field: 'email', value: email, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'email'
@@ -68,6 +73,8 @@ module.exports = (socket) ->
 			name: (name, cb) ->
 				if not name
 					return cb messages.required
+				if name in blacklist.names
+					return cb messages.blacklisted
 				socket.emit 'verifyUniqueness', field: 'name', value: name, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'name'

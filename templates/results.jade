@@ -1,0 +1,119 @@
+.row-fluid
+	.span4.search-filters
+		{{#if controller.all.length}}
+		br
+		i viewing {{#if controller.hiding}}{{controller.length}} of {{/if}}{{controller.all.length}} search results
+		{{/if}}
+		h3
+			| Filters
+		{{#if controller.orgTagsToSelect.length}}
+		h4
+			| Organisational Tags
+			| <a class="toggle" {{action toggleorg target="controller" href=true}}>
+			i.toggleorg.icon-caret-up
+			| </a>
+		.filters.toggleorg
+			{{#each item in controller.orgTagsToSelect}}
+			.checkfilter
+				|<label>
+				{{view Ember.Checkbox checkedBinding="item.checked"}}
+				{{item.label}}
+				|</label>
+			{{/each}}
+		{{/if}}
+		{{#if controller.indTagsToSelect.length}}
+		h4
+			| Industry Tags
+			| <a class="toggle" {{action toggleind target="controller" href=true}}>
+			i.toggleind.icon-caret-down
+			| </a>
+		.filters.toggleind.collapsed
+			{{#each item in controller.indTagsToSelect}}
+			.checkfilter
+				|<label>
+				{{view Ember.Checkbox checkedBinding="item.checked"}}
+				{{item.label}}
+				|</label>
+			{{/each}}
+		{{/if}}
+		{{#if controller.yearsToSelect.length}}
+		h4
+			| Experience
+		{{view Ember.Select
+		|	contentBinding="yearsToSelect"
+		|	optionValuePath="content.years"
+		|	optionLabelPath="content.label"
+		|	valueBinding="years"
+		|	prompt="Select a minimum ..."
+		}}
+		{{/if}}
+		h3
+			| Sort
+		.filters
+		h4
+			| Proximity
+		.sort
+			| <a class="proximity" href="#" {{action sort target="controller"}}>
+			i.icon-arrow-up.up
+			| </a>
+			| <a class="proximity" href="#" {{action sort target="controller"}}>
+			i.icon-arrow-down
+			| </a>
+		h4
+			| Influence
+		.sort
+			| <a class="influence" href="#" {{action sort target="controller"}}>
+			i.icon-arrow-up.up
+			| </a>
+			| <a class="influence" href="#" {{action sort target="controller"}}>
+			i.icon-arrow-down
+			| </a>
+
+	.span8
+		+unless ('paginatedItems')
+			.loading
+				i.icon-spinner.icon-spin
+		+each ('paginatedItems')
+			+view ('view.resultView')
+				.row-fluid.top
+					.span2.picture
+						| <a {{action goContact this target="App.router" href=true}}>
+						| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+						| </a>
+					.span10
+						.row-fluid
+							.span8
+								| <a {{action goContact this target="App.router" href=true}}>
+								h3 {{canonicalName}}
+								| </a>
+								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+							.span4
+								span.mailORintro
+									| {{#unless view.isKnown}}
+									| <a {{bindAttr href="view.introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+									| {{/unless}}
+									| {{#if view.isKnown}}
+									| <a {{bindAttr href="view.directMailto"}} target="_blank">
+									i.icon-envelope.icon-large
+									| </a>
+									| {{/if}}
+								+view ('App.SocialView')
+									a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+										i.icon-linkedin-sign.icon-large
+									a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+										i.icon-twitter-sign.icon-large
+									a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+										i.icon-facebook-sign.icon-large
+								div
+									+if ('linkedin')
+										br
+										a(bindAttr='href="view.linkedinMail"', target='_blank') Send a Linkedin inMail
+						.row-fluid
+
+		ul.pager
+			li.previous
+				| {{#if hasPrevious}}<a href="#" {{action previousPage target="controller"}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{#if total}}{{startplusone}}-{{rangeStop}}{{/if}}{{#if hasNext}} / {{total}}{{/if}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage target="controller"}}>Next &rarr;</a>{{/if}}

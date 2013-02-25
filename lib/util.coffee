@@ -1,17 +1,9 @@
 _ = require 'underscore'
 _s = require 'underscore.string'
+util = _.extend module.exports, require('phrenetic/lib/util')
 
 
-exports.baseUrl = 'http://' + process.env.HOST
-
-
-exports.trim = (string, characters) ->
-	if (string is null) or (string is undefined)
-		return string
-	_s.trim string, characters
-
-
-exports.nickname = (name, email) ->
+util.nickname = (name, email) ->
 	if name
 		if _s.contains name, ' '
 			return name[...name.indexOf(' ')]
@@ -19,9 +11,7 @@ exports.nickname = (name, email) ->
 	if email
 		return _.first email.split('@')
 
-exports.socialPatterns = 
+util.socialPatterns = 
 	linkedin: /^[0-9]*$/
 	twitter: /^[\w\-\.]*$/
 	facebook: /^[\w\-\.]*$/
-
-	

@@ -1,18 +1,5 @@
-@import 'vendor/jquery.pnotify.default'
-@import 'vendor/animate'
+@import '../node_modules/phrenetic/styles'
 
-
-@import 'nib'
-
-
-
-
-// Bootstrap variables.
-baseFontSize = 14px
-baseLineHeight = 20px
-navbarText = #777
-linkColor = #08c
-baseBorderRadius = 4px
 
 
 // Implicit Bootstrap abstractions.
@@ -21,9 +8,7 @@ horizontalMargin = baseLineHeight * 0.5
 
 // Global variables.
 smallFontSize = baseFontSize * 0.7
-
 lightBorder = #EEE
-
 redstar = #e51937
 
 
@@ -127,6 +112,18 @@ tagger(fontSize)
 
 // Layout.
 
+#initializing
+	color redstar
+	margin-top 90px	  // so lazy
+	text-align center
+	font-size baseFontSize * 15
+	img
+		position absolute
+		margin-left -150px
+		margin-top -150px
+		animation spin 40s infinite linear
+		z-index -1
+
 body
 	padding-top 70px	// Make the container go all the way to the bottom of the topbar.
 
@@ -134,6 +131,8 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
+		.no-results
+			background #f99
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
@@ -178,17 +177,54 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
-	.decorator
-		color redstar
-		text-align center
-		font-size baseFontSize * 15
-		img
-			position absolute
-			margin-left -150px
-			margin-top -150px
-			animation spin 40s infinite linear
-			z-index -1
 
+.results
+	margin-top	-1em
+	a:hover
+		text-decoration	none
+	.collapsed
+		display	none
+	.search-filters
+		a.toggle
+			color	#666
+			margin-left	0.5em
+		h3
+			padding-top	1.5em
+			margin	-10px
+		h4
+			padding-top	1em
+		.checkfilter
+			input
+				display	inline
+				margin 10px
+				margin-top 7px
+			label
+				display	inline
+				margin-left	1em
+		.sort
+			i
+				margin-left	20px
+			.icon-large:hover
+				text-decoration	none
+	.top
+		margin-top	1em
+		margin-bottom	5px
+		padding-bottom	5px
+		border-bottom: 1px solid #eee;
+		a.social
+			margin-right	4px
+		span.mailORintro
+			float	right
+			margin-right	1em
+	.pager
+		position relative
+		width 50%
+		left 50%
+		margin-left -25%
+		.pagenums
+			color	#069
+			margin-top	0.5em
+			display	inline-block
 
 
 .contact
@@ -260,17 +296,14 @@ body
 		.search .dropdown-menu
 			max-width 528px
 			margin-top 40px // TO-DO hackily hackface mchackerson
-
 .contacts
 	td
 		cursor pointer
-
 .tags
 	h1
 		margin-bottom horizontalMargin * 4
 	.bodies
 		text-align right
-
 .create
 	h1
 		margin-bottom horizontalMargin * 4
@@ -279,7 +312,6 @@ body
 			margin-bottom 0
 		.form-actions
 			margin-top horizontalMargin * 4
-
 .classify
 	.navbar
 		.navbar-inner
@@ -292,13 +324,13 @@ body
 		ul
 			display inline-block
 			margin 0
-			// .skip
-			// 	color navbarText
 	.star
 		text-align center
 		font-size 200px
 		color redstar
-
+.profile
+	.pager
+		margin 0
 .import
 	table
 		table-layout fixed
@@ -312,11 +344,17 @@ body
 
 
 
+
 // Components.
 
 .search
 	.search-results
 		display block	// Always show the dropdown.
+
+.loading
+	margin-top horizontalMargin * 10 // TO-DO so lazy, make this vertically centered. Possibly after I figure out if body will have height 100%
+	text-align center
+	font-size baseFontSize * 6
 
 #linking
 	.progress.progress1
