@@ -13,8 +13,12 @@ module.exports = (Ember, App, socket) ->
 		attributeBindings: ['role']
 		role: 'menu'
 		hasResults: (->
-				not _.isEmpty(@get('results'))
+				theyrethere = not _.isEmpty @get('results')
+				if @.get('waitingToDoSearch') and theyrethere
+					@doSearch()
+				theyrethere
 			).property 'results'
+
 		showResults: (->
 				@get('using') and @get('hasResults')
 			).property 'using', 'hasResults'
@@ -25,23 +29,20 @@ module.exports = (Ember, App, socket) ->
 				@$(':focus').blur()
 		submit: ->
 			@$(':focus').blur()
+			if @get 'hasResults'
+				@doSearch()
+			else @set 'waitingToDoSearch', true
+			return false   # Prevent a form submit.
 
-			allResults = Ember.ArrayProxy.create content: []
-			allResults.addObjects resultsType for resultsType in _.values(@get('results'))
-			allResults = allResults.map (item) ->
-				if item instanceof App.Contact
-					return item
-				item.get 'contact'
-			total = allResults.get('length')
-
+		doSearch: ->
+			@set 'waitingToDoSearch', false
+			total = @get 'results.length'
 			if total is 0
 				# TODO noresults  search.set 'noresults', true
 			else if total is 1
 				App.get('router').send 'goContact', allResults.get('firstObject')
 			else
 				App.get('router').send 'goResults', util.trim(@get('query'))
-
-			return false   # Prevent a form submit.
 
 		focusIn: ->
 			@set 'using', true

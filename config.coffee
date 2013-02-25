@@ -3,7 +3,8 @@ module.exports =
 
 
 	development:
-		HOST: 'localhost:5000'
+		HOST: '10.0.0.2:5000'
+		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
 
