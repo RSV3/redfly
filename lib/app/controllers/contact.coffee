@@ -171,7 +171,7 @@ module.exports = (Ember, App, socket) ->
 
 			mergeSearchView: App.SearchView.extend
 				conditions: (->
-						addedBy: App.user.get('id')
+						addedBy: App.user.get 'id'
 					).property()
 				excludes: (->
 						@get('parentView.selections').toArray().concat @get('controller.content')

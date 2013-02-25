@@ -15,29 +15,35 @@ module.exports = (Ember, App, socket) ->
 		toptags = []
 		for t of tags
 			lab = _s.capitalize(t)
-			if lab.length > 30
-				lab = lab.substr(0,30) + '...'
-			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }
-		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data' # this one's for krz
+			if lab.length > 30 then lab = lab.substr(0,30) + '...'						# truncate long tags
+			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
+		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data'		# and this one's for krz
 		tagnames = _.pluck tts, 'id'
-		context.set "#{whichTags}ToSelect", tts
-		context.set "#{whichTags}ToConsider", oT.filter (tag)=> _.contains tagnames, tag.get 'body'
+		context.set "#{whichTags}ToSelect", tts	# array of top checkboxes
+		context.set "#{whichTags}ToConsider", oT.filter (tag)=> _.contains tagnames, tag.get 'body'	# the Tags to keep track of
 
-	App.ResultController = Ember.ObjectController.extend
-		sortByProximity: (->
-			if App.user is rec.get('addedBy') then return 2
-			for user in rec.get('knows')
-				if user is App.user.get('content') then return 1
-		).property 'addedBy', 'knows'
+	sortFields =
+		influence: 'knows.length'
+		proximity: 'knows addedBy'
 
-		sortByInfluence: (->
-			@get 'knows.length'
-		).property 'knows'
+	sortFunc =
+		influence: (v, w)->
+			value = (v.get('knows.length') - w.get('knows.length'))
+			if (@get 'sortAscending')
+				return -value
+			value
+		proximity: (v, w)->
+			value = (v.get('addedBy.id') is App.user.get('id')) - (w.get('addedBy.id') is App.user.get('id'))
+			if not value
+				value = _.contains(v.get('knows').getEach('id'), App.user.get('id')) - _.contains(w.get('knows').getEach('id'), App.user.get('id'))
+			if (@get 'sortAscending')
+				return -value
+			value
 
 	App.ResultsController = Ember.ArrayController.extend App.Pagination,
 
-		itemController: App.ResultController
-		sortField: ''
+		itemController: 'result'
+		sortType: null
 		filteredItems: (->
 				if _.isEmpty (oC = @get('all'))
 					return []
@@ -58,21 +64,24 @@ module.exports = (Ember, App, socket) ->
 		content: (->
 				@set 'hiding', @get('all.length') - @get('filteredItems.length')
 				@set 'rangeStart', 0
-				Ember.ArrayProxy.create Ember.SortableMixin,
-					content: @get 'filteredItems'
-					sortProperties: [@get 'sortField']
-					sortAscending: @get 'sortDir'
-			).property 'filteredItems.@each', 'sortField'
+				if @get 'sortType'
+					Ember.ArrayController.create
+						content: @get 'filteredItems'
+						sortProperties: [sortFields[@get 'sortType']]
+						sortAscending: @get 'sortDir'
+						orderBy: sortFunc[@get 'sortType']
+				else
+					@get 'filteredItems'
+			).property 'filteredItems.@each', 'sortType', 'sortDir'
 
 		scrollUp: (->
 			$('html, body').animate {scrollTop: 0}, 666
 		).observes 'rangeStart'
 
-		setFilters: (->
+		setFilters: (->			# prepare the filters based on the sort results
 				years = []
 				oC = @get('all')
-				if not oC or not oC.get('length')
-					return
+				if not oC or not oC.get('length') then return		# don't bother if there's no data
 				max = _.max(oC.getEach('yearsExperience'), (y)-> y or 0)
 				if max > 0
 					for i in [1..max]
@@ -82,75 +91,36 @@ module.exports = (Ember, App, socket) ->
 					content: App.Tag.find {category: 'redstar', contact: $in: oC.getEach('id')}
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
-			).observes 'all.isLoaded'
+			).observes 'all.@each'
 
 	 	setOrgTags: (->
 				doTags 'orgTags', @
-			).observes 'orgTags.@each.isLoaded'
+			).observes 'orgTags.@each'
 	 	setIndTags: (->
 				doTags 'indTags', @
-			).observes 'indTags.@each.isLoaded'
+			).observes 'indTags.@each'
 
-		startplusone: (->
-			1 + parseInt(@get('rangeStart'), 10)
+		startplusone: (->							# this won't be necessary after the ember upgrade
+			1 + parseInt(@get('rangeStart'), 10)	# when we can make this a boundhelper
 		).property 'rangeStart'
 
-		toggleind: ()->
-			toggleFilter 'ind'
-
-		toggleorg: ()->
-			toggleFilter 'org'
+		toggleind: ()-> toggleFilter 'ind'		# toggle visbility of the industry tags
+		toggleorg: ()-> toggleFilter 'org'		# toggle visbility of the organisational tags
 
 		sort: (ev)->
-			dir = ($(ev.target).parent().hasClass 'up')
-			field = $(ev.target).parent().parent().attr 'id'
-			if @.get('sortDir') is dir and @.get('sortField') is field
-				@.set 'sortField', ''
-			else
-				@.set 'sortDir', dir
-				@.set 'sortField', field
+			resetting = $(ev.target).hasClass 'icon-large'				# krz won't like this,
+			$('.icon-large').removeClass 'icon-large'					# I decided this was more succinct
+			if not resetting then $(ev.target).addClass 'icon-large'
 
-		# 	###
-		# 	#TODO: I know this was very Wrong. I will change this to work The Ember Way.
-		# 	###
-		# 	sort: (ev) ->
-		# 		$t = $(ev.target)
-		# 		if $t.hasClass 'icon-2x'
-		# 			$t.removeClass 'icon-2x'
-		# 			$t.addClass 'icon-large'
-		# 			@set 'dir', 0
-		# 		else
-		# 			$('.sort .icon-2x').removeClass 'icon-2x'
-		# 			$t.addClass 'icon-2x'
-		# 			if $t.parent().parent().hasClass 'proximity'
-		# 				@weightF = (rec) ->
-		# 					if user is rec.get('addedBy') then return 2
-		# 					for user in rec.get('knows')
-		# 						if user is App.user.get('content') then return 1
-		# 					return 0
-		# 			else if $t.parent().parent().hasClass 'influence'
-		# 				@weightF = (rec) ->
-		# 					rec.get('knows.length')
-		# 			@set 'dir', (if $t.hasClass('icon-caret-up') then 1 else -1)
-
-
-		# doSort: ( ->
-		# 	oC = @.get('pluckedresults').slice 0
-		# 	if oC isnt null
-		# 		newC = oC.slice(0)
-		# 		if @dir and @weightF
-		# 			newC.sort((first,second) => @dir * (@weightF(first) - @weightF(second)))
-		# 		if newC.length isnt @results.length
-		# 			@set 'rangeStart', 0
-		# 		@set 'results', newC
-		# ).observes 'pluckedresults', 'dir'
-
-
+			dir = ($(ev.target).hasClass 'up')							# OK, no more jquery: state is on controller
+			type = $(ev.target).parent().attr 'class'
+			if @.get('sortDir') is dir and @.get('sortType') is type then type = null	# undo current sort option
+			@.set 'sortType', type
+			@.set 'sortDir', dir
 
 
 	App.ResultsView = Ember.View.extend
 		template: require '../../../templates/results'
 		classNames: ['results']
-
 		resultView: Ember.View.extend App.ContactMixin
 
