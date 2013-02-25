@@ -3,7 +3,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.TagView = Ember.View.extend
-		template: require '../../../../views/templates/components/tag'
+		template: require '../../../../templates/components/tag'
 		tagName: 'span'
 		classNames: ['tag']
 		search: ->

@@ -1,9 +1,8 @@
+models = require 'phrenetic/lib/server/models'
 validators = require('validator').validators
-
-db = require('./services').getDb()
 util = require './util'
 
-Schema = db.Schema
+Schema = models.db.Schema
 Types = Schema.Types
 
 
@@ -75,32 +74,23 @@ MergeSchema = new Schema
 
 
 
-common = (schema) ->
-	schema.add
-		date: type: Date, required: true, default: Date.now
-	schema.set 'toJSON', getters: true	# To make 'id' included in json serialization for the API.
-
-
-excludeSchema.plugin common
-UserSchema.plugin common
-
-ContactSchema.plugin common
-TagSchema.plugin common
-NoteSchema.plugin common
-MailSchema.plugin common
-LinkedInSchema.plugin common
-
-MergeSchema.plugin common
+excludeSchema.plugin models.common
+UserSchema.plugin models.common
+ContactSchema.plugin models.common
+TagSchema.plugin models.common
+NoteSchema.plugin models.common
+MailSchema.plugin models.common
+LinkedInSchema.plugin models.common
+MergeSchema.plugin models.common
 
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
 
-exports.User = db.model 'User', UserSchema
-exports.Contact = db.model 'Contact', ContactSchema
-exports.Tag = db.model 'Tag', TagSchema
-exports.Note = db.model 'Note', NoteSchema
-exports.Mail = db.model 'Mail', MailSchema
-
-exports.Merge = db.model 'Merge', MergeSchema
-exports.LinkedIn = db.model 'LinkedIn', LinkedInSchema
+exports.User = models.db.model 'User', UserSchema
+exports.Contact = models.db.model 'Contact', ContactSchema
+exports.Tag = models.db.model 'Tag', TagSchema
+exports.Note = models.db.model 'Note', NoteSchema
+exports.Mail = models.db.model 'Mail', MailSchema
+exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
+exports.Merge = models.db.model 'Merge', MergeSchema

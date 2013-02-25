@@ -1,3 +1,9 @@
+- possibly move linkedin fields from contact to linkedin, particualrly if company and position are just the head of the arrays
+  - update the app models too
+  - make there be a linkedin model clientside
+- update merge for the new contact fields and derived data (linkedin contact)
+
+
 validation utility:
 - filters should be able to handle whatever a user could put (or not put) in an input field, so preeeetty much anything.
 - validate functions intentionally don't allow returning arrays of errors, because the error messages are intended to be displayed on a field-by-field

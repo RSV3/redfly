@@ -1,0 +1,39 @@
+form.navbar-search.pull-left(autocomplete='off')
+	| {{view view.searchBoxView placeholder="Search" viewName="searchBoxViewInstance"}}
+	| {{#if view.info}}
+	i.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-html='true', data-title='Search', data-content='Find contacts by name, email, tag, etc. Search terms may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
+	| {{/if}}
+| {{#if view.showResults}}
+ul.dropdown-menu.search-results
+	| {{#if view.results.name}}
+	.nav-header Names
+	| {{#each view.results.name}}
+	li.no-resultsz
+		| <a href="#" {{action select this target="view"}}>{{canonicalName}}</a>
+	| {{/each}}
+	li.divider
+	| {{/if}}
+	| {{#if view.results.email}}
+	.nav-header Emails
+	| {{#each view.results.email}}
+	li
+		| <a href="#" {{action select this target="view"}}>{{canonicalName}} &mdash; {{email}}</a>
+	| {{/each}}
+	li.divider
+	| {{/if}}
+	| {{#if view.results.tag}}
+	.nav-header Matches in tags
+	| {{#each view.results.tag}}
+	li
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; {{body}}</a>
+	| {{/each}}
+	li.divider
+	| {{/if}}
+	| {{#if view.results.note}}
+	.nav-header Matches in notes
+	| {{#each view.results.note}}
+	li
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; "{{preview}}"</a>
+	| {{/each}}
+	| {{/if}}
+| {{/if}}

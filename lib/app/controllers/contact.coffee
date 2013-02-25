@@ -3,6 +3,7 @@ module.exports = (Ember, App, socket) ->
 	util = require '../util'
 
 
+
 	App.ContactController = Ember.ObjectController.extend
 		histories: (->
 				# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
@@ -21,10 +22,6 @@ module.exports = (Ember, App, socket) ->
 					moment = require 'moment'
 					moment(sent).fromNow()
 			).property 'histories.lastObject.sent'
-		isKnown: (->
-				@get('knows')?.find (user) ->
-					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
-			).property 'knows.@each.id'
 		disableAdd: (->
 				not util.trim @get('currentNote')
 			).property 'currentNote'
@@ -47,36 +44,17 @@ module.exports = (Ember, App, socket) ->
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
-		gmailSearch: (->
-				encodeURI '//gmail.com#search/to:' + @get('email')
-			).property 'email'
-		directMailto: (->
-				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
-			).property 'canonicalName', 'email'
-		introMailto: (->
-				carriage = '%0D%0A'
-				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use util.baseUrl here instead later
-				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
-					'?subject=You know ' + @get('nickname') + ', right?' +
-					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
-					'This fella right here:' + carriage + carriage + encodeURI(url) +
-					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
-		linkedinMail: (->
-				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
-			).property 'linkedin'
 
 
-	App.ContactView = Ember.View.extend
-		template: require '../../../views/templates/contact'
+	App.ContactView = Ember.View.extend App.ContactMixin,
+		template: require '../../../templates/contact'
 		classNames: ['contact']
 
 		showMerge: ->
 			@get('mergeViewInstance')._launch()
 
 		editView: Ember.View.extend
-			template: require '../../../views/templates/components/edit'
+			template: require '../../../templates/components/edit'
 			tagName: 'span'
 			classNames: ['edit', 'overlay']
 			primary: ((key, value) ->
@@ -130,7 +108,7 @@ module.exports = (Ember, App, socket) ->
 			initiateMerge: ->
 				@toggle()
 				@get('parentView').showMerge()
-				
+
 
 			itemView: Ember.View.extend
 				classNames: ['row-fluid']
@@ -167,7 +145,7 @@ module.exports = (Ember, App, socket) ->
 					icon: 'icon-signin'
 					before_open: (pnotify) =>
 						pnotify.css top: '60px'
-				
+
 				selections = @get 'selections'
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), =>
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data. Issue
@@ -193,7 +171,7 @@ module.exports = (Ember, App, socket) ->
 
 			mergeSearchView: App.SearchView.extend
 				conditions: (->
-						addedBy: App.user.get('id')
+						addedBy: App.user.get 'id'
 					).property()
 				excludes: (->
 						@get('parentView.selections').toArray().concat @get('controller.content')
@@ -201,35 +179,7 @@ module.exports = (Ember, App, socket) ->
 				select: (event) ->
 					@get('parentView.selections').pushObject event.context
 
-		introView: Ember.View.extend
-			tagName: 'i'
-			didInsertElement: ->
-				@set 'tooltip', $(@$()).tooltip
-					title: null	# Placeholder, populate later.
-					placement: 'bottom'
-			updateTooltip: (->
-					@get('tooltip').data('tooltip').options.title = 'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
-				).observes 'controller.addedBy.nickname'
-			attributeBindings: ['rel']
-			rel: 'tooltip'
-
-
-		socialView: Ember.View.extend
-			prefixes: (->
-					linkedin: 'www.linkedin.com/profile/view?id='
-					twitter: 'twitter.com/'
-					facebook: 'www.facebook.com/'
-				).property()
-			openFacebook: ->
-				@_open 'facebook'
-			openLinkedin: ->
-				@_open 'linkedin'
-			openTwitter: ->
-				@_open 'twitter'
-			_open: (name) ->
-				if network = @get('controller.' + name)
-					window.open 'http://' + @get('prefixes')[name] + network
-
+		socialView: App.SocialView.extend
 			editView: Ember.View.extend
 				tagName: 'span'
 				classNames: ['overlay', 'edit-social']
@@ -258,12 +208,9 @@ module.exports = (Ember, App, socket) ->
 					@set 'working', false
 
 
-		noteView: Ember.View.extend
-			classNames: ['media']
-			didInsertElement: ->
-				if @get 'controller.animate'
-					@set 'controller.animate', false
-					@$().addClass 'animated flipInX'
+		noteView: App.NoteView
+
+		introView: App.IntroView
 
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']

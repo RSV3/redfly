@@ -1,8 +1,13 @@
 module.exports = (Ember, App, socket) ->
 
 	App.TagsController = Ember.ArrayController.extend App.Pagination,
-		content: []
+		content: (->
+			Ember.ArrayProxy.create Ember.SortableMixin,
+				content: @get 'stats'
+				sortProperties: ['count']
+				sortAscending: false
+		).property 'stats'
 
 	App.TagsView = Ember.View.extend
-		template: require '../../../views/templates/tags'
+		template: require '../../../templates/tags'
 		classNames: ['tags']

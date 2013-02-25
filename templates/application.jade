@@ -1,0 +1,157 @@
+// TODO do connection alert if possible, remove .connection styles if not
+// <ui:connectionAlert>
+
+.navbar.navbar-inverse.navbar-fixed-top
+	.navbar-inner
+		.container
+			a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+				span.icon-bar
+				span.icon-bar
+				span.icon-bar
+			| <a class="brand" {{action goHome href=true}}>Redfly</a>
+			| {{#if App.user.content}}
+			.nav-collapse.collapse
+				ul.nav
+					//-
+						li.
+							<a {{action goHome href=true}}>Home</a>
+					| <li {{bindAttr class="view.atClassify:active"}}>
+					|	<a {{action goClassify href=true}}>Classify</a>
+					| </li>
+					//- | <li {{bindAttr class="view.atCreate:active"}}>
+					//- |	<a {{action goCreate href=true}}>Create</a>
+					//- | </li>
+					//- | <li {{bindAttr class="view.atImport:active"}}>
+					//- |	<a {{action goImport href=true}}>Bulk Upload</a>
+					//- | </li>
+					| <li {{bindAttr class="view.atLeaderboard:active"}}>
+					|	<a {{action goLeaderboard href=true}}>Users</a>
+					| </li>
+					| <li {{bindAttr class="view.atContacts:active"}}>
+					|	<a {{action goContacts href=true}}>Contacts</a>
+					| </li>
+					| <li {{bindAttr class="view.atTags:active"}}>
+					|	<a {{action goTags href=true}}>Tags</a>
+					| </li>
+					// <li><a {{action goReport href=true}}>Report a bug</a></li>
+					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
+			| {{/if}}
+			.pull-right
+				| {{#unless App.user.content}}
+				a.btn(href='/authorize') Log In
+				| {{else}}
+				.btn-group
+					| <a class="btn" {{action goUserProfile href=true}}>
+					i.icon-user
+					|  {{App.user.name}}
+					| </a>
+					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
+						span.caret
+					ul.dropdown-menu(role='menu')
+						li
+							| <a {{action goUserProfile href=true}}>Profile</a>
+						li
+							| <a {{action goCreate href=true}}>Create</a>
+						li
+							| <a {{action goClassify href=true}}>Classify</a>
+						li
+							| <a {{action goImport href=true}}>Bulk Upload</a>
+						li.divider
+						li
+							a(href='/linker')
+								| Sync Linked
+								i.icon-linkedin-sign.icon-large
+						li.divider
+						li
+							a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
+						li.divider
+						li
+							| <a href="#" {{action doLogout}}>Log Out</a>
+				| {{/unless}}
+				
+.container
+	.row-fluid
+		.span3
+			.well.activity
+				| {{#unless App.user.content}}
+				.nav-header This Week In Summary
+				.summary
+					.breadcrumb
+						| Contacts queued
+						span.pull-right.badge.badge-info {{contactsQueued}}
+					.breadcrumb
+						| Tags created
+						span.pull-right.badge.badge-info {{tagsCreated}}
+					.breadcrumb
+						| Notes authored
+						span.pull-right.badge.badge-info {{notesAuthored}}
+					| {{#if mostVerboseTag}}
+					.breadcrumb
+						| Most verbose tag
+						.own-line "{{mostVerboseTag}}"
+					| {{/if}}
+					.breadcrumb
+						| Most alarming email subject
+						.own-line
+							em "Re: Do you remember eating this??"
+					.breadcrumb
+						| Most active user
+						.own-line
+							strong {{mostActiveUser}}
+				| {{else}}
+				.nav-header Activity Feed
+				.feed
+					| {{#each feed}}
+					| {{#view view.feedItemView}}
+					| {{#if typeInitialContact}}
+					| <a {{action goContact this href=true}}>
+					h4 {{canonicalName}}
+					| </a>
+					p
+						| Added by 
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a> 
+						| on {{added}}
+					| {{view App.TaggerView contactBinding="this"}}
+					| {{/if}}
+					| {{#if typeContact}}
+					| <a {{action goContact this href=true}}>
+					h4 {{canonicalName}}
+					| </a>
+					p
+						| Was just added by 
+						| <a {{action goProfile addedBy href=true}}>{{addedBy.canonicalName}}</a>
+						| !
+					| {{view App.TaggerView contactBinding="this"}}
+					| {{/if}}
+					| {{#if typeLinkedin}}
+					| <a {{action goProfile updater href=true}}>{{updater.canonicalName}}</a> 
+					| augmented <a {{action goContact this href=true}}>{{canonicalName}}</a> with Linked
+					i.icon-linkedin-sign
+					|  data.
+					| {{/if}}
+					| {{#if typeTag}}
+					| <a {{action goProfile creator href=true}}>{{creator.canonicalName}}</a> 
+					| added the tag 
+					em "{{body}}" 
+					| to 
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
+					| .
+					| {{/if}}
+					| {{#if typeNote}}
+					| <a {{action goProfile author href=true}}>{{author.canonicalName}}</a> 
+					| wrote a note about 
+					| <a {{action goContact contact href=true}}>{{contact.canonicalName}}</a>
+					| : "{{preview}}"
+					| {{/if}}
+					| {{/view}}
+					| {{/each}}
+				| {{/unless}}
+		.span9
+
+
+			| {{outlet}}
+
+
+	hr.footer-line
+	footer
+		p © Redstar 2012

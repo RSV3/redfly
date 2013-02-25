@@ -5,5 +5,5 @@ module.exports = (Ember, App, socket) ->
 		sortProperties: ['name']
 	
 	App.LeaderboardView = Ember.View.extend
-		template: require '../../../views/templates/leaderboard'
+		template: require '../../../templates/leaderboard'
 		# classNames: ['leaderboard']

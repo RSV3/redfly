@@ -3,22 +3,6 @@ module.exports = (DS, App) ->
 	util = require '../util'
 
 
-	App.adapter.registerTransform 'date',
-		fromJSON: (value) ->
-			if value
-				date = new Date value
-				throw new Error 'Invalid date.' if isNaN date
-				return date
-		toJSON: (value) ->
-			value
-			
-	App.adapter.registerTransform 'array',
-		fromJSON: (value) ->
-			value
-		toJSON: (value) ->
-			value
-
-
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
 		email: DS.attr 'string'
