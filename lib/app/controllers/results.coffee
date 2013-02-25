@@ -2,64 +2,136 @@ module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
+	toggleFilter = (which)->
+		$("i.toggle#{which}").toggleClass 'icon-caret-up icon-caret-down'
+		$d = $("div.toggle#{which}")
+		if ($d.toggleClass 'collapsed').hasClass 'collapsed' then $d.hide() else $d.show()
 
-	App.ResultsController = Ember.Controller.extend
+	doTags = (whichTags, context)->
+		oT = context.get(whichTags)
+		if not oT or not oT.get('length')
+			return
+		tags = _.countBy oT.getEach('body'), (item)-> item
+		toptags = []
+		for t of tags
+			lab = _s.capitalize(t)
+			if lab.length > 30
+				lab = lab.substr(0,30) + '...'
+			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }
+		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data' # this one's for krz
+		tagnames = _.pluck tts, 'id'
+		context.set "#{whichTags}ToSelect", tts
+		context.set "#{whichTags}ToConsider", oT.filter (tag)=> _.contains tagnames, tag.get 'body'
+
+	App.ResultController = Ember.ObjectController.extend
+		sortByProximity: (->
+			if App.user is rec.get('addedBy') then return 2
+			for user in rec.get('knows')
+				if user is App.user.get('content') then return 1
+		).property 'addedBy', 'knows'
+
+		sortByInfluence: (->
+			@get 'knows.length'
+		).property 'knows'
+
+	App.ResultsController = Ember.ArrayController.extend App.Pagination,
+
+		itemController: App.ResultController
+		sortField: ''
 		filteredItems: (->
-				if not @get('all')
+				if _.isEmpty (oC = @get('all'))
 					return []
-				@get('all').filter (item) ->
-					true	# TODO
-			).property 'all.@each'
-		sortedItems: (->
+				oC.filter (item) =>
+					if @years and not (item.get('yearsExperience') >= @years)
+						return false
+					noTags = true
+					for prefix in ['org', 'ind']
+						filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
+						if filterTags.length
+							noTags = false
+							for t in @get("#{prefix}TagsToConsider")
+								if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
+									return true
+					noTags
+			).property 'all.@each', 'years', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+		hiding: 0
+		content: (->
+				@set 'hiding', @get('all.length') - @get('filteredItems.length')
+				@set 'rangeStart', 0
 				Ember.ArrayProxy.create Ember.SortableMixin,
-					content: @get('filteredItems')
-					sortProperties: ['email']
-					sortAscending: true
-			).property 'filteredItems.@each'
-		paginator: (->
-				Ember.ArrayProxy.create App.Pagination,
-					content: @get('sortedItems')
-			).property 'sortedItems.@each'
+					content: @get 'filteredItems'
+					sortProperties: [@get 'sortField']
+					sortAscending: @get 'sortDir'
+			).property 'filteredItems.@each', 'sortField'
 
-		sorts: (->
-				['name', 'email', 'added']
-			).property()
-		experience: (->
-				max = _.max(@get('all').getEach('yearsExperience')) or 0
-				return (Ember.Object.create(label: 'at least ' + i + ' years', years: i) for i in [1..max])
-			).property 'all.@each'
+		scrollUp: (->
+			$('html, body').animate {scrollTop: 0}, 666
+		).observes 'rangeStart'
 
-		sortUp: (event) ->
-			@set 'sortedItems.sortProperties', [event.context]
-			@set 'sortedItems.sortAscending', true
-		sortDown: (event) ->
-			@set 'sortedItems.sortProperties', [event.context]
-			@set 'sortedItems.sortAscending', false
+		setFilters: (->
+				years = []
+				oC = @get('all')
+				if not oC or not oC.get('length')
+					return
+				max = _.max(oC.getEach('yearsExperience'), (y)-> y or 0)
+				if max > 0
+					for i in [1..max]
+						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
+				@set 'yearsToSelect', years
+				@set 'orgTags', Ember.ArrayProxy.create
+					content: App.Tag.find {category: 'redstar', contact: $in: oC.getEach('id')}
+				@set 'indTags', Ember.ArrayProxy.create
+					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
+			).observes 'all.isLoaded'
 
+	 	setOrgTags: (->
+				doTags 'orgTags', @
+			).observes 'orgTags.@each.isLoaded'
+	 	setIndTags: (->
+				doTags 'indTags', @
+			).observes 'indTags.@each.isLoaded'
 
+		startplusone: (->
+			1 + parseInt(@get('rangeStart'), 10)
+		).property 'rangeStart'
 
-	# 	###
-	# 	#TODO: I know this was very Wrong. I will change this to work The Ember Way.
-	# 	###
-	# 	sort: (ev) ->
-	# 		$t = $(ev.target)
-	# 		if $t.hasClass 'icon-2x'
-	# 			$t.removeClass 'icon-2x'
-	# 			$t.addClass 'icon-large'
-	# 			@set 'dir', 0
-	# 		else
-	# 			$('.sort .icon-2x').removeClass 'icon-2x'
-	# 			$t.addClass 'icon-2x'
-	# 			if $t.parent().parent().hasClass 'proximity'
-	# 				@weightF = (rec) ->
-	# 					if user is rec.get('addedBy') then return 2
-	# 					for user in rec.get('knows')
-	# 						if user is App.user.get('content') then return 1
-	# 					return 0
-	# 			else if $t.parent().parent().hasClass 'influence'
-	# 				@weightF = (rec) ->
-	# 					rec.get('knows.length')
-	# 			@set 'dir', (if $t.hasClass('icon-caret-up') then 1 else -1)
+		toggleind: ()->
+			toggleFilter 'ind'
+
+		toggleorg: ()->
+			toggleFilter 'org'
+
+		sort: (ev)->
+			dir = ($(ev.target).parent().hasClass 'up')
+			field = $(ev.target).parent().parent().attr 'id'
+			if @.get('sortDir') is dir and @.get('sortField') is field
+				@.set 'sortField', ''
+			else
+				@.set 'sortDir', dir
+				@.set 'sortField', field
+
+		# 	###
+		# 	#TODO: I know this was very Wrong. I will change this to work The Ember Way.
+		# 	###
+		# 	sort: (ev) ->
+		# 		$t = $(ev.target)
+		# 		if $t.hasClass 'icon-2x'
+		# 			$t.removeClass 'icon-2x'
+		# 			$t.addClass 'icon-large'
+		# 			@set 'dir', 0
+		# 		else
+		# 			$('.sort .icon-2x').removeClass 'icon-2x'
+		# 			$t.addClass 'icon-2x'
+		# 			if $t.parent().parent().hasClass 'proximity'
+		# 				@weightF = (rec) ->
+		# 					if user is rec.get('addedBy') then return 2
+		# 					for user in rec.get('knows')
+		# 						if user is App.user.get('content') then return 1
+		# 					return 0
+		# 			else if $t.parent().parent().hasClass 'influence'
+		# 				@weightF = (rec) ->
+		# 					rec.get('knows.length')
+		# 			@set 'dir', (if $t.hasClass('icon-caret-up') then 1 else -1)
 
 
 		# doSort: ( ->
@@ -76,113 +148,9 @@ module.exports = (Ember, App, socket) ->
 
 
 
-	# App.ResultsController = Ember.ArrayController.extend App.Pagination,
-	# 	itemController: 'result'
-	# 	experience: []
-	# 	tagsToSelect: []
-	# 	check: {}
-	# 	yearsFilter: 0
-	# 	dir: null
-	# 	weightF: null
-	# 	results: null
-
-	# 	gottags: {}
-
-	# 	# TODO do in setupFilters
-	# 	getTags: () ->
-	# 		o = {}
-	# 		toptags = []			# build a list of the most common tags to filter by
-	# 		newtags = []			# reduce the list of gottags to those used in filters
-	# 		if (oC = @results)
-	# 			contactIDs = _.pluck(oC.slice(0), 'id')
-
-	# 			@gottags = Ember.ArrayProxy.create
-	# 				content: App.Tag.find({category: 'redstar', contact: $in: contactIDs})
-	# 			@gottags.addObserver('content.isLoaded', this, () ->
-	# 				tags = @gottags.slice(0)
-	# 				if tags.length
-	# 					for t in tags
-	# 						b = t.get 'body'
-	# 						if not o[b] then o[b]=1
-	# 						else o[b]++
-	# 					for t of o
-	# 						id = t
-	# 						lab = _s.capitalize(t)
-	# 						if lab.length > 40
-	# 							lab = lab.substr(0,40) + '...'
-	# 						toptags.push { chkboxdata: {id:id, checked:false, label:lab}, count: o[t] }
-	# 					toptags.sort((a,b) -> b.count - a.count)
-	# 					toptags = _.pluck toptags.slice(0,7), 'chkboxdata'
-
-	# 					tagnames = []
-	# 					for t in toptags
-	# 						tagnames.push t.id
-	# 					for t in tags
-	# 						if _.contains tagnames, t.get('body')
-	# 							newtags.push t
-	# 					@gottags = newtags
-
-	# 					@set 'tagsToSelect', toptags
-	# 					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-	# 					if search
-	# 						search.set 'searching', false
-	# 			)
-
-
-
-
-
-	# 	tagFilter: (oldc, newc, filterF, finalF) ->
-	# 		if _.isEmpty oldc
-	# 			return finalF newc
-	# 		c = oldc.shift()
-	# 		if filterF(c) then newc.push c
-	# 		_.defer =>
-	# 			@tagFilter oldc, newc, filterF, finalF		# defer each contact to avoid compute bind
-
-	# 	setTags: (oC) ->
-	# 		filterTags = []
-	# 		for item in @get 'tagsToSelect'
-	# 			if item.checked
-	# 				filterTags.push item.id
-	# 		if oC and filterTags.length
-	# 			search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-	# 			if search
-	# 				search.set 'searching', true
-	# 			newC = []
-	# 			oldC = oC.slice 0
-	# 			@tagFilter oldC, newC, (c) =>	# needed a defer-able async mechanism to avoid compute bound loop
-	# 				for t in @gottags
-	# 					if t.get('contact.id') is c.get('id') and  _.contains(filterTags, t.get('body'))
-	# 						return true
-	# 				return false
-	# 			, (newc) =>
-	# 				@set 'pluckedresults', newc
-	# 				if search
-	# 					search.set 'searching', false
-	# 		else
-	# 			@set 'pluckedresults', oC
-
-	# 	setYears: (oC) ->
-	# 		newC = []
-	# 		if oC and @yearsFilter
-	# 			for c in oC
-	# 				if c.get('yearsExperience') >= @yearsFilter
-	# 					newC.push c
-	# 		else
-	# 			newC = oC
-	# 		newC
-
-	# 	changeFilters: (->		# note: defer for prompt event feedback (checkbox tick)
-	# 			_.defer =>
-	# 				@setTags @setYears @backupresults.slice 0
-	# 			false
-	# 		).observes 'yearsFilter', 'tagsToSelect.@each.checked'
-
-
 	App.ResultsView = Ember.View.extend
 		template: require '../../../templates/results'
 		classNames: ['results']
 
-		resultView: Ember.View.extend App.ContactMixin,
-			classNames: ['contact']
+		resultView: Ember.View.extend App.ContactMixin
+
