@@ -41,7 +41,6 @@ module.exports = (Ember, App, socket) ->
 			value
 
 	App.ResultsController = Ember.ArrayController.extend App.Pagination,
-
 		itemController: 'result'
 		sortType: null
 		filteredItems: (->

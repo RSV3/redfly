@@ -37,6 +37,7 @@ module.exports = (Ember, App, socket) ->
 			# setTimeout ->
 			# 		throw new Error 'penis penis'
 			# 	, 3000
+
 			socket.on 'feed', (data) =>
 				type = data.type
 				model = type
@@ -78,3 +79,4 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'li'
 			select: (event) ->
 				App.get('router').send 'goContact', event.context
+

@@ -179,6 +179,20 @@ module.exports = (Ember, App, socket) ->
 				select: (event) ->
 					@get('parentView.selections').pushObject event.context
 
+		positionView: Ember.View.extend
+			editView: Ember.View.extend
+				tagName: 'span'
+				classNames: ['overlay', 'edit-position']
+				field: Ember.TextField
+				toggle: ->
+					if not @toggleProperty('show')
+						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.
+				save: ->
+					@set 'working', true
+					App.store.commit()
+					@toggleProperty 'show'
+					@set 'working', false
+
 		socialView: App.SocialView.extend
 			editView: Ember.View.extend
 				tagName: 'span'
