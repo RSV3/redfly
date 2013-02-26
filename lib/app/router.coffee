@@ -7,12 +7,6 @@ module.exports = (Ember, App, socket) ->
 	interceptedPath = null	# TO-DO this doesn't work any more. The paradigm is flawed: we have to save this to the session to survive auth flow.
 
 	Ember.Router.reopen
-		connectem: (outlet, data) ->
-			@get('applicationController').connectOutlet outlet, data
-			if outlet is 'results'
-				@get('applicationController').connectOutlet 'sidebar', 'SearchFilter'
-			else
-				@get('applicationController').connectOutlet 'sidebar', 'feed'
 		transitionTo: (path, context) ->
 			_ = require 'underscore'
 
@@ -43,38 +37,12 @@ module.exports = (Ember, App, socket) ->
 			index: Ember.Route.extend
 				route: '/'
 				connectOutlets: (router) ->
-					router.connectem 'home'
+					router.get('applicationController').connectOutlet 'home'
 
 			profile: Ember.Route.extend
 				route: '/profile/:user_id'
 				connectOutlets: (router, user) ->
-					router.connectem 'profile', user
-
-			searching: Ember.Route.extend
-				route: '/searching'
-				enter: (manager) ->
-					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-					if search
-						search.set 'searching', true
-				redirectsTo: 'results'
-
-			results: Ember.Route.extend
-				route: '/results'
-				connectOutlets: (router) ->
-					search = App.get 'router.applicationView.spotlightSearchViewInstance.searchBoxViewInstance'
-					if search
-						if search.get 'searching'
-							socket.emit 'fullsearch', query: search.get('value'), moreConditions: search.get('parentView.conditions'), (results) =>
-								if results and results.length is 1
-									router.route '/contact/'+ results[0]
-								else if results and results.length
-									router.connectem 'results'
-									router.get('resultsController').set 'results', Ember.ArrayProxy.create 
-										content: App.Contact.find(_id: $in: results)
-								else
-									search.set 'noresults', true
-						else
-							router.connectem 'results'
+					router.get('applicationController').connectOutlet 'profile', user
 
 			contact: Ember.Route.extend
 				# TODO bring back all email serialization, also:
@@ -82,7 +50,7 @@ module.exports = (Ember, App, socket) ->
 				# route: '/contact/:identity'
 				route: '/contact/:contact_id'
 				connectOutlets: (router, contact) ->
-					router.connectem 'contact', contact
+					router.get('applicationController').connectOutlet 'contact', contact
 				# TODO try just doing 'contact_email' instead. Except that now it's 'emails'
 				# serialize: (router, context) ->
 				# 	identity: context.get 'email'
@@ -93,27 +61,31 @@ module.exports = (Ember, App, socket) ->
 				# 		return App.Contact.find(email: identity)
 				# 	App.Contact.find identity
 
+			results: Ember.Route.extend
+				route: '/results/:query'
+				connectOutlets: (router, query) ->
+					router.get('applicationController').connectOutlet 'results'
+					socket.emit 'fullSearch', query: query, (results) =>
+						router.get('resultsController').set 'all', App.Contact.find _id: $in: results
+				serialize: (router, context) ->
+					query: context
+				deserialize: (router, params) ->
+					params.query
+
 			contacts: Ember.Route.extend
 				route: '/contacts'
 				connectOutlets: (router) ->
-					router.connectem 'contacts'
-					###
-					fullContent = Ember.ArrayProxy.create Ember.SortableMixin,
-						content: App.Contact.find(added: $exists: true)
-						sortProperties: ['added']
-						sortAscending: false
-					router.get('contactsController').set 'content', fullContent
-					###
+					router.get('applicationController').connectOutlet 'contacts'
 
 			leaderboard: Ember.Route.extend
 				route: '/leaderboard'
 				connectOutlets: (router) ->
-					router.connectem 'leaderboard', App.User.find()
+					router.get('applicationController').connectOutlet 'leaderboard', App.User.find()
 
 			tags: Ember.Route.extend
 				route: '/tags'
 				connectOutlets: (router) ->
-					router.connectem 'tags'
+					router.get('applicationController').connectOutlet 'tags'
 					socket.emit 'tags.stats', (stats) =>
 						for stat in stats
 							stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
@@ -122,30 +94,29 @@ module.exports = (Ember, App, socket) ->
 			report: Ember.Route.extend
 				route: '/report'
 				connectOutlets: (router) ->
-					router.connectem 'report'
-
+					router.get('applicationController').connectOutlet 'report'
 
 			userProfile: Ember.Route.extend
 				route: '/profile'
 				connectOutlets: (router) ->
-					router.connectem 'profile', App.user
+					router.get('applicationController').connectOutlet 'profile', App.user
 					router.get('profileController').set 'self', true
 
 			create: Ember.Route.extend
 				route: '/create'
 				connectOutlets: (router) ->
-					router.connectem 'create'
+					router.get('applicationController').connectOutlet 'create'
 
 			classify: Ember.Route.extend
 				route: '/classify'
 				connectOutlets: (router) ->
-					router.connectem 'classify'
+					router.get('applicationController').connectOutlet 'classify'
 					router.get('classifyController').connectOutlet 'contact'
 
 			import: Ember.Route.extend
 				route: '/import'
 				connectOutlets: (router) ->
-					router.connectem 'import'
+					router.get('applicationController').connectOutlet 'import'
 
 
 			load: Ember.Route.extend
@@ -189,7 +160,7 @@ module.exports = (Ember, App, socket) ->
 			goHome: Ember.Route.transitionTo 'index'
 			goProfile: Ember.Route.transitionTo 'profile'
 			goContact: Ember.Route.transitionTo 'contact'
-			goSearch: Ember.Route.transitionTo 'searching'
+			goResults: Ember.Route.transitionTo 'results'
 			goLeaderboard: Ember.Route.transitionTo 'leaderboard'
 			goContacts: Ember.Route.transitionTo 'contacts'
 			goTags: Ember.Route.transitionTo 'tags'

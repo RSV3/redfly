@@ -46,7 +46,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'currentNote', null
 
 
-	App.ContactView = Ember.View.extend App.SomeContactMethods,
+	App.ContactView = Ember.View.extend App.ContactMixin,
 		template: require '../../../templates/contact'
 		classNames: ['contact']
 
@@ -108,7 +108,7 @@ module.exports = (Ember, App, socket) ->
 			initiateMerge: ->
 				@toggle()
 				@get('parentView').showMerge()
-				
+
 
 			itemView: Ember.View.extend
 				classNames: ['row-fluid']
@@ -145,7 +145,7 @@ module.exports = (Ember, App, socket) ->
 					icon: 'icon-signin'
 					before_open: (pnotify) =>
 						pnotify.css top: '60px'
-				
+
 				selections = @get 'selections'
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), =>
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data. Issue
@@ -171,7 +171,7 @@ module.exports = (Ember, App, socket) ->
 
 			mergeSearchView: App.SearchView.extend
 				conditions: (->
-						addedBy: App.user.get('id')
+						addedBy: App.user.get 'id'
 					).property()
 				excludes: (->
 						@get('parentView.selections').toArray().concat @get('controller.content')
