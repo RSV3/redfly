@@ -3,7 +3,7 @@ module.exports = (Ember, App, socket) ->
 	App.TagsController = Ember.ArrayController.extend App.Pagination,
 		content: (->
 			Ember.ArrayProxy.create Ember.SortableMixin,
-				content: @stats
+				content: @get 'stats'
 				sortProperties: ['count']
 				sortAscending: false
 		).property 'stats'

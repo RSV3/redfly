@@ -144,7 +144,7 @@ module.exports = (app, route) ->
 								# else
 								# 	for k, v of data.moreConditions
 								# 		conditions['contact.' + k] = v
-								
+
 								models[model].find(conditions).limit(limit).exec @parallel()
 								return undefined	# Step library is insane.
 						, @parallel()
@@ -159,7 +159,7 @@ module.exports = (app, route) ->
 				return fn results
 
 
-	route 'fullsearch', (fn, data) ->
+	route 'fullSearch', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results=[]) ->
 			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
@@ -181,7 +181,6 @@ module.exports = (app, route) ->
 				doc.id
 			return results
 		, 10	# limit
-
 
 	route 'verifyUniqueness', (fn, data) ->
 		field = data.field + 's'
