@@ -3,7 +3,7 @@ module.exports =
 
 
 	development:
-		HOST: '10.0.0.2:5000'
+		HOST: 'localhost:5000'
 		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
@@ -20,6 +20,7 @@ module.exports =
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
+		NUDGE_DAYS: 'Monday Thursday'
 
 
 	# test:
@@ -46,7 +47,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
 
-		NUDGE_DAY: 'Thursday'
+		NUDGE_DAYS: 'Tuesday Thursday'
 
 
 	production:
@@ -65,4 +66,4 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
-		NUDGE_DAY: 'Friday'
+		NUDGE_DAYS: 'Tuesday Friday'

@@ -96,7 +96,6 @@ module.exports = (Ember, App, socket) ->
 				connectOutlets: (router) ->
 					router.get('applicationController').connectOutlet 'report'
 
-
 			userProfile: Ember.Route.extend
 				route: '/profile'
 				connectOutlets: (router) ->
