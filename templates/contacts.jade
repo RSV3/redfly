@@ -10,16 +10,14 @@
 				th Added On
 				th Added By
 		tbody
-			| {{#each controller}}
-			| <tr {{action goContact this href=true}}>
-			td {{canonicalName}}
-			td {{email}}
-			td {{position}}
-			td {{company}}
-			td {{format added}}
-			td {{addedBy.canonicalName}}
-			| </tr>
-			| {{/each}}
+			+each('controller')
+				+linkTo('contact this tagName="tr"')
+					td {{canonicalName}}
+					td {{email}}
+					td {{position}}
+					td {{company}}
+					td {{format added}}
+					td {{addedBy.canonicalName}}
 
 	ul.pager
 		| {{#if hasPrevious}}

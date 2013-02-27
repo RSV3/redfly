@@ -25,14 +25,6 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../templates/application'
 
-		changeActiveTab: (->
-				state = App.get 'router.currentState.name'
-				tabs = ['create', 'classify', 'import', 'leaderboard', 'contacts', 'tags']
-				for tab in tabs
-					@set 'at' + _s.capitalize(tab), false
-				@set 'at' + _s.capitalize(state), true
-			).observes 'App.router.currentState.name'
-
 		didInsertElement: ->
 			# setTimeout ->
 			# 		throw new Error 'penis penis'
@@ -44,7 +36,7 @@ module.exports = (Ember, App, socket) ->
 					model = 'Contact'
 
 				item = Ember.ObjectProxy.create
-					content: App.get(model).find data.id
+					content: App[model].find data.id
 				item['type' + _s.capitalize(type)] = true
 				if type is 'linkedin'
 					item['updater'] = App.User.find data.updater
@@ -55,7 +47,7 @@ module.exports = (Ember, App, socket) ->
 				changes = _.filter changes, (change) ->
 					App.store.recordIsLoaded App.Contact, change
 				if not _.isEmpty changes
-					App.adapter.findMany App.store, App.Contact, changes
+					App.Contact.find _id: $in: changes
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.contacts', (count) =>
@@ -76,5 +68,5 @@ module.exports = (Ember, App, socket) ->
 
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'
-			select: (event) ->
-				App.get('router').send 'goContact', event.context
+			select: (context) ->
+				@get('controller.target').transitionTo 'contact', context

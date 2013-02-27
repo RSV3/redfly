@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 
-	# This is stupid. Just instantiate directly, this wrapper adds no value.
+	# TO-DO This is stupid. Just instantiate directly, this wrapper adds no value and actually obfuscates some cool stuff you can do.
 	App.filter = (type, sort, query, filter) ->
 		records = type.filter query, filter
 		sort.asc ?= true
@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 			content: records
 			sortProperties: [sort.field]
 			sortAscending: sort.asc
-		Ember.ArrayProxy.create Ember.SortableMixin, options
+		Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 	# TO-DO get rid of this
 	App.DeprecatedPaginationMixin = Ember.Mixin.create
 		rangeStart: 0
@@ -32,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 				content = @get('fullContent').slice @get('rangeStart'), @get('rangeStop')
 				@replace 0, @get('length'), content
 			).observes 'total', 'rangeStart', 'rangeStop'
-	
+
 
 	require('./controllers/components/connection')(Ember, App, socket)
 	require('./controllers/components/search')(Ember, App, socket)

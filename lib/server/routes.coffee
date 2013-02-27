@@ -10,6 +10,13 @@ module.exports = (app, route) ->
 				type: data.type
 				id: doc.id
 
+		cb = (payload) ->
+			root = data.type.toLowerCase()
+			if _.isArray payload
+				root += 's'
+			hash = {}
+			hash[root] = payload
+			fn hash
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -18,35 +25,39 @@ module.exports = (app, route) ->
 					if id = data.id
 						model.findById id, (err, doc) ->
 							throw err if err
-							return fn doc
+							cb doc
 					else if ids = data.ids
 						model.find _id: $in: ids, (err, docs) ->
 							throw err if err
-							return fn docs
+							docs = _.sortBy docs, (doc) ->
+								ids.indexOf doc.id
+							cb docs
 					else if query = data.query
+						if not query.conditions and not query.options
+							query = conditions: query
 						model.find query.conditions, null, query.options, (err, docs) ->
 							throw err if err
-							return fn docs
+							cb docs
 					else
 						model.find (err, docs) ->
 							throw err if err
-							return fn docs
+							cb docs
 				catch err
 					console.error 'Error in db API: ' + err
-					return fn()
+					cb()
 			when 'create'
 				record = data.record
 				if not _.isArray record
 					model.create record, (err, doc) ->
 						throw err if err
-						fn doc
+						cb doc
 						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
 							feed doc
 				else
 					throw new Error 'unimplemented'
 					# model.create record, (err, docs...) ->
 					# 	throw err if err
-					# 	return fn docs
+					# 	cb docs
 			when 'save'
 				record = data.record
 				if not _.isArray record
@@ -57,7 +68,7 @@ module.exports = (app, route) ->
 						# Important to do updates through the 'save' call so middleware and validators happen.
 						doc.save (err) ->
 							throw err if err
-							fn doc
+							cb doc
 							if updateFeeds
 								feed doc
 				else
@@ -66,9 +77,9 @@ module.exports = (app, route) ->
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
 						throw err if err
-						return fn()
+						cb()
 				else if ids = data.ids
-					throw new Error 'unimplemented'	# Remove each one and call return fn() when they're all done.
+					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
 				else
 					throw new Error
 			else
@@ -141,7 +152,7 @@ module.exports = (app, route) ->
 						# else
 						# 	for k, v of data.moreConditions
 						# 		conditions['contact.' + k] = v
-						
+
 						models[model].find(conditions).limit(10).exec @parallel()
 						return undefined	# Step library is insane.
 				, @parallel()

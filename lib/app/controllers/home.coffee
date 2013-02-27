@@ -1,8 +1,8 @@
 module.exports = (Ember, App, socket) ->
 
 
-	App.HomeController = Ember.Controller.extend()
+	App.IndexController = Ember.Controller.extend()
 
-	App.HomeView = Ember.View.extend
+	App.IndexView = Ember.View.extend
 		template: require '../../../templates/home'
 		classNames: ['home']
