@@ -1,19 +1,19 @@
 .hide
 	#loadingStarted
-		| {{#if stateConnecting}}
+		| {{#if view.stateConnecting}}
 		| Makin' pals with gmail...
 		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
-		| {{#if stateParsing}}
-		div {{current}} of {{total}}
+		| {{#if view.stateParsing}}
+		div {{view.current}} of {{view.total}}
 		.progress.progress-striped.active
-			| <div class="bar" {{bindAttr style="percent"}}></div>
+			| <div class="bar" {{bindAttr style="view.percent"}}></div>
 		| {{/if}}
-		| {{#if stateQueueing}}
-		div New contacts found: {{totalQueued}}
+		| {{#if view.stateQueueing}}
+		div New contacts found: {{view.totalQueued}}
 		| {{/if}}
-		| {{#if stateDone}}
-		| All done! <a href="#" {{action classify href=true}}>Start classifying</a>, dude.
+		| {{#if view.stateDone}}
+		| All done! <a href="#" {{action classify target="view"}}>Start classifying</a>, dude.
 		| {{/if}}
 
 .modal.fade.hide(tabindex='-1', role='dialog')

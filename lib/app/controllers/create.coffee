@@ -16,7 +16,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.CreateController = Ember.Controller.extend()
-	
+
 	App.CreateView = Ember.View.extend
 		template: require '../../../templates/create'
 		classNames: ['create']
@@ -62,8 +62,8 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 
 					@$().addClass 'animated lightSpeedOut'
-					contact.addObserver 'id', ->
-						App.get('router').send 'goContact', contact
+					contact.on 'didCreate', =>
+						@get('controller.target').transitionTo 'contact', contact
 		reset: ->
 			for field in fields
 				@set field, null

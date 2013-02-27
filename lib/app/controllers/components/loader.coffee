@@ -78,4 +78,4 @@ module.exports = (Ember, App, socket) ->
 			@get('modal').modal 'hide'
 			@get('notification').pnotify_remove()
 			
-			App.get('router').send 'goClassify'
+			@get('router').transitionTo 'classify'   # presence of 'router' is a hack

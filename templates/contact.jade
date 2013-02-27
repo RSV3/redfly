@@ -89,7 +89,8 @@
 			ul
 				| {{#each knows}}
 				li
-					| <a {{action goProfile this href=true}}>{{canonicalName}}</a>
+					+linkTo('profile this')
+						| {{canonicalName}}
 				| {{/each}}
 .row-fluid
 	.span6
@@ -112,9 +113,8 @@
 		.row-fluid
 			p.lead Notes
 			| {{#collection contentBinding="notes" itemViewClass="view.noteView"}}
-			| <a href="#" class="pull-left" {{action goProfile view.content.author}}>
-			| 	<img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
-			| </a>
+			+linkTo('profile view.content.author class="pull-left"')
+				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			// TO-DO do nl2br with bindings
 			.media-body
 				p {{view.content.body}}

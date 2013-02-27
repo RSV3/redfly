@@ -171,9 +171,9 @@ module.exports = (Ember, App, socket) ->
 						addedBy: App.user
 					contact.get('knows').pushObject App.user.get('content')
 					App.store.commit()
-					# TODO might have side effects, but I won't think about this too much harder because I have a hunch newer versions of
-					# ember-data might let you batch commits with inter-foreign-key depenencies eventually.
-					contact.addObserver 'id', ->
+					# UPDATE: new version ember-data might let you batch commits with inter-foreign-key depenencies, making waiting for the
+					# contact to get created unncessary
+					contact.on 'didCreate', =>
 						result.tags.forEach (tag) ->
 							App.Tag.createRecord
 								creator: App.user
@@ -189,7 +189,7 @@ module.exports = (Ember, App, socket) ->
 				@get('controller.stateMachine').transitionTo 'start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
-				
+
 			resultFieldView: Ember.View.extend
 				tagName: 'td'
 				resultBinding: 'parentView.context'

@@ -55,8 +55,10 @@ module.exports = (Ember, App, socket) ->
 			).property 'canonicalName', 'email'
 		introMailto: (->
 				carriage = '%0D%0A'
-				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use util.baseUrl here instead later
+				# TODO hack, target is set to the the controller and not router when this is used in the classify flow. Also maybe router.generate
+				# isn't the proper way to get a url for a route, but the the urlFor method disappeared in the newest ember
+				url = util.baseUrl + '/contact/' + @get('id')
+				# url = util.baseUrl + @get('target').generate 'contact'
 				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
 					'?subject=You know ' + @get('nickname') + ', right?' +
 					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
@@ -99,7 +101,7 @@ module.exports = (Ember, App, socket) ->
 				@toggleProperty 'show'
 			add: ->
 				@get('others').pushObject Ember.ObjectProxy.create content: ''
-				_.defer =>
+				_.defer =>   # TO-DO Ember.run.next is equivalent but would be semantically more appropriate.
 					# Ideally there's a way to get a list of itemViews and pick the last one, and not do this with jquery.
 					@$('input').last().focus()
 			save: ->
@@ -144,7 +146,7 @@ module.exports = (Ember, App, socket) ->
 					_.defer =>
 						@get('others').removeObject @get('other')
 						@get('others').unshiftObject Ember.ObjectProxy.create content: primary
-				remove: (event) ->
+				remove: ->
 					@get('others').removeObject @get('other')
 
 		mergeView: Ember.View.extend
@@ -198,8 +200,8 @@ module.exports = (Ember, App, socket) ->
 				excludes: (->
 						@get('parentView.selections').toArray().concat @get('controller.content')
 					).property 'controller.content', 'parentView.selections.@each'
-				select: (event) ->
-					@get('parentView.selections').pushObject event.context
+				select: (context) ->
+					@get('parentView.selections').pushObject context
 
 		introView: Ember.View.extend
 			tagName: 'i'

@@ -7,10 +7,8 @@
 				th Email
 				th Signed Up
 		tbody
-			| {{#each controller}}
-			| <tr {{action goProfile this href=true}}>
-			td {{canonicalName}}
-			td {{email}}
-			td {{date}}
-			| </tr>
-			| {{/each}}
+			+each('model')
+				+linkTo('profile this tagName="tr"')
+					td {{canonicalName}}
+					td {{email}}
+					td {{date}}

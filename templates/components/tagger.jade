@@ -2,7 +2,7 @@
 	+if('view.full')
 		.background
 			i.icon-tags
-	// TO-DO this would be more efficient with the #collection helper, but requires code changes to both tag.coffee and tagger.coffee
+	// TO-DO this would be more efficient with itemView
 	+each('view.tags')
 		+view('view.tagView')
 			i.icon-tag  

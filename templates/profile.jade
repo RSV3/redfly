@@ -3,11 +3,12 @@
 		h1 {{name}}
 		p Signed up on {{date}}
 		br
-		p Added {{contacts.length}} contact{{#unless_eq contacts.length compare=1}}s{{/unless_eq}} so far.
+		p Added {{contacts.length}} contacts so far.
 		ul
 			| {{#each contacts.paginatedItems}}
 			li
-				| <a {{action goContact this href=true}}>{{canonicalName}}</a>
+				+linkTo('contact this')
+					| {{canonicalName}}
 			| {{/each}}
 		.row-fluid
 			.span4
