@@ -24,19 +24,6 @@ module.exports = (Ember, App, socket) ->
 		@route 'link'
 
 
-	# interceptedPath = null	# TO-DO this doesn't work any more, we have to save this to the session to survive auth flow.
-	AuthenticatedRoute = Ember.Route.extend
-		redirect: ->
-			authenticated = App.user.get 'content'
-			if not authenticated
-				# interceptedPath = path
-				util.notify
-					title: 'Please log in'
-					text: 'Then we\'ll send you to your page.'
-					before_open: (pnotify) =>
-						pnotify.css top: '60px'
-				@transitionTo 'index'
-
 	App.ApplicationRoute = Ember.Route.extend
 		events:
 			logout: (context) ->
@@ -44,25 +31,24 @@ module.exports = (Ember, App, socket) ->
 					App.auth.logout()
 					@transitionTo 'index'
 
-	App.ProfileRoute = AuthenticatedRoute.extend
+	App.ProfileRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
-	App.ContactRoute = AuthenticatedRoute.extend
+	App.ContactRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
-	App.ContactsRoute = AuthenticatedRoute.extend()
-	App.LeaderboardRoute = AuthenticatedRoute.extend
+	App.LeaderboardRoute = Ember.Route.extend
 		model: ->
 			App.User.find()
 			App.User.all()
-	App.TagsRoute = AuthenticatedRoute.extend
+	App.TagsRoute = Ember.Route.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->
 			socket.emit 'tags.stats', (stats) =>
 				for stat in stats
 					stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
 				controller.set 'stats', stats
-	App.UserProfileRoute = AuthenticatedRoute.extend
+	App.UserProfileRoute = Ember.Route.extend
 		model: ->
 			App.user
 		# This is kind of ugly. Might be better to use App.inject to make userProfileController map to profileController.
@@ -72,10 +58,7 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'self', true
 		renderTemplate: ->
 			@render 'profile', controller: @controllerFor('profile')
-	App.CreateRoute = AuthenticatedRoute.extend()
-	App.ClassifyRoute = AuthenticatedRoute.extend()
-	App.ImportRoute = AuthenticatedRoute.extend()
-	App.LoadRoute = AuthenticatedRoute.extend
+	App.LoadRoute = Ember.Route.extend
 		activate: ->
 			# TO-DO probably set a session variable or something to ensure loading doesn't happen twice by back button or anything.
 			view = App.LoaderView.create router: this   # hack
@@ -100,9 +83,44 @@ module.exports = (Ember, App, socket) ->
 					pnotify.css top: '60px'
 		redirect: ->
 			@transitionTo 'index'
-	App.LinkRoute = AuthenticatedRoute.extend
+	App.LinkRoute = Ember.Route.extend
 		activate: ->
 			view = App.LinkerView.create()
 			view.append()
 		redirect: ->
 			@transitionTo 'userProfile'
+
+
+
+
+	# authRequiredRoutes = [
+	# 	'profile'
+	# 	'contact'
+	# 	'contacts'
+	# 	'leaderboard'
+	# 	'tags'
+	# 	'userProfile'
+	# 	'classify'
+	# 	'import'
+	# 	'load'
+	# 	'link'
+	# ]
+
+	# intercepted = null
+
+	# setupContexts = App.Router.prototype.setupContexts
+	# App.Router.prototype.setupContexts = (router, handlerInfos) ->
+	# 	_ = require 'underscore'
+	# 	authRequired = _.find handlerInfos, (info) ->
+	# 		info.name in authRequiredRoutes
+	# 	authenticated = App.user.get 'content'
+	# 	if authRequired and not authenticated
+	# 		intercepted = handlerInfos
+	# 		util.notify
+	# 			title: 'Please log in'
+	# 			text: 'Then we\'ll send you to your page.'
+	# 			before_open: (pnotify) =>
+	# 				pnotify.css top: '60px'
+	# 		router.transitionTo 'index'
+	# 	else
+ # 			setupContexts.apply this, arguments
