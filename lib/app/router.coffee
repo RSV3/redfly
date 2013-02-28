@@ -1,4 +1,6 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
+	_s = require 'underscore.string'
 	util = require './util'
 
 
@@ -10,6 +12,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'contact', path: '/contact/:contact_id'
 		@route 'contacts'
 		@route 'leaderboard'
+		@resource 'results', path: '/results/:query_text'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -50,11 +53,30 @@ module.exports = (Ember, App, socket) ->
 	App.ContactRoute = AuthenticatedRoute.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
-	App.ContactsRoute = AuthenticatedRoute.extend()
+	App.ContactsRoute = AuthenticatedRoute.extend
+		setupController: (controller, model) ->
+			controller.set 'addedContacts', App.Contact.find(added: $exists: true)
 	App.LeaderboardRoute = AuthenticatedRoute.extend
 		model: ->
 			App.User.find()
 			App.User.all()
+
+
+	App.ResultsRoute = AuthenticatedRoute.extend
+		model: (params) ->
+			console.log "model"
+			console.log arguments
+			params.text
+		deserialize: (model) ->
+			console.log "deserialize"
+			console.log arguments
+			model.text
+		setupController: (controller, model) ->
+			console.log "setupController"
+			socket.emit 'fullSearch', query: model.get('text'), (results) =>
+				controller.set 'all', App.Contact.find _id: $in: results
+
+
 	App.TagsRoute = AuthenticatedRoute.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->

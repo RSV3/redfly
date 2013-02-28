@@ -28,8 +28,11 @@ everyauth.google.configure
 			throw err if err
 			token = accessTokenExtra.refresh_token
 			if user
+				console.dir user
+				console.log user.id
 				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 				if not user.oauth
+					console.log "no oauth on user #{email} with #{googleUserMetadata.name}"
 					user.name = googleUserMetadata.name
 					if picture = googleUserMetadata.picture
 						user.picture = picture
@@ -40,6 +43,7 @@ everyauth.google.configure
 				# END TEMPORARY ###########
 				# Update the refresh token if google gave us a new one.
 				else if user.oauth isnt token
+					console.log "wrong token on user #{email} with #{googleUserMetadata.name}"
 					user.oauth = token
 					user.save (err) ->
 						throw err if err
@@ -47,6 +51,7 @@ everyauth.google.configure
 				else
 					promise.fulfill user
 			else
+				console.log "creating new user #{email} with #{googleUserMetadata.name}"
 				user = new models.User
 				user.email = email
 				user.name = googleUserMetadata.name
@@ -61,10 +66,13 @@ everyauth.google.configure
 		session.user = auth.user.id
 	sendResponse: (res, data) ->
 		user = data.user
+		console.log "sending response on"
+		console.dir user
 		if not user.id
 			return res.redirect '/invalid'
 		if not user.lastParsed
 			return res.redirect '/load'
+		console.log "redirecting to profile"
 		res.redirect '/profile'
 
 
@@ -74,8 +82,12 @@ everyauth.linkedin.configure
 	entryPath: '/linker'
 	callbackPath: '/linked'
 	handleAuthCallbackError: (req, res) ->
+		#
 		# TODO this doesn't seem to work. If a user cancels signing in to linkedin he gets a nasty response.
+		# see https://github.com/bnoguchi/everyauth/issues/101
+		#
 		# if req.params.oauth_problem
+		#
 		res.redirect '/profile'
 	findOrCreateUser: (session, accessToken, accessTokenSecret, linkedinUserMetadata) ->
 		models = require './models'

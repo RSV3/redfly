@@ -12,15 +12,33 @@ module.exports = (Ember, App, socket) ->
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
+		hasResults: (->
+				theyrethere = not _.isEmpty @get('results')
+				if @.get('waitingToDoSearch') and theyrethere
+					@doSearch()
+				theyrethere
+			).property 'results'
+
 		showResults: (->
-				# TODO check the substructure of results to make sure there actually are some.
-				@get('using') and @get('results')
-			).property 'using', 'results'
+				@get('using') and @get('hasResults')
+			).property 'using', 'hasResults'
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
 			if event.which is 27	# Escape.
 				@$(':focus').blur()
+		submit: ->
+			@$(':focus').blur()
+			if @get 'hasResults'
+				@doSearch()
+			else @set 'waitingToDoSearch', true
+			return false   # Prevent a form submit.
+
+		doSearch: ->
+			props = {text: util.trim @get('query')}
+			newResults = App.Results.create props
+			@get('controller').transitionToRoute 'results', newResults
+
 		focusIn: ->
 			@set 'using', true
 		focusOut: ->
@@ -33,7 +51,14 @@ module.exports = (Ember, App, socket) ->
 			, 150
 
 		searchBoxView: Ember.TextField.extend
+			classNameBindings: [':search-query', 'noResultsFeedback:no-results']
+			noResultsFeedback: (->
+					@get('parentView.using') and not @get('parentView.hasResults')
+				).property 'parentView.using', 'parentView.hasResults'
+
 			resultsBinding: 'parentView.results'
+			allResultsBinding: 'parentView.allResults'
+			valueBinding: 'parentView.query'
 			valueChanged: (->
 					query = util.trim @get('value')
 					if not query
@@ -41,11 +66,15 @@ module.exports = (Ember, App, socket) ->
 					else
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
 							@set 'results', {}
+							allResults = []
 							for type, ids of results
 								if excludes = @get('parentView.excludes')?.getEach('id')
 									ids = _.difference ids, excludes
-								model = 'Contact'
-								if type is 'tag' or type is 'note'
-									model = _s.capitalize type
-								@set 'results.' + type, App[model].find _id: $in: ids
+								if ids.length
+									model = 'Contact'
+									if type is 'tag' or type is 'note'
+										model = _s.capitalize type
+									@set 'results.' + type, App[model].find _id: $in: ids
+									allResults.push model
+							@set 'allResults', allResults
 				).observes 'value', 'parentView.excludes'

@@ -17,7 +17,7 @@ describe 'test matchC', ->
 
 describe 'test experience calculation', ->
 	it 'should calculate accurately', ->
-		contact = 
+		contact =
 			position: 'shelf stacker'
 			company: 'testos'
 		details = require './fixtures.coffee'
