@@ -14,7 +14,7 @@ module.exports = (Ember, App, socket) ->
 		introMailto: (->
 				carriage = '%0D%0A'
 				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + App.get('router').urlForEvent 'goContact'	# TODO use util.baseUrl here instead later
+				url = baseUrl + '/contact/' + @get 'controller.id'
 				'mailto:' + @get('controller.addedBy.canonicalName') + ' <' + @get('controller.addedBy.email') + '>' +
 					'?subject=You know ' + @get('controller.nickname') + ', right?' +
 					'&body=Hey ' + @get('controller.addedBy.nickname') + ', would you kindly give me an intro to ' + @get('controller.canonicalName') + '? ' +

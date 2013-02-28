@@ -4,20 +4,20 @@ div.navbar
 	.navbar-inner
 		.lead There are {{total}} contacts in your queue.
 		.pull-right
-			| {{#if added}}
-			span.already-added Already added by {{addedBy.canonicalName}}.
+			| {{#if model.added}}
+			span.already-added Already added by {{model.addedBy.canonicalName}}.
 			| {{/if}}
 			ul.pager
 				li
-					| <a href="#" class="btn-danger" {{action ignore target="controller"}}>Skip forever</a>
+					| <a href="#" class="btn-danger" {{action ignore}}>Skip forever</a>
 				|  
 				li
-					| <a href="#" class="btn-warning" {{action skip target="controller"}}>Skip</a>
+					| <a href="#" class="btn-warning" {{action skip}}>Skip</a>
 				|  
 				li
-					| <a href="#" class="btn-success" {{action continue target="controller"}}>{{continueText}}</a>
+					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
 
-//- | {{outlet}}
+| {{render contact}}
 
 | {{else}}
 
@@ -32,67 +32,12 @@ div.navbar
 	| {{/unless}}
 	p
 		| {{#if noMore}}
-		| <a class="btn btn-primary btn-large" {{action goContacts href=true}}>See all contacts</a> 
-		| {{else}}
-		| <a class="btn btn-primary btn-large" {{action keepGoing target="controller"}}>Hit me again!</a>
+		+linkTo('contacts class="btn btn-primary btn-large"', 'See all contacts')
+		|  {{else}}
+		| <a class="btn btn-primary btn-large" {{action keepGoing}}>Hit me again!</a>
 		| &nbsp;
-		| <a class="btn btn-large" {{action goContacts href=true}}>See all contacts</a>
+		+linkTo('contacts class="btn btn-large"', 'See all contacts')
 		| {{/if}}
 		p.star: i.icon-star
 
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-br
-
 | {{/unless}}
-
-
-
-| {{outlet}}

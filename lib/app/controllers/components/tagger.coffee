@@ -60,9 +60,9 @@ module.exports = (Ember, App, socket) ->
 				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
 
 		tagView: App.TagView.extend
-			delete: (event) ->
+			delete: ->
 				tag = @get 'context'
-				$(event.target).parent().addClass 'animated rotateOutDownLeft'
+				@$().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
 					tag.deleteRecord()
 					App.store.commit()

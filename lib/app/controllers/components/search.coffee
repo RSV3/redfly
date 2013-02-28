@@ -35,14 +35,9 @@ module.exports = (Ember, App, socket) ->
 			return false   # Prevent a form submit.
 
 		doSearch: ->
-			@set 'waitingToDoSearch', false
-			total = @get 'results.length'
-			if total is 0
-				# TODO noresults  search.set 'noresults', true
-			else if total is 1
-				App.get('router').send 'goContact', allResults.get('firstObject')
-			else
-				App.get('router').send 'goResults', util.trim(@get('query'))
+			props = {text: util.trim @get('query')}
+			newResults = App.Results.create props
+			@get('controller').transitionToRoute 'results', newResults
 
 		focusIn: ->
 			@set 'using', true
@@ -62,6 +57,7 @@ module.exports = (Ember, App, socket) ->
 				).property 'parentView.using', 'parentView.hasResults'
 
 			resultsBinding: 'parentView.results'
+			allResultsBinding: 'parentView.allResults'
 			valueBinding: 'parentView.query'
 			valueChanged: (->
 					query = util.trim @get('value')
@@ -70,11 +66,15 @@ module.exports = (Ember, App, socket) ->
 					else
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
 							@set 'results', {}
+							allResults = []
 							for type, ids of results
 								if excludes = @get('parentView.excludes')?.getEach('id')
 									ids = _.difference ids, excludes
-								model = 'Contact'
-								if type is 'tag' or type is 'note'
-									model = _s.capitalize type
-								@set 'results.' + type, App[model].find _id: $in: ids
+								if ids.length
+									model = 'Contact'
+									if type is 'tag' or type is 'note'
+										model = _s.capitalize type
+									@set 'results.' + type, App[model].find _id: $in: ids
+									allResults.push model
+							@set 'allResults', allResults
 				).observes 'value', 'parentView.excludes'
