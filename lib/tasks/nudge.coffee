@@ -1,7 +1,7 @@
+_ = require 'underscore'
 moment = require 'moment'
-if moment().format('dddd') isnt process.env.NUDGE_DAY
+if not _.contains(process.env.NUDGE_DAYS.split(' '), moment().format('dddd'))
 	process.exit()
-
 
 models = require '../server/models'
 

@@ -131,6 +131,8 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
+		.no-results
+			background #f99
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
@@ -175,6 +177,63 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
+
+.results
+	margin-top	-1em
+	a:hover
+		text-decoration	none
+	.collapsed
+		display	none
+	.top
+		h3
+			margin-top	-5px
+			margin-bottom	5px
+			font-size	22px
+		margin-top	1em
+		margin-bottom	5px
+		padding-bottom	5px
+		border-bottom: 1px solid #eee;
+		a.social
+			margin-right	4px
+		span.mailORintro
+			float	right
+			margin-right	1em
+	.toppager
+		padding-bottom	1em
+		border-bottom	1px solid #ddd
+	.pager
+		position relative
+		width 50%
+		left 50%
+		margin-left -25%
+		.pagenums
+			color	#069
+			margin-top	0.5em
+			display	inline-block
+	.search-filters
+		a.toggle
+			color	#666
+			margin-left	0.5em
+		h3
+			padding-top	1.5em
+			margin	-10px
+		h4
+			padding-top	1em
+		.checkfilter
+			input
+				display	inline
+				margin 10px
+				margin-top 7px
+			label
+				display	inline
+				margin-left	1em
+		.sort
+			i
+				margin-left	20px
+			.icon-large:hover
+				text-decoration	none
+
+
 .contact
 	.top
 		.bullhorn
@@ -297,6 +356,11 @@ body
 .search
 	.search-results
 		display block	// Always show the dropdown.
+
+.loading
+	margin-top horizontalMargin * 10 // TO-DO so lazy, make this vertically centered. Possibly after I figure out if body will have height 100%
+	text-align center
+	font-size baseFontSize * 6
 
 #linking
 	.progress.progress1
