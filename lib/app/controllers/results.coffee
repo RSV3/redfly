@@ -40,10 +40,20 @@ module.exports = (Ember, App, socket) ->
 				return -value
 			value
 
-	App.ResultsController = Ember.ArrayController.extend App.Pagination,
-		itemController: 'result'
-		sortType: null
-		filteredItems: (->
+	App.ResultsController = Ember.ObjectController.extend
+		hiding: 0			# this is just for templating, whether or not results are filtered out
+		sortType: null		# identify sorting rule
+		sortDir: false		# true if ascending
+		years: 0			# value of selection from 'years experience' drop down
+		yearsToSelect: []	# array of years from 1..max
+		indTags: []			# all industry tags in the search
+		indToSelect: []		# the short list of checkboxes for industry tags
+		indToConsider: []	# the list of tags matching contacts in the results list & checkbox tagnames 
+		orgTags: []
+		orgToSelect: []
+		orgToConsider: []
+		all: []				# every last search result
+		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
 				if _.isEmpty (oC = @get('all'))
 					return []
 				oC.filter (item) =>
@@ -59,24 +69,34 @@ module.exports = (Ember, App, socket) ->
 									return true
 					noTags
 			).property 'all.@each', 'years', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
-		hiding: 0
-		content: (->
-				@set 'hiding', @get('all.length') - @get('filteredItems.length')
-				@set 'rangeStart', 0
-				if @get 'sortType'
-					Ember.ArrayController.create
-						content: @get 'filteredItems'
-						sortProperties: [sortFields[@get 'sortType']]
-						sortAscending: @get 'sortDir'
-						orderBy: sortFunc[@get 'sortType']
-				else
-					@get 'filteredItems'
-			).property 'filteredItems.@each', 'sortType', 'sortDir'
+
+		theResults: (->		# paginated content
+			if not @get 'filteredItems.length'
+				[]
+			else Ember.ArrayProxy.createWithMixins App.Pagination,
+				content: do =>
+					@set 'hiding', @get('all.length') - @get('filteredItems.length')
+					@set 'rangeStart', 0
+					if @get 'sortType'
+						Ember.ArrayController.create
+							content: @get 'filteredItems'
+							sortProperties: [sortFields[@get 'sortType']]
+							sortAscending: @get 'sortDir'
+							orderBy: sortFunc[@get 'sortType']
+					else
+						@get 'filteredItems'
+		).property 'filteredItems.@each', 'sortType', 'sortDir'
 
 		scrollUp: (->
-			$('html, body').animate {scrollTop: 0}, 666
-		).observes 'rangeStart'
+			$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
+		).observes 'theResults.rangeStart'
 
+		setOrgTags: (->
+			doTags 'orgTags', @
+		).observes 'orgTags.@each'
+		setIndTags: (->
+			doTags 'indTags', @
+		).observes 'indTags.@each'
 		setFilters: (->			# prepare the filters based on the sort results
 				years = []
 				oC = @get('all')
@@ -87,33 +107,22 @@ module.exports = (Ember, App, socket) ->
 						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
 				@set 'yearsToSelect', years
 				@set 'orgTags', Ember.ArrayProxy.create
-					content: App.Tag.find {category: 'redstar', contact: $in: oC.getEach('id')}
+					content: App.Tag.find {category: $ne: 'industry', contact: $in: oC.getEach('id')}
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
 			).observes 'all.@each'
-
-	 	setOrgTags: (->
-				doTags 'orgTags', @
-			).observes 'orgTags.@each'
-	 	setIndTags: (->
-				doTags 'indTags', @
-			).observes 'indTags.@each'
-
-		startplusone: (->							# this won't be necessary after the ember upgrade
-			1 + parseInt(@get('rangeStart'), 10)	# when we can make this a boundhelper
-		).property 'rangeStart'
 
 		toggleind: ()-> toggleFilter 'ind'		# toggle visbility of the industry tags
 		toggleorg: ()-> toggleFilter 'org'		# toggle visbility of the organisational tags
 
 		sort: (ev)->
-			resetting = $(ev.target).hasClass 'icon-large'				# krz won't like this,
-			$('.icon-large').removeClass 'icon-large'					# I decided this was more succinct
+			resetting = $(ev.target).hasClass 'icon-large'		# krz won't like this,
+			$('.icon-large').removeClass 'icon-large'			# but I decided this was more succinct
 			if not resetting then $(ev.target).addClass 'icon-large'
 
-			dir = ($(ev.target).hasClass 'up')							# OK, no more jquery: state is on controller
+			dir = ($(ev.target).hasClass 'up')					# OK, no more jquery: state is on controller
 			type = $(ev.target).parent().attr 'class'
-			if @.get('sortDir') is dir and @.get('sortType') is type then type = null	# undo current sort option
+			if @.get('sortDir') is dir and @.get('sortType') is type then type = null	# undo sort setting
 			@.set 'sortType', type
 			@.set 'sortDir', dir
 
@@ -121,5 +130,7 @@ module.exports = (Ember, App, socket) ->
 	App.ResultsView = Ember.View.extend
 		template: require '../../../templates/results'
 		classNames: ['results']
-		resultView: Ember.View.extend App.ContactMixin
+		resultView: Ember.View.extend App.ContactMixin,
+			socialView: App.SocialView
+			introView: App.IntroView
 

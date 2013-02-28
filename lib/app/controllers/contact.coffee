@@ -77,7 +77,7 @@ module.exports = (Ember, App, socket) ->
 				@toggleProperty 'show'
 			add: ->
 				@get('others').pushObject Ember.ObjectProxy.create content: ''
-				_.defer =>
+				_.defer =>   # TO-DO Ember.run.next is equivalent but would be semantically more appropriate.
 					# Ideally there's a way to get a list of itemViews and pick the last one, and not do this with jquery.
 					@$('input').last().focus()
 			save: ->
@@ -122,7 +122,7 @@ module.exports = (Ember, App, socket) ->
 					_.defer =>
 						@get('others').removeObject @get('other')
 						@get('others').unshiftObject Ember.ObjectProxy.create content: primary
-				remove: (event) ->
+				remove: ->
 					@get('others').removeObject @get('other')
 
 		mergeView: Ember.View.extend
@@ -176,8 +176,8 @@ module.exports = (Ember, App, socket) ->
 				excludes: (->
 						@get('parentView.selections').toArray().concat @get('controller.content')
 					).property 'controller.content', 'parentView.selections.@each'
-				select: (event) ->
-					@get('parentView.selections').pushObject event.context
+				select: (context) ->
+					@get('parentView.selections').pushObject context
 
 		positionView: Ember.View.extend
 			editView: Ember.View.extend

@@ -1,40 +1,35 @@
 .row-fluid
 	h1 All Contacts
-	table.table.table-hover
-		thead
-			tr
-				th Names
-				th Emails
-				th Position
-				th Company
-				th Added On
-				th Added By
-		tbody
-			| {{#each controller.paginatedItems}}
-			| <tr {{action goContact this href=true}}>
-			td {{canonicalName}}
-			td {{email}}
-			td {{position}}
-			td {{company}}
-			td {{format added}}
-			td {{addedBy.canonicalName}}
-			| </tr>
-			| {{/each}}
+	+unless ('contacts.paginatedItems')
+		.loading
+			i.icon-spinner.icon-spin
+	+if ('contacts.paginatedItems')
+		table.table.table-hover
+			thead
+				tr
+					th Names
+					th Emails
+					th Position
+					th Company
+					th Added On
+					th Added By
+			tbody
+				+each('contacts.paginatedItems')
+					+linkTo('contact this tagName="tr"')
+						td {{canonicalName}}
+						td {{email}}
+						td {{position}}
+						td {{company}}
+						td {{format added}}
+						td {{addedBy.canonicalName}}
 
-	ul.pager
-		| {{#if hasPrevious}}
-		li.previous
-			| <a href="#" {{action previousPage target="controller"}}>&larr; Newer</a>
-		| {{/if}}
-		| {{#if hasNext}}
-		li.next
-			| <a href="#" {{action nextPage target="controller"}}>Older &rarr;</a>
-		| {{/if}}
+		ul.pager
+			| {{#if contacts.hasPrevious}}
+			li.previous
+				| <a href="#" {{action previousPage target="contacts"}}>&larr; Newer</a>
+			| {{/if}}
+			| {{#if contacts.hasNext}}
+			li.next
+				| <a href="#" {{action nextPage target="contacts"}}>Older &rarr;</a>
+			| {{/if}}
 
-	//-
-		.pagination.pagination-centered
-			ul
-				li: a «
-				li: a 1
-				li: a 2
-				li: a »

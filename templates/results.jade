@@ -4,28 +4,26 @@
 
 		ul.pager.toppager
 			li.previous
-				| {{#if hasPrevious}}<a href="#" {{action previousPage target="controller"}}>&larr; Prev</a>{{/if}}
+				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
 			div.pagenums
-				| {{#if total}}{{startplusone}}-{{rangeStop}}{{/if}}{{#if hasNext}} / {{total}}{{/if}}
+				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
 			li.next
-				| {{#if hasNext}}<a href="#" {{action nextPage target="controller"}}>Next &rarr;</a>{{/if}}
+				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
 
-		+unless ('paginatedItems')
+		+unless ('theResults.paginatedItems')
 			.loading
 				i.icon-spinner.icon-spin
-		+each ('paginatedItems')
+		+each ('theResults.paginatedItems')
 			+view ('view.resultView')
 				.row-fluid.top
 					.span2.picture
-						| <a {{action goContact this target="App.router" href=true}}>
-						| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-						| </a>
+						+linkTo('contact this tagName="a"')
+							| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
 					.span10
 						.row-fluid
 							.span8
-								| <a {{action goContact this target="App.router" href=true}}>
-								h3 {{canonicalName}}
-								| </a>
+								+linkTo('contact this tagName="a"')
+									h3 {{canonicalName}}
 								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 							.span4
 								span.mailORintro
@@ -52,29 +50,29 @@
 
 		ul.pager
 			li.previous
-				| {{#if hasPrevious}}<a href="#" {{action previousPage target="controller"}}>&larr; Prev</a>{{/if}}
+				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
 			div.pagenums
-				| {{#if total}}{{startplusone}}-{{rangeStop}}{{/if}}{{#if hasNext}} / {{total}}{{/if}}
+				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
 			li.next
-				| {{#if hasNext}}<a href="#" {{action nextPage target="controller"}}>Next &rarr;</a>{{/if}}
+				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
 
 
 	.span1
 	.span3.search-filters
-		{{#if controller.all.length}}
+		{{#if all.length}}
 		br
-		i viewing {{#if controller.hiding}}{{controller.length}} of {{/if}}{{controller.all.length}} search results
+		i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
 		{{/if}}
 		h3
 			| Filters
-		{{#if controller.orgTagsToSelect.length}}
+		{{#if orgTagsToSelect.length}}
 		h4
 			| Organisational Tags
 			| <a class="toggle" {{action toggleorg target="controller" href=true}}>
 			i.toggleorg.icon-caret-up
 			| </a>
 		.filters.toggleorg
-			{{#each item in controller.orgTagsToSelect}}
+			{{#each item in orgTagsToSelect}}
 			.checkfilter
 				|<label>
 				{{view Ember.Checkbox checkedBinding="item.checked"}}
@@ -82,14 +80,14 @@
 				|</label>
 			{{/each}}
 		{{/if}}
-		{{#if controller.indTagsToSelect.length}}
+		{{#if indTagsToSelect.length}}
 		h4
 			| Industry Tags
 			| <a class="toggle" {{action toggleind target="controller" href=true}}>
 			i.toggleind.icon-caret-down
 			| </a>
 		.filters.toggleind.collapsed
-			{{#each item in controller.indTagsToSelect}}
+			{{#each item in indTagsToSelect}}
 			.checkfilter
 				|<label>
 				{{view Ember.Checkbox checkedBinding="item.checked"}}
@@ -97,7 +95,7 @@
 				|</label>
 			{{/each}}
 		{{/if}}
-		{{#if controller.yearsToSelect.length}}
+		{{#if yearsToSelect.length}}
 		h4
 			| Experience
 		{{view Ember.Select
@@ -115,20 +113,20 @@
 				h4
 					| Proximity
 				.sort
-					| <a class="proximity" href="#" {{action sort target="controller"}}>
+					| <a class="proximity" href="#" {{action sort}}>
 					i.icon-arrow-up.up
 					| </a>
-					| <a class="proximity" href="#" {{action sort target="controller"}}>
+					| <a class="proximity" href="#" {{action sort}}>
 					i.icon-arrow-down
 					| </a>
 			.span6
 				h4
 					| Influence
 				.sort
-					| <a class="influence" href="#" {{action sort target="controller"}}>
+					| <a class="influence" href="#" {{action sort}}>
 					i.icon-arrow-up.up
 					| </a>
-					| <a class="influence" href="#" {{action sort target="controller"}}>
+					| <a class="influence" href="#" {{action sort}}>
 					i.icon-arrow-down
 					| </a>
 

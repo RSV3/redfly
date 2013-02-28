@@ -1,10 +1,15 @@
 module.exports = (Ember, App, socket) ->
 
-	App.ContactsController = Ember.ArrayController.extend App.Pagination,
-		content: Ember.ArrayProxy.create Ember.SortableMixin,
-			content: App.Contact.find(added: $exists: true)
-			sortProperties: ['added']
-			sortAscending: false
+	App.ContactsController = Ember.ObjectController.extend
+		addedContacts: []
+		contacts: (->
+			Ember.ArrayProxy.createWithMixins App.Pagination,
+				content: do =>
+					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
+						content: do => @get 'addedContacts'
+						sortProperties: ['added']
+						sortAscending: false
+		).property 'addedContacts'
 
 	App.ContactsView = Ember.View.extend
 		template: require '../../../templates/contacts'

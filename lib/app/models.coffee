@@ -2,6 +2,8 @@ module.exports = (DS, App) ->
 	_ = require 'underscore'
 	util = require '../util'
 
+	App.Results = Em.Object.extend
+		text: ''
 
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
