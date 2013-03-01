@@ -24,7 +24,7 @@ module.exports =
 	# test:
 	# 	HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
 	# 	NODE_ENV: 'development'
-	# 	INTERCEPT_EMAIL: 'pharcosyle+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
+	# 	INTERCEPT_EMAIL: 'kwan+redfly_test@redstar.com'
 
 	# 	MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
 
@@ -35,7 +35,7 @@ module.exports =
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_staging_intercept@gmail.com, kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
+		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
