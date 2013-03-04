@@ -1,28 +1,31 @@
 .row-fluid.top
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
-		| {{#if view.isKnown}}
+		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
 	.span6
 		.row-fluid
-			| {{#unless view.isKnown}}
+			| {{#if hasIntro}}
 			p.bullhorn
-				| <a {{bindAttr href="view.introMailto"}} target="_blank">{{view view.introView class="icon-bullhorn"}}</a>
-			| {{/unless}}
+				| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+			| {{/if}}
 			h1 {{canonicalName}}
-			| {{#if view.isKnown}}
+			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
 			br
 			+view('view.positionView')
 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+				| {{#if editpositiondetails}}
+				i {{editpositiondetails}}&nbsp;
+				| {{/if}}
 				+view('view.editView')
 					a(href='#', action='toggle target="view"')
 						i.icon-pencil
 					div(bindAttr='class="view.show::hide"')
 						.popover
-							a.close(href='#', action='toggle target="view"') ×
+							a.close(href='#', action='toggle target="view"')
 							.nav-header Position and Experience
 							div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
 								+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
@@ -43,9 +46,9 @@
 
 				+if('linkedin')
 					br
-					a(bindAttr='href="view.linkedinMail"', target='_blank') Send a Linkedin inMail
+					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
-			| {{#if view.isKnown}}
+			| {{#if isKnown}}
 			h4
 				| <a {{bindAttr href="view.directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
@@ -53,9 +56,9 @@
 		| {{#if firstHistory}}
 		.row-fluid
 			p
-				| You've <a {{bindAttr href="view.gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
+				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
-				| . <a {{bindAttr href="view.directMailto"}} target="_blank">Catch up.</a> 
+				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
 			p
 				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
 				em "{{firstHistory.subject}}"
@@ -79,7 +82,7 @@
 							i.icon-pencil
 						div(bindAttr='class="view.show::hide"')
 							.popover
-								a.close(href='#', action='toggle target="view"') ×
+								a.close(href='#', action='toggle target="view"')
 								.nav-header Social Links
 								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
 									span.help-inline {{view.prefixes.linkedin}}
@@ -102,7 +105,7 @@
 										i.icon-spinner.icon-spin
 
 	.span3
-		| {{#if view.isKnown}}
+		| {{#if isKnown}}
 		.row-fluid.actions
 			| <a class="btn" role="button" {{action showMerge target="view"}}>
 			i.icon-signin
@@ -152,7 +155,7 @@
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
 			| <button class="btn pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
-			i.icon-comment  
+			i.icon-comment
 			| Add Note
 			| </button>
 			| </form>
@@ -162,7 +165,7 @@
 | {{#view view.mergeView viewName="mergeViewInstance"}}
 .modal.hide.fade(tabindex='-1', role='dialog', aria-labelledby='mergeModalLabel', aria-hidden='true')
 	.modal-header
-		button.close(type='button', data-dismiss='modal') ×
+		button.close(type='button', data-dismiss='modal')
 		h3#mergeModalLabel Merge with {{canonicalName}}
 	.modal-body
 		.muted Search your contacts by name or email.

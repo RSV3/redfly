@@ -7,7 +7,7 @@
 		+view('view.tagView')
 			i.icon-tag  
 			a.body(href='#', action='search target="view"') {{body}}
-			a.close(action='delete target="view"') ×
+			a.close(action='delete target="view"')
 
 	form.new-tag-form(action='add on="submit" target="view"')
 		+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
