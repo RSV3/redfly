@@ -120,10 +120,6 @@ module.exports = (Ember, App, socket) ->
 		toggleind: ()-> toggleFilter 'ind'		# toggle visbility of the industry tags
 		toggleorg: ()-> toggleFilter 'org'		# toggle visbility of the organisational tags
 
-		###
-		proximityView: App.SortView
-		influenceView: App.SortView
-		###
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
@@ -164,27 +160,21 @@ module.exports = (Ember, App, socket) ->
 			for i of sortFields
 				if _.contains this.classNames, i
 					if i is @get 'controller.sortType'
-						return @get 'content'
+						return @get 'controller.sortDir'
+					return 0
 			0
-		).property 'controller.sortType'
-		down: (->
-			0 > @get 'dir'
-		).property 'dir'
-		up: (->
-			0 < @get 'dir'
-		).property 'dir'
+		).property 'controller.sortType', 'controller.sortDir'
+		down: (-> 0 > @get 'dir').property 'dir'
+		up: (-> 0 < @get 'dir').property 'dir'
 		sort: (ascdesc) ->
-			if ascdesc is @dir
-				@set 'dir', 0	# reset
+			if ascdesc is @get 'dir'
+				@set 'controller.sortDir', 0	# reset
 			else 
-				# clear any other sorts
-				@set 'dir', ascdesc
-			for i of sortFields
-				if _.contains this.classNames, i
-					@set 'controller.sortType', i
-					@set 'controller.sortDir', @dir
-		sortdesc: () ->
-			@sort -1
-		sortasc: () ->
-			@sort 1
+				for i of sortFields
+					if _.contains this.classNames, i
+						@set 'controller.sortType', i
+						@set 'controller.sortDir', ascdesc
+			false
+		sortdesc: () -> @sort -1
+		sortasc: () -> @sort 1
 
