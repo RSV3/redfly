@@ -13,40 +13,40 @@
 		+unless ('theResults.paginatedItems')
 			.loading
 				i.icon-spinner.icon-spin
-		+each ('theResults.paginatedItems')
-			+view ('view.resultView')
-				.row-fluid.top
-					.span2.picture
+		| {{#each theResults.paginatedItems itemController="result"}}
+		.row-fluid.top
+			.span2.picture
+				+linkTo('contact this tagName="a"')
+					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+			.span10
+				.row-fluid
+					.span8
 						+linkTo('contact this tagName="a"')
-							| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					.span10
-						.row-fluid
-							.span8
-								+linkTo('contact this tagName="a"')
-									h3 {{canonicalName}}
-								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-							.span4
-								span.mailORintro
-									| {{#unless view.isKnown}}
-									| <a {{bindAttr href="view.introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
-									| {{/unless}}
-									| {{#if view.isKnown}}
-									| <a {{bindAttr href="view.directMailto"}} target="_blank">
-									i.icon-envelope.icon-large
-									| </a>
-									| {{/if}}
-								+view ('App.SocialView')
-									a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
-										i.icon-linkedin-sign.icon-large
-									a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
-										i.icon-twitter-sign.icon-large
-									a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
-										i.icon-facebook-sign.icon-large
-								div
-									+if ('linkedin')
-										br
-										a(bindAttr='href="view.linkedinMail"', target='_blank') Send a Linkedin inMail
-						.row-fluid
+							h3 {{canonicalName}}
+						| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+					.span4
+						span.mailORintro
+							| {{#if hasIntro}}
+							| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+							| {{/if}}
+							| {{#if isKnown}}
+							| <a {{bindAttr href="directMailto"}} target="_blank">
+							i.icon-envelope.icon-large
+							| </a>
+							| {{/if}}
+						+view ('App.SocialView')
+							a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+								i.icon-linkedin-sign.icon-large
+							a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+								i.icon-twitter-sign.icon-large
+							a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+								i.icon-facebook-sign.icon-large
+						div
+							+if ('linkedin')
+								br
+								a(bindAttr='href="linkedinMail"', target='result') Send a Linkedin inMail
+				.row-fluid
+		{{/each}}
 
 		ul.pager
 			li.previous
@@ -112,21 +112,9 @@
 			.span6
 				h4
 					| Proximity
-				.sort
-					| <a class="proximity" href="#" {{action sort}}>
-					i.icon-arrow-up.up
-					| </a>
-					| <a class="proximity" href="#" {{action sort}}>
-					i.icon-arrow-down
-					| </a>
+				+view ('App.SortView class="proximity"')
+
 			.span6
 				h4
 					| Influence
-				.sort
-					| <a class="influence" href="#" {{action sort}}>
-					i.icon-arrow-up.up
-					| </a>
-					| <a class="influence" href="#" {{action sort}}>
-					i.icon-arrow-down
-					| </a>
-
+				+view ('App.SortView class="influence"')
