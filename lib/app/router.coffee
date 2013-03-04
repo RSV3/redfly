@@ -64,16 +64,14 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsRoute = AuthenticatedRoute.extend
 		model: (params) ->
-			console.log "model"
-			console.log arguments
-			params.text
-		deserialize: (model) ->
-			console.log "deserialize"
-			console.log arguments
-			model.text
+			{ text: params.text }
+		serialize: (model, param) ->
+			{ query_text: model.text}
+		deserialize: (param) ->
+			{ text: param.query_text }
 		setupController: (controller, model) ->
 			console.log "setupController"
-			socket.emit 'fullSearch', query: model.get('text'), (results) =>
+			socket.emit 'fullSearch', query: model.text, (results) =>
 				controller.set 'all', App.Contact.find _id: $in: results
 
 

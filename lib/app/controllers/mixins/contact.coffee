@@ -2,25 +2,28 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactMixin = Ember.Mixin.create
 		isKnown: (->
-				@get('controller.knows')?.find (user) ->
+				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
-			).property 'controller.knows.@each.id'
+			).property 'knows.@each.id'
+		hasIntro: (->
+				@get('addedBy') and not @get('isKnown')
+			).property 'addedBy'
 		gmailSearch: (->
-				encodeURI '//gmail.com#search/to:' + @get('controller.email')
-			).property 'controller.email'
+				encodeURI "//gmail.com#search/to:#{@get('email')}"
+			).property 'email'
 		directMailto: (->
-				'mailto:'+ @get('controller.canonicalName') + ' <' + @get('controller.email') + '>' + '?subject=What are the haps my friend!'
-			).property 'controller.canonicalName', 'controller.email'
+				"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
+			).property 'canonicalName', 'email'
 		introMailto: (->
-				carriage = '%0D%0A'
-				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + '/contact/' + @get 'controller.id'
-				'mailto:' + @get('controller.addedBy.canonicalName') + ' <' + @get('controller.addedBy.email') + '>' +
-					'?subject=You know ' + @get('controller.nickname') + ', right?' +
-					'&body=Hey ' + @get('controller.addedBy.nickname') + ', would you kindly give me an intro to ' + @get('controller.canonicalName') + '? ' +
-					'This fella right here:' + carriage + carriage + encodeURI(url) +
-					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'controller.nickname', 'controller.canonicalName', 'controller.addedBy.canonicalName', 'controller.addedBy.email', 'controller.addedBy.nickname', 'App.user.nickname'
+				CR = '%0D%0A'		# carriage return / line feed
+				baseUrl = "http://#{window.location.hostname}"
+				port = if window.location.port then ":#{window.location.port}" else ""
+				url = "#{baseUrl}#{port}/contact/#{@get 'id'}"
+				"mailto:#{@get('addedBy.canonicalName')} <#{@get('addedBy.email')}>" +
+					"?subject=You know #{@get('nickname')}, right?" +
+					"&body=Hey #{@get('addedBy.nickname')}, would you kindly give me an intro to #{@get('canonicalName')}?#{CR}This fella right here: #{CR}#{CR}#{encodeURI(url)}#{CR}#{CR}Your servant,#{CR}#{App.user.get('nickname')}"
+			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname', 'App.user.nickname'
 		linkedinMail: (->
-				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('controller.linkedin') + '&creationType=DC'
-			).property 'controller.linkedin'
+				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
+

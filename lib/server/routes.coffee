@@ -116,6 +116,8 @@ module.exports = (app, route) ->
 	# optional limit for the dynamic searchbox,
 	# and a final callback where we can decide what attributes to package for returning
 	doSearch = (fn, data, searchMap, limit=0) ->
+		if not data.query
+			return []
 		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
