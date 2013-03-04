@@ -3,8 +3,8 @@
 require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	# TODO Figure out a more permanent solution.
 	templates = Ember.TEMPLATES
-	templates.index = require '../../templates/home'
 	templates.application = require '../../templates/application'
+	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'
 	templates.contact = require '../../templates/contact'
 	templates.contacts = require '../../templates/contacts'
