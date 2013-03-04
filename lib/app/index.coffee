@@ -15,7 +15,6 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	templates.report = require '../../templates/report'
 	templates.tags = require '../../templates/tags'
 	templates.results = require '../../templates/results'
-	templates.sort = require '../../templates/components/sort'
 
 	#
 	# oops! this isn't bindings aware, so is no help with pagination
