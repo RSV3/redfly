@@ -13,10 +13,7 @@ module.exports = (Ember, App, socket) ->
 		attributeBindings: ['role']
 		role: 'menu'
 		hasResults: (->
-				theyrethere = not _.isEmpty @get('results')
-				if @.get('waitingToDoSearch') and theyrethere
-					@doSearch()
-				theyrethere
+				not _.isEmpty @get('results')
 			).property 'results'
 
 		showResults: (->
@@ -29,21 +26,18 @@ module.exports = (Ember, App, socket) ->
 				@$(':focus').blur()
 		submit: ->
 			@$(':focus').blur()
-			if @get 'hasResults'
-				@doSearch()
-			else @set 'waitingToDoSearch', true
+			@doSearch()
 			return false   # Prevent a form submit.
 
 		doSearch: ->
-			props = {text: util.trim @get('query')}
-			newResults = App.Results.create props
-			@get('controller').transitionToRoute 'results', newResults
+			newResults = App.Results.create {text: util.trim @get('query')}
+			@get('controller').transitionTo "results", newResults
 
 		focusIn: ->
 			@set 'using', true
 		focusOut: ->
-			# Determine the newly focused element and see if it's anywhere inside the search view. If not, hide the results (after a small delay
-			# in case of mousedown).
+			# Determine the newly focused element and see if it's anywhere inside the search view. 
+			# If not, hide the results (after a small delay in case of mousedown).
 			setTimeout =>
 				focused = $(document.activeElement)
 				if not _.first @$().has(focused)
@@ -78,3 +72,4 @@ module.exports = (Ember, App, socket) ->
 									allResults.push model
 							@set 'allResults', allResults
 				).observes 'value', 'parentView.excludes'
+

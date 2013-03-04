@@ -2,9 +2,11 @@ module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	util = require '../util'
 
-
-
-	App.ContactController = Ember.ObjectController.extend
+	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
+		editpositiondetails: (->
+			if not (@get('position') or @get('company') or @get('experience'))
+				"Edit details about #{@get('nickname')}'s professional experience"
+		).property 'position', 'company', 'yearsExperience'
 		histories: (->
 				# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
 				# fake contact is below the page break and has no ID set
@@ -46,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'currentNote', null
 
 
-	App.ContactView = Ember.View.extend App.ContactMixin,
+	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']
 

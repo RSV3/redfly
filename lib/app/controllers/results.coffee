@@ -15,7 +15,7 @@ module.exports = (Ember, App, socket) ->
 		toptags = []
 		for t of tags
 			lab = _s.capitalize(t)
-			if lab.length > 30 then lab = lab.substr(0,30) + '...'						# truncate long tags
+			if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
 			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
 		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data'		# and this one's for krz
 		tagnames = _.pluck tts, 'id'
@@ -43,7 +43,7 @@ module.exports = (Ember, App, socket) ->
 	App.ResultsController = Ember.ObjectController.extend
 		hiding: 0			# this is just for templating, whether or not results are filtered out
 		sortType: null		# identify sorting rule
-		sortDir: false		# true if ascending
+		sortDir: 0			# 1 if ascending, -1 if descending
 		years: 0			# value of selection from 'years experience' drop down
 		yearsToSelect: []	# array of years from 1..max
 		indTags: []			# all industry tags in the search
@@ -53,6 +53,7 @@ module.exports = (Ember, App, socket) ->
 		orgToSelect: []
 		orgToConsider: []
 		all: []				# every last search result
+		initialflag: 0		# dont scroll on initial load
 		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
 				if _.isEmpty (oC = @get('all'))
 					return []
@@ -72,6 +73,7 @@ module.exports = (Ember, App, socket) ->
 
 		theResults: (->		# paginated content
 			if not @get 'filteredItems.length'
+				@initialflag=0
 				[]
 			else Ember.ArrayProxy.createWithMixins App.Pagination,
 				content: do =>
@@ -81,14 +83,17 @@ module.exports = (Ember, App, socket) ->
 						Ember.ArrayController.create
 							content: @get 'filteredItems'
 							sortProperties: [sortFields[@get 'sortType']]
-							sortAscending: @get 'sortDir'
+							sortAscending: @get('sortDir') is 1
 							orderBy: sortFunc[@get 'sortType']
 					else
 						@get 'filteredItems'
 		).property 'filteredItems.@each', 'sortType', 'sortDir'
 
 		scrollUp: (->
-			$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
+			rs = @get 'theResults.rangeStart'
+			if @initialflag isnt rs
+				@initialflag = rs
+				$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
 		).observes 'theResults.rangeStart'
 
 		setOrgTags: (->
@@ -107,7 +112,7 @@ module.exports = (Ember, App, socket) ->
 						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
 				@set 'yearsToSelect', years
 				@set 'orgTags', Ember.ArrayProxy.create
-					content: App.Tag.find {category: $ne: 'industry', contact: $in: oC.getEach('id')}
+					content: App.Tag.find {category: {$ne: 'industry'}, contact: $in: oC.getEach('id')}
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
 			).observes 'all.@each'
@@ -115,22 +120,71 @@ module.exports = (Ember, App, socket) ->
 		toggleind: ()-> toggleFilter 'ind'		# toggle visbility of the industry tags
 		toggleorg: ()-> toggleFilter 'org'		# toggle visbility of the organisational tags
 
-		sort: (ev)->
-			resetting = $(ev.target).hasClass 'icon-large'		# krz won't like this,
-			$('.icon-large').removeClass 'icon-large'			# but I decided this was more succinct
-			if not resetting then $(ev.target).addClass 'icon-large'
-
-			dir = ($(ev.target).hasClass 'up')					# OK, no more jquery: state is on controller
-			type = $(ev.target).parent().attr 'class'
-			if @.get('sortDir') is dir and @.get('sortType') is type then type = null	# undo sort setting
-			@.set 'sortType', type
-			@.set 'sortDir', dir
-
+		###
+		proximityView: App.SortView
+		influenceView: App.SortView
+		###
 
 	App.ResultsView = Ember.View.extend
-		template: require '../../../templates/results'
 		classNames: ['results']
-		resultView: Ember.View.extend App.ContactMixin,
-			socialView: App.SocialView
-			introView: App.IntroView
+
+	App.ResultController = Ember.ObjectController.extend App.ContactMixin,
+		isKnown: (->
+				@get('knows')?.find (user) ->
+					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
+			).property 'knows.@each.id'
+		gmailSearch: (->
+				encodeURI '//gmail.com#search/to:' + @get('email')
+			).property 'email'
+		directMailto: (->
+				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
+			).property 'canonicalName', 'email'
+		hasIntro: (->
+				@get('addedBy') and not @get('isKnown')		#and @get('addedBy.email') 
+			).property 'addedBy'
+		introMailto: (->
+				carriage = '%0D%0A'
+				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
+				url = baseUrl + '/contact/' + @get 'id'
+				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
+					'?subject=You know ' + @get('nickname') + ', right?' +
+					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
+					'This fella right here:' + carriage + carriage + encodeURI(url) +
+					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
+			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname'
+		linkedinMail: (->
+				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
+
+
+	App.SortView = Ember.View.extend
+		template: require '../../../templates/components/sort'
+		classNames: ['sort']
+		dir: (->
+			for i of sortFields
+				if _.contains this.classNames, i
+					if i is @get 'controller.sortType'
+						return @get 'content'
+			0
+		).property 'controller.sortType'
+		down: (->
+			0 > @get 'dir'
+		).property 'dir'
+		up: (->
+			0 < @get 'dir'
+		).property 'dir'
+		sort: (ascdesc) ->
+			if ascdesc is @dir
+				@set 'dir', 0	# reset
+			else 
+				# clear any other sorts
+				@set 'dir', ascdesc
+			for i of sortFields
+				if _.contains this.classNames, i
+					@set 'controller.sortType', i
+					@set 'controller.sortDir', @dir
+		sortdesc: () ->
+			@sort -1
+		sortasc: () ->
+			@sort 1
 
