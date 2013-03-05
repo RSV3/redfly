@@ -59,6 +59,9 @@ module.exports = (Ember, App, socket) ->
 					App.adapter.findMany App.store, App.Contact, changes
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
+			socket.emit 'summary.organisation', (title) ->
+				console.log "got #{title} from server on summary.organisation"
+				App.set 'orgTitle', title
 			socket.emit 'summary.contacts', (count) =>
 				@set 'controller.contactsQueued', count
 			socket.emit 'summary.tags', (count) =>

@@ -87,7 +87,7 @@ module.exports = (Ember, App, socket) ->
 						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
 				@set 'yearsToSelect', years
 				@set 'orgTags', Ember.ArrayProxy.create
-					content: App.Tag.find {category: 'redstar', contact: $in: oC.getEach('id')}
+					content: App.Tag.find {category: 'organisation', contact: $in: oC.getEach('id')}
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
 			).observes 'all.@each'

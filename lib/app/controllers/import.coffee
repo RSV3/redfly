@@ -110,7 +110,7 @@ module.exports = (Ember, App, socket) ->
 							require('async').forEach ['emails', 'names'], (field, cb) ->
 								validate.contact[field] result[field], cb
 							, (message) =>
-								if message is 'This is a Redstar person.'	# hacky
+								if message is "blacklisted" # hacky
 									result.status.blacklisted = true
 								else if message
 									result.status.error = message
