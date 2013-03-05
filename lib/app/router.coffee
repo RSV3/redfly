@@ -143,7 +143,7 @@ module.exports = (Ember, App, socket) ->
 				enter: (manager) ->
 					util.notify
 						title: 'Invalid Account'
-						text: 'You must use your Redstar account.'
+						text: "You must use your #{App.get('orgTitle')} account."
 						before_open: (pnotify) =>
 							pnotify.css top: '60px'
 				redirectsTo: 'index'

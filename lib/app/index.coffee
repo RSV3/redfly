@@ -16,6 +16,7 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 		value = Ember.Handlebars.getPath @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
 		'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
+
 	App.user = Ember.ObjectProxy.create
 		classifyCount: 0
 

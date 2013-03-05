@@ -75,6 +75,9 @@ module.exports = (app, route) ->
 				throw new Error
 
 
+	route 'summary.organisation', (fn) ->
+		fn process.env.ORGANISATION_TITLE
+
 	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
 			throw err if err

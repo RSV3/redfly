@@ -74,7 +74,7 @@ module.exports = (user, notifications = {}, cb) ->
 									if (not name) or (validators.isEmail name)
 										name = null
 
-									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
+									# Only added external people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
 									blacklist = require '../blacklist'
 									if (validators.isEmail email) and (email isnt user.email) and
 											(_.last(email.split('@')) not in blacklist.domains) and

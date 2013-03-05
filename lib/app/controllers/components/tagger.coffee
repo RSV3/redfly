@@ -16,7 +16,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'contact.id', 'category'
 		autocompleteTags: (->
 				socket.emit 'tags.all', category: @get('category'), (allTags) =>
-					allTags = _.union allTags, dictionary[@get('category') or 'redstar']
+					allTags = _.union allTags, dictionary[@get('category') or 'organisation']
 					allTags = @_filterTags allTags
 					result.pushObjects allTags
 				result = []
@@ -51,13 +51,13 @@ module.exports = (Ember, App, socket) ->
 					date: new Date	# Only so that sorting is smooth.
 					creator: App.user
 					contact: @get 'contact'
-					category: @get('category') or 'redstar'
+					category: @get('category') or 'organisation'
 					body: tag
 				App.store.commit()
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
-				@$(".body:contains('" + tag + "')").parent().addClass 'animated pulse'
+				@$(".body:contains('#{tag}')").parent().addClass 'animated pulse'
 
 		tagView: App.TagView.extend
 			delete: (event) ->
@@ -147,7 +147,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	dictionary =
-		redstar: [
+		organisation: [
 			'ideator'
 			'germ'
 			'pitch'
