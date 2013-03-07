@@ -6,9 +6,11 @@ module.exports = (app, route) ->
 
 	route 'db', (fn, data) ->
 		feed = (doc) ->
-			app.io.broadcast 'feed',
+			o =
 				type: data.type
 				id: doc.id
+			if doc.addedBy then o.addedBy = doc.addedBy
+			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
 			root = data.type.toLowerCase()
