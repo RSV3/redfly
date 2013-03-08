@@ -5,7 +5,7 @@ module.exports =
 	development:
 		HOST: 'localhost:5000'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'pharcosyle+redfly_development_intercept@gmail.com'
+		INTERCEPT_EMAIL: 'justin+redfly_development_stop_sending_me_fifteen_billion_emails_jerk@redstar.com'
 
 		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
