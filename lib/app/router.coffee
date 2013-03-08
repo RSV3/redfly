@@ -1,4 +1,6 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
+	_s = require 'underscore.string'
 	util = require './util'
 
 
@@ -10,6 +12,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'contact', path: '/contact/:contact_id'
 		@route 'contacts'
 		@route 'leaderboard'
+		@resource 'results', path: '/results/:query_text'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -37,6 +40,23 @@ module.exports = (Ember, App, socket) ->
 	App.ContactRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
+
+	App.ContactsRoute = Ember.Route.extend
+		setupController: (controller, model) ->
+			controller.set 'addedContacts', App.Contact.find(added: $exists: true)
+
+	App.ResultsRoute = Ember.Route.extend
+		model: (params) ->
+			{ text: params.text }
+		serialize: (model, param) ->
+			{ query_text: model.text}
+		deserialize: (param) ->
+			{ text: param.query_text }
+		setupController: (controller, model) ->
+			console.log "setupController"
+			socket.emit 'fullSearch', query: model.text, (results) =>
+				controller.set 'all', App.Contact.find _id: $in: results
+
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->
 			App.User.find()

@@ -14,9 +14,14 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	templates.profile = require '../../templates/profile'
 	templates.report = require '../../templates/report'
 	templates.tags = require '../../templates/tags'
+	templates.results = require '../../templates/results'
 
-	Handlebars.registerHelper 'format', (property, options) ->		# TODO when we upgrade ember, make this registerBoundHelper
-		value = Ember.Handlebars.get @, property, options	# Note - this is not bindings aware: Doesn't work with profile page
+	Ember.Handlebars.registerBoundHelper 'plusOne', (value, options) ->
+		if typeof value == 'string'
+			value = parseInt value, 10
+		1 + value
+
+	Ember.Handlebars.registerBoundHelper 'format', (value, options) ->
 		'' + value.getDate() + '-' + (value.getMonth() + 1) + '-' + value.getFullYear()
 
 	App.user = Ember.ObjectProxy.create()
