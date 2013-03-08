@@ -1,0 +1,120 @@
+.row-fluid
+
+	.span8
+
+		ul.pager.toppager
+			li.previous
+				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
+			li.next
+				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
+
+		+unless ('theResults.paginatedItems')
+			.loading
+				i.icon-spinner.icon-spin
+		| {{#each theResults.paginatedItems itemController="result"}}
+		.row-fluid.top
+			.span2.picture
+				+linkTo('contact this tagName="a"')
+					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+			.span10
+				.row-fluid
+					.span8
+						+linkTo('contact this tagName="a"')
+							h3 {{canonicalName}}
+						| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+					.span4
+						span.mailORintro
+							| {{#if hasIntro}}
+							| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+							| {{/if}}
+							| {{#if isKnown}}
+							| <a {{bindAttr href="directMailto"}} target="_blank">
+							i.icon-envelope.icon-large
+							| </a>
+							| {{/if}}
+						+view ('App.SocialView')
+							a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+								i.icon-linkedin-sign.icon-large
+							a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+								i.icon-twitter-sign.icon-large
+							a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+								i.icon-facebook-sign.icon-large
+						div
+							+if ('linkedin')
+								br
+								a(bindAttr='href="linkedinMail"', target='result') Send a Linkedin inMail
+				.row-fluid
+		{{/each}}
+
+		ul.pager
+			li.previous
+				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
+			li.next
+				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
+
+
+	.span1
+	.span3.search-filters
+		{{#if all.length}}
+		br
+		i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
+		{{/if}}
+		h3
+			| Filters
+		{{#if orgTagsToSelect.length}}
+		h4
+			| Redstar Tags
+			| <a class="toggle" {{action toggleorg target="controller" href=true}}>
+			i.toggleorg.icon-caret-up
+			| </a>
+		.filters.toggleorg
+			{{#each item in orgTagsToSelect}}
+			.checkfilter
+				|<label>
+				{{view Ember.Checkbox checkedBinding="item.checked"}}
+				{{item.label}}
+				|</label>
+			{{/each}}
+		{{/if}}
+		{{#if indTagsToSelect.length}}
+		h4
+			| Industry Tags
+			| <a class="toggle" {{action toggleind target="controller" href=true}}>
+			i.toggleind.icon-caret-down
+			| </a>
+		.filters.toggleind.collapsed
+			{{#each item in indTagsToSelect}}
+			.checkfilter
+				|<label>
+				{{view Ember.Checkbox checkedBinding="item.checked"}}
+				{{item.label}}
+				|</label>
+			{{/each}}
+		{{/if}}
+		{{#if yearsToSelect.length}}
+		h4
+			| Experience
+		{{view Ember.Select
+		|	contentBinding="yearsToSelect"
+		|	optionValuePath="content.years"
+		|	optionLabelPath="content.label"
+		|	valueBinding="years"
+		|	prompt="Select a minimum ..."
+		}}
+		{{/if}}
+		h3
+			| Sort
+		.row-fluid
+			.span6
+				h4
+					| Proximity
+				+view ('App.SortView class="proximity"')
+
+			.span6
+				h4
+					| Influence
+				+view ('App.SortView class="influence"')
