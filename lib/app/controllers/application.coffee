@@ -41,6 +41,8 @@ module.exports = (Ember, App, socket) ->
 				item['type' + _s.capitalize(type)] = true
 				if type is 'linkedin'
 					item['updater'] = App.User.find data.updater
+				else if data.addedBy
+					item['addedBy'] =  App.User.find data.addedBy
 				@get('controller.feed').unshiftObject item
 
 			# Update contacts if they recieve additional linkedin data.

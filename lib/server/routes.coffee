@@ -3,17 +3,17 @@ module.exports = (app, route) ->
 	logic = require './logic'
 	models = require './models'
 
-
 	route 'db', (fn, data) ->
 		feed = (doc) ->
-			app.io.broadcast 'feed',
+			o =
 				type: data.type
 				id: doc.id
+			if doc.addedBy then o.addedBy = doc.addedBy
+			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
 			root = data.type.toLowerCase()
-			if _.isArray payload
-				root += 's'
+			if _.isArray payload then root += 's'
 			hash = {}
 			hash[root] = payload
 			fn hash
@@ -176,10 +176,8 @@ module.exports = (app, route) ->
 		doSearch fn, data
 		, (type, typeDocs, results=[]) ->
 			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
-				if type is 'tag' or type is 'note'
-					doc.contact
-				else
-					doc.id
+				if type is 'tag' or type is 'note' then doc.contact
+				else doc.id
 			), true, (id) -> String(id)
 			return results
 
@@ -277,10 +275,8 @@ module.exports = (app, route) ->
 								doc[update.field] = contact
 								doc.save (err) ->
 									# If there's a duplicate key error that means the same tag is on two contacts, just delete the other one.
-									if err?.code is 11001
-										doc.remove cb
-									else
-										cb err
+									if err?.code is 11001 then doc.remove cb
+									else cb err
 							, (err) ->
 								cb err
 					, (err) ->
@@ -291,14 +287,11 @@ module.exports = (app, route) ->
 						throw err if err
 						return fn()
 
+	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	route 'parse', (fn, id, io) ->
-		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
 			throw err if err
-			# temporary, in case this gets called and there's not logged in user
-			if not user
-				return fn()
-
+			if not user then return fn()	# in case this gets called and there's not logged in user
 			notifications =
 				foundTotal: (total) ->
 					io.emit 'parse.total', total
@@ -308,16 +301,13 @@ module.exports = (app, route) ->
 					io.emit 'parse.queueing'
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
-
-			require('./parser') user, notifications, fn
+			require('./parser') user, notifications, (err, contacts) ->
+				fn err
 
 	route 'linkin', (fn, id, io, session) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
-			# temporary, in case this gets called and there's not logged in user
-			if not user
-				return fn(err)
-
+			if not user then return fn err	# in case this gets called and there's not logged in user
 			notifications =
 				foundTotal: (total) ->
 					io.emit 'link.total', total
@@ -330,9 +320,7 @@ module.exports = (app, route) ->
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
-
-			require('./linker').linker user, session.linkedinAuth, notifications, (err, changes) ->
-				if not _.isEmpty changes
-					io.emit 'linked', changes
-				fn(err)
+			require('./linker') user, session.linkedinAuth, notifications, null, (err, changes) ->
+				if not _.isEmpty changes then io.emit 'linked', changes
+				fn err
 
