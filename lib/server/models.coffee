@@ -6,7 +6,12 @@ Schema = models.db.Schema
 Types = Schema.Types
 
 
-excludeSchema = new Schema
+oldexcludeSchema = new Schema
+	email: type: String, trim: true, lowercase: true, validate: validators.isEmail
+	name: type: String, trim: true
+
+ExcludeSchema = new Schema
+	user: type: Types.ObjectId
 	email: type: String, trim: true, lowercase: true, validate: validators.isEmail
 	name: type: String, trim: true
 
@@ -17,8 +22,11 @@ UserSchema = new Schema
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
-	excludes: [excludeSchema]
+	excludes: [oldexcludeSchema]
 	linkedin: type: String
+	linkedInAuth: 
+		token: type: String
+		secret: type: String
 
 
 ContactSchema = new Schema
@@ -66,6 +74,8 @@ LinkedInSchema = new Schema
 	specialties: [ type: String ]
 	summary: type: String, trim: true
 	headline: type: String, trim: true
+	pictureUrl: type: String, trim: true
+	yearsExperience: type: Number
 	lastLink: type: Date
 
 
@@ -74,7 +84,7 @@ MergeSchema = new Schema
 
 
 
-excludeSchema.plugin models.common
+oldexcludeSchema.plugin models.common
 UserSchema.plugin models.common
 ContactSchema.plugin models.common
 TagSchema.plugin models.common
@@ -82,10 +92,9 @@ NoteSchema.plugin models.common
 MailSchema.plugin models.common
 LinkedInSchema.plugin models.common
 MergeSchema.plugin models.common
-
+ExcludeSchema.plugin models.common
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
-
 
 exports.User = models.db.model 'User', UserSchema
 exports.Contact = models.db.model 'Contact', ContactSchema
@@ -94,3 +103,5 @@ exports.Note = models.db.model 'Note', NoteSchema
 exports.Mail = models.db.model 'Mail', MailSchema
 exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
 exports.Merge = models.db.model 'Merge', MergeSchema
+exports.Exclude = models.db.model 'Exclude', ExcludeSchema
+

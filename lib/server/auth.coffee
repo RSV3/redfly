@@ -90,6 +90,9 @@ everyauth.linkedin.configure
 			throw err if err
 			if not user.linkedin or (user.linkedin isnt linkedinUserMetadata.id)
 				user.linkedin = linkedinUserMetadata.id
+				user.linkedInAuth =
+					token: accessToken
+					secret: accessTokenSecret
 				user.save (err) ->
 					throw err if err
 					promise.fulfill user
