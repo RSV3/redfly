@@ -43,7 +43,7 @@ module.exports = (Ember, App, socket) ->
 			queue.pushObject contact
 			@_next()
 		ignore: ->
-			exclude = {user: App.user.get 'id'}
+			exclude = {user: App.user}
 			if email = @get('model.email')
 				exclude.email = email
 			if name = @get('model.name')
