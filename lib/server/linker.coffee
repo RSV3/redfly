@@ -5,12 +5,28 @@ models = require './models'
 validators = require('validator').validators
 
 
-_syncForEach = (list, iterator, final_cb) ->
+###
+#	Regular Expression helpers
+###
+
+#   escape a string in preparation for building a regular expression
+REescape = (str) ->
+	if not str then return ""
+	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+
+# make a case-insensitive regexp from a string
+REImake = (str) ->
+	return new RegExp('^' + REescape(str) + '$', 'i')
+
+
+# async (but serial, consecutive with callback) collection processing
+
+_syncForEach = (list, iterator, final_cb, count=0) ->
 	if not list.length
 		return final_cb()
 	item = list.shift()
-	iterator item, () ->
-		_syncForEach list, iterator, final_cb
+	iterator item, count++, () ->
+		_syncForEach list, iterator, final_cb, count
 
 syncForEach = (list, iterator, final_cb) ->
 	if not list.length
@@ -36,20 +52,17 @@ getLinked = (partial, oa, cb) ->
 
 
 #
-# confirm whether the linkedin id, or matched contact, have already been done this week
+# confirm is a callback that takes a boolean
+# to indicate whether the linkedin id, or matched contact, have already been done this week
 #
 alreadyLinked = (id, contact, confirm) ->
 	lastWeek = new Date()
 	lastWeek.setDate(lastWeek.getDate() - 7)
-	if contact
-		query = {contact:contact}
-	else
-		query = {linkedinId: id}
+	if contact then query = {contact:contact}
+	else query = {linkedinId: id}
 	models.LinkedIn.findOne query, {lastLink:true}, (err, linkedin) ->
-		if err or not linkedin
-			return confirm false
-		if not linkedin.lastLink or linkedin.lastLink < lastWeek
-			return confirm false
+		if err or not linkedin then return confirm false
+		if not linkedin.lastLink or linkedin.lastLink < lastWeek then return confirm false
 		confirm true
 
 
@@ -60,7 +73,7 @@ getDeets = (id, contact, oa, cb) ->
 	alreadyLinked id, contact, (test) ->
 		if test
 			return cb null, null
-		u = ('/id=' + id + ':(industry,specialties,positions,picture-url,headline,summary)')
+		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary)')
 		getLinked u, oa, cb
 
 
@@ -136,16 +149,25 @@ liDateCompare = (d1, d2) ->
 calculateExperience  = (contact, details) ->
 	months = 0
 
+	if contact and (contact.position or contact.company)
+		current = {position: contact.position, company: contact.company}
+	else if details.positions and details.positions.length
+		current = {position: details.positions[0].title, company: details.positions[0].company.name}
+	else return 0		# no position to have experience in...
+
 	for position in details.positions
-		if position.title is contact.position and position.company.name is contact.company
+		if position.title is current.position and position.company.name is current.company
 			whichpos = position
-	if not whichpos
-		return months
+	if not whichpos					# maybe it was a promotion?
+		for position in details.positions
+			if position.company.name is current.company and not position.endDate.year
+				whichpos = position
+	if not whichpos then return 0		# if we still can't match current position/company, return 0
 
 	for position in details.positions
 		if position isnt whichpos
 			if position.company.industry == whichpos.company.industry
-				if liDateCompare(position.startDate, whichpos.startDate) < 0
+				if liDateCompare(position.startDate, whichpos.startDate) < 0	# older position/ same industry
 					whichpos = position
 
 	d = new Date()
@@ -196,6 +218,7 @@ push2linkQ = (notifications, user, contact, details) ->
 	industries = _.pluck companies, 'industry'
 	industries.unshift details.industry
 	companies = _.pluck companies, 'name'
+	details.yearsExperience = calculateExperience contact, details
 
 	addDeets2Linkedin user, contact, details, 
 		specialties:specialties
@@ -209,24 +232,23 @@ push2linkQ = (notifications, user, contact, details) ->
 	null
 
 
-saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
+updateLIrec = (details, linkedin, field)->
+	if details[field] then linkedin[field] = details[field]
 
+saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 	if not linkedin
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
 		linkedin.linkedinId = details.id
 		linkedin.user = user
-		if not contact
-			linkedin.name = 
-				firstName: details.firstName
-				lastName: details.lastName
-				formattedName: details.formattedName
-
-	if details.summary and linkedin.summary isnt details.summary
-		linkedin.summary = details.summary
-	if details.headline and linkedin.headline isnt details.headline
-		linkedin.headline = details.headline
-
+		linkedin.name = 
+			firstName: details.firstName
+			lastName: details.lastName
+			formattedName: details.formattedName
+	updateLIrec details, linkedin, 'yearsExperience'
+	updateLIrec details, linkedin, 'pictureUrl'
+	updateLIrec details, linkedin, 'summary'
+	updateLIrec details, linkedin, 'headline'
 	for detail, list of listedDetails
 		if list and list.length
 			for item in list
@@ -235,7 +257,6 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 						linkedin[detail] = [item]
 					else if (_.indexOf item, linkedin[detail]) < 0
 						linkedin[detail].addToSet item
-
 	linkedin.lastLink = new Date()
 	linkedin.save (err) ->
 
@@ -273,6 +294,9 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		else if not contact.position
 			dirtycontact = true
 			contact.position = details.positions[0].title
+		else if contact.company = details.positions[0].company?.name	# possibly a promotion?
+			dirtycontact = true
+			contact.position = details.positions[0].title
 
 	if not contact.picture and details.pictureUrl
 		contact.picture = details.pictureUrl
@@ -290,9 +314,8 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		contact.linkedin = details.profileid
 		dirtycontact = true
 	
-	years = calculateExperience contact, details
-	if contact.yearsExperience isnt years
-		contact.yearsExperience = years
+	if details.yearsExperience and contact.yearsExperience isnt details.yearsExperience
+		contact.yearsExperience = details.yearsExperience
 		dirtycontact = true
 
 	if dirtycontact
@@ -301,7 +324,6 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		return contact._id
 
 	null
-
 
 
 #
@@ -325,14 +347,6 @@ _matchContact = (user, contacts, cb) ->
 
 
 ###
-#   escape a string in preparation for building a regular expression
-###
-REescape = (str) ->
-	if not str then return ""
-	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-
-
-###
 # first tries to match contacts with name
 # if that fails, tries again with case insensitive regexp (that we know fails on unicode)
 ###
@@ -344,7 +358,7 @@ matchInsensitiveContact = (name, cb) ->
 			cb contacts
 		else
 	###
-	rName = new RegExp('^' + REescape(name) + '$', 'i')
+	rName = REImake name
 	models.Contact.find names: rName, (err, contacts) ->
 		throw err if err
 		cb contacts
@@ -362,7 +376,7 @@ but if this won't work, return an array of possible matches, and let spongebob s
 TODO: one option might be to make a (n+1)-th contact, and let the user merge (if they can ...)
 ###
 matchContact = (user, first, last, formatted, cb) ->
-	name = first + ' ' + last
+	name = "#{first} #{last}"
 	matchInsensitiveContact name, (contacts) ->
 		if contacts or name is formatted then _matchContact user, contacts, cb
 		else matchInsensitiveContact formatted, (contacts) ->
@@ -384,18 +398,47 @@ profileIdFrom = (item) ->
 	id?.substr 0, id.indexOf('&')
 
 
-linker = (user, auth, notifications, fn) ->
+#
+# for all un-matched linkedin records,
+# step through this user's contacts, and try to match them.
+#
+# u = user
+# c = contact
+# l = linkedin record
+#
+findAndUpdateOtherLinkedInDataFor = (u, conts) ->
+	models.LinkedIn.findOne {contact:null}, (err, linkds) ->
+		if err or not linkds then return
+		for l in linkds
+			for c in conts
+				match = false
+				for n in c.names
+					rName = REImake n
+					if l.name.formattedName.match(n) or "#{l.name.firstName} #{l.name.lastName}".match(n)
+						match = true
+				if not match then continue
+				details =
+					id: l.linkedinId
+					pictureUrl: l.pictureUrl
+					yearsExperience: l.yearsExperience
+					positions: [{ title: l.positions[0], company: name: l.companies[0]}]
+				addDeets2Contact null, u, c, details, l.specialties, l.industries
+				break;
+
+
+
+linker = (user, auth, notifications, finalCB) ->
+
+	if not auth or not auth.token then return finalCB null, null
+
+	fn = (err, changed, count=0) ->
+		if not count and not user.linkedInThrottle or count is user.linkedInThrottle
+			return finalCB err, changed
+		user.linkedInThrottle = count
+		user.save (othererror) ->
+			finalCB err, changed
 
 	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
-#
-#	TODO : what if we have linkedin contacts before we ever email them?
-#	if they never updated their linkedin, we'd never pick out their data ...
-#
-#		if user.lastlink
-#			parturl += "?modified-since=#{user.lastlink}"
-
-	# today = new Date()
-	# user.lastlink = today.getTime() + today.getTimezoneOffset()*1000
 
 	oauth = 
 		consumer_key: process.env.LINKEDIN_API_KEY
@@ -411,17 +454,17 @@ linker = (user, auth, notifications, fn) ->
 		notifications.foundTotal? network.values.length
 		countSomeFeed = 9		# only add the first few new items to the feed
 
-		liProcess = (item, contact, cb, notYetContacts=false) ->
+		liProcess = (item, contact, cb, counter=-1) ->
 			getDeets item.id, contact, oauth, (err, deets) ->
 				notifications.completedContact?()
 				if err or not deets
 					if err and err.statusCode is 403
-						if notYetContacts		# was this during the second parse?
-							err = null			# if so, don't report throttle
+						if counter < 0					# was this during the second parse?
+							return fn null, changed		# if so, don't report throttle
 						else
 							console.log "linkedin process throttled"
 							console.dir err
-						return fn err, changed
+							return fn err, changed, counter
 					else if err
 						console.log "error in linkedin process"
 						console.dir err
@@ -430,8 +473,9 @@ linker = (user, auth, notifications, fn) ->
 						if key is 'positions'
 							item[key] = _.select val.values, (p) -> p.isCurrent
 							item.pastpositions = _.select val.values, (p) -> not p.isCurrent
-						else
-							item[key] = val
+						else if key is 'pictureUrls'
+							if val._total then item.pictureUrl = val.values[0]
+						else item[key] = val
 
 					if countSomeFeed
 						countSomeFeed--
@@ -442,7 +486,7 @@ linker = (user, auth, notifications, fn) ->
 				cb()
 
 		maybeMore = []
-		syncForEach network.values, (item, cb) ->
+		syncForEach network.values, (item, counter, cb) ->
 			item.profileid = profileIdFrom item
 			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
 				notifications.completedLinkedin?()
@@ -450,17 +494,30 @@ linker = (user, auth, notifications, fn) ->
 					maybeMore.push item
 					cb()
 				else
-					liProcess item, contact, cb
+					liProcess item, contact, cb, counter
 		, ->
 			if not maybeMore.length
 				return fn null, changed
-			syncForEach maybeMore, (item, cb) ->
-				liProcess item, null, cb, true			# this true flag means we won't report throttle
+			syncForEach maybeMore, (item, counter, cb) ->
+				liProcess item, null, cb		# without a 4th (counter) param, we won't report throttle
 			, ->
 				return fn null, changed
 
-module.exports =
-	linker: linker
-	matchContact: matchContact
-	calculateExperience: calculateExperience
+#
+# this module hooks up with linkedin using the supplied oauth2 credentials
+# pulls down the user's linked in network
+# and saves the data in a linkedin collection,
+# optionally updating contacts that may match those record.
+#
+# If the notifications object has the right vectors they fire during the process
+# If the contacts list holds items (c.f. parser) then we trawl through the full linkedin collection
+# to search for any good data from other users on these new contacts
+#
+module.exports = (user, auth, notifications={}, contacts, cb) ->
+	linker user, auth, notifications, (err, changes) ->
+		contacts = _.filter contacts, (c)-> _.contains(changes, c._id)
+		if not _.isEmpty contacts
+			findAndUpdateOtherLinkedInDataFor user, contacts
+		cb err, changes
+
 

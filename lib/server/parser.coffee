@@ -2,7 +2,7 @@
 module.exports = (user, notifications = {}, cb) ->
 	_ = require 'underscore'
 	mailer = require './mail'
-
+	models = require './models'
 
 	parse = (user, notifications, cb) ->
 		util = require './util'
@@ -16,6 +16,7 @@ module.exports = (user, notifications = {}, cb) ->
 
 		generator.getToken (err, token) ->
 			if err
+				console.log "generator.getToken"
 				console.warn err
 				# Just send the newsletter and quit if the user can't be parsed.
 				return mailer.sendNewsletter user, cb
@@ -29,6 +30,7 @@ module.exports = (user, notifications = {}, cb) ->
 
 			server.connect (err) ->
 				if err
+					console.dir err
 					return cb new Error 'Problem connecting to gmail.'
 				
 				server.openBox '[Gmail]/All Mail', true, (err, box) ->
@@ -43,76 +45,92 @@ module.exports = (user, notifications = {}, cb) ->
 					server.search criteria, (err, results) ->
 						throw err if err
 
-						mimelib = require 'mimelib'
-						mails = []
-						notifications.foundTotal? results.length
+						# if we got this far, it's really happening:
+						# so we'll need a list of excludes (contacts skipped forever)
+						models.Exclude.find {user: user._id}, (err, excludes) ->
+							throw err if err
 
-						finish = ->
-							notifications.completedAllEmails?()
-							enqueue user, notifications, mails, cb
-							server.logout()
+							mimelib = require 'mimelib'
+							mails = []
+							notifications.foundTotal? results.length
 
-						if results.length is 0
-							# Return statement is important, simply invoking the callback doesn't stop code from excuting in the current scope.
-							return finish()
+							finish = ->
+								notifications.completedAllEmails?()
+								enqueue user, notifications, mails, cb
+								server.logout()
 
-						fetch = server.fetch results,
-							request:
-								headers: ['from', 'to', 'subject', 'date']
-						
-						fetch.on 'message', (msg) ->
-							msg.on 'end', ->
-								for to in mimelib.parseAddresses msg.headers.to?[0]
-									email = util.trim to.address.toLowerCase()
+							if results.length is 0
+								# Return statement is important, simply invoking the callback doesn't stop code from excuting in the current scope.
+								return finish()
 
-									junkChars = ' \'",<>'
-									name = util.trim to.name, junkChars
-									comma = name.indexOf ','
-									if comma isnt -1
-										name = name[comma + 1..] + ' ' + name[...comma]
-										name = util.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
-									if (not name) or (validators.isEmail name)
-										name = null
+							fetch = server.fetch results,
+								request:
+									headers: ['from', 'to', 'subject', 'date']
+							
+							fetch.on 'message', (msg) ->
+								msg.on 'end', ->
+									for to in mimelib.parseAddresses msg.headers.to?[0]
+										email = util.trim to.address.toLowerCase()
 
-									# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
-									blacklist = require '../blacklist'
-									if (validators.isEmail email) and (email isnt user.email) and
-											(_.last(email.split('@')) not in blacklist.domains) and
-											(name not in blacklist.names) and
-											(email not in blacklist.emails) and
-											(name not in _.pluck(user.excludes, 'name')) and
-											(email not in _.pluck(user.excludes, 'email'))
-										mails.push
-											subject: msg.headers.subject?[0]
-											sent: new Date msg.headers.date?[0]
-											recipientEmail: email
-											recipientName: name
-								notifications.completedEmail?()
+										junkChars = ' \'",<>'
+										name = util.trim to.name, junkChars
+										comma = name.indexOf ','
+										if comma isnt -1
+											name = name[comma + 1..] + ' ' + name[...comma]
+											name = util.trim name, junkChars	# Trim the name again in case the swap revealed more junk.
+										if (not name) or (validators.isEmail name)
+											name = null
 
-						fetch.on 'end', ->
-							finish()
+										# Only added non-redstar people as contacts, exclude junk like "undisclosed recipients", and excluse yourself.
+										blacklist = require '../blacklist'
+										if (validators.isEmail email) and (email isnt user.email) and
+												(_.last(email.split('@')) not in blacklist.domains) and
+												(name not in blacklist.names) and
+												(email not in blacklist.emails) and
+												(name not in _.pluck(excludes, 'name')) and
+												(email not in _.pluck(excludes, 'email'))
+											mails.push
+												subject: msg.headers.subject?[0]
+												sent: new Date msg.headers.date?[0]
+												recipientEmail: email
+												recipientName: name
+
+									notifications.completedEmail?()
+
+							fetch.on 'end', -> finish()
 
 
 	enqueue = (user, notifications, mails, cb) ->
-		models = require './models'
-
 		newContacts = []
-
 		finish = ->
 			user.lastParsed = new Date
 			user.save (err) ->
-				throw err if err
+				if err
+					console.log "Error saving lastParsed on #{user.name}"
+					console.dir err
 				if newContacts.length isnt 0
-					mailer.sendNudge user, newContacts[...10], cb
+					mailer.sendNudge user, newContacts[...10], (err)-> cb err, newContacts
 				else
-					mailer.sendNewsletter user, cb
+					mailer.sendNewsletter user, (err)-> cb err, newContacts
 
+		# TODO hacky and awful, all of sift() needs to be refactored
 		sift = (index = 0) ->
-			# TO-DO hacky and awful, all of sift() needs to be refactored
-			if mails.length is 0
+			if mails.length is 0 then return finish()
+			if index > mails.length
+				if newContacts.length
+					newContacts = _.sortBy newContacts, (contact) ->
+						_.chain(mails)
+							.filter (mail) ->
+								mail.recipient is contact
+							.max (mail) ->
+								mail.sent.getTime() # TO-DO probably can be just mail.sent
+							.value()
+					newContacts.reverse()
+					user.queue.unshift newContacts...
 				return finish()
 
-			mail = mails[index]
+			if not (mail = mails[index++]) then return sift index
+
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 				throw err if err
@@ -121,7 +139,6 @@ module.exports = (user, notifications = {}, cb) ->
 					contact.emails.addToSet mail.recipientEmail
 					if name = mail.recipientName
 						contact.names.addToSet name
-
 					newContacts.push contact
 					notifications.foundNewContact?()
 
@@ -132,21 +149,7 @@ module.exports = (user, notifications = {}, cb) ->
 					mail.recipient = contact
 					models.Mail.create mail, (err) ->
 						throw err if err
-
-						index++
-						if index < mails.length
-							return sift index	# Wee recursion!
-
-						newContacts = _.sortBy newContacts, (contact) ->
-							_.chain(mails)
-								.filter (mail) ->
-									mail.recipient is contact
-								.max (mail) ->
-									mail.sent.getTime() # TO-DO probably can be just mail.sent
-								.value()
-						newContacts.reverse()
-						user.queue.unshift newContacts...
-						finish()
+						return sift index
 
 		sift()
 

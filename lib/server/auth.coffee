@@ -28,8 +28,6 @@ everyauth.google.configure
 			throw err if err
 			token = accessTokenExtra.refresh_token
 			if user
-				console.dir user
-				console.log user.id
 				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 				if not user.oauth
 					console.log "no oauth on user #{email} with #{googleUserMetadata.name}"
@@ -66,13 +64,10 @@ everyauth.google.configure
 		session.user = auth.user.id
 	sendResponse: (res, data) ->
 		user = data.user
-		console.log "sending response on"
-		console.dir user
 		if not user.id
 			return res.redirect '/invalid'
 		if not user.lastParsed
 			return res.redirect '/load'
-		console.log "redirecting to profile"
 		res.redirect '/profile'
 
 
@@ -95,6 +90,9 @@ everyauth.linkedin.configure
 			throw err if err
 			if not user.linkedin or (user.linkedin isnt linkedinUserMetadata.id)
 				user.linkedin = linkedinUserMetadata.id
+				user.linkedInAuth =
+					token: accessToken
+					secret: accessTokenSecret
 				user.save (err) ->
 					throw err if err
 					promise.fulfill user

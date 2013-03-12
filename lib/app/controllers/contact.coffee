@@ -4,7 +4,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
 		editpositiondetails: (->
-			if not (@get('position') or @get('company') or @get('experience'))
+			if not (@get('position') or @get('company') or @get('yearsExperience'))
 				"Edit details about #{@get('nickname')}'s professional experience"
 		).property 'position', 'company', 'yearsExperience'
 		histories: (->
