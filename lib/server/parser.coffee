@@ -143,13 +143,14 @@ module.exports = (user, notifications = {}, cb) ->
 					notifications.foundNewContact?()
 
 				contact.knows.addToSet user
-				contact.save (err) ->
-					throw err if err
-					mail.sender = user
-					mail.recipient = contact
-					models.Mail.create mail, (err) ->
+				require('./fullcontact') user, contact, ->		# populate new contact with data from the service
+					contact.save (err) ->
 						throw err if err
-						return sift index
+						mail.sender = user
+						mail.recipient = contact
+						models.Mail.create mail, (err) ->
+							throw err if err
+							return sift index
 
 		sift()
 
