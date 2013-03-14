@@ -83,8 +83,66 @@ MergeSchema = new Schema
 	contacts: [Types.Mixed]
 
 
+chatSchema = new Schema
+	handle: type: String
+	client: type: String
 
-oldexcludeSchema.plugin models.common
+photoSchema = new Schema
+	typeId: type: String
+	typeName: type: String
+	url: type: String
+	isPrimary: type: Boolean
+
+socialProfileSchema = new Schema
+	typeId: type: String
+	typeName: type: String
+	id: type: String
+	username: type: String
+	url: type: String
+	bio: type: String
+	rss: type: String
+	following: type: String
+	followers: type: String
+
+footprintTopicSchema = new Schema
+	value: type: String
+	provider: type: String
+
+footprintScoreSchema = new Schema
+	value: type: Number
+	provider: type: String
+	type: type: String
+
+organizationSchema = new Schema
+	title: type: String
+	name: type: String
+	startDate: type: String
+	isPrimary: type: Boolean
+
+enhancedSchema = new Schema
+	isPrimary: type: Boolean
+	url: type: String
+
+FullContactSchema = new Schema
+	contactInfo:
+		familyName: type: String
+		givenName: type: String
+		fullName: type: String
+	websites: [types: String]
+	chats: [chatSchema]
+	demographics:
+		age: type: String
+		locationGeneral: type: String
+		gender: type: String
+		ageRange: type: String
+	photos: [photoSchema]
+	socialProfiles: [socialProfileSchema]
+	digitalFootprint:
+		topics: [footprintTopicSchema]
+		scores: [footprintScoreSchema]
+	organizations: [organizationSchema]
+	enhancedData: [enhancedSchema]
+
 UserSchema.plugin models.common
 ContactSchema.plugin models.common
 TagSchema.plugin models.common
@@ -93,6 +151,7 @@ MailSchema.plugin models.common
 LinkedInSchema.plugin models.common
 MergeSchema.plugin models.common
 ExcludeSchema.plugin models.common
+FullContactSchema.plugin models.common
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
@@ -104,4 +163,6 @@ exports.Mail = models.db.model 'Mail', MailSchema
 exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
 exports.Merge = models.db.model 'Merge', MergeSchema
 exports.Exclude = models.db.model 'Exclude', ExcludeSchema
+exports.FullContact = models.db.model 'FullContact', FullContactSchema
+
 
