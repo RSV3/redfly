@@ -46,7 +46,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
 
-		NUDGE_DAYS: 'Tuesday Thursday'
+		NUDGE_DAYS: 'Monday Thursday'
 
 
 	production:
