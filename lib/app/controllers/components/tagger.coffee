@@ -93,15 +93,16 @@ module.exports = (Ember, App, socket) ->
 						@set 'currentTag', tag.toLowerCase()
 				).observes 'currentTag'
 			keyDown: (event) ->
-				if event.which is 9	# A tab.
-					if @get('currentTag')
-						return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
-			keyUp: (event) ->
 				if event.which is 8	# A backspace/delete.
 					if not @get('currentTag')
 						lastTag = @get 'parentView.tags.lastObject'
 						lastTag.deleteRecord()
 						App.store.commit()
+				# TO-DO was there a reason is sepearted tab complete into a keyDown and keyUp part? Can I do them both on keyDown?
+				if event.which is 9	# A tab.
+					if @get('currentTag')
+						return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
+			keyUp: (event) ->
 				if event.which is 9
 					# Defer adding the tag in case a typeahead selection is highlighted and should be added instead.
 					_.defer =>
