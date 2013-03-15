@@ -4,7 +4,6 @@ module.exports =
 
 	development:
 		HOST: 'localhost:5000'
-		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin+redfly_development_stop_sending_me_fifteen_billion_emails_jerk@redstar.com'
 
