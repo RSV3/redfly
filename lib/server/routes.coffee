@@ -320,7 +320,7 @@ module.exports = (app, route) ->
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
-			require('./linker') user, session.linkedinAuth, notifications, null, (err, changes) ->
+			require('./linker') user, notifications, (err, changes) ->
 				if not _.isEmpty changes then io.emit 'linked', changes
 				fn err
 

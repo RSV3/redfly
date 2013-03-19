@@ -2,6 +2,7 @@ models = require 'phrenetic/lib/server/models'
 validators = require('validator').validators
 util = require './util'
 
+
 Schema = models.db.Schema
 Types = Schema.Types
 
@@ -11,7 +12,7 @@ oldexcludeSchema = new Schema
 	name: type: String, trim: true
 
 ExcludeSchema = new Schema
-	user: type: Types.ObjectId
+	user: type: Types.ObjectId, ref: 'User'
 	email: type: String, trim: true, lowercase: true, validate: validators.isEmail
 	name: type: String, trim: true
 
@@ -124,6 +125,7 @@ enhancedSchema = new Schema
 	url: type: String
 
 FullContactSchema = new Schema
+	contact: type: Types.ObjectId, ref: 'Contact'
 	contactInfo:
 		familyName: type: String
 		givenName: type: String

@@ -1,8 +1,29 @@
+
 # TO-DO pretty sure I don't need to be threading (user, notifications, cb) through all the inner fuctions...
-module.exports = (user, notifications = {}, cb) ->
+#
+module.exports = (user, notifications, cb) ->
 	_ = require 'underscore'
 	mailer = require './mail'
 	models = require './models'
+	linkLater = require('./linklater').linkLater;
+	addTags = require './addtags'
+
+	_saveMail = (user, contact, mail) ->
+		mail.sender = user
+		mail.recipient = contact
+		models.Mail.create mail, (err) ->
+			if err
+				console.log "Error saving Mail record"
+				console.dir err
+				console.dir mail
+
+	_saveFullContact = (user, contact, fullDeets) ->
+		fullDeets.contact = contact
+		models.FullContact.create fullDeets, (err)->
+			if err
+				console.log "Error saving FullContact record"
+				console.dir err
+				console.dir fullDeets
 
 	parse = (user, notifications, cb) ->
 		util = require './util'
@@ -52,10 +73,10 @@ module.exports = (user, notifications = {}, cb) ->
 
 							mimelib = require 'mimelib'
 							mails = []
-							notifications.foundTotal? results.length
+							notifications?.foundTotal? results.length
 
 							finish = ->
-								notifications.completedAllEmails?()
+								notifications?.completedAllEmails?()
 								enqueue user, notifications, mails, cb
 								server.logout()
 
@@ -95,7 +116,7 @@ module.exports = (user, notifications = {}, cb) ->
 												recipientEmail: email
 												recipientName: name
 
-									notifications.completedEmail?()
+									notifications?.completedEmail?()
 
 							fetch.on 'end', -> finish()
 
@@ -109,11 +130,10 @@ module.exports = (user, notifications = {}, cb) ->
 					console.log "Error saving lastParsed on #{user.name}"
 					console.dir err
 				if newContacts.length isnt 0
-					mailer.sendNudge user, newContacts[...10], (err)-> cb err, newContacts
+					mailer.sendNudge user, newContacts[...10], (err)-> cb err
 				else
-					mailer.sendNewsletter user, (err)-> cb err, newContacts
+					mailer.sendNewsletter user, (err)-> cb err
 
-		# TODO hacky and awful, all of sift() needs to be refactored
 		sift = (index = 0) ->
 			if mails.length is 0 then return finish()
 			if index > mails.length
@@ -134,25 +154,70 @@ module.exports = (user, notifications = {}, cb) ->
 			# Find an existing contact with one of the same emails or names.
 			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 				throw err if err
-				if not contact
-					contact = new models.Contact
-					contact.emails.addToSet mail.recipientEmail
+				if contact
+					_saveMail user, contact, mail
+					dirty = null
+					if not _.contains contact.emails, mail.recipientEmail
+						dirty = contact.emails.addToSet mail.recipientEmail
 					if name = mail.recipientName
-						contact.names.addToSet name
-					newContacts.push contact
-					notifications.foundNewContact?()
+						if not _.contains contact.names, name
+							dirty = contact.names.addToSet name
+					if not _.contains contact.knows, user
+						dirty = contact.knows.addToSet user
+					if not dirty then return sift index
+					return contact.save (err) ->	# existing contact has been updated
+						if err
+							console.log "Error saving Contact"
+							console.dir err
+							console.dir contact
+						sift index
 
+				# only gets here if we didn't find contact
+
+				contact = new models.Contact
+				contact.emails.addToSet mail.recipientEmail
+				if name = mail.recipientName
+					contact.names.addToSet name
+				newContacts.push contact
+				notifications?.foundNewContact?()
 				contact.knows.addToSet user
-				require('./fullcontact') user, contact, ->		# populate new contact with data from the service
-					contact.save (err) ->
-						throw err if err
-						mail.sender = user
-						mail.recipient = contact
-						models.Mail.create mail, (err) ->
-							throw err if err
-							return sift index
+
+				# if this is the regular nudge, notifications will be null: get fullcontact data
+				# but if this is a load on initial log in, don't use fullcontact (it's too long to wait):
+				# we'll pick up the slack on the next nudge
+				if notifications
+					linkLater user, contact, ()->
+						contact.save (err) ->		# new contact has been populated with data from the service
+							if err
+								console.log "Error saving Contact data for new user"
+								console.dir err
+								console.dir contact
+							_saveMail user, contact, mail
+							sift index
+				else require('./fullcontact') contact, (fullDeets) ->
+					linkLater user, contact, ()->
+						contact.save (err) ->		# new contact has been populated with data from the service
+							if err
+								console.log "Error saving Contact with FullContact data"
+								console.dir err
+								console.dir contact
+							# now save the other records that need the contact reference: mail, fullcontact, tags
+							_saveMail user, contact, mail
+							if fullDeets
+								_saveFullContact user, contact, fullDeets
+								if fullDeets.digitalFootprint
+									tags = _.pluck fullDeets.digitalFootprint.topics, 'value'
+									addTags user, contact, 'industry', tags
+							sift index
 
 		sift()
 
+
+
+# when we require this module, the parser method is called with the parameters provided
+#
+# email for user is parsed (since lastParsed)
+# If the notifications object has the right vectors they fire during the process
+# the callback is called with a list of new contacts
 
 	parse user, notifications, cb

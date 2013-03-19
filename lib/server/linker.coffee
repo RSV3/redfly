@@ -5,19 +5,9 @@ models = require './models'
 addTags = require './addtags'
 validators = require('validator').validators
 
-
-###
-#	Regular Expression helpers
-###
-
-#   escape a string in preparation for building a regular expression
-REescape = (str) ->
-	if not str then return ""
-	str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-
-# make a case-insensitive regexp from a string
-REImake = (str) ->
-	return new RegExp('^' + REescape(str) + '$', 'i')
+linkLater = require('./linklater')
+addDeets2Contact = linkLater.addDeets2Contact
+REImake = linkLater.REImake
 
 
 # async (but serial, consecutive with callback) collection processing
@@ -35,8 +25,15 @@ syncForEach = (list, iterator, final_cb) ->
 	_syncForEach list.slice(0), iterator, final_cb
 
 
-getLinked = (partial, oa, cb) ->
+#
+# partial: the main guts of the api call
+# options: to be added on the end following the format specifier
+# oa: oauth details
+# cb: callback for response
+#
+getLinked = (partial, options, oa, cb) ->
 	url = 'http://api.linkedin.com/v1/people' + partial + '?format=json'
+	if options and options.length then url = "#{url}&#{options}"
 	request.get
 		url: url
 		oauth: oa
@@ -75,10 +72,22 @@ getDeets = (id, contact, oa, cb) ->
 		if test
 			return cb null, null
 		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary)')
-		getLinked u, oa, cb
+		getLinked u, null, oa, cb
 
 
-
+#
+# paginate the connections 
+#
+getConnections = (parturl, oauth, cb, sofar=values:[]) ->
+	count = 500		# maximum per page. lets use a variable in case the api changes, etc
+	getLinked parturl, "start=#{sofar.values.length}&count=#{count}", oauth, (err, tranche) ->
+		if not err and tranche
+			if not sofar then sofar = tranche
+			else sofar.values = sofar.values.concat tranche.values
+			if tranche.values.length is count					# our work here is done
+				return getConnections parturl, oauth, cb, sofar
+		cb err, sofar
+		
 #
 # Given two linkedin startDate/ endDate objects
 # { month:month, year:year }
@@ -256,58 +265,6 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 			saveLinkedin details, listedDetails, user, contact, linkedin
 
 
-addDeets2Contact = (notifications, user, contact, details, specialties, industries) ->
-	if details.positions and details.positions.length
-		if not contact.company and not contact.position
-			contact.company = details.positions[0].company?.name
-			contact.position = details.positions[0].title
-			dirtycontact = true
-		else if not contact.company
-			contact.company = _.select(details.positions, (p) -> p.title is contact.position)?.company?.name
-			dirtycontact = true
-		else if not contact.position
-			contact.position = _.select(details.positions, (p) -> p.company?.name is contact.company)?.title
-			dirtycontact = true
-
-		# still no matches?
-		if not contact.company
-			contact.company = details.positions[0].company?.name
-			dirtycontact = true
-		else if not contact.position
-			dirtycontact = true
-			contact.position = details.positions[0].title
-		else if contact.company = details.positions[0].company?.name	# possibly a promotion?
-			dirtycontact = true
-			contact.position = details.positions[0].title
-
-	if not contact.picture and details.pictureUrl
-		contact.picture = details.pictureUrl
-		dirtycontact = true
-
-	if specialties and specialties.length
-		addTags user, contact, 'industry', specialties
-	addTags user, contact, 'industry', industries
-
-	if (_.indexOf user._id, contact.knows) < 0
-		contact.knows.addToSet user
-		dirtycontact = true
-
-	if contact.linkedin isnt details.profileid
-		contact.linkedin = details.profileid
-		dirtycontact = true
-	
-	if details.yearsExperience and contact.yearsExperience isnt details.yearsExperience
-		contact.yearsExperience = details.yearsExperience
-		dirtycontact = true
-
-	if dirtycontact
-		contact.save (err) ->
-			notifications.updateFeeds? contact
-		return contact._id
-
-	null
-
-
 #
 # after submitting a query on contact name, try to narrow down the results ...
 #
@@ -380,47 +337,17 @@ profileIdFrom = (item) ->
 	id?.substr 0, id.indexOf('&')
 
 
-#
-# for all un-matched linkedin records,
-# step through this user's contacts, and try to match them.
-#
-# u = user
-# c = contact
-# l = linkedin record
-#
-findAndUpdateOtherLinkedInDataFor = (u, conts) ->
-	models.LinkedIn.findOne {contact:null}, (err, linkds) ->
-		if err or not linkds then return
-		for l in linkds
-			for c in conts
-				match = false
-				for n in c.names
-					rName = REImake n
-					if l.name.formattedName.match(n) or "#{l.name.firstName} #{l.name.lastName}".match(n)
-						match = true
-				if not match then continue
-				details =
-					id: l.linkedinId
-					pictureUrl: l.pictureUrl
-					yearsExperience: l.yearsExperience
-					positions: [{ title: l.positions[0], company: name: l.companies[0]}]
-				addDeets2Contact null, u, c, details, l.specialties, l.industries
-				break;
 
-
-
-linker = (user, auth, notifications, finalCB) ->
-
+linker = (user, notifications, finalCB) ->
+	auth = user.linkedInAuth
 	if not auth or not auth.token then return finalCB null, null
 
 	fn = (err, changed, count=0) ->
 		if not count and not user.linkedInThrottle or count is user.linkedInThrottle
 			return finalCB err, changed
-		user.linkedInThrottle = count
+		user.linkedInThrottle = count		# keep track of where we were up to when we got throttled
 		user.save (othererror) ->
-			finalCB err, changed
-
-	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
+			finalCB err, changed			# then exit (final callback) with list of changed contacts
 
 	oauth = 
 		consumer_key: process.env.LINKEDIN_API_KEY
@@ -428,17 +355,18 @@ linker = (user, auth, notifications, finalCB) ->
 		token: auth.token
 		token_secret: auth.secret
 
-	getLinked parturl, oauth, (err, network) ->
+	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
+	getConnections parturl, oauth, (err, network) ->
 		if err or not network
 			return console.warn parturl + ' failed.'
 
 		changed = []		# build an array of changed contacts to broadcast
-		notifications.foundTotal? network.values.length
+		notifications?.foundTotal? network.values.length
 		countSomeFeed = 9		# only add the first few new items to the feed
 
 		liProcess = (item, contact, cb, counter=-1) ->
 			getDeets item.id, contact, oauth, (err, deets) ->
-				notifications.completedContact?()
+				notifications?.completedContact?()
 				if err or not deets
 					if err and err.statusCode is 403
 						if counter < 0					# was this during the second parse?
@@ -462,7 +390,7 @@ linker = (user, auth, notifications, finalCB) ->
 					if countSomeFeed
 						countSomeFeed--
 					else
-						notifications.updateFeeds = null
+						notifications?.updateFeeds = null
 					id = push2linkQ notifications, user, contact, item
 					if id then changed.push id
 				cb()
@@ -471,19 +399,19 @@ linker = (user, auth, notifications, finalCB) ->
 		syncForEach network.values, (item, counter, cb) ->
 			item.profileid = profileIdFrom item
 			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
-				notifications.completedLinkedin?()
-				if not contact
-					maybeMore.push item
+				notifications?.completedLinkedin?()
+				if not contact				# if this connection doesn't match a contact
+					maybeMore.push item		# don't bother pulling down more linkedin data on them just yet
 					cb()
 				else
-					liProcess item, contact, cb, counter
+					liProcess item, contact, cb, counter		# matches contact, so get more data
 		, ->
-			if not maybeMore.length
-				return fn null, changed
-			syncForEach maybeMore, (item, counter, cb) ->
-				liProcess item, null, cb		# without a 4th (counter) param, we won't report throttle
+			if not maybeMore.length				# if there's no connections that didn't match a contact
+				return fn null, changed			# then just exit with a list of changed contacts
+			syncForEach maybeMore, (item, counter, cb) ->	# 2nd parse, through list of other connections
+				liProcess item, null, cb		# without a 4th (counter) param, so we won't report throttle
 			, ->
-				return fn null, changed
+				return fn null, changed			# at the end of the 2nd parse, return list of changed contacts
 
 #
 # this module hooks up with linkedin using the supplied oauth2 credentials
@@ -492,14 +420,8 @@ linker = (user, auth, notifications, finalCB) ->
 # optionally updating contacts that may match those record.
 #
 # If the notifications object has the right vectors they fire during the process
-# If the contacts list holds items (c.f. parser) then we trawl through the full linkedin collection
-# to search for any good data from other users on these new contacts
 #
-module.exports = (user, auth, notifications={}, contacts, cb) ->
-	linker user, auth, notifications, (err, changes) ->
-		contacts = _.filter contacts, (c)-> _.contains(changes, c._id)
-		if not _.isEmpty contacts
-			findAndUpdateOtherLinkedInDataFor user, contacts
+module.exports = (user, notifications, cb) ->
+	linker user, notifications, (err, changes) ->
 		cb err, changes
-
 
