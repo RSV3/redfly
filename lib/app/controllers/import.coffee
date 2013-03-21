@@ -173,7 +173,9 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 					# UPDATE: new version ember-data might let you batch commits with inter-foreign-key depenencies, making waiting for the
 					# contact to get created unncessary
-					contact.on 'didCreate', =>
+					contact.addObserver 'id', =>
+					# TO-DO bring this back when ember-data is fixed
+					# contact.on 'didCreate', =>
 						result.tags.forEach (tag) ->
 							App.Tag.createRecord
 								creator: App.user
