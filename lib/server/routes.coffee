@@ -203,11 +203,13 @@ module.exports = (app, route) ->
 	route 'search', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results={}) ->
-			typeDocs = _.uniq _.map(typeDocs, (d)-> if d.contact then d.contact else d.id)
-			typeDocs = _.filter typeDocs, (doc) ->	# to remove duplicates
-				for t of results						# go through each result type
-					if _.some(results[t], (d)-> d is doc)			# and if this item's already there
-						return false								# weed it out
+			typeDocs = _.filter _.map(_.uniq(typeDocs, false, (d)->
+					if d.contact then d.contact else d.id		# only one tag/note per contact
+				), (d)-> d.id									# map to ids
+			), (doc)->											# filter to remove duplicates
+				for t of results								# go through each result type
+					if _.some(results[t], (d)-> d is doc)		# and if this item's already there
+						return false							# weed it out
 				true
 			if not results[type] then results[type] = typeDocs
 			else results[type] = typeDocs.concat results[type]
