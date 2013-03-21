@@ -55,7 +55,9 @@ module.exports = (Ember, App, socket) ->
 		setupController: (controller, model) ->
 			console.log "setupController"
 			socket.emit 'fullSearch', query: model.text, (results) =>
-				controller.set 'all', App.Contact.find _id: $in: results
+				if App.store.adapter.findHasMany	# bookmark? adapter might not be ready yet ...
+					controller.set 'all', App.store.findMany(App.Contact, results)
+				else controller.set 'all', App.Contact.find _id: $in: results
 
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->

@@ -7,6 +7,7 @@ module.exports = (user, notifications, cb) ->
 	models = require './models'
 	linkLater = require('./linklater').linkLater;
 	addTags = require './addtags'
+	getFC = require './fullcontact'
 
 	_saveMail = (user, contact, mail) ->
 		mail.sender = user
@@ -151,8 +152,9 @@ module.exports = (user, notifications, cb) ->
 
 			if not (mail = mails[index++]) then return sift index
 
-			# Find an existing contact with one of the same emails or names.
-			models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
+			# Find an existing contact with one of the same emails 
+			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
+			models.Contact.findOne {emails: mail.recipientEmail}, (err, contact) ->
 				throw err if err
 				if contact
 					_saveMail user, contact, mail
@@ -176,38 +178,51 @@ module.exports = (user, notifications, cb) ->
 
 				contact = new models.Contact
 				contact.emails.addToSet mail.recipientEmail
-				if name = mail.recipientName
-					contact.names.addToSet name
+				if name = mail.recipientName then contact.names.addToSet name
 				newContacts.push contact
 				notifications?.foundNewContact?()
 				contact.knows.addToSet user
 
+				#
 				# if this is the regular nudge, notifications will be null: get fullcontact data
 				# but if this is a load on initial log in, don't use fullcontact (it's too long to wait):
-				# we'll pick up the slack on the next nudge
-				if notifications
+				# we'll pick up the slack in the background
+				# So these two cases have a slightly different order of operations
+				#
+				if notifications then return linkLater user, contact, ()->
+					contact.save (err) ->		# new contact has been populated with any old data from LI
+						if err
+							console.log "Error saving Contact data for new user"
+							console.dir err
+							console.dir contact
+						_saveMail user, contact, mail
+						sift index
+						# then, sometime in the not too distant future, go and slowly get the FC data
+						getFC contact, (fullDeets) ->
+							if fullDeets then contact.save (err) ->		# if we get data, save it
+								if err
+									console.log "Error saving Contact with FC data in initial parse"
+									console.dir err
+									console.dir contact
+								_saveFullContact user, contact, fullDeets
+								if fullDeets.digitalFootprint
+										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
+
+				# only gets here if we no notifications (ie. this is part of an out of session batch task)
+
+				getFC contact, (fullDeets) ->
 					linkLater user, contact, ()->
-						contact.save (err) ->		# new contact has been populated with data from the service
-							if err
-								console.log "Error saving Contact data for new user"
-								console.dir err
-								console.dir contact
-							_saveMail user, contact, mail
-							sift index
-				else require('./fullcontact') contact, (fullDeets) ->
-					linkLater user, contact, ()->
-						contact.save (err) ->		# new contact has been populated with data from the service
+						contact.save (err) ->		# new contact, populated with any data from FC and LI
 							if err
 								console.log "Error saving Contact with FullContact data"
 								console.dir err
 								console.dir contact
-							# now save the other records that need the contact reference: mail, fullcontact, tags
+							# now save other records that need the contact reference: mail, fullcontact, tags
 							_saveMail user, contact, mail
 							if fullDeets
 								_saveFullContact user, contact, fullDeets
 								if fullDeets.digitalFootprint
-									tags = _.pluck fullDeets.digitalFootprint.topics, 'value'
-									addTags user, contact, 'industry', tags
+									addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 							sift index
 
 		sift()

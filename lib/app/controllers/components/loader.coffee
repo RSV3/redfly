@@ -77,5 +77,5 @@ module.exports = (Ember, App, socket) ->
 		classify: ->
 			@get('modal').modal 'hide'
 			@get('notification').pnotify_remove()
-			
-			@get('router').transitionTo 'classify'   # presence of 'router' is a hack
+			# probably shouldn't use router, but hey: it works ...
+			if App.user.get('queue.length') then @get('router').transitionTo 'classify'
