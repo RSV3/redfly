@@ -51,13 +51,13 @@ module.exports = (Ember, App, socket) ->
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
-			{ text: param.query_text }
+			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
 			console.log "setupController"
 			socket.emit 'fullSearch', query: model.text, (results) =>
-				if App.store.adapter.findHasMany	# bookmark? adapter might not be ready yet ...
+				if results and results.length
 					controller.set 'all', App.store.findMany(App.Contact, results)
-				else controller.set 'all', App.Contact.find _id: $in: results
+				else @transitionTo 'userProfile'
 
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->
