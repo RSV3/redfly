@@ -1,5 +1,5 @@
-#if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment').format('dddd'))
-#	process.exit()
+if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment').format('dddd'))
+	process.exit()
 
 eachLink = (user, cb)->
 	try require('../server/linker') user, null, cb
