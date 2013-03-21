@@ -3,7 +3,6 @@ module.exports = (app, route) ->
 	logic = require './logic'
 	models = require './models'
 
-
 	route 'db', (fn, data) ->
 		feed = (doc) ->
 			o =
@@ -14,8 +13,7 @@ module.exports = (app, route) ->
 
 		cb = (payload) ->
 			root = data.type.toLowerCase()
-			if _.isArray payload
-				root += 's'
+			if _.isArray payload then root += 's'
 			hash = {}
 			hash[root] = payload
 			fn hash
@@ -123,52 +121,70 @@ module.exports = (app, route) ->
 		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
+		utilisedTypes = []
 		for type in availableTypes
 			search[type] = []
 			for term in terms
 				compound = _.compact term.split ':'
 				if compound.length > 1
 					# TODO
-					search[type].push compound[1]
-					# if type is _.first compound
-					# 	search[type].push compound[1]
+					#search[type].push compound[1]
+					if compound[0] is type
+						search[type].push compound[1]
+						utilisedTypes.push type
 				else
 					search[type].push term
+					utilisedTypes.push type
+			if not search[type].length then delete search[type]
 		step = require 'step'
 		step ->
-				for type in availableTypes
+				if search.name and search.name.length > 1			# search on "firstname lastname" 
+					utilisedTypes.unshift 'name'					
+					reTerm = new RegExp data.query, 'i'
+					models.Contact.find({names:reTerm}).exec @parallel()
+				for type of search
 					terms = search[type]
-
-					model = 'Contact'
-					field = type + 's'
 					if type is 'tag' or type is 'note'
 						_s = require 'underscore.string'
 						model = _s.capitalize type
 						field = 'body'
+					else
+						model = 'Contact'
+						field = type + 's'
 					step ->
-							for term in terms
-								conditions = {}
-								try
-									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
-								catch err
-									continue	# User typed an invlid regular expression, just ignore it.
+						conditions = {}
+						for term in terms
+							try
+								reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
+								if not conditions['$or'] and not conditions[field]
+									conditions[field] = reTerm
+								else
+									nextC = {}
+									if conditions[field]
+										nextC[field] = conditions[field]
+										conditions['$or'] = [ nextC ]
+										delete conditions[field]
+									nextC = {}
+									nextC[field] = reTerm
+									conditions['$or'].push nextC
+							catch err
+								continue	# User typed an invlid regular expression, just ignore it.
 
-								if model is 'Contact'
-									conditions.added = $exists: true
-									_.extend conditions, data.moreConditions
-								# else
-								# 	for k, v of data.moreConditions
-								# 		conditions['contact.' + k] = v
+						if model is 'Contact'
+							conditions.added = $exists: true
+							_.extend conditions, data.moreConditions
+						# else
+						# 	for k, v of data.moreConditions
+						# 		conditions['contact.' + k] = v
 
-								models[model].find(conditions).limit(limit).exec @parallel()
-								return undefined	# Step library is insane.
-						, @parallel()
-				return undefined	# Still insane? Yes? Fine.
+						models[model].find(conditions).limit(limit).exec @parallel()
+						return undefined	# Step library is insane.
+					, @parallel()
+				return undefined	# Still insane? Yes?? Fine.
 			, (err, docs...) ->
 				throw err if err
 				results = null
-				availableTypes = ['name', 'email', 'tag', 'note']
-				availableTypes.forEach (type, index) ->
+				utilisedTypes.forEach (type, index) ->
 					if not _.isEmpty docs[index]
 						results = searchMap type, docs[index], results
 				return fn results
@@ -178,10 +194,8 @@ module.exports = (app, route) ->
 		doSearch fn, data
 		, (type, typeDocs, results=[]) ->
 			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
-				if type is 'tag' or type is 'note'
-					doc.contact
-				else
-					doc.id
+				if doc.contact then doc.contact
+				else doc.id
 			), true, (id) -> String(id)
 			return results
 
@@ -189,11 +203,14 @@ module.exports = (app, route) ->
 	route 'search', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results={}) ->
-			if type is 'tag' or type is 'note'
-				typeDocs = _.uniq typeDocs, false, (typeDoc) ->
-					typeDoc.contact.toString()	# Convert ObjectId to a simple string.
-			results[type] = _.map typeDocs, (doc) ->
-				doc.id
+			typeDocs = _.uniq _.map(typeDocs, (d)-> if d.contact then d.contact else d.id)
+			typeDocs = _.filter typeDocs, (doc) ->	# to remove duplicates
+				for t of results						# go through each result type
+					if _.some(results[t], (d)-> d is doc)			# and if this item's already there
+						return false								# weed it out
+				true
+			if not results[type] then results[type] = typeDocs
+			else results[type] = typeDocs.concat results[type]
 			return results
 		, 10	# limit
 
@@ -279,10 +296,8 @@ module.exports = (app, route) ->
 								doc[update.field] = contact
 								doc.save (err) ->
 									# If there's a duplicate key error that means the same tag is on two contacts, just delete the other one.
-									if err?.code is 11001
-										doc.remove cb
-									else
-										cb err
+									if err?.code is 11001 then doc.remove cb
+									else cb err
 							, (err) ->
 								cb err
 					, (err) ->
@@ -293,14 +308,11 @@ module.exports = (app, route) ->
 						throw err if err
 						return fn()
 
+	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	route 'parse', (fn, id, io) ->
-		# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 		models.User.findById id, (err, user) ->
 			throw err if err
-			# temporary, in case this gets called and there's not logged in user
-			if not user
-				return fn()
-
+			if not user then return fn()	# in case this gets called and there's not logged in user
 			notifications =
 				foundTotal: (total) ->
 					io.emit 'parse.total', total
@@ -310,16 +322,13 @@ module.exports = (app, route) ->
 					io.emit 'parse.queueing'
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
-
-			require('./parser') user, notifications, fn
+			require('./parser') user, notifications, (err, contacts) ->
+				fn err
 
 	route 'linkin', (fn, id, io, session) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
-			# temporary, in case this gets called and there's not logged in user
-			if not user
-				return fn(err)
-
+			if not user then return fn err	# in case this gets called and there's not logged in user
 			notifications =
 				foundTotal: (total) ->
 					io.emit 'link.total', total
@@ -332,9 +341,7 @@ module.exports = (app, route) ->
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
-
-			require('./linker').linker user, session.linkedinAuth, notifications, (err, changes) ->
-				if not _.isEmpty changes
-					io.emit 'linked', changes
-				fn(err)
+			require('./linker') user, notifications, (err, changes) ->
+				if not _.isEmpty changes then io.emit 'linked', changes
+				fn err
 

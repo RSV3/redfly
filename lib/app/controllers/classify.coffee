@@ -1,4 +1,5 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
 	maxQueueLength = 20
 
 	App.ClassifyController = Ember.Controller.extend
@@ -15,7 +16,6 @@ module.exports = (Ember, App, socket) ->
 			).observes 'model'
 
 		classifyCount: 0
-
 		total: (->
 				Math.min App.user.get('queue.length'), maxQueueLength - @get('classifyCount')
 			).property 'App.user.queue.length', 'classifyCount'
@@ -25,18 +25,15 @@ module.exports = (Ember, App, socket) ->
 		noMore: (->
 				not @get('model')
 			).property 'model'
-
 		continueText: (->
 				if not @get 'model.added'
 					return 'Save and continue'
 				'Continue'
 			).property 'model.added'
-
 		continue: ->
 			if not @get 'model.added'
 				@set 'model.added', new Date
 				@set 'model.addedBy', App.user
-
 			App.user.get('queue').shiftObject()
 			@incrementProperty 'classifyCount'
 			@_next()
@@ -44,24 +41,17 @@ module.exports = (Ember, App, socket) ->
 			queue = App.user.get 'queue'
 			contact = queue.shiftObject()
 			queue.pushObject contact
-
 			@_next()
 		ignore: ->
-			exclude = {}
+			exclude = {user: App.user}
 			if email = @get('model.email')
 				exclude.email = email
 			if name = @get('model.name')
 				exclude.name = name
-
-			existingExclude = App.user.get('excludes').find (candidate) ->
-				(exclude.name is candidate.name) and (exclude.email is candidate.email)
-			if not existingExclude
-				# TODO hack temporarily, setting the excludes property to a new object is the only way ember-data will pick up that it's been
-				# changed. UPDATE: This might not be the case any more.
-				excludes = App.user.get('excludes').slice()
-				excludes.pushObject exclude
-				App.user.set 'excludes', excludes
-
+			App.Exclude.createRecord exclude
+			App.store.commit()
+			knows = @get('model.knows').filter (u)-> u.get('id') isnt App.user.get('id')
+			@set 'model.knows.content', knows
 			App.user.get('queue').shiftObject()
 			@incrementProperty 'classifyCount'
 			@_next()

@@ -1,17 +1,30 @@
-_ = require 'underscore'
-moment = require 'moment'
-if not _.contains(process.env.NUDGE_DAYS.split(' '), moment().format('dddd'))
+if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment').format('dddd'))
 	process.exit()
 
-models = require '../server/models'
+eachLink = (user, cb)->
+	try require('../server/linker') user, null, cb
+	catch err
+		console.log "error in nudge link for #{user.email}"
+		console.dir err
+		cb()
 
-models.User.find (err, users) ->
+eachParse = (user, cb)->
+	console.log "parsing #{user.email}"
+	try require('../server/parser') user, null, cb
+	catch err
+		console.log "error in nudge parse for #{user.email}"
+		console.dir err
+		cb()
+
+eachDoc = (docs, operate, fcb) ->
+	if not docs.length then return fcb()
+	doc = docs.pop()
+	operate doc, ()-> eachDoc docs, operate, fcb
+
+
+require('../server/models').User.find (err, users) ->
 	throw err if err
+	eachDoc users.slice(), eachLink, ()->
+		eachDoc users, eachParse, ()->
+			require('phrenetic/lib/server/services').close()
 
-	require('step') ->
-		for user in users
-			require('../server/parser') user, null, @parallel()
-		return undefined
-	, (err) ->
-		throw err if err
-		require('phrenetic/lib/server/services').close()
