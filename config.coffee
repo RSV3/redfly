@@ -5,7 +5,7 @@ module.exports =
 	development:
 		HOST: 'localhost:5000'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'just@sayma.be'
+		INTERCEPT_EMAIL: 'just@saymay.be'
 
 		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
