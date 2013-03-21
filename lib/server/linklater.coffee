@@ -96,15 +96,15 @@ findAndUpdateOtherLinkedInDataFor = (u, c, calldone) ->
 		models.LinkedIn.findOne {contact:null, linkedinId:c.linkedinId}, (err, l) ->	# for each unmatched linkedin in the system
 			if not err and l
 				copyLI2contact u, c, l
-			calldone()
+			return calldone()
 	else
+		rNames = []
 		for n in c.names		# try to match the linkedin name to any of the contact's names
-			rName = REImake n
-			models.LinkedIn.findOne {contact:null, 'name.formattedName': rName}, (err, l) ->	# for each unmatched linkedin in the system
-				if not err and l
-					copyLI2contact u, c, l
-					return calldone()
-		calldone()
+			rNames.push(REImake n)
+		models.LinkedIn.findOne {contact:null, 'name.formattedName': $in: rNames}, (err, l) ->	# for each unmatched linkedin in the system
+			if not err and l
+				copyLI2contact u, c, l
+			return calldone()
 
 
 

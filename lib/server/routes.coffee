@@ -121,52 +121,70 @@ module.exports = (app, route) ->
 		terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
+		utilisedTypes = []
 		for type in availableTypes
 			search[type] = []
 			for term in terms
 				compound = _.compact term.split ':'
 				if compound.length > 1
 					# TODO
-					search[type].push compound[1]
-					# if type is _.first compound
-					# 	search[type].push compound[1]
+					#search[type].push compound[1]
+					if compound[0] is type
+						search[type].push compound[1]
+						utilisedTypes.push type
 				else
 					search[type].push term
+					utilisedTypes.push type
+			if not search[type].length then delete search[type]
 		step = require 'step'
 		step ->
-				for type in availableTypes
+				if search.name and search.name.length > 1			# search on "firstname lastname" 
+					utilisedTypes.unshift 'name'					
+					reTerm = new RegExp data.query, 'i'
+					models.Contact.find({names:reTerm}).exec @parallel()
+				for type of search
 					terms = search[type]
-
-					model = 'Contact'
-					field = type + 's'
 					if type is 'tag' or type is 'note'
 						_s = require 'underscore.string'
 						model = _s.capitalize type
 						field = 'body'
+					else
+						model = 'Contact'
+						field = type + 's'
 					step ->
-							for term in terms
-								conditions = {}
-								try
-									conditions[field] = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
-								catch err
-									continue	# User typed an invlid regular expression, just ignore it.
+						conditions = {}
+						for term in terms
+							try
+								reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
+								if not conditions['$or'] and not conditions[field]
+									conditions[field] = reTerm
+								else
+									nextC = {}
+									if conditions[field]
+										nextC[field] = conditions[field]
+										conditions['$or'] = [ nextC ]
+										delete conditions[field]
+									nextC = {}
+									nextC[field] = reTerm
+									conditions['$or'].push nextC
+							catch err
+								continue	# User typed an invlid regular expression, just ignore it.
 
-								if model is 'Contact'
-									conditions.added = $exists: true
-									_.extend conditions, data.moreConditions
-								# else
-								# 	for k, v of data.moreConditions
-								# 		conditions['contact.' + k] = v
+						if model is 'Contact'
+							conditions.added = $exists: true
+							_.extend conditions, data.moreConditions
+						# else
+						# 	for k, v of data.moreConditions
+						# 		conditions['contact.' + k] = v
 
-								models[model].find(conditions).limit(limit).exec @parallel()
-								return undefined	# Step library is insane.
-						, @parallel()
-				return undefined	# Still insane? Yes? Fine.
+						models[model].find(conditions).limit(limit).exec @parallel()
+						return undefined	# Step library is insane.
+					, @parallel()
+				return undefined	# Still insane? Yes?? Fine.
 			, (err, docs...) ->
 				throw err if err
 				results = null
-				availableTypes = ['name', 'email', 'tag', 'note']
-				availableTypes.forEach (type, index) ->
+				utilisedTypes.forEach (type, index) ->
 					if not _.isEmpty docs[index]
 						results = searchMap type, docs[index], results
 				return fn results
@@ -176,7 +194,7 @@ module.exports = (app, route) ->
 		doSearch fn, data
 		, (type, typeDocs, results=[]) ->
 			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
-				if type is 'tag' or type is 'note' then doc.contact
+				if doc.contact then doc.contact
 				else doc.id
 			), true, (id) -> String(id)
 			return results
@@ -185,11 +203,14 @@ module.exports = (app, route) ->
 	route 'search', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results={}) ->
-			if type is 'tag' or type is 'note'
-				typeDocs = _.uniq typeDocs, false, (typeDoc) ->
-					typeDoc.contact.toString()	# Convert ObjectId to a simple string.
-			results[type] = _.map typeDocs, (doc) ->
-				doc.id
+			typeDocs = _.uniq _.map(typeDocs, (d)-> if d.contact then d.contact else d.id)
+			typeDocs = _.filter typeDocs, (doc) ->	# to remove duplicates
+				for t of results						# go through each result type
+					if _.some(results[t], (d)-> d is doc)			# and if this item's already there
+						return false								# weed it out
+				true
+			if not results[type] then results[type] = typeDocs
+			else results[type] = typeDocs.concat results[type]
 			return results
 		, 10	# limit
 
