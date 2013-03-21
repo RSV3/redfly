@@ -1,7 +1,6 @@
 _ = require 'underscore'
 models = require './models'
 validators = require('validator').validators
-fullcontact = require 'fullcontact.js'
 
 #
 # this module looks up the contact's email using the fullcontact api
@@ -10,10 +9,10 @@ fullcontact = require 'fullcontact.js'
 #
 module.exports = (contact, cb)->
 	if not contact or not contact.emails then return cb null
-	fc = new fullcontact process.env.FULLCONTACT_API_KEY
 	models.FullContact.findOne {contact: contact}, (err, fc_rec)->
 		if err or fc_rec then return cb null	# don't continue if there's already full data for this contact
-		fc.person {email:contact.emails[0]}, (fullDeets)->
+		FCAPI = new require('fullcontact.js') process.env.FULLCONTACT_API_KEY
+		FCAPI.person {email:contact.emails[0]}, (fullDeets)->
 			if fullDeets.status isnt 200 then return cb null
 			delete fullDeets.status
 

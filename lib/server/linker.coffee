@@ -151,7 +151,7 @@ calculateExperience  = (contact, details) ->
 			whichpos = position
 	if not whichpos					# maybe it was a promotion?
 		for position in details.positions
-			if position.company.name is current.company and not position.endDate.year
+			if position.company.name is current.company and (not position.endDate or not position.endDate.year)
 				whichpos = position
 	if not whichpos then return 0		# if we still can't match current position/company, return 0
 

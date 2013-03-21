@@ -6,12 +6,15 @@ eachLink = (user, cb)->
 	catch err
 		console.log "error in nudge link for #{user.email}"
 		console.dir err
+		cb()
 
 eachParse = (user, cb)->
+	console.log "parsing #{user.email}"
 	try require('../server/parser') user, null, cb
 	catch err
 		console.log "error in nudge parse for #{user.email}"
 		console.dir err
+		cb()
 
 eachDoc = (docs, operate, fcb) ->
 	if not docs.length then return fcb()
