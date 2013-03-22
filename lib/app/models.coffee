@@ -94,3 +94,8 @@ module.exports = (DS, App) ->
 		recipient: DS.belongsTo 'App.Contact'
 		subject: DS.attr 'string'
 		sent: DS.attr 'date'
+
+	App.Exclude = DS.Model.extend
+		user: DS.belongsTo 'App.User'
+		name: DS.attr 'string'
+		email: DS.attr 'string'
