@@ -1,5 +1,9 @@
 everyauth = module.exports = require 'everyauth'
+models = require './models'
 
+
+everyauth.everymodule.findUserById (userId, cb)->
+	models.User.findOne {_id: userId}, cb
 
 everyauth.google.configure
 	appId: process.env.GOOGLE_API_ID
@@ -19,7 +23,6 @@ everyauth.google.configure
 		res.redirect '/unauthorized'
 	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
 		_s = require 'underscore.string'
-		models = require './models'
 
 		email = googleUserMetadata.email.toLowerCase()
 		if not _s.endsWith email, "@#{process.env.ORGANISATION_DOMAIN}"
@@ -90,16 +93,15 @@ everyauth.linkedin.configure
 			throw err if err
 			if not user.linkedin or (user.linkedin isnt linkedinUserMetadata.id)
 				user.linkedin = linkedinUserMetadata.id
+				user.linkedInAuth =
+					token: accessToken
+					secret: accessTokenSecret
 				user.save (err) ->
 					throw err if err
 					promise.fulfill user
 			else
 				promise.fulfill user
 		promise = @Promise()
-	addToSession: (session, auth) ->
-		session.linkedinAuth =
-			token: auth.accessToken
-			secret: auth.accessTokenSecret
 	redirectPath: '/link'
 everyauth.linkedin
 	.requestTokenQueryParam('scope', ['r_basicprofile', 'r_fullprofile', 'r_network'].join(' '))

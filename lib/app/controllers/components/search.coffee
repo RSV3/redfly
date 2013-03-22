@@ -62,13 +62,11 @@ module.exports = (Ember, App, socket) ->
 							@set 'results', {}
 							allResults = []
 							for type, ids of results
-								if excludes = @get('parentView.excludes')?.getEach('id')
-									ids = _.difference ids, excludes
 								if ids.length
 									model = 'Contact'
 									if type is 'tag' or type is 'note'
 										model = _s.capitalize type
-									@set 'results.' + type, App[model].find _id: $in: ids
+									@set 'results.' + type, App.store.findMany(App[model], ids.reverse())
 									allResults.push model
 							@set 'allResults', allResults
 				).observes 'value', 'parentView.excludes'
