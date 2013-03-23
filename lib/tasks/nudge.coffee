@@ -1,4 +1,4 @@
-if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment').format('dddd'))
+if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment')().format('dddd'))
 	process.exit()
 
 eachLink = (user, cb)->
