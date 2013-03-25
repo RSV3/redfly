@@ -8,7 +8,7 @@ module.exports =
 
 
 	development:
-		HOST: 'localhost:5000'
+		HOST: 'redsite.loc:5000'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin+redfly_development@redstar.com'
 
@@ -18,9 +18,13 @@ module.exports =
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
 
+		CONTEXTIO_KEY: 'tjwypeyu'
+		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
+		AUTO_AUTH: '512de743f4caf697aa000002'
+
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
+		MONGOLAB_URI: 'mongodb://rfduser:rfdp455@ds039707.mongolab.com:39707/redflydarwin'
 
 		REDISTOGO_URL: 'redis://redistogo:e8d8d65fbe7df9673b111dc8702c0796@barreleye.redistogo.com:9726/'
 		
