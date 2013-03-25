@@ -325,6 +325,8 @@ module.exports = (app, route) ->
 					io.emit 'parse.mail'
 				completedAllEmails: ->
 					io.emit 'parse.queueing'
+				considerContact: ->
+					io.emit 'parse.couldqueue'
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
 			require('./parser') user, notifications, (err, contacts) ->

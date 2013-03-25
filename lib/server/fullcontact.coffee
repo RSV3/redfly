@@ -4,12 +4,15 @@ validators = require('validator').validators
 request = require('request')
 
 FCAPI_person = (options, cb) ->
-	options.apiKey = process.env.FULLCONTACT_API_KEY
+	opts = apiKey: process.env.FULLCONTACT_API_KEY
+	if options then for key of options
+		opts[key] = options[key]
 	request {
 		url: 'https://api.fullcontact.com/v2/person.json'
-		qs: options
+		qs: opts
 	}, (e,r,b)->
-		if b && (JSON.parse(b).status is 202) then setTimeout FCAPI_person, 300000, options, cb
+		if b && (JSON.parse(b).status is 202)
+			setTimeout (()-> FCAPI_person opts, cb), 300000
 		else cb JSON.parse b
 
 
@@ -23,14 +26,15 @@ module.exports = (contact, cb)->
 	models.FullContact.findOne {contact: contact}, (err, fc_rec)->
 		if err or fc_rec then return cb null	# don't continue if there's already full data for this contact
 		FCAPI_person {email:contact.emails[0]}, (fullDeets)->
-			if fullDeets.status isnt 200 then return cb null
+			if not fullDeets or fullDeets.status isnt 200 then return cb null
 			delete fullDeets.status
 
-			if not _.contains contact.names, fullDeets.contactInfo.fullName 
-				contact.names.push fullDeets.contactInfo.fullName
-			catname = "#{fullDeets.contactInfo.givenName} #{fullDeets.contactInfo.familyName}"
-			if not _.contains contact.names, catname
-				contact.names.push catname
+			if fullDeets.contactInfo
+				if not _.contains contact.names, fullDeets.contactInfo.fullName 
+					contact.names.push fullDeets.contactInfo.fullName
+				catname = "#{fullDeets.contactInfo.givenName} #{fullDeets.contactInfo.familyName}"
+				if not _.contains contact.names, catname
+					contact.names.push catname
 
 			if fullDeets.emailAddresses
 				for eddress in fullDeets.emailAddresses

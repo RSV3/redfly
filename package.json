@@ -15,7 +15,9 @@
     "request": "git://github.com/mikeal/request.git#28e8be5175793ac99236df88e26c0139a143e32d",
     "csv": "0.2.6",
     "step": "0.0.5",
-    "fullcontact.js": "~0.1.1"
+    "fullcontact.js": "~0.1.1",
+    "contextio": "~0.3.0",
+    "source-map-support": "~0.1.2"
   },
   "devDependencies": {
     "chai": "1.4.2"
