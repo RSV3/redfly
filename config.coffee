@@ -1,6 +1,11 @@
 module.exports =
 	# sigh...
-	# all:
+	all:
+		ORGANISATION_NAME: 'redstar'
+		ORGANISATION_TITLE: 'Red Star'
+		ORGANISATION_CONTACT: 'jTNT'
+		ORGANISATION_EMAIL: 'j@jTNT.me'
+		ORGANISATION_DOMAIN: 'redstar.com'
 
 	development:
 		HOST: 'localhost:5000'
