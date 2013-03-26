@@ -62,7 +62,9 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 
 					@$().addClass 'animated lightSpeedOut'
-					contact.on 'didCreate', =>
+					contact.addObserver 'id', =>
+					# TO-DO bring this back when ember-data is fixed
+					# contact.on 'didCreate', =>
 						@get('controller.target').transitionTo 'contact', contact
 		reset: ->
 			for field in fields

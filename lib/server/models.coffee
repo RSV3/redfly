@@ -47,7 +47,7 @@ ContactSchema = new Schema
 TagSchema = new Schema
 	creator: type: Types.ObjectId, ref: 'User', required: true
 	contact: type: Types.ObjectId, ref: 'Contact', required: true
-	category: type: String, required: true, enum: ['redstar', 'industry']
+	category: type: String, required: true, enum: ['organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 
 NoteSchema = new Schema

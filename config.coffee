@@ -1,17 +1,27 @@
 module.exports =
-	# all:
+	all:
+		ORGANISATION_NAME: 'redstar'
+		ORGANISATION_TITLE: 'Red Star'
+		ORGANISATION_CONTACT: 'jTNT'
+		ORGANISATION_EMAIL: 'j@jTNT.me'
+		ORGANISATION_DOMAIN: 'redstar.com'
+
 
 
 	development:
 		HOST: 'localhost:5000'
+		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'justin+redfly_development@redstar.com'
+		INTERCEPT_EMAIL: 'justin@justat.in'
 
 		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
 
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
+
+		CONTEXTIO_KEY: 'tjwypeyu'
+		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
@@ -22,17 +32,6 @@ module.exports =
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 		NUDGE_DAYS: 'Monday Thursday'
-
-
-	# test:
-	# 	HOST: 'redfly-test.herokuapp.com'	# 'test.redfly.com'
-	# 	NODE_ENV: 'development'
-	# 	INTERCEPT_EMAIL: 'pharcosyle+redfly_test_intercept@gmail.com, kwan+redfly_test@redstar.com'
-
-	# 	MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
-
-	#	# GOOGLE_API_ID: ''
-	#	# GOOGLE_API_SECRET: ''
 
 
 	staging:
@@ -46,9 +45,9 @@ module.exports =
 		LINKEDIN_API_KEY: 'dmniuz3esjfd'
 		LINKEDIN_API_SECRET: 'lUEtRHIlApJ8NKt9'
 
-		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
-
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Monday Thursday'
 
@@ -63,12 +62,12 @@ module.exports =
 		LINKEDIN_API_KEY: 'wyctyn1vhpqn'
 		LINKEDIN_API_SECRET: 'gDuJEXDNJb1BlUIZ'
 
-		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
-
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'
 		BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Tuesday Friday'

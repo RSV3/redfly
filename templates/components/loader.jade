@@ -6,8 +6,10 @@
 		| {{/if}}
 		| {{#if view.stateParsing}}
 		div {{view.current}} of {{view.total}}
-		.progress.progress-striped.active
+		.progress1.progress.progress-striped.active
 			| <div class="bar" {{bindAttr style="view.percent"}}></div>
+			.progress2.progress.active
+				| <div class="bar" {{bindAttr style="view.percent2"}}></div>
 		| {{/if}}
 		| {{#if view.stateQueueing}}
 		div New contacts found: {{view.totalQueued}}
