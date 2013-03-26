@@ -4,12 +4,15 @@ validators = require('validator').validators
 request = require('request')
 
 FCAPI_person = (options, cb) ->
-	options.apiKey = process.env.FULLCONTACT_API_KEY
-	request {
-		url: 'https://api.fullcontact.com/v2/person.json'
-		qs: options
-	}, (e,r,b)->
-		if b && (JSON.parse(b).status is 202) then setTimeout FCAPI_person, 300000, options, cb
+	opts = apiKey: process.env.FULLCONTACT_API_KEY                                                                 
+	if options then for key of options                                                                             
+		opts[key] = options[key]                                                                                   
+	request {                                                                                                      
+		url: 'https://api.fullcontact.com/v2/person.json'                                                          
+		qs: opts                                                                                                   
+	}, (e,r,b)->                                                                                                   
+		if b && (JSON.parse(b).status is 202)                                                                      
+			setTimeout (()-> FCAPI_person opts, cb), 300000                                                        
 		else cb JSON.parse b
 
 
