@@ -123,18 +123,18 @@
 .row-fluid
 	.span6
 		.row-fluid.tag-category
-			p.lead Redstar Tags
-			| {{view App.TaggerView contactBinding="this" category="redstar" full="true" tabindex="1"}}
+			p.lead {{App.orgTitle}} Tags
+			| {{view App.TaggerView contactBinding="this" category="organisation" full="true" tabindex="1"}}
 		.row-fluid.tag-category
 			p.lead Industry Tags
 			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
 		//-
 			ul.nav.nav-pills
-				li.active: a(href='#redstar', data-toggle='pill') Redstar Tags
+				li.active: a(href='#organisation', data-toggle='pill') {{App.orgTitle}} Tags
 				li: a(href='#industry', data-toggle='pill') Industry Tags
 			.tab-content
-				#redstar.tab-pane.fade.active.in
-					| {{view App.TaggerView contactBinding="this" category="redstar" full="true"}}
+				#organisation.tab-pane.fade.active.in
+					| {{view App.TaggerView contactBinding="this" category="organisation" full="true"}}
 				#industry.tab-pane.fade
 					| {{view App.TaggerView contactBinding="this" category="industry" full="true"}}
 	.span6

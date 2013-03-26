@@ -113,8 +113,6 @@ module.exports = (Ember, App, socket) ->
 			@transitionTo 'userProfile'
 
 
-
-
 	# authRequiredRoutes = [
 	# 	'profile'
 	# 	'contact'
