@@ -107,7 +107,7 @@ eachImapMsg = (session, user, results, finish, cb) ->
 		request:
 			headers: ['from', 'to', 'subject', 'date']
 	fetch.on 'end', ->
-		server.IMAP.logout()
+		session.IMAP.logout()
 		finish()
 	fetch.on 'message', (msg) ->
 		msg.on 'end', ->
