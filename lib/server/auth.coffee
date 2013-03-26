@@ -12,7 +12,7 @@ everyauth.google.configure
 	callbackPath: '/authorized'
 	authQueryParam:
 		access_type: 'offline'
-		approval_prompt: 'force'
+		approval_prompt: 'auto'
 	scope: [
 			'https://www.googleapis.com/auth/userinfo.profile'
 			'https://www.googleapis.com/auth/userinfo.email'
@@ -25,7 +25,7 @@ everyauth.google.configure
 		_s = require 'underscore.string'
 
 		email = googleUserMetadata.email.toLowerCase()
-		if not _s.endsWith(email, '@redstar.com')
+		if not _s.endsWith email, "@#{process.env.ORGANISATION_DOMAIN}"
 			return {}
 		models.User.findOne email: email, (err, user) ->
 			throw err if err

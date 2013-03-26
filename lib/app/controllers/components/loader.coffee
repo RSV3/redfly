@@ -46,7 +46,10 @@ module.exports = (Ember, App, socket) ->
 
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
+				@set 'current2', 0
 				@set 'total', total
+				socket.on 'parse.couldqueue', =>
+					@incrementProperty 'current2'
 				socket.on 'parse.mail', =>
 					@incrementProperty 'current'
 				@set 'stateConnecting', false
@@ -59,7 +62,7 @@ module.exports = (Ember, App, socket) ->
 				socket.on 'parse.enqueued', =>
 					@incrementProperty 'totalQueued'
 				@set 'stateConnecting', false
-				@set 'stateParsing', false
+				@set 'stateParsing', true
 				@set 'stateQueueing', true
 				@set 'stateDone', false
 
@@ -72,6 +75,15 @@ module.exports = (Ember, App, socket) ->
 					percentage = Math.round (current / total) * 100
 				'width: ' + percentage + '%;'
 			).property 'current', 'total'
+
+		percent2: (->
+				current = @get 'current2'
+				total = @get 'total'
+				percentage = 0
+				if current and total
+					percentage = Math.round (current / total) * 100
+				'width: ' + percentage + '%;'
+			).property 'current2', 'total'
 
 
 		classify: ->
