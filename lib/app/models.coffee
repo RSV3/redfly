@@ -38,6 +38,7 @@ module.exports = (DS, App) ->
 		linkedin: DS.attr 'string'
 		twitter: DS.attr 'string'
 		facebook: DS.attr 'string'
+		isVip: DS.attr 'boolean'
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'

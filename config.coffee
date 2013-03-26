@@ -9,8 +9,8 @@ module.exports =
 
 
 	development:
-		HOST: 'localhost:5000'
-		AUTO_AUTH: '50ed206d4919709c08000002'
+		HOST: 'redsite.loc:5000'
+		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 

@@ -46,6 +46,9 @@ module.exports = (Ember, App, socket) ->
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
+		toggleVIP: ->
+			@set 'isVip', not @get 'isVip'
+			App.store.commit()
 
 
 	App.ContactView = Ember.View.extend
