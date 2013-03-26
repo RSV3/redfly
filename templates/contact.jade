@@ -103,6 +103,13 @@
 											i.icon-ok
 										+else
 										i.icon-spinner.icon-spin
+				.maybevip
+					span VIP
+					a(href='#', action='toggleVIP')
+						+if('isVip')
+							i.icon-star.icon-3x.fullredstar
+							+else
+							i.icon-star-empty.icon-3x.emptygraystar
 
 	.span3
 		| {{#if isKnown}}

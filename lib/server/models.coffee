@@ -40,6 +40,7 @@ ContactSchema = new Schema
 	position: type: String, trim: true
 	company: type: String, trim: true
 	yearsExperience: type: Number
+	isVip: type: Boolean
 	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin
 	twitter: type: String, trim: true, match: util.socialPatterns.twitter
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
