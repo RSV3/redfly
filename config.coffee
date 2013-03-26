@@ -1,16 +1,12 @@
 module.exports =
-	all:
-		ORGANISATION_NAME: 'darwin'
-		ORGANISATION_TITLE: 'Da.r-w.in'
-		ORGANISATION_CONTACT: 'justin B. tutty'
-		ORGANISATION_EMAIL: 'd@r-w.in'
-		ORGANISATION_DOMAIN: 'da.r-w.in'
+	# all:
 
 
 	development:
-		HOST: 'redsite.loc:5000'
+		HOST: 'localhost:5000'
+		AUTO_AUTH: '50ed206d4919709c08000002'
 		NODE_ENV: 'development'
-		INTERCEPT_EMAIL: 'justin+redfly_development@redstar.com'
+		INTERCEPT_EMAIL: 'justin@justat.in'
 
 		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
@@ -20,13 +16,12 @@ module.exports =
 
 		CONTEXTIO_KEY: 'tjwypeyu'
 		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
-		AUTO_AUTH: '512de743f4caf697aa000002'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://rfduser:rfdp455@ds039707.mongolab.com:39707/redflydarwin'
+		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
 
-		REDISTOGO_URL: 'redis://redistogo:e8d8d65fbe7df9673b111dc8702c0796@barreleye.redistogo.com:9726/'
+		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
@@ -36,7 +31,7 @@ module.exports =
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
-		INTERCEPT_EMAIL: 'just@justat.at'
+		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'FQb9jDmeN8btcR6pLnXx_jMZ'
@@ -44,16 +39,15 @@ module.exports =
 		LINKEDIN_API_KEY: 'dmniuz3esjfd'
 		LINKEDIN_API_SECRET: 'lUEtRHIlApJ8NKt9'
 
-		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
-
 		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
-		REDISTOGO_URL: 'redis://redistogo:e8d8d65fbe7df9673b111dc8702c0796@barreleye.redistogo.com:9726/'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Monday Thursday'
 
 
 	production:
-		HOST: 'redfly.rednot.com'
+		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
 
 		GOOGLE_API_ID: '614207063627-rg8v0hi2l04h90h6s0umhjinv4rhavm1.apps.googleusercontent.com'
@@ -62,12 +56,12 @@ module.exports =
 		LINKEDIN_API_KEY: 'wyctyn1vhpqn'
 		LINKEDIN_API_SECRET: 'gDuJEXDNJb1BlUIZ'
 
-		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
-
 		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
 		S3_SECRET_KEY: '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'
-		BACKUP_BUCKET: 'backups.redfly.rednot.com'
+		BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Tuesday Friday'
