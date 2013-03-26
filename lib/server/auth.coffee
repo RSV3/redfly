@@ -50,6 +50,7 @@ everyauth.google.configure
 						throw err if err
 						promise.fulfill user
 				else
+					console.log "user #{email} with #{googleUserMetadata.name} already had correct token #{token}"
 					promise.fulfill user
 			else
 				console.log "creating new user #{email} with #{googleUserMetadata.name}"
