@@ -86,6 +86,9 @@ module.exports = (app, route) ->
 				throw new Error
 
 
+	route 'summary.organisation', (fn) ->
+		fn process.env.ORGANISATION_TITLE
+
 	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
 			throw err if err
@@ -322,6 +325,8 @@ module.exports = (app, route) ->
 					io.emit 'parse.mail'
 				completedAllEmails: ->
 					io.emit 'parse.queueing'
+				considerContact: ->
+					io.emit 'parse.couldqueue'
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
 			require('./parser') user, notifications, (err, contacts) ->

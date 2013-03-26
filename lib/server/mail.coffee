@@ -5,7 +5,7 @@ projectRoot = path.dirname path.dirname __dirname
 mail = module.exports = require('phrenetic/lib/server/mail') projectRoot
 
 
-from = 'His Serene Highness of Redfly <kbaranowski@redstar.com>'
+from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 
 # mail.sendWelcome: (to, cb) ->
 # 	mail.sendTemplate 'welcome',
