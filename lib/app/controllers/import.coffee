@@ -110,7 +110,7 @@ module.exports = (Ember, App, socket) ->
 							require('async').forEach ['emails', 'names'], (field, cb) ->
 								validate.contact[field] result[field], cb
 							, (message) =>
-								if message is 'This is a Redstar person.'	# hacky
+								if message is "blacklisted" # hacky
 									result.status.blacklisted = true
 								else if message
 									result.status.error = message
@@ -173,7 +173,9 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 					# UPDATE: new version ember-data might let you batch commits with inter-foreign-key depenencies, making waiting for the
 					# contact to get created unncessary
-					contact.on 'didCreate', =>
+					contact.addObserver 'id', =>
+					# TO-DO bring this back when ember-data is fixed
+					# contact.on 'didCreate', =>
 						result.tags.forEach (tag) ->
 							App.Tag.createRecord
 								creator: App.user

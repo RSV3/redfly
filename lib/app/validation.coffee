@@ -16,7 +16,7 @@ module.exports = (socket) ->
 			'Pretty sure that\'s not a valid ' + value + '.'
 		unique: (value) ->
 			'There is another contact with that ' + value + '.'
-		blacklisted: 'This is a Redstar person.'
+		blacklisted: "blacklisted"
 	
 	filter:
 		general:
