@@ -185,6 +185,40 @@ module.exports = (Ember, App, socket) ->
 				select: (context) ->
 					@get('parentView.selections').pushObject context
 
+		measureBarView: Ember.View.extend
+			tagName: 'div'
+			classNames: ['contactbar']
+
+			allMeasures: (->
+				App.Measurement.find {
+						contact: @get 'controller.id'
+						attribute: @get 'measure'
+					}
+				).property 'measure'
+			avgMeasure: 0
+			setAvgMeasure: (->
+				if ((m = @get('allMeasures')) and (l = m.get 'length'))
+					@set 'avgMeasure', (_.reduce m.getEach('value'), (memo, v)-> memo+v) / l
+				0
+			).observes 'allMeasures.@each'
+			widthAsPcage: (->
+				v = @get('avgMeasure')/2
+				if v<0 then v = -v
+				"width:#{v}%"
+			).property 'avgMeasure'
+			ltORgtClass: (->
+				if @get('avgMeasure') > 0 then return 'gtzbarview'
+				else return 'ltzbarview'
+			).property 'avgMeasure'
+
+			upBarView: Ember.View.extend
+				classNames: ['gtzbarview']
+				widthBinding: 'parentView.avgGTZpcage'
+
+			downBarView: Ember.View.extend
+				classNames: ['ltzbarview']
+				widthBinding: 'parentView.avgLTZpcage'
+
 		sliderView: Ember.View.extend
 			tagName: 'div'
 			classNames: ['contactslider']
@@ -207,6 +241,7 @@ module.exports = (Ember, App, socket) ->
 				@$().slider {
 					value: 0
 					min: -100
+					animate: 'fast'
 					change: (e, ui)=>
 						if _.isNaN(ui.value) then return false
 						if (m = _.first @get('myMeasures').getEach 'id')
