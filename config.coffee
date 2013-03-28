@@ -1,9 +1,9 @@
 module.exports =
 	all:
 		ORGANISATION_NAME: 'redstar'
-		ORGANISATION_TITLE: 'Red Star'
-		ORGANISATION_CONTACT: 'jTNT'
-		ORGANISATION_EMAIL: 'j@jTNT.me'
+		ORGANISATION_TITLE: 'Redstar'
+		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
+		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 
 

@@ -166,7 +166,7 @@ module.exports = (Ember, App, socket) ->
 					contact = App.Contact.createRecord
 						emails: result.emails
 						names: result.names
-						knows: Ember.ArrayProxy.create {content:[App.user.get('content')]}
+						knows: Ember.ArrayProxy.create {content: [App.user.get('content')]}
 						added: new Date
 						addedBy: App.user
 					App.store.commit()
