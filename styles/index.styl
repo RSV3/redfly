@@ -1,4 +1,5 @@
 @import '../node_modules/phrenetic/styles'
+@import 'vendor/jquery-ui-1.10.2.custom.css'
 
 
 
@@ -237,9 +238,18 @@ body
 
 
 .contact
+	span.leftsliderlabel
+		float	left
+		width	23%
+	span.rightsliderlabel
+		float	right
+	.slidercontainer
+		display	inline-block
+		width	50%
 	.maybevip
-		margin-left	12em
-		margin-top	-3em
+		position	relative
+		margin-top	-1em
+		float	right
 		a
 			text-decoration	none
 		.emptygraystar
