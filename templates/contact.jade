@@ -111,12 +111,12 @@
 										+else
 										i.icon-spinner.icon-spin
 		+if('isKnown')
-			.row-fluid
+			.row-fluid.setmeasure
 				span.leftsliderlabel Never met
 				.slidercontainer
 					+view('view.sliderView measure="familiarity"')
 				span.rightsliderlabel Close friends
-			.row-fluid
+			.row-fluid.setmeasure
 				span.leftsliderlabel Don't pester
 				.slidercontainer
 					+view('view.sliderView measure="reachability"')
