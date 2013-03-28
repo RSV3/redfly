@@ -39,6 +39,7 @@ module.exports = (DS, App) ->
 		linkedin: DS.attr 'string'
 		twitter: DS.attr 'string'
 		facebook: DS.attr 'string'
+		isVip: DS.attr 'boolean'
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
@@ -100,3 +101,10 @@ module.exports = (DS, App) ->
 		user: DS.belongsTo 'App.User'
 		name: DS.attr 'string'
 		email: DS.attr 'string'
+
+	App.Measurement = DS.Model.extend
+		user: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
+		attribute: DS.attr 'string'
+		value: DS.attr 'number'
+

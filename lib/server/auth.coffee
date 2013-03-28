@@ -33,7 +33,7 @@ everyauth.google.configure
 			if user
 				# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 				if not user.oauth
-					console.log "no oauth on user #{email} with #{googleUserMetadata.name} : gonna save #{token}"
+					console.log "no oauth on user #{email} with #{googleUserMetadata.name} : adding #{token}"
 					user.name = googleUserMetadata.name
 					if picture = googleUserMetadata.picture
 						user.picture = picture

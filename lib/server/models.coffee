@@ -23,12 +23,18 @@ UserSchema = new Schema
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
 	lastParsed: type: Date
 	queue: [ type: Types.ObjectId, ref: 'Contact' ]
-	excludes: [oldexcludeSchema]
+	excludes: [oldexcludeSchema]		# this is redundant and we should remove it.
 	linkedin: type: String
 	linkedInAuth: 
 		token: type: String
 		secret: type: String
 
+
+MeasurementSchema = new Schema
+	user: type: Types.ObjectId, ref: 'User'
+	contact: type: Types.ObjectId, ref: 'Contact'
+	attribute: type: String
+	value: type: Number
 
 ContactSchema = new Schema
 	emails: [ type: String ]
@@ -40,6 +46,7 @@ ContactSchema = new Schema
 	position: type: String, trim: true
 	company: type: String, trim: true
 	yearsExperience: type: Number
+	isVip: type: Boolean
 	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin
 	twitter: type: String, trim: true, match: util.socialPatterns.twitter
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
@@ -154,6 +161,7 @@ LinkedInSchema.plugin models.common
 MergeSchema.plugin models.common
 ExcludeSchema.plugin models.common
 FullContactSchema.plugin models.common
+MeasurementSchema.plugin models.common
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
@@ -166,5 +174,6 @@ exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
 exports.Merge = models.db.model 'Merge', MergeSchema
 exports.Exclude = models.db.model 'Exclude', ExcludeSchema
 exports.FullContact = models.db.model 'FullContact', FullContactSchema
+exports.Measurement = models.db.model 'Measurement', MeasurementSchema
 
 
