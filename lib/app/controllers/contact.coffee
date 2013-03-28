@@ -241,6 +241,7 @@ module.exports = (Ember, App, socket) ->
 				@$().slider {
 					value: 0
 					min: -100
+					step: 10
 					animate: 'fast'
 					change: (e, ui)=>
 						if _.isNaN(ui.value) then return false
