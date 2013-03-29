@@ -15,7 +15,11 @@
 		.row-fluid
 			| {{#if hasIntro}}
 			p.bullhorn
-				| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
+				| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView}}</a>
+			| {{/if}}
+			| {{#if isKnown}}
+			p.bullhorn
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{view App.CatchupView}}</a>
 			| {{/if}}
 			h1 {{canonicalName}}
 			| {{#if isKnown}}
@@ -24,32 +28,33 @@
 			br
 			+view('view.positionView')
 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-				| {{#if editpositiondetails}}
-				i {{editpositiondetails}}&nbsp;
-				| {{/if}}
-				+view('view.editView')
-					a(href='#', action='toggle target="view"')
-						i.icon-pencil
-					div(bindAttr='class="view.show::hide"')
-						.popover
-							a.close(href='#', action='toggle target="view"')
-							.nav-header Position and Experience
-							div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
-								+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
-								span.help-block {{view.positionFieldInstance.error}}
-							div(bindAttr='class=":control-group view.companyFieldInstance.error:error"')
-								+view('view.field valueBinding="company" viewName="companyFieldInstance" placeholder="company"')
-								span.help-block {{view.companyFieldInstance.error}}
-							div(bindAttr='class=":control-group view.yearsExperienceFieldInstance.error:error"')
-								+view('view.field valueBinding="yearsExperience" viewName="yearsExperienceFieldInstance" placeholder="years of experience"')
-								span.help-block {{view.yearsExperienceFieldInstance.error}}
-							.pull-right
-								+unless('view.working')
-									a(href='#', action='save target="view"')
-										| Save 
-										i.icon-ok
-									+else
-									i.icon-spinner.icon-spin
+				+if('isKnown')
+					| {{#if editpositiondetails}}
+					i {{editpositiondetails}}&nbsp;
+					| {{/if}}
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.icon-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"')
+								.nav-header Position and Experience
+								div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
+									+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
+									span.help-block {{view.positionFieldInstance.error}}
+								div(bindAttr='class=":control-group view.companyFieldInstance.error:error"')
+									+view('view.field valueBinding="company" viewName="companyFieldInstance" placeholder="company"')
+									span.help-block {{view.companyFieldInstance.error}}
+								div(bindAttr='class=":control-group view.yearsExperienceFieldInstance.error:error"')
+									+view('view.field valueBinding="yearsExperience" viewName="yearsExperienceFieldInstance" placeholder="years of experience"')
+									span.help-block {{view.yearsExperienceFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.icon-ok
+										+else
+										i.icon-spinner.icon-spin
 
 				+if('linkedin')
 					br
@@ -65,7 +70,6 @@
 			p
 				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
-				| . <a {{bindAttr href="directMailto"}} target="_blank">Catch up.</a> 
 			p
 				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
 				em "{{firstHistory.subject}}"
@@ -84,32 +88,33 @@
 						i.icon-facebook-sign.icon-large
 						|  
 					| &nbsp;&nbsp;
-					+view('view.editView')
-						a(href='#', action='toggle target="view"')
-							i.icon-pencil
-						div(bindAttr='class="view.show::hide"')
-							.popover
-								a.close(href='#', action='toggle target="view"')
-								.nav-header Social Links
-								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
-									span.help-inline {{view.prefixes.linkedin}}
-									+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
-									span.help-block {{view.linkedinFieldInstance.error}}
-								div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
-									span.help-inline {{view.prefixes.twitter}}
-									+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
-									span.help-block {{view.twitterFieldInstance.error}}
-								div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
-									span.help-inline {{view.prefixes.facebook}}
-									+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
-									span.help-block {{view.facebookFieldInstance.error}}
-								.pull-right
-									+unless('view.working')
-										a(href='#', action='save target="view"')
-											| Save 
-											i.icon-ok
-										+else
-										i.icon-spinner.icon-spin
+					+if('isKnown')
+						+view('view.editView')
+							a(href='#', action='toggle target="view"')
+								i.icon-pencil
+							div(bindAttr='class="view.show::hide"')
+								.popover
+									a.close(href='#', action='toggle target="view"')
+									.nav-header Social Links
+									div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
+										span.help-inline {{view.prefixes.linkedin}}
+										+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
+										span.help-block {{view.linkedinFieldInstance.error}}
+									div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
+										span.help-inline {{view.prefixes.twitter}}
+										+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
+										span.help-block {{view.twitterFieldInstance.error}}
+									div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
+										span.help-inline {{view.prefixes.facebook}}
+										+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
+										span.help-block {{view.facebookFieldInstance.error}}
+									.pull-right
+										+unless('view.working')
+											a(href='#', action='save target="view"')
+												| Save 
+												i.icon-ok
+											+else
+											i.icon-spinner.icon-spin
 		+if('isKnown')
 			.row-fluid.setmeasure
 				span.leftsliderlabel Never met
@@ -169,7 +174,7 @@
 	.span6
 		.row-fluid
 			p.lead Notes
-			| {{#collection contentBinding="notes" itemViewClass="view.noteView"}}
+			| {{#collection contentBinding="notes" itemViewClass="App.NoteView"}}
 			+linkTo('profile view.content.author class="pull-left"')
 				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			// TO-DO do nl2br with bindings
