@@ -1,4 +1,5 @@
 @import '../node_modules/phrenetic/styles'
+@import 'vendor/jquery-ui-1.10.2.custom.css'
 
 
 
@@ -237,9 +238,51 @@ body
 
 
 .contact
+	.setmeasure
+		margin-top	1em
+	.contactbar
+		margin-bottom	1em
+		background	linear-gradient(left, #fff 0%, #fdd 20%, #dfd 80%, #fff 100%)
+		.barviewcontainer
+			position	relative
+			display	inline-block
+			left	50%
+			width	50%
+			margin-left	-25%
+			height	1em
+			.ltzbarview
+				border-radius	left 10px
+				border-radius	right 4px
+				position	absolute
+				background	linear-gradient(top, pink 0%, darkred 100%)
+				height	1em
+				right	50%
+				border-right:1px solid gray
+			.gtzbarview
+				border-radius	right 10px
+				border-radius	left 4px
+				position	absolute
+				background	linear-gradient(top, lightgreen 0%, darkgreen 100%)
+				height	1em
+				left	50%
+				border-left:1px solid gray
+				
+	span.leftbarlabel
+		float	left
+		position	absolute
+	span.rightbarlabel
+		float	right
+	span.leftsliderlabel
+		float	left
+		width	23%
+	span.rightsliderlabel
+		float	right
+	.slidercontainer
+		display	inline-block
+		width	50%
 	.maybevip
-		margin-left	12em
-		margin-top	-3em
+		display inline-block
+		margin-right 10px
 		a
 			text-decoration	none
 		.emptygraystar
@@ -253,7 +296,7 @@ body
 			font-size 30px
 			:hover
 				text-decoration none
-		h1
+		h2
 			display inline-block
 			margin-bottom 0
 			margin-right 10px
@@ -382,7 +425,6 @@ body
 			border-radius 4px
 	.progress.progress2 .bar
 		opacity 0.5
-
 
 
 // Components that are just basically default mixins

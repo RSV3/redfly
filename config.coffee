@@ -2,7 +2,7 @@ module.exports =
 	all:
 		ORGANISATION_NAME: 'redstar'
 		ORGANISATION_TITLE: 'Redstar'
-		ORGANISATION_CONTACT: 'His Serene Highness of Redstar'
+		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 
@@ -20,8 +20,8 @@ module.exports =
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
 
-		CONTEXTIO_KEY: 'tjwypeyu'
-		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
+		#CONTEXTIO_KEY: 'tjwypeyu'
+		#CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 

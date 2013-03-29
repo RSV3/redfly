@@ -47,8 +47,9 @@ module.exports = (Ember, App, socket) ->
 				@set 'animate', true
 				@set 'currentNote', null
 		toggleVIP: ->
-			@set 'isVip', not @get 'isVip'
-			App.store.commit()
+			if @get 'isKnown'
+				@set 'isVip', not @get 'isVip'
+				App.store.commit()
 
 
 	App.ContactView = Ember.View.extend
@@ -166,7 +167,7 @@ module.exports = (Ember, App, socket) ->
 
 					notification.effect 'bounce'
 					notification.pnotify
-						text: 'One ' + @get('controller.nickname') + ' to rule them all!'
+						text: "One #{@get 'controller.nickname'} to rule them all!"
 						type: 'success'
 						hide: true
 						closer: true
@@ -183,6 +184,79 @@ module.exports = (Ember, App, socket) ->
 					).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
 					@get('parentView.selections').pushObject context
+
+		measureBarView: Ember.View.extend
+			tagName: 'div'
+			classNames: ['contactbar']
+
+			allMeasures: (->
+				App.Measurement.find {
+						contact: @get 'controller.id'
+						attribute: @get 'measure'
+					}
+				).property 'measure'
+			avgMeasure: 0
+			setAvgMeasure: (->
+				if ((m = @get('allMeasures')) and (l = m.get 'length'))
+					@set 'avgMeasure', (_.reduce m.getEach('value'), (memo, v)-> memo+v) / l
+				0
+			).observes 'allMeasures.@each'
+			widthAsPcage: (->
+				v = @get('avgMeasure')/2
+				if v<0 then v = -v
+				"width:#{v}%"
+			).property 'avgMeasure'
+			ltORgtClass: (->
+				if @get('avgMeasure') > 0 then return 'gtzbarview'
+				else return 'ltzbarview'
+			).property 'avgMeasure'
+
+			upBarView: Ember.View.extend
+				classNames: ['gtzbarview']
+				widthBinding: 'parentView.avgGTZpcage'
+
+			downBarView: Ember.View.extend
+				classNames: ['ltzbarview']
+				widthBinding: 'parentView.avgLTZpcage'
+
+		sliderView: Ember.View.extend
+			tagName: 'div'
+			classNames: ['contactslider']
+
+			myMeasure: (->
+					if (v = _.first @get('myMeasures').getEach 'value')	# only if there is a value
+						if v isnt @$().slider 'value'	# otherwise we end up in a loop in a loop in a ...
+							@$().slider 'value', v
+				).observes 'myMeasures.@each'
+			myMeasures: (->
+				App.Measurement.find {
+						user: App.user.get 'id'
+						contact: @get 'controller.id'
+						attribute: @get 'measure'
+					}
+				).property 'measure'
+
+			didInsertElement: ()->
+				view = @
+				@$().slider {
+					value: 0
+					min: -100
+					step: 10
+					animate: 'fast'
+					change: (e, ui)=>
+						if _.isNaN(ui.value) then return false
+						if (m = _.first @get('myMeasures').getEach 'id')
+							App.Measurement.find(m).set 'value', ui.value
+						else
+							view.set 'myMeasures', [App.Measurement.createRecord {
+								user: App.user
+								contact: view.get 'controller.content'
+								attribute: view.get 'measure'
+								value: ui.value
+							}]
+						App.store.commit()
+						false
+				}
 
 		positionView: Ember.View.extend
 			editView: Ember.View.extend
@@ -225,11 +299,6 @@ module.exports = (Ember, App, socket) ->
 						App.store.commit()
 						@toggleProperty 'show'
 					@set 'working', false
-
-
-		noteView: App.NoteView
-
-		introView: App.IntroView
 
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
