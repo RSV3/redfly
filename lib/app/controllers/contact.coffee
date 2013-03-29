@@ -300,11 +300,6 @@ module.exports = (Ember, App, socket) ->
 						@toggleProperty 'show'
 					@set 'working', false
 
-
-		noteView: App.NoteView
-
-		introView: App.IntroView
-
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
 			attributeBindings: ['placeholder', 'rows', 'tabindex']
