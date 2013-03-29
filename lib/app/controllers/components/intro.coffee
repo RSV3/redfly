@@ -2,12 +2,35 @@ module.exports = (Ember, App, socket) ->
 
 	App.IntroView = Ember.View.extend
 		tagName: 'i'
+		classNames: ['icon-bullhorn', 'icon-large']
+		titleStr: ->
+			if ((nick = @get 'controller.addedBy.nickname') and nick.length)
+				return "Ask #{nick} for an intro!"
+			"Ask for an intro!"
 		didInsertElement: ->
-			@set 'tooltip', $(@$()).tooltip
-				title: null	# Placeholder, populate later.
+			@set 'tooltip', @$().tooltip
+				title: @titleStr()
 				placement: 'bottom'
-			updateTooltip: (->
-				@get('tooltip').data('tooltip').options.title = 'Ask ' + @get('controller.addedBy.nickname') + ' for an intro!'
-			).observes 'controller.addedBy.nickname'
-			attributeBindings: ['rel']
-			rel: 'tooltip'
+		updateTooltip: (->
+			@get('tooltip').data('tooltip').options.title = @titleStr()
+		).observes 'controller.addedBy.nickname'
+		attributeBindings: ['rel']
+		rel: 'tooltip'
+
+	App.CatchupView = Ember.View.extend
+		tagName: 'i'
+		classNames: ['icon-envelope', 'icon-large']
+		titleStr: ->
+			if ((name = @get('controller.nickname')) and name.length)
+				return "Get in touch with #{name} again!"
+			'Catchup!'
+		didInsertElement: ->
+			@set 'tooltip', @$().tooltip
+				title: @titleStr()
+				placement: 'bottom'
+		updateTooltip: (->
+			@get('tooltip').data('tooltip').options.title = @titleStr()
+		).observes 'controller.nickname'
+		attributeBindings: ['rel']
+		rel: 'tooltip'
+
