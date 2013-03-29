@@ -4,24 +4,20 @@
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
-		.maybevip
-			span VIP
-			a(href='#', action='toggleVIP')
-				+if('isVip')
-					i.icon-star.icon-3x.fullredstar
-					+else
-					i.icon-star-empty.icon-3x.emptygraystar
 	.span6
 		.row-fluid
 			| {{#if hasIntro}}
 			p.bullhorn
 				| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView}}</a>
 			| {{/if}}
-			| {{#if isKnown}}
-			p.bullhorn
-				| <a {{bindAttr href="directMailto"}} target="_blank">{{view App.CatchupView}}</a>
-			| {{/if}}
-			h1 {{canonicalName}}
+			.maybevip
+				a(href='#', action='toggleVIP')
+					+if('isVip')
+						i.icon-star.icon-3x.fullredstar
+						+else
+						+if('isKnown')
+							i.icon-star-empty.icon-3x.emptygraystar
+			h2 {{canonicalName}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
@@ -62,7 +58,7 @@
 		.row-fluid
 			| {{#if isKnown}}
 			h4
-				| <a {{bindAttr href="view.directMailto"}} target="_blank">{{email}}</a>
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{/if}}
 		| {{#if firstHistory}}
