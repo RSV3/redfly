@@ -128,8 +128,8 @@ module.exports = (Ember, App, socket) ->
 
 	# intercepted = null
 
-	# setupContexts = App.Router.prototype.setupContexts
-	# App.Router.prototype.setupContexts = (router, handlerInfos) ->
+	# setupContexts = App.Router::setupContexts
+	# App.Router::setupContexts = (router, handlerInfos) ->
 	# 	_ = require 'underscore'
 	# 	authRequired = _.find handlerInfos, (info) ->
 	# 		info.name in authRequiredRoutes
