@@ -4,7 +4,6 @@ module.exports =
 		ORGANISATION_TITLE: 'Redstar'
 		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
-		ORGANISATION_DOMAIN: 'redstar.com'
 
 	development:
 		HOST: '127.0.0.1:5000'
