@@ -43,7 +43,12 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactsRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			controller.set 'addedContacts', App.Contact.find(added: $exists: true)
+			controller.set 'page1Contacts', App.Contact.find
+				conditions:
+					added: $exists: true
+				options:
+					sort: added: -1
+					limit: 10
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
