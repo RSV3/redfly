@@ -8,26 +8,26 @@
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			+linkTo('index class="brand"', 'Redfly')
+			+linkTo('index class="brand"') Redfly
 			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav
 					//- li
-					//- 	+linkTo('home', 'Home')
+					//- 	+linkTo('home') Home
 					li
-						+linkTo('classify', 'Classify')
+						+linkTo('classify') Classify
 					//- li
-					//- 	+linkTo('create', 'Create')
+					//- 	+linkTo('create') Create
 					//- li
-					//- 	+linkTo('import', 'Bulk Upload')
+					//- 	+linkTo('import') Bulk Upload
 					li
-						+linkTo('create', 'Create')
+						+linkTo('create') Create
 					li
-						+linkTo('contacts', 'Contacts')
+						+linkTo('contacts') Contacts
 					li
-						+linkTo('tags', 'Tags')
+						+linkTo('tags') Tags
 					//- li
-					//- 	+linkTo('report', 'Report a bug')
+					//- 	+linkTo('report') Report a bug
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right
@@ -42,13 +42,13 @@
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
-							+linkTo('userProfile', 'Profile')
+							+linkTo('userProfile') Profile
 						li
-							+linkTo('classify', 'Classify')
+							+linkTo('classify') Classify
 						li
-							+linkTo('import', 'Bulk Upload')
+							+linkTo('import') Bulk Upload
 						li
-							+linkTo('leaderboard', 'Leaderboard')
+							+linkTo('leaderboard') Leaderboard
 						li.divider
 						li
 							a(href='/linker')
