@@ -24,8 +24,8 @@ module.exports =
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		#MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
-		MONGOLAB_URI: 'mongodb://localhost/redfly'
+		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
+		#MONGOLAB_URI: 'mongodb://localhost/redfly'
 
 		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		
