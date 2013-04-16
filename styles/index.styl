@@ -58,7 +58,6 @@ organisation = #e51937
 tag(fontSize)
 	.tag
 		a
-			color #666 // TODO this seems hacky, ask someone at redstar how they do aggressive css overrides
 		color #666
 		display inline-block
 		background-color #DEE7F8
@@ -271,7 +270,9 @@ body
 		float	left
 		position	absolute
 	span.rightbarlabel
-		float	right
+		position	absolute
+		margin-right	-9em
+		right	0
 	span.leftsliderlabel
 		float	left
 		width	23%
@@ -358,6 +359,8 @@ body
 			max-width 528px
 			margin-top 40px // TO-DO hackily hackface mchackerson
 .contacts
+	.waitingformorecontacts
+		margin-left	44%
 	td
 		cursor pointer
 .tags

@@ -3,30 +3,64 @@ module.exports = (Ember, App, socket) ->
 	util = require '../util'
 
 	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
+
+		allMeasures: (->
+			App.Measurement.find { contact: @get 'id' }
+		).property 'id'
+		waitingForMeasures: (->
+			not @get('allMeasures')?.get('isLoaded')
+		).property 'allMeasures', 'allMeasures.@each'
+		gotMeasures: (->
+			@get('allMeasures')?.get 'length'
+		).property 'allMeasures', 'allMeasures.@each'
+		measures: (->
+			measures = {}
+			if @.get 'gotMeasures'
+				allMs = @get 'allMeasures'
+				atts = _.uniq allMs.getEach 'attribute'
+				for eachAt in atts
+					measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
+			measures
+		).property 'gotMeasures', 'allMeasures.@each'
+		averages: (->
+			averages = {}
+			measures = @get 'measures'
+			for eachAt of measures
+				if measures[eachAt].length
+					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / measures[eachAt].length
+			averages
+		).property 'measures', 'measures.@each'
+		knowsSome: (->
+			fams = @get('measures.familiarity')
+			if not fams or not fams.length then f = []
+			else f = fams.getEach 'user'
+			othernose = @get('knows').filter (k)-> not _.contains(f, k)
+			f.concat othernose
+		).property 'knows', 'measures'
+
 		editpositiondetails: (->
 			if not (@get('position') or @get('company') or @get('yearsExperience'))
 				"Edit details about #{@get('nickname')}'s professional experience"
 		).property 'position', 'company', 'yearsExperience'
 		histories: (->
-				# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
-				# fake contact is below the page break and has no ID set
-				if not @get('id')
-					return []
-				query = sender: App.user.get('id'), recipient: @get('id')
-				App.filter App.Mail, {field: 'sent'}, query, (data) =>
-					(data.get('sender.id') is App.user.get('id')) and (data.get('recipient.id') is @get('id'))
-			).property 'id'
+			# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
+			# fake contact is below the page break and has no ID set
+			if not @get('id') then return []
+			query = sender: App.user.get('id'), recipient: @get('id')
+			App.filter App.Mail, {field: 'sent'}, query, (data) =>
+				(data.get('sender.id') is App.user.get('id')) and (data.get('recipient.id') is @get('id'))
+		).property 'id'
 		firstHistory: (->
-				@get 'histories.firstObject'
-			).property 'histories.firstObject'
+			@get 'histories.firstObject'
+		).property 'histories.firstObject'
 		lastTalked: (->
-				if sent = @get('histories.lastObject.sent')
-					moment = require 'moment'
-					moment(sent).fromNow()
-			).property 'histories.lastObject.sent'
+			if sent = @get('histories.lastObject.sent')
+				moment = require 'moment'
+				moment(sent).fromNow()
+		).property 'histories.lastObject.sent'
 		disableAdd: (->
-				not util.trim @get('currentNote')
-			).property 'currentNote'
+			not util.trim @get('currentNote')
+		).property 'currentNote'
 		# emptyNotesText: (->
 		# 		if _.random(1, 10) < 9
 		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work? Something to do with volatile?
@@ -64,17 +98,17 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'span'
 			classNames: ['edit', 'overlay']
 			primary: ((key, value) ->
-					if arguments.length is 1
-						return @get 'controller.' + @get('primaryAttribute')
-					value
-				# ).property 'controller.' + @get('primaryAttribute')
-				# TODO hack
-				).property 'controller.name', 'controller.email'
+				if arguments.length is 1
+					return @get 'controller.' + @get('primaryAttribute')
+				value
+			# ).property 'controller.' + @get('primaryAttribute')
+			# TODO hack
+			).property 'controller.name', 'controller.email'
 			others: (->
-					Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.' + @get('otherAttribute'))
-				# ).property 'controller.' + @get('otherAttribute')
-				# TODO hack
-				).property 'controller.aliases', 'controller.otherEmails'
+				Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.' + @get('otherAttribute'))
+			# ).property 'controller.' + @get('otherAttribute')
+			# TODO hack
+			).property 'controller.aliases', 'controller.otherEmails'
 			_makeProxyArray: (array) ->
 				# Since I can't bind to positions in an array, I have to create object proxies for each of the elements and add/remove those.
 				_.map array, (value) ->
@@ -92,8 +126,7 @@ module.exports = (Ember, App, socket) ->
 				all = @get('others').getEach 'content'
 				all.unshift @get('primary')
 				all = _.chain(all)
-					.map (item) ->
-						util.trim item
+					.map (item) -> util.trim item
 					.compact()
 					.value()
 
@@ -134,8 +167,8 @@ module.exports = (Ember, App, socket) ->
 		mergeView: Ember.View.extend
 			classNames: ['merge']
 			selections: (->
-					Ember.ArrayProxy.create content: []
-				).property 'controller.content'
+				Ember.ArrayProxy.create content: []
+			).property 'controller.content'
 			_launch: ->
 				@set 'modal', $(@$('.modal')).modal()
 			merge: ->
@@ -154,10 +187,9 @@ module.exports = (Ember, App, socket) ->
 
 				selections = @get 'selections'
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), =>
-					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data. Issue
-					# a delete instead even though they're already deleted in the database.
-					selections.forEach (selection) ->
-						selection.deleteRecord()
+					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
+					# Issue a delete instead even though they're already deleted in the database.
+					selections.forEach (selection) -> selection.deleteRecord()
 					App.store.commit()
 					# Refresh the store with the stuff that could have changed.
 					App.refresh @get('controller.content')
@@ -177,11 +209,11 @@ module.exports = (Ember, App, socket) ->
 
 			mergeSearchView: App.SearchView.extend
 				conditions: (->
-						addedBy: App.user.get 'id'
-					).property()
+					addedBy: App.user.get 'id'
+				).property()
 				excludes: (->
-						@get('parentView.selections').toArray().concat @get('controller.content')
-					).property 'controller.content', 'parentView.selections.@each'
+					@get('parentView.selections').toArray().concat @get('controller.content')
+				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
 					@get('parentView.selections').pushObject context
 
@@ -189,18 +221,9 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'div'
 			classNames: ['contactbar']
 
-			allMeasures: (->
-				App.Measurement.find {
-						contact: @get 'controller.id'
-						attribute: @get 'measure'
-					}
-				).property 'measure'
-			avgMeasure: 0
-			setAvgMeasure: (->
-				if ((m = @get('allMeasures')) and (l = m.get 'length'))
-					@set 'avgMeasure', (_.reduce m.getEach('value'), (memo, v)-> memo+v) / l
-				0
-			).observes 'allMeasures.@each'
+			avgMeasure: (->
+				@get("controller.averages")[@get 'measure']
+			).property "controller.averages.@each"
 			widthAsPcage: (->
 				v = @get('avgMeasure')/2
 				if v<0 then v = -v
@@ -213,48 +236,50 @@ module.exports = (Ember, App, socket) ->
 
 			upBarView: Ember.View.extend
 				classNames: ['gtzbarview']
-				widthBinding: 'parentView.avgGTZpcage'
 
 			downBarView: Ember.View.extend
 				classNames: ['ltzbarview']
-				widthBinding: 'parentView.avgLTZpcage'
 
 		sliderView: Ember.View.extend
 			tagName: 'div'
 			classNames: ['contactslider']
 
+			myMeasurements: (->
+				@get('controller.measures')?[@get 'measure']?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')) or []
+			).property "controller.measures[controller.measure]"
+
+			###
 			myMeasure: (->
-					if (v = _.first @get('myMeasures').getEach 'value')	# only if there is a value
-						if v isnt @$().slider 'value'	# otherwise we end up in a loop in a loop in a ...
-							@$().slider 'value', v
-				).observes 'myMeasures.@each'
-			myMeasures: (->
-				App.Measurement.find {
-						user: App.user.get 'id'
-						contact: @get 'controller.id'
-						attribute: @get 'measure'
-					}
-				).property 'measure'
+				v = _.first @get('myMeasurements').getEach 'value'
+				if v and v isnt @$().slider 'value'	# otherwise we end up in a loop in a loop in a ...
+					@$().slider 'value', v
+				v
+			).property 'myMeasurements'
+			###
 
 			didInsertElement: ()->
 				view = @
 				@$().slider {
-					value: 0
+					value: _.first @get('myMeasurements').getEach 'value'
 					min: -100
 					step: 10
 					animate: 'fast'
 					change: (e, ui)=>
-						if _.isNaN(ui.value) then return false
-						if (m = _.first @get('myMeasures').getEach 'id')
-							App.Measurement.find(m).set 'value', ui.value
-						else
-							view.set 'myMeasures', [App.Measurement.createRecord {
-								user: App.user
-								contact: view.get 'controller.content'
-								attribute: view.get 'measure'
-								value: ui.value
-							}]
-						App.store.commit()
+						Ember.run.next this, ()->
+							allMs = view.get 'controller.measures'
+							thism = view.get 'measure'
+							if (m = allMs[thism]?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')))
+								m.get('firstObject').set 'value', ui.value
+							else
+								if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
+								allMs[thism].pushObject App.Measurement.createRecord {
+									user: App.user
+									contact: view.get 'controller.content'
+									attribute: view.get 'measure'
+									value: ui.value
+								}
+							view.get('controller').notifyPropertyChange 'measures'
+							App.store.commit()
 						false
 				}
 
@@ -304,7 +329,7 @@ module.exports = (Ember, App, socket) ->
 			classNames: ['span12']
 			attributeBindings: ['placeholder', 'rows', 'tabindex']
 			placeholder: (->
-					'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
-				).property 'controller.nickname'
+				'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'
+			).property 'controller.nickname'
 			rows: 3
 			tabindex: 3

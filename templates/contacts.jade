@@ -1,19 +1,25 @@
 .row-fluid
 	h1 All Contacts
-	+unless ('contacts.paginatedItems')
-		.loading
-			i.icon-spinner.icon-spin
-	+if ('contacts.paginatedItems')
-		table.table.table-hover
-			thead
-				tr
-					th Names
-					th Emails
-					th Position
-					th Company
-					th Added On
-					th Added By
-			tbody
+	table.table.table-hover
+		thead
+			tr
+				th Names
+				th Emails
+				th Position
+				th Company
+				th Added On
+				th Added By
+		tbody
+			+unless ('contacts.paginatedItems')
+				+each('contacts')
+					+linkTo('contact this tagName="tr"')
+						td {{canonicalName}}
+						td {{email}}
+						td {{position}}
+						td {{company}}
+						td {{format added}}
+						td {{addedBy.canonicalName}}
+			+if ('contacts.paginatedItems')
 				+each('contacts.paginatedItems')
 					+linkTo('contact this tagName="tr"')
 						td {{canonicalName}}
@@ -23,13 +29,17 @@
 						td {{format added}}
 						td {{addedBy.canonicalName}}
 
-		ul.pager
-			| {{#if contacts.hasPrevious}}
-			li.previous
-				| <a href="#" {{action previousPage target="contacts"}}>&larr; Newer</a>
-			| {{/if}}
-			| {{#if contacts.hasNext}}
-			li.next
-				| <a href="#" {{action nextPage target="contacts"}}>Older &rarr;</a>
-			| {{/if}}
++unless ('contacts.paginatedItems')
+	.waitingformorecontacts
+		i.icon-spinner.icon-spin.icon-3x
++if ('contacts.paginatedItems')
+	ul.pager
+		| {{#if contacts.hasPrevious}}
+		li.previous
+			| <a href="#" {{action previousPage target="contacts"}}>&larr; Newer</a>
+		| {{/if}}
+		| {{#if contacts.hasNext}}
+		li.next
+			| <a href="#" {{action nextPage target="contacts"}}>Older &rarr;</a>
+		| {{/if}}
 
