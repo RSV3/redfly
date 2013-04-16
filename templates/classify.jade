@@ -32,11 +32,11 @@ div.navbar
 	| {{/unless}}
 	p
 		| {{#if noMore}}
-		+linkTo('contacts class="btn btn-primary btn-large"', 'See all contacts')
+		+linkTo('contacts class="btn btn-primary btn-large"') See all contacts
 		|  {{else}}
 		| <a class="btn btn-primary btn-large" {{action keepGoing}}>Hit me again!</a>
 		| &nbsp;
-		+linkTo('contacts class="btn btn-large"', 'See all contacts')
+		+linkTo('contacts class="btn btn-large"') See all contacts
 		| {{/if}}
 		p.star: i.icon-star
 
