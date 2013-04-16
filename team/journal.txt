@@ -23,9 +23,6 @@ validation utility:
   - prefix search term with type (eg., 'tag:')
   - no duplicates in results
 
-- lots of bindings stuff only SEEMS to work because the model data happens to be loaded already. Notable places this happens are the activity
-  feed implicitly loading a few contacts and the search box loading many more
-
 
 
 i.icon-star(style='position: relative; top: -38px; left: 55px; color: #e51937')
