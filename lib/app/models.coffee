@@ -10,6 +10,7 @@ module.exports = (DS, App) ->
 		email: DS.attr 'string'
 		name: DS.attr 'string'
 		picture: DS.attr 'string'
+		oauth: DS.attr 'string'
 		queue: DS.hasMany 'App.Contact'
 		excludes: DS.attr 'array'
 		canonicalName: (->

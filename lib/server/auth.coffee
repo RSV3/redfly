@@ -44,12 +44,13 @@ everyauth.google.configure
 				# END TEMPORARY ###########
 				# Update the refresh token if google gave us a new one.
 				else if user.oauth isnt token
-					console.log "wrong token on user #{email} with #{googleUserMetadata.name} : using #{token}"
+					console.log "wrong token on user #{email} with #{googleUserMetadata.name} : overwriting with #{token}"
 					user.oauth = token
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user
 				else
+					#console.log "user #{email} with #{googleUserMetadata.name} already had correct token #{token}"
 					promise.fulfill user
 			else
 				console.log "creating new user #{email} with #{googleUserMetadata.name}"

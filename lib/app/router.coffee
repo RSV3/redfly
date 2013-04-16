@@ -3,7 +3,6 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 	util = require './util'
 
-
 	App.Router.reopen
 		location: 'history'
 
@@ -43,7 +42,13 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactsRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			controller.set 'addedContacts', App.Contact.find(added: $exists: true)
+			controller.set 'addedContacts', null
+			controller.set 'page1Contacts', App.Contact.find {
+				conditions: added: $exists: true
+				options:
+					sort: added: -1
+					limit: 10
+			}
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
@@ -128,8 +133,8 @@ module.exports = (Ember, App, socket) ->
 
 	# intercepted = null
 
-	# setupContexts = App.Router.prototype.setupContexts
-	# App.Router.prototype.setupContexts = (router, handlerInfos) ->
+	# setupContexts = App.Router::setupContexts
+	# App.Router::setupContexts = (router, handlerInfos) ->
 	# 	_ = require 'underscore'
 	# 	authRequired = _.find handlerInfos, (info) ->
 	# 		info.name in authRequiredRoutes
