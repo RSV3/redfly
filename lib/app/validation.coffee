@@ -28,20 +28,11 @@ module.exports = (socket) ->
 					picture
 		contact:
 			emails: (emails) ->
-				_.chain(emails)
-					.map (item) =>
-						@email item
-					.compact()
-					.value()
+				_.compact _.map emails, (item) => @email item
 			email: (email) ->
-				if email
-					util.trim email.toLowerCase()
+				if email then util.trim email.toLowerCase()
 			names: (names) ->
-				_.chain(names)
-					.map (item) =>
-						@name item
-					.compact()
-					.value()
+				_.compact _.map names, (item) => @name item
 			name: (name) ->
 				util.trim name
 	validate:
