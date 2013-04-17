@@ -1,4 +1,5 @@
-if not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment')().format('dddd'))
+succinct_manual = (process.argv[3] is 'manual')
+if not succinct_manual and not require('underscore').contains(process.env.NUDGE_DAYS.split(' '), require('moment')().format('dddd'))
 	process.exit()
 
 eachLink = (user, cb)->
@@ -10,7 +11,7 @@ eachLink = (user, cb)->
 
 eachParse = (user, cb)->
 	console.log "parsing #{user.email}"
-	try require('../server/parser') user, null, cb
+	try require('../server/parser') user, null, cb, succinct_manual
 	catch err
 		console.log "error in nudge parse for #{user.email}"
 		console.dir err

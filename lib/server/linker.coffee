@@ -42,10 +42,9 @@ getLinked = (partial, options, oa, cb) ->
 		if not error and response.statusCode is 200
 			cb null, body
 		else
-			if not error or _.isString(error)
-				error = 
-					message: error
-			error.statusCode = response.statusCode
+			error =
+				message: response.body.message
+				statusCode: response.statusCode
 			cb error, null
 
 
@@ -76,7 +75,7 @@ getDeets = (id, contact, oa, cb) ->
 
 
 #
-# paginate the connections 
+# paginate the connections
 #
 getConnections = (parturl, oauth, cb, sofar=values:[]) ->
 	count = 500		# maximum per page. lets use a variable in case the api changes, etc
@@ -92,11 +91,11 @@ getConnections = (parturl, oauth, cb, sofar=values:[]) ->
 # Given two linkedin startDate/ endDate objects
 # { month:month, year:year }
 # return difference in months
-# 
+#
 liCountMonths = (d_from, d_to) ->
 	if not d_to or not d_to.year or not d_from or not d_from.year
 		return 0
-	months = (d_to.year - d_from.year) * 12 
+	months = (d_to.year - d_from.year) * 12
 	if d_to.month
 		months += d_to.month
 	if d_from.month
@@ -113,7 +112,7 @@ liCountMonths = (d_from, d_to) ->
 # 0 if d1==d2
 #
 liDateCompare = (d1, d2) ->
-	if not d1 or not d2 
+	if not d1 or not d2
 		return 0
 	if d1.year < d2.year
 		return -1
@@ -127,15 +126,15 @@ liDateCompare = (d1, d2) ->
 
 
 ###
-# 
+#
 # calculate years of experience for this contact.
-# 
+#
 # get the industry tags of the contact's (primary) current position
 # get the years in current position from the start date
 # find all past and preset positions that share industry tags with the primary current position
 # make a list of start end dates for those past positions
 # flatten that list, mindful of overlaps to get total years experience
-# 
+#
 ###
 calculateExperience  = (contact, details) ->
 	months = 0
@@ -211,7 +210,7 @@ push2linkQ = (notifications, user, contact, details) ->
 	companies = _.pluck companies, 'name'
 	details.yearsExperience = calculateExperience contact, details
 
-	addDeets2Linkedin user, contact, details, 
+	addDeets2Linkedin user, contact, details,
 		specialties:specialties
 		industries:industries
 		companies:companies
@@ -230,9 +229,9 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 	if not linkedin
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
-		linkedin.linkedinId = details.id
+		linkedin.linkedinId = details.profileid
 		linkedin.user = user
-		linkedin.name = 
+		linkedin.name =
 			firstName: details.firstName
 			lastName: details.lastName
 			formattedName: details.formattedName
@@ -259,7 +258,7 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
-	else 
+	else
 		models.LinkedIn.findOne {linkedinId: details.id}, (err, linkedin) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
@@ -349,7 +348,7 @@ linker = (user, notifications, finalCB) ->
 		user.save (othererror) ->
 			finalCB err, changed			# then exit (final callback) with list of changed contacts
 
-	oauth = 
+	oauth =
 		consumer_key: process.env.LINKEDIN_API_KEY
 		consumer_secret: process.env.LINKEDIN_API_SECRET
 		token: auth.token
@@ -358,7 +357,8 @@ linker = (user, notifications, finalCB) ->
 	parturl = '/~/connections:(id,first-name,last-name,formatted-name,site-standard-profile-request)'
 	getConnections parturl, oauth, (err, network) ->
 		if err or not network
-			return console.warn parturl + ' failed.'
+			console.log parturl + ' failed.'
+			return fn err, null
 
 		changed = []		# build an array of changed contacts to broadcast
 		notifications?.foundTotal? network.values.length

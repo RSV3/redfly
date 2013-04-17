@@ -1,7 +1,7 @@
 
 # TO-DO pretty sure I don't need to be threading (user, notifications, cb) through all the inner fuctions...
 #
-module.exports = (user, notifications, cb) ->
+module.exports = (user, notifications, cb, succinct_manual) ->
 	_ = require 'underscore'
 	mailer = require './mail'
 	models = require './models'
@@ -32,6 +32,7 @@ module.exports = (user, notifications, cb) ->
 			if err
 				console.dir err
 				# Just send the newsletter and quit if the user can't be parsed.
+				if succinct_manual then return cb null
 				return mailer.sendNewsletter user, cb
 
 			mboxer.search server, user, (err, results) ->
@@ -50,6 +51,13 @@ module.exports = (user, notifications, cb) ->
 
 
 
+	#
+	# jTNT added succinct_manual flag so that we can manually nudge
+	# without bothering users who don't have new contacts
+	# this way, if nudge -ahem- fails part way through,
+	# we can resume with manual set, without risking bothering those
+	# who already received an email before the fail.
+	#
 	enqueue = (user, notifications, mails, cb) ->
 		newContacts = []
 		finish = ->
@@ -61,8 +69,9 @@ module.exports = (user, notifications, cb) ->
 					console.dir err
 				if newContacts.length isnt 0
 					mailer.sendNudge user, newContacts[...10], (err)-> cb err
-				else
+				else if not succinct_manual
 					mailer.sendNewsletter user, (err)-> cb err
+				else cb null
 
 		sift = (index = 0) ->
 			if mails.length is 0 then return finish()

@@ -125,10 +125,7 @@ module.exports = (Ember, App, socket) ->
 
 				all = @get('others').getEach 'content'
 				all.unshift @get('primary')
-				all = _.chain(all)
-					.map (item) -> util.trim item
-					.compact()
-					.value()
+				all = _.compact _.map all, (item)-> util.trim item
 
 				nothing = _.isEmpty all
 				@set 'nothing', nothing
