@@ -129,16 +129,14 @@ module.exports = (app, route) ->
 			search[type] = []
 			for term in terms
 				compound = _.compact term.split ':'
-				if compound.length > 1
-					# TODO
-					#search[type].push compound[1]
+				if compound.length > 1						# type specified, eg tag:slacker
 					if compound[0] is type
 						search[type].push compound[1]
-						utilisedTypes.push type
-				else
+				else										# not specified, try this term in each type
 					search[type].push term
-					utilisedTypes.push type
+			utilisedTypes.push type
 			if not search[type].length then delete search[type]
+
 		step = require 'step'
 		step ->
 			if search.name and search.name.length > 1			# search on "firstname lastname"
@@ -187,9 +185,13 @@ module.exports = (app, route) ->
 		, (err, docs...) ->
 			throw err if err
 			results = null
+			console.log "got em"
 			utilisedTypes.forEach (type, index) ->
+				console.log index
+				console.dir docs[index]
 				if not _.isEmpty docs[index]
 					results = searchMap type, docs[index], results
+			console.dir results
 			return fn results
 
 
