@@ -18,6 +18,8 @@ module.exports = (Ember, App, socket) ->
 		@route 'create'
 		@route 'classify'
 		@route 'import'
+		@route 'admin'
+		@route 'dashboard'
 
 		# Public for http-based flows (these routes might have hardcoded references).
 		@route 'load'
@@ -40,6 +42,26 @@ module.exports = (Ember, App, socket) ->
 		setupController: (controller, model) ->
 			controller.set 'content', model
 
+	App.AdminRoute = Ember.Route.extend
+		setupController: (controller, model) ->
+			if App.user.get('admin')
+				controller.set 'content', model
+			else @transitionTo 'userProfile'
+	App.DashboardRoute = Ember.Route.extend
+		setupController: (controller) ->
+			if App.user.get('admin')
+				socket.emit 'dashboard', (board)=>
+					controller.set 'dash', board
+			else @transitionTo 'userProfile'
+
+	App.ClassifyRoute = Ember.Route.extend
+		setupController: (controller, model) ->
+			controller.set 'model', null
+			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+				if results and results.length
+					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
+				else @transitionTo 'userProfile'
+
 	App.ContactsRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'addedContacts', null
@@ -58,7 +80,6 @@ module.exports = (Ember, App, socket) ->
 		deserialize: (param) ->
 			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
-			console.log "setupController"
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.length
 					controller.set 'all', App.store.findMany(App.Contact, results)

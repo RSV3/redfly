@@ -34,7 +34,7 @@ module.exports = (Ember, App, socket) ->
 			fams = @get('measures.familiarity')
 			if not fams or not fams.length then f = []
 			else f = fams.getEach 'user'
-			othernose = @get('knows').filter (k)-> not _.contains(f, k)
+			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
 			f.concat othernose
 		).property 'knows', 'measures'
 
@@ -89,6 +89,23 @@ module.exports = (Ember, App, socket) ->
 	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']
+
+		vipHoverStr: ->
+			if @get 'controller.isVip'
+				"Clear this contact's VIP status"
+			else
+				"Mark #{@get 'controller.nickname'} as a VIP"
+		changeVipHoverStr: (->
+			@get('tooltip')?.data('tooltip')?.options?.title = @vipHoverStr()
+		).observes 'controller.isVip'
+		didInsertElement: ->
+			if @get 'controller.isKnown'
+				@set 'tooltip', @$('div.maybevip').tooltip
+					title: @vipHoverStr()
+					placement: 'left'
+				@$('h4.email').tooltip
+					title: "send a message to #{@get 'controller.nickname'}"
+					placement: 'bottom'
 
 		showMerge: ->
 			@get('mergeViewInstance')._launch()

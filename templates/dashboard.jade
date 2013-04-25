@@ -1,0 +1,30 @@
+{{#if App.user.admin}}
+.row-fluid
+	.span9
+		h1 Redfly Dashboard
+		hr
+		br
+
+		h2 Redfly Stats
+		ul
+			li Number of introduction clicks:
+				span {{dash.clicks}}
+			li Number of tags added:
+				span {{dash.tags}}
+			li Number of unclassified contacts:
+				span {{dash.classify}}
+			li Number of active users this week:
+				span {{dash.users}}
+			li Number of searches this week:
+				span {{dash.searches}}
+			li Number of requests this week:
+				span {{dash.requests}}
+			li Number of responses this week:
+				span {{dash.responses}}
+
+		h2 Contacted Organisations
+		ul
+			| {{#each dash.org}}
+			li {{ name }}
+			| {{/each}}
+{{/if}}

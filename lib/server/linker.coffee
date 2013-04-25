@@ -245,7 +245,7 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 				if item and item.length
 					if not linkedin[detail]
 						linkedin[detail] = [item]
-					else if (_.indexOf item, linkedin[detail]) < 0
+					else if (_.indexOf linkedin[detail], item) < 0
 						linkedin[detail].addToSet item
 	linkedin.lastLink = new Date()
 	linkedin.save (err) ->
@@ -271,7 +271,7 @@ _matchContact = (user, contacts, cb) ->
 	if not contacts.length
 		return cb null
 	if (contacts.length > 1)
-		nc = _.select contacts, (c) -> (_.indexOf user._id, c.knows) >= 0
+		nc = _.select contacts, (c) -> (_.indexOf c.knows, user._id) >= 0
 		if nc.length
 			contacts = nc
 	if (contacts.length > 1)
