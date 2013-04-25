@@ -11,10 +11,20 @@ oldexcludeSchema = new Schema
 	email: type: String, trim: true, lowercase: true, validate: validators.isEmail
 	name: type: String, trim: true
 
+AdminSchema = new Schema
+	domains: [ type: String ]	# list of domains served by this instance
+	userstoo: type: Boolean		# if set, employees (inc. users) can also be classified as contacts
+	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
+	hidemail: type: Boolean		# hide the email of unknown contacts
+
+ClassifySchema = new Schema
+	user: type: Types.ObjectId, ref: 'User'
+	contact: type: Types.ObjectId, ref: 'Contact', required: true
+	saved: type: Boolean
+
 ExcludeSchema = new Schema
 	user: type: Types.ObjectId, ref: 'User'
-	email: type: String, trim: true, lowercase: true, validate: validators.isEmail
-	name: type: String, trim: true
+	contact: type: Types.ObjectId, ref: 'Contact'
 
 UserSchema = new Schema
 	email: type: String, required: true, unique: true, trim: true, lowercase: true, validate: validators.isEmail
@@ -22,8 +32,9 @@ UserSchema = new Schema
 	picture: type: String, trim: true, validate: validators.isUrl
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
 	lastParsed: type: Date
-	queue: [ type: Types.ObjectId, ref: 'Contact' ]
-	excludes: [oldexcludeSchema]		# this is redundant and we should remove it.
+	# queue: [ type: Types.ObjectId, ref: 'Contact' ]		# now built dynamicly from mails, classifies, excludes
+	# excludes: [oldexcludeSchema]		# now mapped in excludes
+	admin: type: Boolean
 	linkedin: type: String
 	linkedInAuth: 
 		token: type: String
@@ -173,7 +184,8 @@ exports.Mail = models.db.model 'Mail', MailSchema
 exports.LinkedIn = models.db.model 'LinkedIn', LinkedInSchema
 exports.Merge = models.db.model 'Merge', MergeSchema
 exports.Exclude = models.db.model 'Exclude', ExcludeSchema
+exports.Classify = models.db.model 'Classify', ClassifySchema
 exports.FullContact = models.db.model 'FullContact', FullContactSchema
 exports.Measurement = models.db.model 'Measurement', MeasurementSchema
-
+exports.ObjectId = models.db.Types.ObjectId
 

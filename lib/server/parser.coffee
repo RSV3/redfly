@@ -85,7 +85,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 								mail.sent.getTime() # TO-DO probably can be just mail.sent
 							.value()
 					newContacts.reverse()
-					user.queue.unshift newContacts...
+					#user.queue.unshift newContacts... # dont use queue on user object anymore
 				return finish()
 
 			if not (mail = mails[index++]) then return sift index
