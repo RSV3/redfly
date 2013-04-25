@@ -10,7 +10,7 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			@set 'tooltip', @$().tooltip
 				title: @titleStr()
-				placement: 'bottom'
+				placement: 'left'
 		updateTooltip: (->
 			@get('tooltip').data('tooltip').options.title = @titleStr()
 		).observes 'controller.addedBy.nickname'

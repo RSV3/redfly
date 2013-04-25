@@ -2,6 +2,11 @@ module.exports = (app, route) ->
 	_ = require 'underscore'
 	logic = require './logic'
 	models = require './models'
+	moment = require 'moment'
+
+
+	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
+
 
 	route 'db', (fn, data) ->
 		feed = (doc) ->
@@ -85,6 +90,20 @@ module.exports = (app, route) ->
 			else
 				throw new Error
 
+
+	route 'dashboard', (fn)->
+		fn {
+			clicks: 3
+			tags: 4
+			classify: 6
+			users: 5
+			searches: 3
+			requests: 4
+			responses: 6
+			org: [
+				{name: 'test.com', count: 3}
+				{name: 'test2.org', count: 2}
+			]}
 
 	route 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
@@ -185,13 +204,9 @@ module.exports = (app, route) ->
 		, (err, docs...) ->
 			throw err if err
 			results = null
-			console.log "got em"
 			utilisedTypes.forEach (type, index) ->
-				console.log index
-				console.dir docs[index]
 				if not _.isEmpty docs[index]
 					results = searchMap type, docs[index], results
-			console.dir results
 			return fn results
 
 
@@ -354,4 +369,46 @@ module.exports = (app, route) ->
 			require('./linker') user, notifications, (err, changes) ->
 				if not _.isEmpty changes then io.emit 'linked', changes
 				fn err
+
+	route 'classifyQ', (fn, id) ->
+		# for power users, there'll eventually be a large number of excludes
+		# whereas with an aggressive classification policy there'll never be too many unclassified contacts per user
+		# so first get the list of new contacts, then the subset of those who are excluded
+		lastMonth = moment().subtract('months', 1)
+		models.Mail.find({sender:id, sent: $gt: lastMonth}).select('recipient added sent').exec (err, msgs) ->
+			throw err if err
+			# every recent recipient is a candidate for the queue
+			neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
+
+			# first strip out those who are permanently excluded
+			models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
+				throw err if err
+				neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
+
+				# then strip out those which we've classified
+				# (cron job will clear these out after a month, so that data doesn't go stale)
+				models.Classify.find(user:id, saved:true, contact:$in:neocons).select('contact').exec (err, saves) ->
+					throw err if err
+					neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
+
+					# finally, most difficult filter: the (temporary) skips.
+					# skips are classified records that dont have the 'saved' flag set.
+					models.Classify.find(user:id, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
+						throw err if err
+						skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
+							not _.some msgs, (msg)->
+								msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
+						neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
+
+						fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+
+	route 'flush', (fn, contacts, io, session) ->
+		_.each contacts, (c)->
+			classification = user: session.user, contact: c # , saved: session.admin.flushsave
+			models.Classify.create classification, (err, mod)->
+				if err
+					console.log 'flush err:'
+					console.log err
+					console.dir mod
+		fn()
 
