@@ -57,13 +57,13 @@
 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
 			| {{#if isKnown}}
-			h4
+			h4.email
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
-			p
+			p.messages
 				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
 			p

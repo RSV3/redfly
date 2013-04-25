@@ -50,6 +50,12 @@
 						li
 							a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
 						li.divider
+						{{#if App.user.admin}}
+						li
+							+linkTo('admin') Configure
+						li
+							+linkTo('dashboard') Dashboard
+						{{/if}}
 						li
 							| <a href="#" {{action logout}}>Log Out</a>
 				| {{/unless}}

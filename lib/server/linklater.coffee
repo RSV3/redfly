@@ -50,7 +50,7 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		addTags user, contact, 'industry', specialties
 	addTags user, contact, 'industry', industries
 
-	if (_.indexOf user._id, contact.knows) < 0
+	if (_.indexOf contact.knows, user._id) < 0
 		contact.knows.addToSet user
 		dirtycontact = true
 
