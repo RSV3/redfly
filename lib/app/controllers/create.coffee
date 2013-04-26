@@ -49,6 +49,9 @@ module.exports = (Ember, App, socket) ->
 				@get(field + 'FieldInstance')._fire cb
 			, =>
 				if not (@get('nameFieldInstance.error') or @get('emailFieldInstance.error') or @get('pictureFieldInstance.error'))
+					# NOTE: I could make this simpler by creating the record first and then just modifying its properties, instead of managing all
+					# the properties modeled by each form field independently and then collating them all at the end. Creating a transaction
+					# manually would assist with this.
 					properties =
 						emails: @get('email')
 						names: @get('name')
