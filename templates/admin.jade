@@ -1,0 +1,34 @@
+{{#if App.user.admin}}
+.row-fluid
+	.span9
+		h1 Configure Redfly
+		hr
+		br
+
+		h2 Tag Management
+		.span1
+		.span3
+			h3 Active Tags
+		.span1
+		.span3
+			h3 Top Tags
+
+		h2 Organization Domains
+		.span4
+			textarea
+
+		h2 Classify Queue Configuration
+				|<label>
+				{{view Ember.Checkbox checkedBinding="users"}}
+				Include employees in classify queue (people whose e-mail address has current organisations domain)
+				|</label>
+
+		h2 Flush behaviour
+
+		h2 Contact View Management
+				|<label>
+				{{view Ember.Checkbox checkedBinding="hideemails"}}
+				Hide e-mail when contact is not known to me
+				|</label>
+
+{{/if}}

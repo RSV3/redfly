@@ -2,6 +2,11 @@ module.exports = (app, route) ->
 	_ = require 'underscore'
 	logic = require './logic'
 	models = require './models'
+	moment = require 'moment'
+
+
+	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
+
 
 	route 'db', (fn, data) ->
 		feed = (doc) ->
@@ -86,6 +91,20 @@ module.exports = (app, route) ->
 				throw new Error
 
 
+	route 'dashboard', (fn)->
+		fn {
+			clicks: 3
+			tags: 4
+			classify: 6
+			users: 5
+			searches: 3
+			requests: 4
+			responses: 6
+			org: [
+				{name: 'test.com', count: 3}
+				{name: 'test2.org', count: 2}
+			]}
+
 	route 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
 
@@ -129,93 +148,92 @@ module.exports = (app, route) ->
 			search[type] = []
 			for term in terms
 				compound = _.compact term.split ':'
-				if compound.length > 1
-					# TODO
-					#search[type].push compound[1]
+				if compound.length > 1						# type specified, eg tag:slacker
 					if compound[0] is type
 						search[type].push compound[1]
-						utilisedTypes.push type
-				else
+				else										# not specified, try this term in each type
 					search[type].push term
-					utilisedTypes.push type
+			utilisedTypes.push type
 			if not search[type].length then delete search[type]
+
 		step = require 'step'
 		step ->
-				if search.name and search.name.length > 1			# search on "firstname lastname" 
-					utilisedTypes.unshift 'name'					
-					reTerm = new RegExp data.query, 'i'
-					models.Contact.find({names:reTerm}).exec @parallel()
-				for type of search
-					terms = search[type]
-					if type is 'tag' or type is 'note'
-						_s = require 'underscore.string'
-						model = _s.capitalize type
-						field = 'body'
-					else
-						model = 'Contact'
-						field = type + 's'
-					step ->
-						conditions = {}
-						for term in terms
-							try
-								reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
-								if not conditions['$or'] and not conditions[field]
-									conditions[field] = reTerm
-								else
-									nextC = {}
-									if conditions[field]
-										nextC[field] = conditions[field]
-										conditions['$or'] = [ nextC ]
-										delete conditions[field]
-									nextC = {}
-									nextC[field] = reTerm
-									conditions['$or'].push nextC
-							catch err
-								continue	# User typed an invlid regular expression, just ignore it.
+			if search.name and search.name.length > 1			# search on "firstname lastname"
+				utilisedTypes.unshift 'name'
+				reTerm = new RegExp data.query, 'i'
+				models.Contact.find({names:reTerm}).exec @parallel()
+			for type of search
+				terms = search[type]
+				if type is 'tag' or type is 'note'
+					_s = require 'underscore.string'
+					model = _s.capitalize type
+					field = 'body'
+				else
+					model = 'Contact'
+					field = type + 's'
+				step ->
+					conditions = {}
+					for term in terms
+						try
+							reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
+							if not conditions['$or'] and not conditions[field]
+								conditions[field] = reTerm
+							else
+								nextC = {}
+								if conditions[field]
+									nextC[field] = conditions[field]
+									conditions['$or'] = [ nextC ]
+									delete conditions[field]
+								nextC = {}
+								nextC[field] = reTerm
+								conditions['$or'].push nextC
+						catch err
+							continue	# User typed an invlid regular expression, just ignore it.
 
-						if model is 'Contact'
-							conditions.added = $exists: true
-							_.extend conditions, data.moreConditions
-						# else
-						# 	for k, v of data.moreConditions
-						# 		conditions['contact.' + k] = v
+					if model is 'Contact'
+						conditions.added = $exists: true
+						_.extend conditions, data.moreConditions
+					# else
+					# 	for k, v of data.moreConditions
+					# 		conditions['contact.' + k] = v
 
-						models[model].find(conditions).limit(limit).exec @parallel()
-						return undefined	# Step library is insane.
-					, @parallel()
-				return undefined	# Still insane? Yes?? Fine.
-			, (err, docs...) ->
-				throw err if err
-				results = null
-				utilisedTypes.forEach (type, index) ->
-					if not _.isEmpty docs[index]
-						results = searchMap type, docs[index], results
-				return fn results
+					models[model].find(conditions).limit(limit).exec @parallel()
+					return undefined	# Step library is insane.
+				, @parallel()
+			return undefined	# Still insane? Yes?? Fine.
+		, (err, docs...) ->
+			throw err if err
+			results = null
+			utilisedTypes.forEach (type, index) ->
+				if not _.isEmpty docs[index]
+					results = searchMap type, docs[index], results
+			return fn results
 
 
 	route 'fullSearch', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results=[]) ->
-			results = _.union results, _.uniq _.map(typeDocs, (doc) ->
-				if doc.contact then doc.contact
-				else doc.id
-			), true, (id) -> String(id)
-			return results
+			_.union results, _.uniq _.map typeDocs, (d) ->
+				if d.contact then String(d.contact) else String(d.id)
 
 
+	# this is a pretty nifty routine,
+	# but note that it will return a single duplicate for the edge case where
+	# a search term matches both notes and tags corresponding to the same contact
+	# there's a task for a rainy day ...
 	route 'search', (fn, data) ->
 		doSearch fn, data
 		, (type, typeDocs, results={}) ->
-			typeDocs = _.filter _.map(_.uniq(typeDocs, false, (d)->
-					if d.contact then d.contact else d.id		# only one tag/note per contact
-				), (d)-> d.id									# map to ids
-			), (doc)->											# filter to remove duplicates
-				for t of results								# go through each result type
-					if _.some(results[t], (d)-> d is doc)		# and if this item's already there
-						return false							# weed it out
-				true
-			if not results[type] then results[type] = typeDocs
-			else results[type] = typeDocs.concat results[type]
+			typeDocs = _.pluck _.filter(_.uniq(typeDocs, false, (d)->
+					d.contact or d.id					# only one tag/note per contact
+				), (doc)->								# filter to remove duplicates:
+					for t of results					# go through each previous result type,
+						id = String(doc.contact or doc._id)		# looking for this contact
+						if _.some(results[t], (d)-> d is id)	# and if it's already there
+							return false						# weed it out
+					true
+			), 'id'									# map to ids
+			results[type] = _.union typeDocs, results[type] or []
 			return results
 		, 10	# limit
 
@@ -351,4 +369,46 @@ module.exports = (app, route) ->
 			require('./linker') user, notifications, (err, changes) ->
 				if not _.isEmpty changes then io.emit 'linked', changes
 				fn err
+
+	route 'classifyQ', (fn, id) ->
+		# for power users, there'll eventually be a large number of excludes
+		# whereas with an aggressive classification policy there'll never be too many unclassified contacts per user
+		# so first get the list of new contacts, then the subset of those who are excluded
+		lastMonth = moment().subtract('months', 1)
+		models.Mail.find({sender:id, sent: $gt: lastMonth}).select('recipient added sent').exec (err, msgs) ->
+			throw err if err
+			# every recent recipient is a candidate for the queue
+			neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
+
+			# first strip out those who are permanently excluded
+			models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
+				throw err if err
+				neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
+
+				# then strip out those which we've classified
+				# (cron job will clear these out after a month, so that data doesn't go stale)
+				models.Classify.find(user:id, saved:true, contact:$in:neocons).select('contact').exec (err, saves) ->
+					throw err if err
+					neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
+
+					# finally, most difficult filter: the (temporary) skips.
+					# skips are classified records that dont have the 'saved' flag set.
+					models.Classify.find(user:id, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
+						throw err if err
+						skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
+							not _.some msgs, (msg)->
+								msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
+						neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
+
+						fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+
+	route 'flush', (fn, contacts, io, session) ->
+		_.each contacts, (c)->
+			classification = user: session.user, contact: c # , saved: session.admin.flushsave
+			models.Classify.create classification, (err, mod)->
+				if err
+					console.log 'flush err:'
+					console.log err
+					console.dir mod
+		fn()
 

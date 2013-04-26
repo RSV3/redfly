@@ -7,36 +7,36 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../templates/components/tagger'
 		classNames: ['tagger']
 		tags: (->
-				sort = field: 'date'
-				query = contact: @get('contact.id'), category: @get('category')
-				App.filter App.Tag, sort, query, (data) =>
-					if (category = @get('category')) and (category isnt data.get('category'))
-						return false
-					data.get('contact.id') is @get('contact.id')
-			).property 'contact.id', 'category'
+			sort = field: 'date'
+			query = contact: @get('contact.id'), category: @get('category')
+			App.filter App.Tag, sort, query, (data) =>
+				if (category = @get('category')) and (category isnt data.get('category'))
+					return false
+				data.get('contact.id') is @get('contact.id')
+		).property 'contact.id', 'category'
 		autocompleteTags: (->
-				socket.emit 'tags.all', category: @get('category'), (allTags) =>
-					allTags = _.union allTags, dictionary[@get('category') or 'organisation']
-					allTags = @_filterTags allTags
-					result.pushObjects allTags
-				result = []
-			).property 'category', 'tags.@each', '_popularTags.@each'
+			socket.emit 'tags.all', category: @get('category'), (allTags) =>
+				allTags = _.union allTags, dictionary[@get('category')] # jTNT or 'organisation']
+				allTags = @_filterTags allTags
+				result.pushObjects allTags
+			result = []
+		).property 'category', 'tags.@each', '_popularTags.@each'
 		cloudTags: (->
-				@_filterTags @get('_popularTags')
-			).property 'category', 'tags.@each', '_popularTags.@each'
+			@_filterTags @get('_popularTags')
+		).property 'category', 'tags.@each', '_popularTags.@each'
 		_filterTags: (tags) ->
-				if not @get('tags')	# Not really sure why this ever comes up blank.
-					return []
-				tags = _.reject tags, (candidate) =>
-					for tag in @get('tags').mapProperty('body')
-						if tag is candidate
-							return true
-				tags.sort()
+			if not @get('tags')	# Not really sure why this ever comes up blank.
+				return []
+			tags = _.reject tags, (candidate) =>
+				for tag in @get('tags').mapProperty('body')
+					if tag is candidate
+						return true
+			tags.sort()
 		_popularTags: (->
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					result.pushObjects popularTags
-				result = []
-			).property 'category'
+			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+				result.pushObjects popularTags
+			result = []
+		).property 'category'
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
 		add: ->
@@ -51,7 +51,7 @@ module.exports = (Ember, App, socket) ->
 					date: new Date	# Only so that sorting is smooth.
 					creator: App.user
 					contact: @get 'contact'
-					category: @get('category') or 'organisation'
+					category: @get('category') # jTNT or 'organisation'
 					body: tag
 				App.store.commit()
 				@set 'animate', true
@@ -89,9 +89,9 @@ module.exports = (Ember, App, socket) ->
 		newTagView: Ember.TextField.extend
 			currentTagBinding: 'parentView.currentTag'
 			currentTagChanged: (->
-					if tag = @get('currentTag')
-						@set 'currentTag', tag.toLowerCase()
-				).observes 'currentTag'
+				if tag = @get('currentTag')
+					@set 'currentTag', tag.toLowerCase()
+			).observes 'currentTag'
 			keyDown: (event) ->
 				if event.which is 8	# A backspace/delete.
 					if not @get('currentTag')
@@ -123,16 +123,16 @@ module.exports = (Ember, App, socket) ->
 				# 	move.call this, e
 				# 	that.set 'currentTag', that.get('currentTag')
 			updateTypeahead: (->
-					@get('typeahead').data('typeahead').source = @get('parentView.autocompleteTags')
-				).observes 'parentView.autocompleteTags.@each'
+				@get('typeahead').data('typeahead').source = @get('parentView.autocompleteTags')
+			).observes 'parentView.autocompleteTags.@each'
 			attributeBindings: ['size', 'autocomplete', 'tabindex']
 			size: (->
-					2 + (@get('currentTag.length') or 0)
-				).property 'currentTag'
+				2 + (@get('currentTag.length') or 0)
+			).property 'currentTag'
 			autocomplete: 'off'
 			tabindex: (->
-					@get('parentView.tabindex') or 0
-				).property 'parentView.tabindex'
+				@get('parentView.tabindex') or 0
+			).property 'parentView.tabindex'
 
 		cloudTagView: Ember.View.extend
 			tagName: 'span'

@@ -15,6 +15,8 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	templates.report = require '../../templates/report'
 	templates.tags = require '../../templates/tags'
 	templates.results = require '../../templates/results'
+	templates.dashboard = require '../../templates/dashboard'
+	templates.admin = require '../../templates/admin'
 
 	Ember.Handlebars.registerBoundHelper 'plusOne', (value, options) ->
 		if typeof value == 'string'
@@ -44,3 +46,6 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 		else
 			App.auth.logout()
 			App.advanceReadiness()
+
+	App.admin = Ember.ObjectProxy.create()
+	App.admin.set 'content', App.admin.find 1
