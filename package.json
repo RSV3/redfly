@@ -2,7 +2,7 @@
   "name": "redfly",
   "version": "0.4.0",
   "dependencies": {
-    "phrenetic": "git://github.com/pharcosyle/phrenetic.git",
+    "phrenetic": "git://github.com/pharcosyle/phrenetic.git#d05ec6d",
     "underscore": "1.4.4",
     "underscore.string": "2.3.1",
     "async": "0.2.6",
