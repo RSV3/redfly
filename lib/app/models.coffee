@@ -5,13 +5,21 @@ module.exports = (DS, App) ->
 	App.Results = Em.Object.extend
 		text: ''
 
+	App.Admin = DS.Model.extend
+		domains: DS.attr 'array'		# list of domains served by this instance
+		userstoo: DS.attr 'boolean'		# if set, employees (inc. users) can also be classified as contacts
+		flushsave: DS.attr 'boolean'	# if set, FLUSH saves queued contacts: otherwise, skips
+		hidemail: DS.attr 'boolean'		# hide the email of unknown contacts
+
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
 		email: DS.attr 'string'
 		name: DS.attr 'string'
 		picture: DS.attr 'string'
-		queue: DS.hasMany 'App.Contact'
-		excludes: DS.attr 'array'
+		oauth: DS.attr 'string'
+		#queue: DS.hasMany 'App.Contact'
+		#excludes: DS.attr 'array'
+		admin: DS.attr 'boolean'
 		canonicalName: (->
 				if this is App.user.get('content')
 					return 'You'
@@ -38,6 +46,7 @@ module.exports = (DS, App) ->
 		linkedin: DS.attr 'string'
 		twitter: DS.attr 'string'
 		facebook: DS.attr 'string'
+		isVip: DS.attr 'boolean'
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
@@ -97,5 +106,16 @@ module.exports = (DS, App) ->
 
 	App.Exclude = DS.Model.extend
 		user: DS.belongsTo 'App.User'
-		name: DS.attr 'string'
-		email: DS.attr 'string'
+		contact: DS.belongsTo 'App.Contact'
+
+	App.Classify = DS.Model.extend
+		user: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
+		saved: DS.attr 'boolean'
+
+	App.Measurement = DS.Model.extend
+		user: DS.belongsTo 'App.User'
+		contact: DS.belongsTo 'App.Contact'
+		attribute: DS.attr 'string'
+		value: DS.attr 'number'
+

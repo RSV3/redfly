@@ -12,22 +12,12 @@
 			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav
-					//- li
-					//- 	+linkTo('home') Home
 					li
 						+linkTo('classify') Classify
-					//- li
-					//- 	+linkTo('create') Create
-					//- li
-					//- 	+linkTo('import') Bulk Upload
 					li
 						+linkTo('create') Create
 					li
-						+linkTo('contacts') Contacts
-					li
 						+linkTo('tags') Tags
-					//- li
-					//- 	+linkTo('report') Report a bug
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right
@@ -49,6 +39,8 @@
 							+linkTo('import') Bulk Upload
 						li
 							+linkTo('leaderboard') Leaderboard
+						li
+							+linkTo('contacts') Contacts
 						li.divider
 						li
 							a(href='/linker')
@@ -58,6 +50,12 @@
 						li
 							a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
 						li.divider
+						{{#if App.user.admin}}
+						li
+							+linkTo('admin') Configure
+						li
+							+linkTo('dashboard') Dashboard
+						{{/if}}
 						li
 							| <a href="#" {{action logout}}>Log Out</a>
 				| {{/unless}}

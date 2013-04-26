@@ -50,7 +50,7 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		addTags user, contact, 'industry', specialties
 	addTags user, contact, 'industry', industries
 
-	if (_.indexOf user._id, contact.knows) < 0
+	if (_.indexOf contact.knows, user._id) < 0
 		contact.knows.addToSet user
 		dirtycontact = true
 
@@ -72,7 +72,7 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 
 copyLI2contact = (u, c, l) ->
 	details =						# in which case add the details to the matched contact
-		id: l.linkedinId
+		profileid: l.linkedinId
 		pictureUrl: l.pictureUrl
 		yearsExperience: l.yearsExperience
 		positions: [{ title: l.positions[0], company: name: l.companies[0]}]

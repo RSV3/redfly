@@ -166,10 +166,9 @@ module.exports = (Ember, App, socket) ->
 					contact = App.Contact.createRecord
 						emails: result.emails
 						names: result.names
-						knows: Ember.ArrayProxy.create()
+						knows: Ember.ArrayProxy.create {content: [App.user.get('content')]}
 						added: new Date
 						addedBy: App.user
-					contact.get('knows').pushObject App.user.get('content')
 					App.store.commit()
 					# UPDATE: new version ember-data might let you batch commits with inter-foreign-key depenencies, making waiting for the
 					# contact to get created unncessary

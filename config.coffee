@@ -2,15 +2,14 @@ module.exports =
 	all:
 		ORGANISATION_NAME: 'redstar'
 		ORGANISATION_TITLE: 'Redstar'
-		ORGANISATION_CONTACT: 'jTNT'
-		ORGANISATION_EMAIL: 'j@jTNT.me'
+		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
+		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 
 
-
 	development:
-		HOST: 'localhost:5000'
-		AUTO_AUTH: '50ed206d4919709c08000002'
+		HOST: '127.0.0.1:5000'
+		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
@@ -20,12 +19,13 @@ module.exports =
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
 
-		CONTEXTIO_KEY: 'tjwypeyu'
-		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
+		#CONTEXTIO_KEY: 'tjwypeyu'
+		#CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		MONGOLAB_URI: 'mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653'
+		#MONGOLAB_URI: 'mongodb://localhost/redfly'
 
 		REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		

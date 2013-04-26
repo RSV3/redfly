@@ -1,11 +1,49 @@
 | {{#unless complete}}
-
 div.navbar
 	.navbar-inner
+
+		| {{#unless flushing}}
+		| {{#if total}}
 		.lead There are {{total}} contacts in your queue.
+		| {{else}}
+		p.pager
+			i.icon-spinner.icon-spin.icon-large
+		| {{/if}}
+		| {{/unless}}
+
 		.pull-right
-			| {{#if model.added}}
-			span.already-added Already added by {{model.addedBy.canonicalName}}.
+
+			| {{#if flushing}}
+
+			p
+				span Deselect any contacts you don't want to flush from your queue
+			ul.pager
+				li
+					| <a href="#" class="btn-danger" {{action flushem}}>Flush selected</a>
+				|  
+				li
+					| <a href="#" class="btn-info" {{action unflush}}>Back to Classify</a>
+			.row-fluid
+				table.table.table-hover
+					thead
+						tr
+							th Name
+							th Email
+							th Message Sent
+							th Message Subject
+					tbody
+						+each('flushlist')
+							tr
+								td {{view Ember.Checkbox checkedBinding="checked"}} &nbsp; {{canonicalName}}
+								td {{email}}
+								td {{firstHistory.sent}}
+								td {{firstHistory.subject}}
+
+			| {{else}}
+
+			| {{#if thisContact}}
+			| {{#if thisContact.added}}
+			span.already-added Already added by {{thisContact.addedBy.canonicalName}}.
 			| {{/if}}
 			ul.pager
 				li
@@ -16,8 +54,14 @@ div.navbar
 				|  
 				li
 					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
+				|  
+				li
+					| <a href="#" class="btn-inverse" {{action flush}}>FLUSH</a>
+				p
+			| {{render contact}}
+			| {{/if}}
 
-| {{render contact}}
+		| {{/if}}
 
 | {{else}}
 
@@ -41,3 +85,4 @@ div.navbar
 		p.star: i.icon-star
 
 | {{/unless}}
+

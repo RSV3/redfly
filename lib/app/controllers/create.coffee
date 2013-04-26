@@ -55,13 +55,12 @@ module.exports = (Ember, App, socket) ->
 					properties =
 						emails: @get('email')
 						names: @get('name')
-						knows: Ember.ArrayProxy.create()
+						knows: Ember.ArrayProxy.create {content: [App.user.get 'content']}
 						added: new Date
 						addedBy: App.user
 					if picture = util.trim @get('picture')
 						properties.picture = picture
 					contact = App.Contact.createRecord properties
-					contact.get('knows').pushObject App.user.get('content')
 					App.store.commit()
 
 					@$().addClass 'animated lightSpeedOut'
