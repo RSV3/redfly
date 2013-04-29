@@ -204,16 +204,20 @@ module.exports = (app, route) ->
 		, (err, docs...) ->
 			throw err if err
 			results = null
-			utilisedTypes.forEach (type, index) ->
-				if not _.isEmpty docs[index]
-					results = searchMap type, docs[index], results
-			return fn results
+			mapSearches = (index)->											# in order to check $exists:added
+				if index > utilisedTypes.length then return fn results		# we need this to be async
+				if _.isEmpty docs[index] then return mapSearches index+1
+				type = utilisedTypes[index]
+				searchMap type, docs[index], results, (res)->	# note also that results can be an obj or array
+					results = res
+					mapSearches index+1
+			mapSearches 0
 
 
 	route 'fullSearch', (fn, data) ->
 		doSearch fn, data
-		, (type, typeDocs, results=[]) ->
-			_.union results, _.uniq _.map typeDocs, (d) ->
+		, (type, typeDocs, results=[], cb) ->
+			cb _.union results, _.uniq _.map typeDocs, (d) ->
 				if d.contact then String(d.contact) else String(d.id)
 
 
@@ -222,19 +226,32 @@ module.exports = (app, route) ->
 	# a search term matches both notes and tags corresponding to the same contact
 	# there's a task for a rainy day ...
 	route 'search', (fn, data) ->
-		doSearch fn, data
-		, (type, typeDocs, results={}) ->
+
+		# this async filter is required to confirm the $exists:added status of notes and tags
+		validSearch = (type, typeDocs, results)->
 			typeDocs = _.pluck _.filter(_.uniq(typeDocs, false, (d)->
-					d.contact or d.id					# only one tag/note per contact
+					String(d.contact or d.id)			# only one tag/note per contact
 				), (doc)->								# filter to remove duplicates:
 					for t of results					# go through each previous result type,
-						id = String(doc.contact or doc._id)		# looking for this contact
+						id = String(doc.contact or doc.id)		# looking for this contact
 						if _.some(results[t], (d)-> d is id)	# and if it's already there
 							return false						# weed it out
 					true
 			), 'id'									# map to ids
 			results[type] = _.union typeDocs, results[type] or []
 			return results
+
+		doSearch fn, data
+		, (type, typeDocs, results={}, cb) ->
+			# if the results are of type other than contact, we need to check that $exists:added
+			if typeDocs and typeDocs.length and typeDocs[0].contact
+				cids = _.pluck typeDocs, 'contact'
+				models.Contact.find({added: {$exists: true}, _id: {$in: cids}}).distinct '_id', (err, validcids)->
+					validcids = _.map validcids, (d)-> String(d)
+					typeDocs = _.filter typeDocs, (d)-> _.contains validcids, String(d.contact)
+					cb validSearch type, typeDocs, results
+			else 
+					cb validSearch type, typeDocs, results
 		, 10	# limit
 
 	route 'verifyUniqueness', (fn, data) ->
