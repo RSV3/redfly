@@ -1,9 +1,9 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
 
 	App.ContactMixin = Ember.Mixin.create
 		isKnown: (->
-				@get('knows')?.find (user) ->
-					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
+				@get('knows') and _.contains @get('knows').getEach('id'), App.user.get('id')
 			).property 'knows.@each.id'
 		hasIntro: (->
 				@get('addedBy') and not @get('isKnown')

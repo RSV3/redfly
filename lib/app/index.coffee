@@ -48,4 +48,4 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 			App.advanceReadiness()
 
 	App.admin = Ember.ObjectProxy.create()
-	App.admin.set 'content', App.admin.find 1
+	App.admin.set 'content', {} #App.admin.find 1
