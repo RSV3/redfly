@@ -108,7 +108,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 					if not dirty then return sift index
 					return contact.save (err) ->	# existing contact has been updated
 						if err
-							console.log "Error saving Contact"
+							console.log "ERRor saving Contact"
 							console.dir err
 							console.dir contact
 						sift index
@@ -123,10 +123,15 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				contact.knows.addToSet user
 
 				#
-				# if this is the regular nudge, notifications will be null: get fullcontact data
-				# but if this is a load on initial log in, don't use fullcontact (it's too long to wait):
-				# we'll pick up the slack in the background
+				# If this is the regular nudge, notifications will be null: get fullcontact data.
+				# If this is a load on initial log in, don't use fullcontact (it's too long to wait)
+				#  - we'll pick up the slack in the background
+				#
 				# So these two cases have a slightly different order of operations
+
+				#
+				# this one's the load on initial sign up (hit the '/load' link)
+				# see the return: doesn't proceed past this block.
 				#
 				if notifications then return linkLater user, contact, ()->
 					contact.save (err) ->		# new contact has been populated with any old data from LI
@@ -134,20 +139,22 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 							console.log "Error saving Contact data for new user"
 							console.dir err
 							console.dir contact
-						_saveMail user, contact, mail
-						sift index
-						# then, sometime in the not too distant future, go and slowly get the FC data
-						getFC contact, (fullDeets) ->
-							if fullDeets then contact.save (err) ->		# if we get data, save it
-								if err
-									console.log "Error saving Contact with FC data in initial parse"
-									console.dir err
-									console.dir contact
-								_saveFullContact user, contact, fullDeets
-								if fullDeets.digitalFootprint
-										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
+							sift index
+						else
+							_saveMail user, contact, mail
+							sift index
+							# then, sometime in the not too distant future, go and slowly get the FC data
+							getFC contact, (fullDeets) ->
+								if fullDeets then contact.save (err) ->		# if we get data, save it
+									if err
+										console.log "Error saving Contact with FC data in initial parse"
+										console.dir err
+										console.dir contact
+									_saveFullContact user, contact, fullDeets
+									if fullDeets.digitalFootprint
+											addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 
-				# only gets here if we no notifications (ie. this is part of an out of session batch task)
+				# only gets here iff no notifications (ie. this is part of an out of session batch task)
 
 				getFC contact, (fullDeets) ->
 					linkLater user, contact, ()->
@@ -156,12 +163,12 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 								console.log "Error saving Contact with FullContact data"
 								console.dir err
 								console.dir contact
-							# now save other records that need the contact reference: mail, fullcontact, tags
-							_saveMail user, contact, mail
-							if fullDeets
-								_saveFullContact user, contact, fullDeets
-								if fullDeets.digitalFootprint
-									addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
+							else	# now save other records that need the contact reference: mail, FC, tags
+								_saveMail user, contact, mail
+								if fullDeets
+									_saveFullContact user, contact, fullDeets
+									if fullDeets.digitalFootprint
+										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 							sift index
 
 		sift()
