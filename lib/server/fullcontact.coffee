@@ -43,10 +43,10 @@ module.exports = (contact, cb)->
 
 			if fullDeets.socialProfiles
 				for profile in fullDeets.socialProfiles
-					switch profile.typeId
-						when 'facebook' then contact.facebook = _.last profile.url.split '/'
-						when 'twitter' then contact.twitter = _.last profile.url.split '/'
-						when 'linkedin' then contact.linkedin = profile.id
+					if _.contains ['facebook', 'twitter', 'linkedin'], profile.typeId		# if its one of the networks we track
+						contact[profile.typeId] = _.last profile.url.split '/'				# get the url segment after the last /
+						if _.contains contact[profile.typeId], '='							# and if that has something like /?view=123
+							contact[profile.typeId] = _.last contact[profile.typeId].split '='			# just get the ID after the '='
 
 			if fullDeets.organizations
 				for org in fullDeets.organizations

@@ -2,8 +2,6 @@ extends layout
 
 
 block content
-	p(style='color: #e51937') NEW THIS WEEK: "Sync Linkedin" and try the new "Search" feature by typing query and pressing enter!
-	br
 
 	p I noticed that you've emailed some new people recently:
 
@@ -12,5 +10,8 @@ block content
 			li.strong= name
 
 	p Come to Redfly and classify them!
+	p
+		i
+			Unclassified contacts will be saved automatically in five days time ...
 
 	a(href='#{path('/classify')}', style="font-size: 18px; text-decoration: none; background-color: #556C90; padding: 5px 10px; border-radius: 5px; color: #D9FFFD") IMMEDIATELY GOOD SIR
