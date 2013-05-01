@@ -25,7 +25,7 @@ imapConnect = (user, cb)->
 		refreshToken: user.oauth
 	generator.getToken (err, token) ->
 		if err
-			console.log "generator.getToken #{token}"
+			console.log "generator.getToken #{token} for #{user.email}"
 			console.warn err
 			return cb err, null
 		server = new require('imap-jtnt-xoa2').ImapConnection

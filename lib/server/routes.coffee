@@ -193,6 +193,8 @@ module.exports = (app, route) ->
 					if model is 'Contact'
 						conditions.added = $exists: true
 						_.extend conditions, data.moreConditions
+						console.log "giving conditions:"
+						console.dir conditions
 					# else
 					# 	for k, v of data.moreConditions
 					# 		conditions['contact.' + k] = v
@@ -324,7 +326,7 @@ module.exports = (app, route) ->
 				async.forEach merges, (merge, cb) ->
 					for field in ['names', 'emails', 'knows']
 						contact[field].addToSet merge[field]...
-					for field in ['picture', 'added', 'addedBy']
+					for field in ['picture', 'added', 'addedBy', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook']
 						if (value = merge[field]) and not contact[field]
 							contact[field] = value
 					async.forEach [{type: 'Tag', field: 'contact'}, {type: 'Note', field: 'contact'}, {type: 'Mail', field: 'recipient'}], (update, cb) ->
