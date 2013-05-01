@@ -90,7 +90,7 @@ module.exports = (Ember, App, socket) ->
 			@_next()
 		_next: ->
 			App.store.commit()
-		keepGoing: ->
+		keepGoing: ->						# now disabled, not in template
 			@set 'classifyCount', 0
 
 
