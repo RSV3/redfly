@@ -12,7 +12,8 @@ i.icon-pencil
 		br
 		| <a href="#" {{action initiateMerge target="view"}}>Merge duplicate.</a>
 	| {{/if}}
-	| <a href="#" class="close" {{action toggle target="view"}}>×</a>
+	a.close(href='#', action='toggle target="view"')
+		i.icon-remove
 	.nav-header {{view.prettyPrimaryAttribute}}
 	| {{view Ember.TextField valueBinding="view.primary"}}
 	| {{#if view.others.length}}
