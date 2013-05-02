@@ -35,7 +35,7 @@ module.exports = (Ember, App, socket) ->
 			if not fams or not fams.length then f = []
 			else f = fams.getEach 'user'
 			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
-			f.concat othernose
+			_.uniq f.concat othernose
 		).property 'knows', 'measures'
 
 		editpositiondetails: (->
