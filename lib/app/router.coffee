@@ -59,6 +59,7 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'model', null
 			socket.emit 'classifyQ', App.user.get('id'), (results) =>
 				if results and results.length
+					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
 				else @transitionTo 'userProfile'
 
