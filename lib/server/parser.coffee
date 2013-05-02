@@ -133,7 +133,10 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				# this one's the load on initial sign up (hit the '/load' link)
 				# see the return: doesn't proceed past this block.
 				#
-				if notifications then return linkLater user, contact, ()->
+				# or atleast we used to. but that makes it take too long, so ...
+				#if notifications then
+
+				return linkLater user, contact, ()->
 					contact.save (err) ->		# new contact has been populated with any old data from LI
 						if err
 							console.log "Error saving Contact data for new user"
@@ -155,6 +158,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 											addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 
 				# only gets here iff no notifications (ie. this is part of an out of session batch task)
+				###
 
 				getFC contact, (fullDeets) ->
 					linkLater user, contact, ()->
@@ -170,6 +174,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 									if fullDeets.digitalFootprint
 										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 							sift index
+				###
 
 		sift()
 
