@@ -56,7 +56,7 @@ module.exports = (app, route) ->
 					model.create record, (err, doc) ->
 						throw err if err
 						cb doc
-						if (model is models.Contact) or (model is models.Tag) or (model is models.Note)
+						if model is models.Contact or model is models.Note or model is models.Tag and doc.contact
 							feed doc
 				else
 					throw new Error 'unimplemented'
@@ -137,31 +137,54 @@ module.exports = (app, route) ->
 	# refactored searcH:
 	# optional limit for the dynamic searchbox,
 	# and a final callback where we can decide what attributes to package for returning
-	doSearch = (fn, data, searchMap, limit=0) ->
+	doSearch = (fn, data, session, searchMap, limit=0) ->
 		if not data.query
 			return []
-		terms = _.uniq _.compact data.query.split(' ')
+		compound = _.compact data.query.split ':'
+		if compound.length > 1						# type specified, eg tag:slacker
+			terms = _.uniq _.compact compound[1].split(' ')
+		else terms = _.uniq _.compact data.query.split(' ')
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
 		utilisedTypes = []
 		for type in availableTypes
 			search[type] = []
 			for term in terms
-				compound = _.compact term.split ':'
-				if compound.length > 1						# type specified, eg tag:slacker
-					if compound[0] is type
-						search[type].push compound[1]
-				else										# not specified, try this term in each type
-					search[type].push term
-			utilisedTypes.push type
+				if terms.length is 1 or not _.contains ['and', 'to', 'with', 'a'], term
+					if compound.length > 1						# type specified, eg tag:slacker
+						if compound[0] is type or compound[0] is 'contact' and (type is 'name' or type is 'email')
+							search[type].push term
+					else										# not specified, try this term in each type
+						search[type].push term
 			if not search[type].length then delete search[type]
+			else utilisedTypes.push type
 
 		step = require 'step'
 		step ->
+			###
 			if search.name and search.name.length > 1			# search on "firstname lastname"
 				utilisedTypes.unshift 'name'
 				reTerm = new RegExp data.query, 'i'
 				models.Contact.find({names:reTerm}).exec @parallel()
+			###
+			for type of search
+				conditions = {}
+				if type is 'tag' or type is 'note'
+					_s = require 'underscore.string'
+					model = _s.capitalize type
+					field = 'body'
+				else
+					model = 'Contact'
+					field = type + 's'
+				if compound.length > 1 and compound[0] is 'contact'
+					conditions.knows = session.user
+				if search[type].length > 1			# eg. search on "firstname lastname"
+					utilisedTypes.unshift type
+					conditions[field] = new RegExp compound[1], 'i'
+					if model is 'Contact'
+						conditions.added = $exists: true
+					models[model].find(conditions).exec @parallel()
+
 			for type of search
 				terms = search[type]
 				if type is 'tag' or type is 'note'
@@ -192,9 +215,7 @@ module.exports = (app, route) ->
 
 					if model is 'Contact'
 						conditions.added = $exists: true
-						_.extend conditions, data.moreConditions
-						console.log "giving conditions:"
-						console.dir conditions
+					#	_.extend conditions, data.moreConditions		# jTNT ??? wtf?
 					# else
 					# 	for k, v of data.moreConditions
 					# 		conditions['contact.' + k] = v
@@ -216,8 +237,8 @@ module.exports = (app, route) ->
 			mapSearches 0
 
 
-	route 'fullSearch', (fn, data) ->
-		doSearch fn, data
+	route 'fullSearch', (fn, data, io, session) ->
+		doSearch fn, data, session
 		, (type, typeDocs, results=[], cb) ->
 			cb _.union results, _.uniq _.map typeDocs, (d) ->
 				if d.contact then String(d.contact) else String(d.id)
@@ -227,7 +248,7 @@ module.exports = (app, route) ->
 	# but note that it will return a single duplicate for the edge case where
 	# a search term matches both notes and tags corresponding to the same contact
 	# there's a task for a rainy day ...
-	route 'search', (fn, data) ->
+	route 'search', (fn, data, io, session) ->
 
 		# this async filter is required to confirm the $exists:added status of notes and tags
 		validSearch = (type, typeDocs, results)->
@@ -243,7 +264,7 @@ module.exports = (app, route) ->
 			results[type] = _.union typeDocs, results[type] or []
 			return results
 
-		doSearch fn, data
+		doSearch fn, data, session
 		, (type, typeDocs, results={}, cb) ->
 			# if the results are of type other than contact, we need to check that $exists:added
 			if typeDocs and typeDocs.length and typeDocs[0].contact
@@ -272,10 +293,23 @@ module.exports = (app, route) ->
 				.first()
 				.value()
 
-	route 'tags.all', (fn, conditions) ->
-		models.Tag.find(conditions).distinct 'body', (err, bodies) ->
+	###
+	route 'tags.priority', (fn, conditions) ->
+		conditions = _.extend conditions, {contact:{$exists:false}, user:{$exists:false}}
+		models.Tag.find(conditions).sort({_id:-1}).limit(20).exec (err, bodies) ->
 			throw err if err
-			fn bodies
+			fn _.pluck(bodies, 'body').sort()
+	###
+
+	route 'tags.remove', (fn, conditions) ->
+		models.Tag.remove conditions, (err)->
+			throw err if err
+			fn conditions
+
+	route 'tags.all', (fn, conditions) ->
+		models.Tag.find(conditions).distinct 'body', (err, bodies)->
+			throw err if err
+			fn bodies.sort()
 
 	route 'tags.popular', (fn, conditions) ->
 		models.Tag.aggregate {$match: conditions},
@@ -329,8 +363,13 @@ module.exports = (app, route) ->
 					for field in ['picture', 'added', 'addedBy', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook']
 						if (value = merge[field]) and not contact[field]
 							contact[field] = value
-					async.forEach [{type: 'Tag', field: 'contact'}, {type: 'Note', field: 'contact'}, {type: 'Mail', field: 'recipient'}], (update, cb) ->
+					updateModels = ['Tag', 'Note', {Mail: 'recipient'}, 'Measurement', 'Classify', 'Exclude']
+					async.forEach updateModels, (update, cb) ->
 						conditions = {}
+						if not _.isObject update then update = {type:update, field:'contact'}
+						else for own key, value of update
+							update.type = key
+							update.field = value
 						conditions[update.field] = merge.id
 						models[update.type].find conditions, (err, docs) ->
 							throw err if err
@@ -381,7 +420,7 @@ module.exports = (app, route) ->
 				completedContact: ->
 					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					io.emit 'feed'
+					io.emit 'feed',
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id

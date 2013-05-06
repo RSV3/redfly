@@ -222,6 +222,7 @@ module.exports = (Ember, App, socket) ->
 
 
 			mergeSearchView: App.SearchView.extend
+				prefix: 'contact:'
 				conditions: (->
 					addedBy: App.user.get 'id'
 					_id: {$ne: @get 'controller.id'}
