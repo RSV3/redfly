@@ -36,6 +36,16 @@ module.exports = (Ember, App, socket) ->
 			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
 				result.pushObjects popularTags
 			result = []
+			result.pushObjects @get('prioritytags').getEach('body')
+		).property 'prioritytags.@each'
+		prioritytags: (->
+			query = category: @get('category'), contact: $exists: false
+			result = App.Tag.filter query, (data) =>
+				if (category = @get('category')) and (category isnt data.get('category'))
+					return false
+				not data.get('contact')
+			options = sortProperties: ['date'], sortAscending: false, content: result, limit: 20
+			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 		).property 'category'
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()

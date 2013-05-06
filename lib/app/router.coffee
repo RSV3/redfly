@@ -43,9 +43,16 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'content', model
 
 	App.AdminRoute = Ember.Route.extend
-		setupController: (controller, model) ->
+		setupController: (controller) ->
 			if App.user.get('admin')
-				controller.set 'content', model
+				controller.set 'content', App.Admin.find 1
+				controller.set 'category', 'organisation'
+				###
+				socket.emit 'tags.stats', (stats) =>
+					for stat in stats
+						stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
+					controller.set 'stats', stats
+				###
 			else @transitionTo 'userProfile'
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->

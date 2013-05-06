@@ -9,7 +9,7 @@ module.exports = (DS, App) ->
 		domains: DS.attr 'array'		# list of domains served by this instance
 		userstoo: DS.attr 'boolean'		# if set, employees (inc. users) can also be classified as contacts
 		flushsave: DS.attr 'boolean'	# if set, FLUSH saves queued contacts: otherwise, skips
-		hidemail: DS.attr 'boolean'		# hide the email of unknown contacts
+		hidemails: DS.attr 'boolean'		# hide the email of unknown contacts
 
 	App.User = DS.Model.extend
 		date: DS.attr 'date'
