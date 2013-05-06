@@ -12,10 +12,11 @@ oldexcludeSchema = new Schema
 	name: type: String, trim: true
 
 AdminSchema = new Schema
+	_id: Number					# special case: there is only one admin record, so let's call it _id:1
 	domains: [ type: String ]	# list of domains served by this instance
 	userstoo: type: Boolean		# if set, employees (inc. users) can also be classified as contacts
 	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
-	hidemail: type: Boolean		# hide the email of unknown contacts
+	hidemails: type: Boolean		# hide the email of unknown contacts
 
 ClassifySchema = new Schema
 	user: type: Types.ObjectId, ref: 'User'
@@ -63,8 +64,8 @@ ContactSchema = new Schema
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 TagSchema = new Schema
-	creator: type: Types.ObjectId, ref: 'User', required: true
-	contact: type: Types.ObjectId, ref: 'Contact', required: true
+	creator: type: Types.ObjectId, ref: 'User'#, required: true
+	contact: type: Types.ObjectId, ref: 'Contact'#, required: true
 	category: type: String, required: true, enum: ['organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 
@@ -176,6 +177,7 @@ MeasurementSchema.plugin models.common
 
 TagSchema.index {contact: 1, body: 1, category: 1}, unique: true
 
+exports.Admin = models.db.model 'Admin', AdminSchema
 exports.User = models.db.model 'User', UserSchema
 exports.Contact = models.db.model 'Contact', ContactSchema
 exports.Tag = models.db.model 'Tag', TagSchema
