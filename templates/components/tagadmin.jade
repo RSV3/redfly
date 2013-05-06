@@ -1,0 +1,25 @@
+.span6.tagbox.bordered
+	h4 Active Tags
+	.tags
+		.main
+			+each('view.alltags')
+				+view('view.tagView')
+					a.add(action='add target="view"')
+						i.icon-tag  
+					a.body(href='#', action='search target="view"') {{body}}
+					a.close(action='delete target="view"')
+						i.icon-remove
+.span6.tagbox
+	h4 Top Tags
+	.tags
+		.main
+			+each('view.prioritytags')
+				+view('view.tagView')
+					span.tagicon
+						i.icon-tag  
+					span.body {{body}}
+					a.close(action='delete target="view"')
+						i.icon-remove
+	form.new-tag-form(action='add on="submit" target="view"')
+		+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
+
