@@ -301,6 +301,11 @@ module.exports = (app, route) ->
 			fn _.pluck(bodies, 'body').sort()
 	###
 
+	route 'tags.remove', (fn, conditions) ->
+		models.Tag.remove conditions, (err)->
+			throw err if err
+			fn conditions
+
 	route 'tags.all', (fn, conditions) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
@@ -415,7 +420,7 @@ module.exports = (app, route) ->
 				completedContact: ->
 					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					io.emit 'feed'
+					io.emit 'feed',
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
