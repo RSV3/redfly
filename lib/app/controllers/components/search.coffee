@@ -58,6 +58,8 @@ module.exports = (Ember, App, socket) ->
 					if not query
 						@set 'results', null
 					else
+						prefix = @get('parentView.prefix')
+						if prefix then query = util.trim(prefix)+query
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
 							@set 'results', {}
 							allResults = []

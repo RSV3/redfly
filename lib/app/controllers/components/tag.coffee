@@ -8,5 +8,5 @@ module.exports = (Ember, App, socket) ->
 		tagName: 'span'
 		classNames: ['tag']
 		search: ->
-			newResults = App.Results.create {text: util.trim @get('context.body')}
+			newResults = App.Results.create {text: 'tag:' + util.trim @get('context.body')}
 			@get('controller').transitionTo "results", newResults
