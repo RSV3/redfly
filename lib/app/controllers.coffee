@@ -23,6 +23,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/intro') Ember, App, socket
 	require('./controllers/components/social') Ember, App, socket
 	require('./controllers/components/note') Ember, App, socket
+	require('./controllers/components/tagadmin') Ember, App, socket
 
 	require('./controllers/application') Ember, App, socket
 	require('./controllers/home') Ember, App, socket
@@ -36,4 +37,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/create') Ember, App, socket
 	require('./controllers/classify') Ember, App, socket
 	require('./controllers/import') Ember, App, socket
+	require('./controllers/admin') Ember, App, socket
 

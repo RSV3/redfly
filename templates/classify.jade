@@ -47,14 +47,14 @@ div.navbar
 			| {{/if}}
 			ul.pager
 				li
-					| <a href="#" class="btn-danger" {{action ignore}}>Skip forever</a>
-				|  
-				li
-					| <a href="#" class="btn-warning" {{action skip}}>Skip</a>
-				|  
-				li
 					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
 				|  
+				|  
+				li
+					| <a href="#" class="btn-warning" {{action skip}}>Classify Later</a>
+				|  
+				li
+					| <a href="#" class="btn-danger" {{action ignore}}>Make Private</a>
 				li
 					| <a href="#" class="btn-inverse" {{action flush}}>FLUSH</a>
 				p
