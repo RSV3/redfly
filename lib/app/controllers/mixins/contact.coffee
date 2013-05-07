@@ -7,7 +7,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'knows.@each.id'
 		hasIntro: (->
 				@get('addedBy') and not @get('isKnown')
-			).property 'addedBy'
+			).property 'addedBy', 'isKnown'
 		gmailSearch: (->
 				encodeURI "//gmail.com#search/to:#{@get('email')}"
 			).property 'email'
