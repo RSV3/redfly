@@ -28,6 +28,9 @@ module.exports = (Ember, App, socket) ->
 					result.set 'content', _.map allTags, (t)->{body:t}
 			result
 		).property 'prioritytags.@each'
+		hastags: (->
+			@get('alltags')?.get('length')
+		).property 'alltags.@each'
 
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
@@ -69,65 +72,27 @@ module.exports = (Ember, App, socket) ->
 					else						# the 'alltags' list are just {body:} objs.
 												# we need to tell the server to remove any tags with the same name
 						if c = @get('parentView.controller.category')
-							console.log c
-							console.log tag
 							socket.emit 'tags.remove', {category: c, body: tag.body}, (removedTags) =>
-								console.log "admin removed tags: "
-								console.dir removedTags
-
+								while removedTags.length
+									id = removedTags.shift()
+									App.store.filter(App.Tag, (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
 				, 1000
 			didInsertElement: ->
+				that = this.get 'parentView'
+				$('ul.nav-tabs a').click (e)->
+					e.preventDefault()
+					that.set 'category', $(this).attr 'href'
+					$(this).tab 'show'
+
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
 
-		newTagView: Ember.TextField.extend
-			currentTagBinding: 'parentView.currentTag'
-			currentTagChanged: (->
-				if tag = @get('currentTag')
-					@set 'currentTag', tag.toLowerCase()
-			).observes 'currentTag'
-			keyDown: (event) ->
-				###
-				if event.which is 8	# A backspace/delete.
-					if not @get('currentTag')
-						lastTag = @get 'parentView.prioritytags.lastObject'
-						lastTag.deleteRecord()
-						App.store.commit()
-				# TO-DO was there a reason is sepearted tab complete into a keyDown and keyUp part? Can I do them both on keyDown?
-				###
-				if event.which is 9	# A tab.
-					if @get('currentTag')
-						return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
-			keyUp: (event) ->
-				if event.which is 9
-					# Defer adding the tag in case a typeahead selection is highlighted and should be added instead.
-					_.defer =>
-						@get('parentView').add()
-			didInsertElement: ->
-				@set 'typeahead', $(@$()).typeahead
-					source: null	# Placeholder, populate later.
-					items: 6
-					updater: (item) =>
-						@get('parentView')._add item
-						@set 'currentTag', null
-						return null
-				# Monkey-patch bootstrap so I can trigger bindings. Current way this is happening is by customizing bootstrap.js
-				# typeahead = $(@$()).data('typeahead')
-				# move = typeahead.move
-				# that = this
-				# typeahead.move = (e) ->
-				# 	move.call this, e
-				# 	that.set 'currentTag', that.get('currentTag')
-			updateTypeahead: (->
-				@get('typeahead').data('typeahead').source = @get('parentView.autocompleteTags')
-			).observes 'parentView.autocompleteTags.@each'
-			attributeBindings: ['size', 'autocomplete', 'tabindex']
-			size: (->
-				2 + (@get('currentTag.length') or 0)
-			).property 'currentTag'
-			autocomplete: 'off'
-			tabindex: (->
-				@get('parentView.tabindex') or 0
-			).property 'parentView.tabindex'
+		newTagView: App.NewTagView.extend()
+
+		# TODO:
+		# the stuff above is quite different from the contact page cloud tag stuff,
+		# but this here below has been cutnpaste verbatim from tagger:
+		# it really should be its own component.
+
 
