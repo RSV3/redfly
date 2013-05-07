@@ -9,7 +9,7 @@ module.exports = (socket) ->
 
 
 	messages =
-		required: 'Dudebro, you have to enter something dude, bro.'
+		required: 'Dudebro, you have to enter something dude.'
 		requiredSet: (value) ->
 			'A contact must have at least one ' + value + '.'
 		format: (value) ->

@@ -19,7 +19,7 @@ div.navbar
 				span Selected contacts will be skipped for now, and appear back in your queue in a couple of weeks
 			ul.pager
 				li
-					| <a href="#" class="btn-danger" {{action flushem}}>Flush selected</a>
+					| <a href="#" class="btn-danger" {{action flushem}}>Remove Selected from Queue</a>
 				|  
 				li
 					| <a href="#" class="btn-info" {{action unflush}}>Back to Classify</a>
@@ -48,15 +48,15 @@ div.navbar
 			ul.pager
 				li
 					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
-				|  
-				|  
+				| 
 				li
 					| <a href="#" class="btn-warning" {{action skip}}>Classify Later</a>
-				|  
+				| 
 				li
 					| <a href="#" class="btn-danger" {{action ignore}}>Make Private</a>
+				| 
 				li
-					| <a href="#" class="btn-inverse" {{action flush}}>FLUSH</a>
+					| <a href="#" class="btn-inverse" {{action flush}}>Batch</a>
 				p
 			| {{render contact}}
 			| {{/if}}
