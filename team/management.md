@@ -11,7 +11,8 @@ mongo ds043847.mongolab.com:43847/heroku_app6375934 -u heroku_app6375934 -p oc78
 prod commands:
 mongo ds039147.mongolab.com:39147/heroku_app8065862 -u heroku_app8065862 -p 6cqi48lldblomdf4uebuhplblj
 
-dumping prod db to dev:
+Dumping prod db to dev
+=======================
 mongodump --host ds039147.mongolab.com:39147 --username heroku_app8065862 --password 6cqi48lldblomdf4uebuhplblj --db heroku_app8065862 --out redfly_dump
 - drop all the collections in heroku
 mongorestore --host ds043837.mongolab.com:43837 --username heroku_app6379653 --password 2vos1gak0e63rjl5220mluubm6 --db heroku_app6379653 redfly_dump/heroku_app8065862
