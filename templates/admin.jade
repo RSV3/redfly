@@ -7,16 +7,29 @@
 
 		h3 Tag Management
 		.row-fluid
-			.span2
-				br
-				.whichtags.activetags
-					span.organization
-						strong {{App.orgTitle}}
-				.whichtags
-					span.industry
-						strong Industry
-			.span10.tagboxes
-				{{view App.TagAdminView}}
+			.tababble.tabs-left
+				ul.nav.nav-tabs
+					p
+						br
+					p
+						br
+					li.active
+						| <a href=organisation data-toggle=tab> {{App.orgTitle}} </a>
+					li
+						| <a href=industry data-toggle=tab> Industry </a>
+					p
+						br
+					p
+						br
+					p
+						br
+					p
+						br
+				.tab-content
+					.tagboxes
+						.tab-pane.active#organisation
+						.tab-pane#industry
+						{{view App.TagAdminView}}
 
 		h3 Organization Domains
 		.row-fluid

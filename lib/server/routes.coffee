@@ -302,9 +302,15 @@ module.exports = (app, route) ->
 	###
 
 	route 'tags.remove', (fn, conditions) ->
-		models.Tag.remove conditions, (err)->
+		models.Tag.find conditions, '_id', (err, ids)->
 			throw err if err
-			fn conditions
+			ids =  _.pluck ids, '_id'
+			models.Tag.remove {_id: $in: ids}, (err)->
+				if err
+					console.log "error removing tags:"
+					console.dir ids
+					console.dir err
+			fn ids
 
 	route 'tags.all', (fn, conditions) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies)->

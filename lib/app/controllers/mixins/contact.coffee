@@ -3,11 +3,13 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactMixin = Ember.Mixin.create
 		isKnown: (->
-				@get('knows') and _.contains @get('knows').getEach('id'), App.user.get('id')
-			).property 'knows.@each.id'
+				u = App.user.get 'id'
+				k = @get('knows')?.getEach 'id'
+				@get('addedBy') is u or k and _.contains k, u
+			).property 'addedBy', 'knows.@each.id'
 		hasIntro: (->
 				@get('addedBy') and not @get('isKnown')
-			).property 'addedBy'
+			).property 'addedBy', 'isKnown'
 		gmailSearch: (->
 				encodeURI "//gmail.com#search/to:#{@get('email')}"
 			).property 'email'

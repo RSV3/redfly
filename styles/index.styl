@@ -51,6 +51,8 @@ organisation = #e51937
 	margin-left auto
 	margin-right auto
 
+.textcenter
+	text-align	center
 
 
 
@@ -448,20 +450,26 @@ body
 		border	1px solid #ddd
 		border-radius	5px
 		padding	3px
-		margin-left	0
+		margin	-3px 1em 1em -3px
+		height	30em
 		.tagbox.bordered
-			height	20em
-			overflow-y	scroll
-			.tag, .tag .body
-				margin-left	0.5em
-				margin-right	0.5em
-			.tag a:hover
-				text-decoration	none
+			.tags
+				height	26em
+				overflow-y	scroll
+				overflow-x	hidden
+				border	1px solid #ddd
+				border-radius	5px
+				.tag, .tag .body
+					margin-left	0.5em
+					margin-right	0.5em
+				.tag a:hover
+					text-decoration	none
 		.tagbox
 			.tags
 				padding	3px
 			h4
 				margin-left	4em
+				margin-top	-3px
 
 // Components.
 
