@@ -5,12 +5,7 @@ module.exports = (Ember, App, socket) ->
 	App.TagAdminView = Ember.View.extend
 		template: require '../../../../templates/components/tagadmin'
 		classNames: ['tagadmin']
-		organization: (->
-			@get('parentView.controller.category') isnt 'industry'
-		).property 'category'
-		category: (->
-			@get 'parentView.controller.category'
-		).property 'parentView.controller.category' 
+		category: 'organisation'
 		prioritytags: (->
 			query = category: @get('category'), contact: $exists: false
 			result = App.Tag.filter query, (data) =>
@@ -22,7 +17,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'category'
 		alltags: (->
 			result = Ember.ArrayController.create()
-			if c = @get('parentView.controller.category')
+			if c = @get('category')
 				socket.emit 'tags.all', category: c, (allTags) =>
 					allTags = _.difference allTags, @get('prioritytags').getEach 'body'
 					result.set 'content', _.map allTags, (t)->{body:t}
