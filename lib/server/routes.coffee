@@ -318,6 +318,7 @@ module.exports = (app, route) ->
 			fn bodies.sort()
 
 	route 'tags.popular', (fn, conditions) ->
+		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
 		models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', count: $sum: 1},
 			{$sort: count: -1},
