@@ -11,8 +11,9 @@ collection = db.fullcontacts
 element = collection.find_one({'socialProfiles.typeName': 'Linkedin'})
 print element
 
-print collection.find({}).count()
-print collection.find({'socialProfiles.typeName': 'Linkedin'}).count()
+print "FullContact information"
+print "Total FullContact contacts:", collection.find({}).count()
+print "Total FullContact with LinkedIn:", collection.find({'socialProfiles.typeName': 'Linkedin'}).count()
 
 # full contact with linkedin profiles, there are many duplicates
 for item in collection.find({'socialProfiles.typeName': 'Linkedin'}):
@@ -23,11 +24,11 @@ for item in collection.find({'socialProfiles.typeName': 'Linkedin'}):
 
 
 collection = db.linkedins
-print collection.find({}).count()
-print collection.find({'contact': {'$exists': False}}).count()
+print "LinkedIn information"
+print "Total linkedin connections:", collection.find({}).count()
+print "Total linkedin connection w/o contact:", collection.find({'contact': {'$exists': False}}).count()
 
 # check linkedin collections
-print "LinkedIn information"
 for item in collection.find({'contact': {'$exists': False}}):
   if 'linkedinId' in item:
     print item['linkedinId']
@@ -41,3 +42,7 @@ for item in collection.find({'contact': {'$exists': False}}):
 #    print "linkedin id does not exist for %ss" % item['headline']
 print collection.find({'linkedinId': {'$exists': False}}).count()
 
+print "Total contacts:"
+collection = db.contacts
+
+print collection.find().count()
