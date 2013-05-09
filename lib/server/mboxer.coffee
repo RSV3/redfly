@@ -131,7 +131,7 @@ imapAuth: (user, cb) ->
 contextAuth: (user, cb) ->
 	# TODO
 
-module.exports = 
+module.exports =
 	connect: (user, cb) ->
 		if process.env.CONTEXTIO_KEY then return contextConnect user, cb
 		else return imapConnect user, cb
@@ -143,7 +143,7 @@ module.exports =
 		# so we'll need a list of excludes (contacts skipped forever)
 		models.Exclude.find {user: user._id}, (err, excludes) ->
 			if err then console.dir err
-			else mbSession.excludes = excludes;
+			else mbSession.excludes = excludes
 			if process.env.CONTEXTIO_KEY then return contextSearch mbSession, user, cb
 			else return imapSearch mbSession, user, cb
 	eachMsg: (mbSession, user, results, finish, cb) ->
