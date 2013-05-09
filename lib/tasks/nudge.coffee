@@ -77,10 +77,12 @@ eachParse = (user, cb, succinct_manual)->
 		cb()
 
 # recursively operate on a list of documents
-eachDoc = (docs, operate, fcb) ->
+eachDoc = (docs, operate, fcb, succinct_manual) ->
 	if not docs.length then return fcb()
 	doc = docs.pop()
-	operate doc, ()-> eachDoc docs, operate, fcb
+	operate doc, ()->
+		eachDoc docs, operate, fcb
+	, succinct_manual
 
 
 
