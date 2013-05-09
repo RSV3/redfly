@@ -15,58 +15,60 @@
 				i.icon-spinner.icon-spin
 		| {{#each theResults.paginatedItems itemController="result"}}
 		.row-fluid.top
-			.span9
+			.row-fluid
+				.span9
+					.row-fluid
+						.span3.picture
+							+linkTo('contact this tagName="a"')
+								| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+						.span9
+							+linkTo('contact this tagName="a"')
+								h3 {{canonicalName}}
+							i
+								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+								
+				.span3
+					b Knows: &nbsp;
+					| {{#if isKnown}}
+					span you {{#if knowsSome}},{{/if}}
+					| {{/if}}
+					{{#each knowsSome}}
+					br
+					span &nbsp;
+					+linkTo('profile this')
+						| {{canonicalName}}
+					{{/each}}
+
+			.row-fluid.clearpic
+				| {{#if lastNote}}
 				.row-fluid
-					.span3.picture
-						+linkTo('contact this tagName="a"')
-							| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					.span9
-						+linkTo('contact this tagName="a"')
-							h3 {{canonicalName}}
-						i
-							| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-							
-				.row-fluid.clearpic
-					| {{#if lastNote}}
-					.row-fluid
-						.span3.right
-							b Last note:
-						.span9
-							+linkTo('profile lastNote.author')
-								| {{lastNote.author.canonicalName}}
-							i &nbsp; {{lastNote.body}}
-					| {{/if}}
-					| {{#if lastMail}}
-					.row-fluid
-						.span3.right
-							b Last mail:
-						.span9
-							+linkTo('profile lastMail.sender')
-								| {{lastMail.sender.canonicalName}}
-							span &nbsp; [{{sentdate}}]
-							i &nbsp; "{{lastMail.subject}}"
-					| {{/if}}
-					.row-fluid
-						.orgtags
-							{{#each orgTags}}
-							span.label {{body}}
-							{{/each}}
-					.row-fluid
-						.indtags
-							{{#each indTags}}
-							span.label {{body}}
-							{{/each}}
-			.span3
-				b Knows: &nbsp;
-				| {{#if isKnown}}
-				span you {{#if knowsSome}},{{/if}}
+					.span2.right
+						b Last note:
+					.span10
+						+linkTo('profile lastNote.author')
+							| {{lastNote.author.canonicalName}}
+						i &nbsp; {{lastNote.body}}
 				| {{/if}}
-				{{#each knowsSome}}
-				br
-				span &nbsp;
-				+linkTo('profile this')
-					| {{canonicalName}}
-				{{/each}}
+				| {{#if lastMail}}
+				.row-fluid
+					.span2.right
+						b Last mail:
+					.span10
+						+linkTo('profile lastMail.sender')
+							| {{lastMail.sender.canonicalName}}
+						span &nbsp; {{sentdate}}
+						i &nbsp; "{{lastMail.subject}}"
+				| {{/if}}
+				.row-fluid
+					.orgtags
+						{{#each orgTags}}
+						span.label {{body}}
+						{{/each}}
+				.row-fluid
+					.indtags
+						{{#each indTags}}
+						span.label {{body}}
+						{{/each}}
 		{{/each}}
 
 		ul.pager

@@ -1,6 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+	moment = require 'moment'
 
 	toggleFilter = (which)->
 		$("i.toggle#{which}").toggleClass 'icon-caret-up icon-caret-down'
@@ -154,7 +155,7 @@ module.exports = (Ember, App, socket) ->
 			result = []
 		).property 'id'
 		sentdate: (->
-			@get('lastMail.sent').toString().split(' ')[0..3].join(' ')
+			moment(@get('lastMail.sent')).fromNow()
 		).property 'lastMail'
 		isKnown: (->
 				@get('knows')?.find (user) ->
@@ -168,7 +169,7 @@ module.exports = (Ember, App, socket) ->
 			f = _.uniq f.concat othernose
 			f = _.reject f, (u)-> u.get('id') is App.user.get('id')
 			if not f.get('length') then null
-			else f[0..6]
+			else f[0..4]
 		).property 'knows', 'measures'
 
 
