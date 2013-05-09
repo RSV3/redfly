@@ -28,7 +28,7 @@ imapConnect = (user, cb)->
 			console.log "generator.getToken #{token} for #{user.email}"
 			console.warn err
 			return cb err, null
-		server = new require('imap-jtnt-xoa2').ImapConnection
+		server = new require('imap').ImapConnection
 			host: 'imap.gmail.com'
 			port: 993
 			secure: true
@@ -46,8 +46,7 @@ imapConnect = (user, cb)->
 
 imapSearch = (session, user, cb)->
 	criteria = [['FROM', user.email]]
-	if previous = user.lastParsed
-		criteria.unshift ['SINCE', previous]
+	if previous = user.lastParsed then criteria.unshift ['SINCE', previous]
 	session.IMAP.search criteria, cb
 
 contextSearch = (session, user, cb)->
@@ -103,28 +102,28 @@ eachContextMsg = (session, user, results, finish, cb) ->
 	finish()
 
 eachImapMsg = (session, user, results, finish, cb) ->
-	fetch = session.IMAP.fetch results,
-		request:
-			headers: ['from', 'to', 'subject', 'date']
-	fetch.on 'end', ->
+	session.IMAP.fetch results, {
+		headers: ['from', 'to', 'subject', 'date']
+		cb: (fetch) ->
+			fetch.on 'message', (msg)->
+				msg.on 'headers', (headers)->
+					newmails = []
+					for to in require('mimelib').parseAddresses headers.to?[0]
+						email = util.trim to.address.toLowerCase()
+						name = _normaliseName to.name
+						if not email?.length and validators.isEmail name
+							email = name
+							name = null
+						if _acceptableContact user, name, email, session.excludes
+							newmails.push
+								subject: headers.subject?[0]
+								sent: new Date headers.date?[0]
+								recipientEmail: email
+								recipientName: name
+					cb newmails
+	},->
 		session.IMAP.logout()
 		finish()
-	fetch.on 'message', (msg) ->
-		msg.on 'end', ->
-			newmails = []
-			for to in require('mimelib').parseAddresses msg.headers.to?[0]
-				email = util.trim to.address.toLowerCase()
-				name = _normaliseName to.name
-				if not email?.length and validators.isEmail name
-					email = name
-					name = null
-				if _acceptableContact user, name, email, session.excludes
-					newmails.push
-						subject: msg.headers.subject?[0]
-						sent: new Date msg.headers.date?[0]
-						recipientEmail: email
-						recipientName: name
-			cb newmails
 
 imapAuth: (user, cb) ->
 	# TODO
