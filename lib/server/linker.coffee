@@ -334,6 +334,7 @@ profileIdFrom = (item) ->
 		else i+=4
 		id = id.substr i
 	id?.substr 0, id.indexOf('&')
+	console.log "LINKEDIN debug: got #{id} for #{item.id}"
 
 
 

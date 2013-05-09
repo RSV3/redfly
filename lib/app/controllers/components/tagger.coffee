@@ -14,9 +14,10 @@ module.exports = (Ember, App, socket) ->
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 		autocompleteTags: (->
-			socket.emit 'tags.all', category: @get('category'), (allTags) =>
-				allTags = @_filterTags allTags
-				result.pushObjects allTags
+			if @get 'full'
+				socket.emit 'tags.all', category: @get('category'), (allTags) =>
+					allTags = @_filterTags allTags
+					result.pushObjects allTags
 			result = []
 		).property 'category', 'tags.@each', '_popularTags.@each'
 		cloudTags: (->
@@ -31,19 +32,22 @@ module.exports = (Ember, App, socket) ->
 						return true
 			tags.sort()
 		_popularTags: (->
-			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-				result.pushObjects popularTags
 			result = []
-			result.pushObjects @get('prioritytags').getEach('body')
+			if @get 'full'
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					result.pushObjects popularTags
+				result.pushObjects @get('prioritytags').getEach('body')
 		).property 'prioritytags.@each'
 		prioritytags: (->
-			query = category: @get('category'), contact: $exists: false
-			result = App.Tag.filter query, (data) =>
-				if (category = @get('category')) and (category isnt data.get('category'))
-					return false
-				not data.get('contact')
-			options = sortProperties: ['date'], sortAscending: false, content: result, limit: 20
-			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
+			if @get 'full'
+				query = category: @get('category'), contact: $exists: false
+				result = App.Tag.filter query, (data) =>
+					if (category = @get('category')) and (category isnt data.get('category'))
+						return false
+					not data.get('contact')
+				options = sortProperties: ['date'], sortAscending: false, content: result, limit: 20
+				Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
+			else []
 		).property 'category'
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
