@@ -84,6 +84,11 @@ module.exports = (Ember, App, socket) ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
 				App.store.commit()
+		dumpContact: ->
+			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
+			App.Exclude.createRecord user: App.user, contact: @get 'content'
+			App.store.commit()
+			@transitionTo "userProfile"
 
 
 	App.ContactView = Ember.View.extend

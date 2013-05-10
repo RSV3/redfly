@@ -5,8 +5,11 @@ module.exports = (Ember, App, socket) ->
 		isKnown: (->
 				u = App.user.get 'id'
 				k = @get('knows')?.getEach 'id'
-				@get('addedBy') is u or k and _.contains k, u
+				@get('addedBy.id') is u or k and _.contains k, u
 			).property 'addedBy', 'knows.@each.id'
+		iAdded: (->
+			App.user.get('id') is @get('addedBy.id')
+		).property 'addedBy'
 		hasIntro: (->
 				@get('addedBy') and not @get('isKnown')
 			).property 'addedBy', 'isKnown'
