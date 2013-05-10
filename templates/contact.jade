@@ -146,6 +146,11 @@
 			i.icon-signin
 			| &nbsp;&nbsp;Merge
 			| </a>
+			| {{#if iAdded}}
+			span.dumpcontact
+				a(href='#', action='dumpContact')
+					i.icon-trash.icon-2x
+			| {{/if}}
 		| {{/if}}
 		.row-fluid
 			h5 People who know {{nickname}}
