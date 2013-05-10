@@ -89,9 +89,10 @@ module.exports = (Ember, App, socket) ->
 			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
 			socket.emit 'fullSearch', query: model.text, (results) =>
-				if results and results.length
-					controller.set 'all', App.store.findMany(App.Contact, results)
-				else @transitionTo 'userProfile'
+				if results
+					if results.query is model.text	# ignore stale results that don't match the query
+						if not results.response?.length then @transitionTo 'userProfile'
+						else controller.set 'all', App.store.findMany(App.Contact, results.response)
 
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->
