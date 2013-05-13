@@ -46,3 +46,19 @@ print "Total contacts:"
 collection = db.contacts
 
 print collection.find().count()
+
+
+"""
+  Go through each collection and find the domains frequently communicated during week
+
+"""
+
+from datetime import date
+
+start_date = date(year=2013, month=1, day=1)
+end_date = date(year=2013, month=2, day=1)
+
+# search through contacts emailed date
+
+# get all the domain names and count
+# use foreach to strip the domain name and count in a dictionary

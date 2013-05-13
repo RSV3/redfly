@@ -124,20 +124,20 @@
 						+view('view.sliderView measure="familiarity"')
 					span.rightsliderlabel Close friends
 				.row-fluid.setmeasure
-					span.leftsliderlabel Don't pester
+					span.leftsliderlabel Not very important 
 					.slidercontainer
 						+view('view.sliderView measure="reachability"')
-					span.rightsliderlabel Always available
+					span.rightsliderlabel Very important 
 			.row-fluid
 				+view('view.measureBarView measure="reachability"')
 					+if('view.avgMeasure')
 						+unless('isKnown')
-							span.leftbarlabel Don't pester
+							span.leftbarlabel Not very important 
 						.barviewcontainer
 							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}} />
 					+if('view.avgMeasure')
 						+unless('isKnown')
-							span.rightbarlabel Always available
+							span.rightbarlabel Very important 
 
 	.span3
 		| {{#if isKnown}}
