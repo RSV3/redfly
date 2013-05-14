@@ -14,6 +14,9 @@ oldexcludeSchema = new Schema
 AdminSchema = new Schema
 	_id: Number					# special case: there is only one admin record, so let's call it _id:1
 	domains: [ type: String ]	# list of domains served by this instance
+	blacklistdomains: [ type: String ]	# list of domains blacklisted from the service
+	blacklistemails: [ type: String ]	# list of emails blacklisted from the service
+	blacklistnames: [ type: String ]	# list of names blacklisted from the service
 	userstoo: type: Boolean		# if set, employees (inc. users) can also be classified as contacts
 	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
 	hidemails: type: Boolean		# hide the email of unknown contacts
@@ -66,7 +69,7 @@ ContactSchema = new Schema
 TagSchema = new Schema
 	creator: type: Types.ObjectId, ref: 'User'#, required: true
 	contact: type: Types.ObjectId, ref: 'Contact'#, required: true
-	category: type: String, required: true, enum: ['organisation', 'industry']
+	category: type: String, required: true, enum: ['roles', 'theme', 'project', 'organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 
 NoteSchema = new Schema

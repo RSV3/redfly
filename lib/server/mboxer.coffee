@@ -5,7 +5,7 @@ _ = require 'underscore'
 ContextIO = require('contextio');
 
 
-contextConnect = (user, cb)->
+contextConnect = (user, blacklist, cb)->
 	ctxioClient = new ContextIO.Client {
 		key: process.env.CONTEXTIO_KEY
 		secret: process.env.CONTEXTIO_SECRET }
@@ -15,9 +15,10 @@ contextConnect = (user, cb)->
 		if err or not account then return cb err, null
 		account = account?.body
 		if account?.length then account = account[0]
-		cb null, { CIO: ctxioClient, id: account.id }	# return CIO server as attribute on mbox session
+		session.id = account.id
+		cb null, { CIO:ctxioClient, id:account.id, blacklist:blacklist }	# return CIO server as attribute on mbox session
 
-imapConnect = (user, cb)->
+imapConnect = (user, blacklist, cb)->
 	generator = require('xoauth2').createXOAuth2Generator
 		user: user.email
 		clientId: process.env.GOOGLE_API_ID
@@ -37,11 +38,11 @@ imapConnect = (user, cb)->
 			if err
 				console.dir err
 				return cb new Error 'Problem connecting to mail.'
-			server.openBox '[Gmail]/All Mail', true, (err, box) ->
+			server.openBox '[Gmail]/Sent Mail', true, (err, box) ->
 				if err
 					console.warn err
 					return cb new Error 'Problem opening mailbox.'
-				return cb null, { IMAP: server }	# return IMAP server as attribute on mbox session
+				return cb null, { IMAP:server, blacklist:blacklist }	# return IMAP server as attribute on mbox session
 
 
 imapSearch = (session, user, cb)->
@@ -58,8 +59,7 @@ contextSearch = (session, user, cb)->
 
 # Only added people outside our domain as contacts
 # exclude junk like "undisclosed recipients", and exclude yourself.
-_acceptableContact = (user, name, email, excludes)->
-	blacklist = require '../blacklist'
+_acceptableContact = (user, name, email, excludes, blacklist)->
 	return (validators.isEmail email) and (email isnt user.email) and
 			(_.last(email.split('@')) not in blacklist.domains) and
 			(name not in blacklist.names) and
@@ -92,7 +92,7 @@ eachContextMsg = (session, user, results, finish, cb) ->
 			if not email?.length and validators.isEmail name
 				email = name
 				name = null
-			if _acceptableContact user, name, email, session.excludes
+			if _acceptableContact user, name, email, session.excludes, session.blacklist
 				newmails.push
 					subject: msg.subject
 					sent: new Date 1000*msg.date
@@ -114,7 +114,7 @@ eachImapMsg = (session, user, results, finish, cb) ->
 						if not email?.length and validators.isEmail name
 							email = name
 							name = null
-						if _acceptableContact user, name, email, session.excludes
+						if _acceptableContact user, name, email, session.excludes, session.blacklist
 							newmails.push
 								subject: headers.subject?[0]
 								sent: new Date headers.date?[0]
@@ -133,8 +133,11 @@ contextAuth: (user, cb) ->
 
 module.exports =
 	connect: (user, cb) ->
-		if process.env.CONTEXTIO_KEY then return contextConnect user, cb
-		else return imapConnect user, cb
+		models.Admin.findById 1, (err, admin) ->
+			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
+			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
+			if process.env.CONTEXTIO_KEY then return contextConnect user, blacklist, cb
+			else return imapConnect user, blacklist, cb
 	auth: (user, cb) ->
 		if process.env.CONTEXTIO_KEY then return contextAuth user, cb
 		else return imapAuth user, cb
