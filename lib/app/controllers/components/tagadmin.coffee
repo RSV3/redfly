@@ -5,7 +5,7 @@ module.exports = (Ember, App, socket) ->
 	App.TagAdminView = Ember.View.extend
 		template: require '../../../../templates/components/tagadmin'
 		classNames: ['tagadmin']
-		category: 'organisation'
+		category: 'industry'
 		prioritytags: (->
 			query = category: @get('category'), contact: $exists: false
 			result = App.Tag.filter query, (data) =>

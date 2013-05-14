@@ -12,7 +12,7 @@ module.exports = (Ember, App, socket) ->
 				title: @titleStr()
 				placement: 'left'
 		updateTooltip: (->
-			@get('tooltip').data('tooltip').options.title = @titleStr()
+			@get('tooltip')?.data('tooltip').options.title = @titleStr()
 		).observes 'controller.addedBy.nickname'
 		attributeBindings: ['rel']
 		rel: 'tooltip'
