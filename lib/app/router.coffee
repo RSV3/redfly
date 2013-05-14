@@ -46,7 +46,7 @@ module.exports = (Ember, App, socket) ->
 		setupController: (controller) ->
 			if App.user.get('admin')
 				controller.set 'content', App.Admin.find 1
-				controller.set 'category', 'organisation'
+				controller.set 'category', 'industry'
 				###
 				socket.emit 'tags.stats', (stats) =>
 					for stat in stats
