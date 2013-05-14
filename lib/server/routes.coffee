@@ -3,6 +3,7 @@ module.exports = (app, route) ->
 	logic = require './logic'
 	models = require './models'
 	moment = require 'moment'
+	mailer = require './mail'
 
 
 	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
@@ -321,6 +322,16 @@ module.exports = (app, route) ->
 		models.Contact.findOne conditions, (err, contact) ->
 			throw err if err
 			fn contact?[field][0]
+
+	route 'getIntro', (fn, data) ->	# get an email introduction
+		models.Contact.findById data.contact, (err, contact) ->
+			throw err if err
+			models.User.findById data.userfrom, (err, userfrom) ->
+				throw err if err
+				models.User.findById data.userto, (err, userto) ->
+					throw err if err
+					mailer.requestIntro userfrom, userto, contact, data.url, ()->
+						fn()
 
 	route 'deprecatedVerifyUniqueness', (fn, data) ->	# Deprecated, bitches
 		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->

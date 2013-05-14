@@ -7,7 +7,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['admin']
 		didInsertElement: ->
 			@$('textarea').blur ()=>
-				@get('controller').onDomain()
+				@get('controller')._onTextArea()
 
 	App.AdminController = Ember.ObjectController.extend
 		flushsavechk: (->
@@ -22,6 +22,15 @@ module.exports = (Ember, App, socket) ->
 		domainlist: (->
 			@get('domains')?.join('\n')
 		).property 'domains'
+		domainblacklist: (->
+			@get 'blacklistdomains'
+		).property 'blacklistdomains'
+		nameblacklist: (->
+			@get 'blacklistnames'
+		).property 'blacklistnames'
+		emailblacklist: (->
+			@get 'blacklistemails'
+		).property 'blacklistemails'
 		onChk: (->
 			if _.isBoolean(@get 'flushsavechk') and not _.isUndefined @get 'flushsave'
 				@set 'flushsave', @get 'flushsavechk'
@@ -29,10 +38,12 @@ module.exports = (Ember, App, socket) ->
 				@set 'hidemails', @get 'hidemailschk'
 				App.store.commit()
 		).observes 'hidemailschk', 'userstoochk', 'flushsavechk'
-		onDomain: (->
+		_onTextArea: (->
 			if @get('domainlist')?.length
-				domains = _.filter _.map(@get('domainlist').split('\n'), (d)->util.trim(d)), (d)->d.length
-				console.dir domains
-				@set 'domains', domains
+				@set 'domains',  _.filter _.map(@get('domainlist').split('\n'), (d)->util.trim(d)), (d)->d.length
+				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
+				
+				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
+				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
 				App.store.commit()
 		)

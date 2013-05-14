@@ -8,7 +8,8 @@
 		.row-fluid
 			| {{#if hasIntro}}
 			p.bullhorn
-				| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView}}</a>
+				a(href='#', action='introMailto target="view"')
+					{{view App.IntroView}}
 			| {{/if}}
 			.maybevip
 				a(href='#', action='toggleVIP')
@@ -57,7 +58,7 @@
 					br
 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
-			| {{#if isKnown}}
+			| {{#if showEmail}}
 			h4.email
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
@@ -119,14 +120,16 @@
 		+unless('waitingForMeasures')
 			+if('isKnown')
 				.row-fluid.setmeasure
+					p how well do you know this contact?
 					span.leftsliderlabel Never met
-					.slidercontainer
-						+view('view.sliderView measure="familiarity"')
+					.starcontainer
+						+view('view.starView measure="familiarity"')
 					span.rightsliderlabel Close friends
 				.row-fluid.setmeasure
+					p how important is this contact?
 					span.leftsliderlabel Not important 
-					.slidercontainer
-						+view('view.sliderView measure="reachability"')
+					.starcontainer
+						+view('view.starView measure="reachability"')
 					span.rightsliderlabel Very important 
 			.row-fluid
 				+view('view.measureBarView measure="reachability"')

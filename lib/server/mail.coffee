@@ -14,6 +14,7 @@ from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 # 		# Need to add 'title:' here
 # 	, cb
 
+
 mail.sendNudge = (user, contacts, cb) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
@@ -39,6 +40,7 @@ mail.sendNudge = (user, contacts, cb) ->
 		names: names
 	, cb
 
+
 mail.sendNewsletter = (user, cb) ->
 	logic = require './logic'
 	require('step') ->
@@ -57,3 +59,28 @@ mail.sendNewsletter = (user, cb) ->
 			tagsCreated: numTags
 			notesAuthored: numNotes
 		, cb
+
+
+mail.requestIntro = (userfrom, userto, contact, url, cb) ->
+	tonick = userto.name.split(' ')[0]
+	fromnick = userfrom.name.split(' ')[0]
+	contactnick = contact.names[0]?.split(' ')[0]
+	if not contactnick or not contactnick.length
+		contactnick = contact.emails[0]
+	contactname = contact.names[0]
+	if not contactname or not contactname.length
+		contactname = contact.emails.firstObject
+	mail.sendTemplate 'intro',
+		#to: "#{userto.get('canonicalName')} <#{userto.get('email')}>"
+		#from: userfrom.get('email')
+		to: "#{userto.name} <#{userto.email}>"
+		from: userfrom.email
+		subject: "You know #{contactnick}, right?"
+		title: "Hi #{tonick}"
+		nick: contactnick
+		name: contactname
+		tonick: tonick
+		fromnick: fromnick
+		url: url
+	, cb
+
