@@ -9,12 +9,15 @@ module.exports =
 
 	development:
 		HOST: '127.0.0.1:5000'
+		#HOST:	'10.0.0.2:5000'
 		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
-		GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
-		GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
+		#GOOGLE_API_ID: '297124502120-mpum1g53cpt08er8q7o5nv864lu57uem.apps.googleusercontent.com'
+		#GOOGLE_API_SECRET: 'dQ52vGIXziyxz26LSCrDz-rC'
+		GOOGLE_API_SECRET: 'myZRXKo7S2iQVDpFxQ2bRzjE'
+		GOOGLE_API_ID: '473151298751.apps.googleusercontent.com'
 
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'

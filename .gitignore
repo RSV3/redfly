@@ -7,3 +7,4 @@ Thumbs.db
 config-local.coffee
 
 node_modules
+venv

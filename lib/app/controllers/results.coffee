@@ -1,6 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+	moment = require 'moment'
 
 	toggleFilter = (which)->
 		$("i.toggle#{which}").toggleClass 'icon-caret-up icon-caret-down'
@@ -125,10 +126,53 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['results']
 
 	App.ResultController = Ember.ObjectController.extend App.ContactMixin,
+		notes: (->
+			query = contact: @get('id')
+			App.filter App.Note, {field: 'date'}, query, (data) =>
+				data.get('contact.id') is @get('id')
+		).property 'id'
+		lastNote: (->
+			@get 'notes.lastObject'
+		).property 'notes.lastObject'
+		mails: (->
+			query = recipient: @get('id')
+			App.filter App.Mail, {field: 'sent'}, query, (data) =>
+				data.get('recipient.id') is @get('id')
+		).property 'id'
+		lastMail: (->
+			@get 'mails.lastObject'
+		).property 'mails.lastObject'
+		indTags: (->
+			query = category:'industry', contact: @get('id')
+			socket.emit 'tags.popular', query, (popularTags) =>
+				result.pushObjects _.map popularTags[0..3], (t)->{body:t}
+			result = []
+		).property 'id'
+		orgTags: (->
+			query = category:{$ne:'industry'}, contact: @get('id')
+			socket.emit 'tags.popular', query, (popularTags) =>
+				result.pushObjects _.map popularTags, (t)->{body:t}
+			result = []
+		).property 'id'
+		sentdate: (->
+			moment(@get('lastMail.sent')).fromNow()
+		).property 'lastMail'
 		isKnown: (->
 				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
 			).property 'knows.@each.id'
+		knowsSome: (->
+			fams = @get('measures.familiarity')
+			if not fams or not fams.length then f = []
+			else f = fams.getEach 'user'
+			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
+			f = _.uniq f.concat othernose
+			f = _.reject f, (u)-> u.get('id') is App.user.get('id')
+			if not f.get('length') then null
+			else f[0..4]
+		).property 'knows', 'measures'
+
+
 		gmailSearch: (->
 				encodeURI '//gmail.com#search/to:' + @get('email')
 			).property 'email'
@@ -151,7 +195,6 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
-
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'

@@ -1,4 +1,5 @@
 module.exports = (Ember, App, socket) ->
+	_ = require 'underscore'
 
 	App.ProfileView = Ember.View.extend
 		template: require '../../../templates/profile'
@@ -11,7 +12,7 @@ module.exports = (Ember, App, socket) ->
 					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
 						content: do =>
 							App.Contact.filter addedBy: @get('id'), (data) =>
-								data.get('addedBy.id') is @get('id')
+								data.get('addedBy.id') is @get('id') and _.contains data.get('knows').getEach('id'), @get('id')
 						sortProperties: ['added']
 						sortAscending: false
 			).property 'id'

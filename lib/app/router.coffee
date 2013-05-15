@@ -43,9 +43,16 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'content', model
 
 	App.AdminRoute = Ember.Route.extend
-		setupController: (controller, model) ->
+		setupController: (controller) ->
 			if App.user.get('admin')
-				controller.set 'content', model
+				controller.set 'content', App.Admin.find 1
+				controller.set 'category', 'industry'
+				###
+				socket.emit 'tags.stats', (stats) =>
+					for stat in stats
+						stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
+					controller.set 'stats', stats
+				###
 			else @transitionTo 'userProfile'
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
@@ -59,6 +66,7 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'model', null
 			socket.emit 'classifyQ', App.user.get('id'), (results) =>
 				if results and results.length
+					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
 				else @transitionTo 'userProfile'
 
@@ -81,9 +89,10 @@ module.exports = (Ember, App, socket) ->
 			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
 			socket.emit 'fullSearch', query: model.text, (results) =>
-				if results and results.length
-					controller.set 'all', App.store.findMany(App.Contact, results)
-				else @transitionTo 'userProfile'
+				if results
+					if results.query is model.text	# ignore stale results that don't match the query
+						if not results.response?.length then @transitionTo 'userProfile'
+						else controller.set 'all', App.store.findMany(App.Contact, results.response)
 
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->

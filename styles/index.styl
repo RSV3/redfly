@@ -51,6 +51,8 @@ organisation = #e51937
 	margin-left auto
 	margin-right auto
 
+.textcenter
+	text-align	center
 
 
 
@@ -70,6 +72,15 @@ tag(fontSize)
 		padding-left fontSize * 0.75
 		.body
 			padding-right fontSize * 0.25
+
+.tagadmin
+	.tag
+		margin	2px
+	.tags
+		.main
+			position	relative
+			z-index 1
+		
 
 tagger(fontSize)
 	taggerMargin = fontSize * 0.28
@@ -182,11 +193,22 @@ body
 		margin-top 30px
 
 .results
+	.clearpic
+		margin-top	0.5em
+	.right b
+		float	right
+		margin-right	0.5em
 	margin-top	-1em
 	a:hover
 		text-decoration	none
 	.collapsed
 		display	none
+	.indtags, .orgtags
+		margin-left 1em
+		span.label
+			margin	0 3px 0 3px
+	.indtags
+		margin-bottom	1em
 	.top
 		h3
 			margin-top	-5px
@@ -237,9 +259,24 @@ body
 				text-decoration	none
 
 
+.admin
+	.checkadmin
+		input
+			display	inline
+			margin 10px
+			margin-top 7px
+		label
+			display	inline
+			margin-left	1em
+
+
 .contact
 	.setmeasure
 		margin-top	1em
+		>p
+			margin	0
+			text-align	center
+			font-style	italic
 	.contactbar
 		margin-bottom	1em
 		background	linear-gradient(left, #fff 0%, #fdd 20%, #dfd 80%, #fff 100%)
@@ -279,9 +316,21 @@ body
 		width	23%
 	span.rightsliderlabel
 		float	right
-	.slidercontainer
+	.slidercontainer,.starcontainer
 		display	inline-block
 		width	50%
+		p.contactstars
+			text-align	center
+			margin	0
+			i.icon-star-empty
+				color	#888077
+			i.icon-star
+				color	#dc6
+			i.hoverstar
+				color	#fe3
+			i
+				margin-left	2px
+				margin-right	2px
 	.maybevip
 		display inline-block
 		margin-right 10px
@@ -346,6 +395,11 @@ body
 		.media-object
 			width 64px
 			height 64px
+	span.dumpcontact
+		float	right
+		margin-right	4em
+		a
+			text-decoration	none
 	.merge
 		.modal
 			overflow visible
@@ -408,6 +462,46 @@ body
 		margin-left 5px
 
 
+.admin
+	.whichtags
+		background	#eee
+		height	1.6em
+		padding	0.2em
+		margin-bottom	0.5em
+		margin-right	0
+		margin-left	1em
+		border-radius	5px 0 0 5px
+		color	#666
+		span
+			float	right
+	.activetags
+		background	#ddd
+		color	#000
+	.tagboxes
+		box-shadow	3px 3px 7px #ccc
+		border	1px solid #ddd
+		border-radius	5px
+		padding	3px
+		margin	-3px 1em 1em -3px
+		height	30em
+		.tagbox.bordered
+			.tags
+				height	26em
+				overflow-y	scroll
+				overflow-x	hidden
+				border	1px solid #ddd
+				border-radius	5px
+				.tag, .tag .body
+					margin-left	0.5em
+					margin-right	0.5em
+				.tag a:hover
+					text-decoration	none
+		.tagbox
+			.tags
+				padding	3px
+			h4
+				margin-left	4em
+				margin-top	-3px
 
 // Components.
 

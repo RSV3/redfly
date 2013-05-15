@@ -16,10 +16,10 @@ div.navbar
 			| {{#if flushing}}
 
 			p
-				span Deselect any contacts you don't want to flush from your queue
+				span Selected contacts will be skipped for now, and appear back in your queue in a couple of weeks
 			ul.pager
 				li
-					| <a href="#" class="btn-danger" {{action flushem}}>Flush selected</a>
+					| <a href="#" class="btn-danger" {{action flushem}}>Remove Selected from Queue</a>
 				|  
 				li
 					| <a href="#" class="btn-info" {{action unflush}}>Back to Classify</a>
@@ -47,16 +47,16 @@ div.navbar
 			| {{/if}}
 			ul.pager
 				li
-					| <a href="#" class="btn-danger" {{action ignore}}>Skip forever</a>
-				|  
-				li
-					| <a href="#" class="btn-warning" {{action skip}}>Skip</a>
-				|  
-				li
 					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
-				|  
+				| 
 				li
-					| <a href="#" class="btn-inverse" {{action flush}}>FLUSH</a>
+					| <a href="#" class="btn-warning" {{action skip}}>Classify Later</a>
+				| 
+				li
+					| <a href="#" class="btn-danger" {{action ignore}}>Make Private</a>
+				| 
+				li
+					| <a href="#" class="btn-inverse" {{action flush}}>Batch</a>
 				p
 			| {{render contact}}
 			| {{/if}}
@@ -68,21 +68,9 @@ div.navbar
 .hero-unit
 	h1 Nicely done!
 	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity, etc etc.
-	| {{#unless noMore}}
 	p
-		| But hey, listen: there are some more contacts we could give you to classify. You know, if you 
-		em really
-		|  wanted to...
-	| {{/unless}}
-	p
-		| {{#if noMore}}
 		+linkTo('contacts class="btn btn-primary btn-large"') See all contacts
-		|  {{else}}
-		| <a class="btn btn-primary btn-large" {{action keepGoing}}>Hit me again!</a>
-		| &nbsp;
-		+linkTo('contacts class="btn btn-large"') See all contacts
-		| {{/if}}
-		p.star: i.icon-star
+	p.star: i.icon-star
 
 | {{/unless}}
 

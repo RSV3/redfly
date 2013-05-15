@@ -5,7 +5,7 @@ _ = require 'underscore'
 ContextIO = require('contextio');
 
 
-contextConnect = (user, cb)->
+contextConnect = (user, blacklist, cb)->
 	ctxioClient = new ContextIO.Client {
 		key: process.env.CONTEXTIO_KEY
 		secret: process.env.CONTEXTIO_SECRET }
@@ -15,9 +15,10 @@ contextConnect = (user, cb)->
 		if err or not account then return cb err, null
 		account = account?.body
 		if account?.length then account = account[0]
-		cb null, { CIO: ctxioClient, id: account.id }	# return CIO server as attribute on mbox session
+		session.id = account.id
+		cb null, { CIO:ctxioClient, id:account.id, blacklist:blacklist }	# return CIO server as attribute on mbox session
 
-imapConnect = (user, cb)->
+imapConnect = (user, blacklist, cb)->
 	generator = require('xoauth2').createXOAuth2Generator
 		user: user.email
 		clientId: process.env.GOOGLE_API_ID
@@ -25,10 +26,10 @@ imapConnect = (user, cb)->
 		refreshToken: user.oauth
 	generator.getToken (err, token) ->
 		if err
-			console.log "generator.getToken #{token}"
+			console.log "generator.getToken #{token} for #{user.email}"
 			console.warn err
 			return cb err, null
-		server = new require('imap-jtnt-xoa2').ImapConnection
+		server = new require('imap').ImapConnection
 			host: 'imap.gmail.com'
 			port: 993
 			secure: true
@@ -37,17 +38,16 @@ imapConnect = (user, cb)->
 			if err
 				console.dir err
 				return cb new Error 'Problem connecting to mail.'
-			server.openBox '[Gmail]/All Mail', true, (err, box) ->
+			server.openBox '[Gmail]/Sent Mail', true, (err, box) ->
 				if err
 					console.warn err
 					return cb new Error 'Problem opening mailbox.'
-				return cb null, { IMAP: server }	# return IMAP server as attribute on mbox session
+				return cb null, { IMAP:server, blacklist:blacklist }	# return IMAP server as attribute on mbox session
 
 
 imapSearch = (session, user, cb)->
 	criteria = [['FROM', user.email]]
-	if previous = user.lastParsed
-		criteria.unshift ['SINCE', previous]
+	if previous = user.lastParsed then criteria.unshift ['SINCE', previous]
 	session.IMAP.search criteria, cb
 
 contextSearch = (session, user, cb)->
@@ -59,8 +59,7 @@ contextSearch = (session, user, cb)->
 
 # Only added people outside our domain as contacts
 # exclude junk like "undisclosed recipients", and exclude yourself.
-_acceptableContact = (user, name, email, excludes)->
-	blacklist = require '../blacklist'
+_acceptableContact = (user, name, email, excludes, blacklist)->
 	return (validators.isEmail email) and (email isnt user.email) and
 			(_.last(email.split('@')) not in blacklist.domains) and
 			(name not in blacklist.names) and
@@ -93,7 +92,7 @@ eachContextMsg = (session, user, results, finish, cb) ->
 			if not email?.length and validators.isEmail name
 				email = name
 				name = null
-			if _acceptableContact user, name, email, session.excludes
+			if _acceptableContact user, name, email, session.excludes, session.blacklist
 				newmails.push
 					subject: msg.subject
 					sent: new Date 1000*msg.date
@@ -103,28 +102,28 @@ eachContextMsg = (session, user, results, finish, cb) ->
 	finish()
 
 eachImapMsg = (session, user, results, finish, cb) ->
-	fetch = session.IMAP.fetch results,
-		request:
-			headers: ['from', 'to', 'subject', 'date']
-	fetch.on 'end', ->
+	session.IMAP.fetch results, {
+		headers: ['from', 'to', 'subject', 'date']
+		cb: (fetch) ->
+			fetch.on 'message', (msg)->
+				msg.on 'headers', (headers)->
+					newmails = []
+					for to in require('mimelib').parseAddresses headers.to?[0]
+						email = util.trim to.address.toLowerCase()
+						name = _normaliseName to.name
+						if not email?.length and validators.isEmail name
+							email = name
+							name = null
+						if _acceptableContact user, name, email, session.excludes, session.blacklist
+							newmails.push
+								subject: headers.subject?[0]
+								sent: new Date headers.date?[0]
+								recipientEmail: email
+								recipientName: name
+					cb newmails
+	},->
 		session.IMAP.logout()
 		finish()
-	fetch.on 'message', (msg) ->
-		msg.on 'end', ->
-			newmails = []
-			for to in require('mimelib').parseAddresses msg.headers.to?[0]
-				email = util.trim to.address.toLowerCase()
-				name = _normaliseName to.name
-				if not email?.length and validators.isEmail name
-					email = name
-					name = null
-				if _acceptableContact user, name, email, session.excludes
-					newmails.push
-						subject: msg.headers.subject?[0]
-						sent: new Date msg.headers.date?[0]
-						recipientEmail: email
-						recipientName: name
-			cb newmails
 
 imapAuth: (user, cb) ->
 	# TODO
@@ -132,10 +131,13 @@ imapAuth: (user, cb) ->
 contextAuth: (user, cb) ->
 	# TODO
 
-module.exports = 
+module.exports =
 	connect: (user, cb) ->
-		if process.env.CONTEXTIO_KEY then return contextConnect user, cb
-		else return imapConnect user, cb
+		models.Admin.findById 1, (err, admin) ->
+			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
+			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
+			if process.env.CONTEXTIO_KEY then return contextConnect user, blacklist, cb
+			else return imapConnect user, blacklist, cb
 	auth: (user, cb) ->
 		if process.env.CONTEXTIO_KEY then return contextAuth user, cb
 		else return imapAuth user, cb
@@ -144,7 +146,7 @@ module.exports =
 		# so we'll need a list of excludes (contacts skipped forever)
 		models.Exclude.find {user: user._id}, (err, excludes) ->
 			if err then console.dir err
-			else mbSession.excludes = excludes;
+			else mbSession.excludes = excludes
 			if process.env.CONTEXTIO_KEY then return contextSearch mbSession, user, cb
 			else return imapSearch mbSession, user, cb
 	eachMsg: (mbSession, user, results, finish, cb) ->
