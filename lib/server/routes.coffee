@@ -189,6 +189,8 @@ module.exports = (app, route) ->
 					if conditions[field]
 						if model is 'Contact'
 							conditions.added = $exists: true
+						else if model is 'Tag'
+							conditions.contact = $exists: true
 						models[model].find(conditions).exec @parallel()
 
 				step ->
@@ -214,6 +216,8 @@ module.exports = (app, route) ->
 
 					if model is 'Contact'
 						conditions.added = $exists: true
+					else if model is 'Tag'
+						conditions.contact = $exists: true
 					models[model].find(conditions).limit(limit).exec @parallel()
 					return undefined	# Step library is insane.
 				, @parallel()
