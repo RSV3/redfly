@@ -2,42 +2,64 @@
 moment = require 'moment'
 _ = require 'underscore'
 
+services = require 'phrenetic/lib/server/services'
+
 models = require '../server/models'
 
+eachSave = (user, done)->
+
+	id = user._id
+	lastMonth = moment().subtract('months', 1)		# I wish we could filter on this too
+	fiveDays = moment().subtract('days', 5)
+	models.Mail.find({
+		sender: id
+		addedBy: {$exists: false}
+		sent: $gt: fiveDays
+	}).select('recipient added sent').exec (err, msgs) ->
+		throw err if err
+
+		# get the list of likely queue entries
+		neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
+
+		# first strip out those who are permanently excluded
+		models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
+			throw err if err
+			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
+
+			# then strip out the temporary skips:
+			# classify records that dont have the 'saved' flag set.
+			models.Classify.find(user:id, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
+				throw err if err
+				skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
+					not _.some msgs, (msg)->
+						msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
+				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
+				if neocons.length
+					theUp = {
+						added: new Date()
+						addedBy: id
+					}
+					models.Contact.update {id: $in: neocons}, theUp, (err)->
+						if err
+							console.log "Error updating contacts:"
+							console.dir neocons
+							console.log "for user #{id}"
+							console.dir err
+				done()
 
 
-dailyRoutines = (doneDailies)->
 
-	# first, tidy up the classify records each day, to expire skips and saves
-	prefix = Math.floor(moment().subtract('months', 1).valueOf()/1000).toString(16)
-	suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
-	models.Classify.remove {_id : $lt : new models.ObjectId "#{prefix}#{suffix}"}, (err)->
-		if err
-			console.log "Error removing old classifies: IDs less than #{prefix}#{suffix}"
-			console.dir err
+# these are all the operations which are used with EachDoc
 
-		# next, automatically add contacts that have been in the system for 5 days and still have users in knows
-		# (the 'skip' and 'skip forever' actions both take a user out of the list)
+# set a contact record to added
+eachUpAdd = (contact, cb)->
+	contact.added = new Date()
+	contact.addedBy = contact.knows[0]
+	contact.save (err)->
+		if err then console.log "Error force adding .. #{contact._id}"
+		cb()
 
-		prefix = Math.floor(moment().subtract('days', 5).valueOf()/1000).toString(16)
-		query =
-			added: $exists : false
-			_id: $lt: new models.ObjectId "#{prefix}#{suffix}"
-			knows: $not: $size: 0
-		models.Contact.find query, (err, savem)->
-			if err
-				console.log "Error finding contacts to force add"
-				console.dir query
-				console.dir err
-			else
-				for doc in savem
-					doc.added = new Date()
-					doc.addedBy = doc.knows[0]
-					doc.save (err)->
-						if err then console.log "Error force adding #{savem._id}"
-			doneDailies()
-
-
+# trawl through a user's linkedin network
 eachLink = (user, cb)->
 	try require('../server/linker') user, null, cb
 	catch err
@@ -45,7 +67,8 @@ eachLink = (user, cb)->
 		console.dir err
 		cb()
 
-eachParse = (user, cb)->
+# parse a user's emails
+eachParse = (user, cb, succinct_manual)->
 	console.log "parsing #{user.email}"
 	try require('../server/parser') user, null, cb, succinct_manual
 	catch err
@@ -53,27 +76,68 @@ eachParse = (user, cb)->
 		console.dir err
 		cb()
 
-eachDoc = (docs, operate, fcb) ->
+# recursively operate on a list of documents
+eachDoc = (docs, operate, fcb, succinct_manual) ->
 	if not docs.length then return fcb()
 	doc = docs.pop()
-	operate doc, ()-> eachDoc docs, operate, fcb
+	operate doc, ()->
+		eachDoc docs, operate, fcb
+	, succinct_manual
+
+
+
+# these operations are performed every time the cron job is called
+
+dailyRoutines = (doneDailies)->
+
+	# tidy up the classify records each day, to expire skips and saves
+	suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
+	prefix = Math.floor(moment().subtract('months', 1).valueOf()/1000).toString(16)
+	models.Classify.remove {_id : $lt : new models.ObjectId "#{prefix}#{suffix}"}, (err)->
+		if err
+			console.log "Error removing old classifies (saves): IDs less than #{prefix}#{suffix}"
+			console.dir err
+		# skips (not saved) are removed after two weeks
+		prefix = Math.floor(moment().subtract('days', 14).valueOf()/1000).toString(16)
+		models.Classify.remove {saved: {$exists: false}, _id: {$lt: new models.ObjectId "#{prefix}#{suffix}"}}, (err)->
+			if err
+				console.log "Error removing old classifies (skips): IDs less than #{prefix}#{suffix}"
+				console.dir err
+			doneDailies();
+
 
 
 # work begins here:
-# first, run the daily routines
+console.log "starting nudge with flag: #{process.argv[3]}"
 
+# first, run the daily routines
 dailyRoutines ()->
 
 	# then, the nudge and linkedin only happen on scheduled days,
 	# (or if we force it with the manual flag from the command line)
 	succinct_manual = (process.argv[3] is 'manual')
 	only_daily = (process.argv[3] is 'daily')
-	if only_daily or not succinct_manual and not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
-		process.exit()
 
 	models.User.find (err, users) ->
 		throw err if err
-		eachDoc users.slice(), eachLink, ()->
-			eachDoc users, eachParse, ()->
-				require('phrenetic/lib/server/services').close()
+
+		console.log "nudge: auto saving old queue items"
+		eachDoc users.slice(), eachSave, ()->
+
+			if only_daily
+				console.log "nudge: just manually ran the daily routines."
+				return services.close()
+			if not succinct_manual 
+				console.log "not running manual nudge."
+				if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
+					console.log "Today = #{moment().format('dddd')} isnt in the list :"
+					console.dir process.env.NUDGE_DAYS.split(' ')
+					return services.close()
+
+			console.log "nudge: scanning linkedin"
+			eachDoc users.slice(), eachLink, ()->
+				console.log "nudge: parsing emails"
+				eachDoc users, eachParse, ()->
+					return services.close()
+				, succinct_manual
 

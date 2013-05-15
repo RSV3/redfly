@@ -58,16 +58,20 @@ module.exports = (Ember, App, socket) ->
 					if not query
 						@set 'results', null
 					else
+						prefix = @get('parentView.prefix')
+						if prefix then query = util.trim(prefix)+query
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
-							@set 'results', {}
-							allResults = []
-							for type, ids of results
-								if ids.length
-									model = 'Contact'
-									if type is 'tag' or type is 'note'
-										model = _s.capitalize type
-									@set 'results.' + type, App.store.findMany(App[model], ids.reverse())
-									allResults.push model
-							@set 'allResults', allResults
+							if results.query is query
+								@set 'results', {}
+								allResults = []
+								delete results.query
+								for type, ids of results
+									if ids.length
+										model = 'Contact'
+										if type is 'tag' or type is 'note'
+											model = _s.capitalize type
+										@set 'results.' + type, App.store.findMany(App[model], ids)
+										allResults.push model
+								@set 'allResults', allResults
 				).observes 'value', 'parentView.excludes'
 

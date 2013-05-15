@@ -16,7 +16,9 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/connection') Ember, App, socket
 	require('./controllers/components/search') Ember, App, socket
 	require('./controllers/components/tag') Ember, App, socket
+	require('./controllers/components/newtag') Ember, App, socket
 	require('./controllers/components/tagger') Ember, App, socket
+	require('./controllers/components/tagadmin') Ember, App, socket
 	require('./controllers/components/loader') Ember, App, socket
 	require('./controllers/components/linker') Ember, App, socket
 	require('./controllers/components/edit-picture') Ember, App, socket
@@ -36,4 +38,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/create') Ember, App, socket
 	require('./controllers/classify') Ember, App, socket
 	require('./controllers/import') Ember, App, socket
+	require('./controllers/admin') Ember, App, socket
 

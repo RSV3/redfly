@@ -4,6 +4,10 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
 
+		showEmail: (->
+			a = App.Admin.find 1
+			@get('isKnown') or a and not a.get('hidemails')
+		).property 'id'
 		allMeasures: (->
 			App.Measurement.find { contact: @get 'id' }
 		).property 'id'
@@ -35,7 +39,7 @@ module.exports = (Ember, App, socket) ->
 			if not fams or not fams.length then f = []
 			else f = fams.getEach 'user'
 			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
-			f.concat othernose
+			_.uniq f.concat othernose
 		).property 'knows', 'measures'
 
 		editpositiondetails: (->
@@ -84,11 +88,25 @@ module.exports = (Ember, App, socket) ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
 				App.store.commit()
+		dumpContact: ->
+			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
+			App.Exclude.createRecord user: App.user, contact: @get 'content'
+			App.store.commit()
+			@transitionTo "userProfile"
 
 
 	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']
+
+		introMailto: (->
+			CR = '%0D%0A'		# carriage return / line feed
+			port = if window.location.port then ":#{window.location.port}" else ""
+			url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
+			$('p.bullhorn>a').css('color','grey').bind('click', false)
+			socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
+				$('p.bullhorn>a').css('color', '#08c').unbind('click', false)
+		)
 
 		vipHoverStr: ->
 			if @get 'controller.isVip'
@@ -103,6 +121,9 @@ module.exports = (Ember, App, socket) ->
 				@set 'tooltip', @$('div.maybevip').tooltip
 					title: @vipHoverStr()
 					placement: 'left'
+				@$('span.dumpcontact').tooltip
+					title: "Permanently exclude #{@get 'controller.nickname'}"
+					placement: 'bottom'
 				@$('h4.email').tooltip
 					title: "send a message to #{@get 'controller.nickname'}"
 					placement: 'bottom'
@@ -222,8 +243,10 @@ module.exports = (Ember, App, socket) ->
 
 
 			mergeSearchView: App.SearchView.extend
+				prefix: 'contact:'
 				conditions: (->
 					addedBy: App.user.get 'id'
+					_id: {$ne: @get 'controller.id'}
 				).property()
 				excludes: (->
 					@get('parentView.selections').toArray().concat @get('controller.content')
@@ -254,6 +277,10 @@ module.exports = (Ember, App, socket) ->
 			downBarView: Ember.View.extend
 				classNames: ['ltzbarview']
 
+		###
+		# this is how we used to show measurements with a slider
+		###
+		###
 		sliderView: Ember.View.extend
 			tagName: 'div'
 			classNames: ['contactslider']
@@ -261,15 +288,6 @@ module.exports = (Ember, App, socket) ->
 			myMeasurements: (->
 				@get('controller.measures')?[@get 'measure']?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')) or []
 			).property "controller.measures[controller.measure]"
-
-			###
-			myMeasure: (->
-				v = _.first @get('myMeasurements').getEach 'value'
-				if v and v isnt @$().slider 'value'	# otherwise we end up in a loop in a loop in a ...
-					@$().slider 'value', v
-				v
-			).property 'myMeasurements'
-			###
 
 			didInsertElement: ()->
 				view = @
@@ -296,6 +314,72 @@ module.exports = (Ember, App, socket) ->
 							App.store.commit()
 						false
 				}
+
+		###
+
+		starView: Ember.View.extend
+			tagName: 'p'
+			classNames: ['contactstars']
+			value: (->
+				mm = @get('controller.measures')?[@get 'measure']?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')) or []
+				if mm and mm.length
+					(_.first(mm.getEach 'value') + 100)/40
+				else -1
+			).property "controller.measures.@each"
+			_drawStars: (->
+				v = @get 'value'
+				@$().find('i').each (index)->
+					if index < v
+						$(this).addClass('icon-star').removeClass('tmpstar hoverstar icon-star-empty')
+					else
+						$(this).addClass('icon-star-empty').removeClass('tmpstar hoverstar icon-star')
+				false
+			).observes 'value'
+			didInsertElement: ()->
+				view = @
+				for i in [0...5]
+					@$().append($newstar=$("<i>"))
+					$newstar.addClass("icon-2x starcount#{i}")
+					$newstar.hover ->
+						posval = -1
+						starclasses = $(this).attr('class').split(' ')
+						for sc in starclasses
+							if sc.substr(0,9) is 'starcount'
+								posval = parseInt(sc.substr(9),10)
+						$(this).parent().find('i').each (index)->
+							if index is posval and view.get('value') is posval+1
+								$(this).addClass('tmpstar hoverstar icon-star-empty').removeClass('icon-star')
+							else if index <= posval
+								$(this).addClass 'hoverstar'
+					, ->
+						$(this).parent().find('i').removeClass 'hoverstar'
+						$(this).parent().find('i.tmpstar').addClass('icon-star').removeClass('icon-star-empty')
+					$newstar.click ->
+						allMs = view.get 'controller.measures'
+						thism = view.get 'measure'
+						oldval = view.get 'value'
+						posval = -1
+						starclasses = $(this).attr('class').split(' ')
+						for sc in starclasses
+							if sc.substr(0,9) is 'starcount'
+								posval = parseInt(sc.substr(9),10)
+						if posval+1 is oldval then posval--
+						newvalue = (posval+1)*40 - 100
+
+						if (m = allMs[thism]?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')))
+							m.get('firstObject').set 'value', newvalue
+						else
+							if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
+							allMs[thism].pushObject App.Measurement.createRecord {
+								user: App.user
+								contact: view.get 'controller.content'
+								attribute: view.get 'measure'
+								value: newvalue
+							}
+						view.set 'value', (newvalue+100)/40
+						App.store.commit()
+						view._drawStars()
+				@_drawStars()
 
 		positionView: Ember.View.extend
 			editView: Ember.View.extend

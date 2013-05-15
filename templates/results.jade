@@ -15,37 +15,59 @@
 				i.icon-spinner.icon-spin
 		| {{#each theResults.paginatedItems itemController="result"}}
 		.row-fluid.top
-			.span2.picture
-				+linkTo('contact this tagName="a"')
-					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-			.span10
+			.row-fluid
+				.span9
+					.row-fluid
+						.span3.picture
+							+linkTo('contact this tagName="a"')
+								| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+						.span9
+							+linkTo('contact this tagName="a"')
+								h3 {{canonicalName}}
+							i
+								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+								
+				.span3
+					b Knows: &nbsp;
+					| {{#if isKnown}}
+					span you {{#if knowsSome}},{{/if}}
+					| {{/if}}
+					{{#each knowsSome}}
+					br
+					span &nbsp;
+					+linkTo('profile this')
+						| {{canonicalName}}
+					{{/each}}
+
+			.row-fluid.clearpic
+				| {{#if lastNote}}
 				.row-fluid
-					.span8
-						+linkTo('contact this tagName="a"')
-							h3 {{canonicalName}}
-						| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-					.span4
-						span.mailORintro
-							| {{#if hasIntro}}
-							| <a {{bindAttr href="introMailto"}} target="_blank">{{view App.IntroView class="icon-bullhorn"}}</a>
-							| {{/if}}
-							| {{#if isKnown}}
-							| <a {{bindAttr href="directMailto"}} target="_blank">
-							i.icon-envelope.icon-large
-							| </a>
-							| {{/if}}
-						+view ('App.SocialView')
-							a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
-								i.icon-linkedin-sign.icon-large
-							a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
-								i.icon-twitter-sign.icon-large
-							a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
-								i.icon-facebook-sign.icon-large
-						div
-							+if ('linkedin')
-								br
-								a(bindAttr='href="linkedinMail"', target='result') Send a Linkedin inMail
+					.span2.right
+						b Last note:
+					.span10
+						+linkTo('profile lastNote.author')
+							| {{lastNote.author.canonicalName}}
+						i &nbsp; {{lastNote.body}}
+				| {{/if}}
+				| {{#if lastMail}}
 				.row-fluid
+					.span2.right
+						b Last mail:
+					.span10
+						+linkTo('profile lastMail.sender')
+							| {{lastMail.sender.canonicalName}}
+						span &nbsp; {{sentdate}}
+				| {{/if}}
+				.row-fluid
+					.orgtags
+						{{#each orgTags}}
+						span.label {{body}}
+						{{/each}}
+				.row-fluid
+					.indtags
+						{{#each indTags}}
+						span.label {{body}}
+						{{/each}}
 		{{/each}}
 
 		ul.pager
