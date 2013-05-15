@@ -167,19 +167,21 @@
 	.span6
 		.row-fluid.tag-category
 			p.lead {{App.orgTitle}} Tags
-			| {{view App.TaggerView contactBinding="this" category="organisation" full="true" tabindex="1"}}
+			.span4
+				p.lead project
+				| {{view App.TaggerView contactBinding="this" category="project" full="true" tabindex="1"}}
+			.span4
+				p.lead theme
+				| {{view App.TaggerView contactBinding="this" category="theme" full="true" tabindex="1"}}
+			.span4
+				p.lead role
+				| {{view App.TaggerView contactBinding="this" category="role" full="true" tabindex="1"}}
 		.row-fluid.tag-category
 			p.lead Industry Tags
 			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
-		//-
-			ul.nav.nav-pills
-				li.active: a(href='#organisation', data-toggle='pill') {{App.orgTitle}} Tags
-				li: a(href='#industry', data-toggle='pill') Industry Tags
-			.tab-content
-				#organisation.tab-pane.fade.active.in
-					| {{view App.TaggerView contactBinding="this" category="organisation" full="true"}}
-				#industry.tab-pane.fade
-					| {{view App.TaggerView contactBinding="this" category="industry" full="true"}}
+		.row-fluid.tag-category
+			p.lead other (legacy)
+			| {{view App.TaggerView contactBinding="this" category="organisation" full="true" tabindex="1"}}
 	.span6
 		.row-fluid
 			p.lead Notes
