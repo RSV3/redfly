@@ -35,8 +35,9 @@ module.exports = (Ember, App, socket) ->
 			result = []
 			if @get 'full'
 				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					popularTags = _.difference popularTags, @get('prioritytags').getEach 'body'
 					result.pushObjects popularTags
-				result.pushObjects @get('prioritytags').getEach('body')
+				result.pushObjects @get('prioritytags').getEach 'body'
 		).property 'prioritytags.@each'
 		prioritytags: (->
 			if @get 'full'
