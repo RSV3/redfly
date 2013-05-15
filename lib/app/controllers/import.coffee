@@ -174,7 +174,7 @@ module.exports = (Ember, App, socket) ->
 					# contact to get created unncessary
 					contact.addObserver 'id', =>
 					# TO-DO bring this back when ember-data is fixed
-					# contact.on 'didCreate', =>
+					# contact.one 'didCreate', =>
 						result.tags.forEach (tag) ->
 							App.Tag.createRecord
 								creator: App.user
