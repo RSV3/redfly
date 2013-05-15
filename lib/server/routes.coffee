@@ -357,8 +357,21 @@ module.exports = (app, route) ->
 			throw err if err
 			fn bodies.sort()
 
+	route 'tags.move', (fn, conditions) ->
+		if (newcat = conditions.newcat)
+			delete conditions.newcat
+			return models.Tag.update conditions, {category:newcat}, {multi:true}, fn
+		fn()
+
+	route 'tags.rename', (fn, conditions) ->
+		if (newtag = conditions.new)
+			delete conditions.new
+			return models.Tag.update conditions, {body:newtag}, {multi:true}, fn
+		fn()
+
 	route 'tags.popular', (fn, conditions) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
+		else conditions.contact = $exists: true
 		models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', count: $sum: 1},
 			{$sort: count: -1},

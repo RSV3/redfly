@@ -80,6 +80,7 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 				, 1000
 			didInsertElement: ->
+				@$().addClass @get 'parentView.category'
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
@@ -91,3 +92,6 @@ module.exports = (Ember, App, socket) ->
 			use: ->
 				tag = @get('content').toString()
 				@get('parentView.parentView')._add tag
+			didInsertElement: ->
+				console.dir @get('parentView.category')
+				@$().addClass @get 'parentView.category'

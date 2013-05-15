@@ -70,17 +70,29 @@ tag(fontSize)
 		border-radius big little little big
 
 		padding-left fontSize * 0.75
+		input
+			margin-left	1em
+			margin-right	1em
 		.body
 			padding-right fontSize * 0.25
 
 .tagadmin
 	.tag
 		margin	2px
+	.tag.role
+		background-color	#dfe
+	.tag.theme
+		background-color	#fde
+	.tag.project
+		background-color	#fed
+	.tag.industry
+		background-color	#def
+	.tag.organisation
+		background-color	#eee
 	.tags
 		.main
-			position	relative
 			z-index 1
-		
+
 
 tagger(fontSize)
 	taggerMargin = fontSize * 0.28
@@ -116,6 +128,16 @@ tagger(fontSize)
 					margin 0
 					background transparent
 		.cloud
+			span.organisation span
+				background-color	#666
+			span.industry span
+				background-color	#789
+			span.project span
+				background-color	#987
+			span.theme span
+				background-color	#978
+			span.role span
+				background-color	#798
 			margin-top 10px
 			a:hover
 				text-decoration none
@@ -390,6 +412,18 @@ body
 			min-height 82px
 			border 1px dashed lightBorder
 			border-radius baseBorderRadius
+			.tag.role
+				background-color	#dfe
+			.tag.theme
+				background-color	#fde
+			.tag.project
+				background-color	#fed
+			.tag.industry
+				background-color	#def
+			.tag.organisation
+				background-color	#eee
+		.span4
+			margin-left	1%
 	.media
 		margin-bottom horizontalMargin * 2
 		.media-object
