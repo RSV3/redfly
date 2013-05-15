@@ -20,16 +20,16 @@ module.exports = (Ember, App, socket) ->
 			@get 'userstoo'
 		).property 'userstoo'
 		domainlist: (->
-			@get('domains')?.join('\n')
+			@get('domains')?.join '\n'
 		).property 'domains'
 		domainblacklist: (->
-			@get 'blacklistdomains'
+			@get('blacklistdomains')?.join '\n'
 		).property 'blacklistdomains'
 		nameblacklist: (->
-			@get 'blacklistnames'
+			@get('blacklistnames')?.join '\n'
 		).property 'blacklistnames'
 		emailblacklist: (->
-			@get 'blacklistemails'
+			@get('blacklistemails')?.join '\n'
 		).property 'blacklistemails'
 		onChk: (->
 			if _.isBoolean(@get 'flushsavechk') and not _.isUndefined @get 'flushsave'

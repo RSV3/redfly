@@ -14,7 +14,7 @@
 
 +if('view.full')
 	.cloud
-		+collection('contentBinding="view.cloudTags" itemViewClass="view.cloudTagView"')
+		+collection('contentBinding="view.cloudTags" categoryBinding="view.category" itemViewClass="view.cloudTagView"')
 			a(href='#', action='use target="view"')
 				span.label
 					i.icon-plus
