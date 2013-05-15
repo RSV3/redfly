@@ -61,12 +61,13 @@ module.exports = (Ember, App, socket) ->
 						prefix = @get('parentView.prefix')
 						if prefix then query = util.trim(prefix)+query
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
+							query = util.trim @get('value')
 							if results.query is query
 								@set 'results', {}
 								allResults = []
 								delete results.query
 								for type, ids of results
-									if ids.length
+									if ids and ids.length
 										model = 'Contact'
 										if type is 'tag' or type is 'note'
 											model = _s.capitalize type
