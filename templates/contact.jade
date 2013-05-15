@@ -165,8 +165,9 @@
 				| {{/each}}
 .row-fluid
 	.span6
-		.row-fluid.tag-category
+		.row-fluid
 			p.lead {{App.orgTitle}} Tags
+		.row-fluid.tag-category
 			.span4
 				p.lead project
 				| {{view App.TaggerView contactBinding="this" category="project" full="true" tabindex="1"}}
