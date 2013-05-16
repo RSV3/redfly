@@ -98,10 +98,12 @@ module.exports = (Ember, App, socket) ->
 		).observes 'theResults.rangeStart'
 
 		setOrgTags: (->
-			doTags 'orgTags', @
+			Ember.run.next this, ()->
+				doTags 'orgTags', @
 		).observes 'orgTags.@each'
 		setIndTags: (->
-			doTags 'indTags', @
+			Ember.run.next this, ()->
+				doTags 'indTags', @
 		).observes 'indTags.@each'
 		setFilters: (->			# prepare the filters based on the sort results
 				years = []

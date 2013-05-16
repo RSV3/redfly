@@ -379,6 +379,7 @@ module.exports = (Ember, App, socket) ->
 						view.set 'value', (newvalue+100)/40
 						App.store.commit()
 						view._drawStars()
+						view.get('controller').notifyPropertyChange 'measures'
 				@_drawStars()
 
 		positionView: Ember.View.extend

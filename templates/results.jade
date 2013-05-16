@@ -22,10 +22,14 @@
 							+linkTo('contact this tagName="a"')
 								| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
 						.span9
+							+if('isVip')
+								.maybevip
+									i.icon-star.icon-2x.fullredstar
 							+linkTo('contact this tagName="a"')
 								h3 {{canonicalName}}
-							i
-								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+							div
+								i
+									| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 								
 				.span3
 					b Knows: &nbsp;
@@ -45,26 +49,26 @@
 					.span2.right
 						b Last note:
 					.span10
-						+linkTo('profile lastNote.author')
-							| {{lastNote.author.canonicalName}}
-						i &nbsp; {{lastNote.body}}
+						.tallnoteleft
+							+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
+						div
+							i {{lastNote.body}}
 				| {{/if}}
 				| {{#if lastMail}}
 				.row-fluid
 					.span2.right
 						b Last mail:
 					.span10
-						+linkTo('profile lastMail.sender')
-							| {{lastMail.sender.canonicalName}}
-						span &nbsp; {{sentdate}}
+						span
+							+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
+						span
+							&nbsp; {{sentdate}}
 				| {{/if}}
 				.row-fluid
 					.orgtags
 						{{#each orgTags}}
 						span(bindAttr='class=":label category"') {{body}}
 						{{/each}}
-				.row-fluid
-					.indtags
 						{{#each indTags}}
 						span(bindAttr='class=":label category"') {{body}}
 						{{/each}}
