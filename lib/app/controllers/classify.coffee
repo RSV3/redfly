@@ -52,7 +52,7 @@ module.exports = (Ember, App, socket) ->
 				tip.tooltip 'show'
 				return Ember.run.later this, ()->
 					tip.tooltip 'hide'
-				,1234
+				, 2000
 
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
