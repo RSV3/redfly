@@ -145,13 +145,13 @@ module.exports = (Ember, App, socket) ->
 		indTags: (->
 			query = category:'industry', contact: @get('id')
 			socket.emit 'tags.popular', query, (popularTags) =>
-				result.pushObjects _.map popularTags[0..3], (t)->{body:t}
+				result.pushObjects _.map popularTags[0..3], (t)->{body:t.body, category:t.category}
 			result = []
 		).property 'id'
 		orgTags: (->
 			query = category:{$ne:'industry'}, contact: @get('id')
 			socket.emit 'tags.popular', query, (popularTags) =>
-				result.pushObjects _.map popularTags, (t)->{body:t}
+				result.pushObjects _.map popularTags, (t)->{body:t.body, category:t.category}
 			result = []
 		).property 'id'
 		sentdate: (->

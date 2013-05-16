@@ -23,7 +23,7 @@ FCAPI_person = (options, cb) ->
 #
 module.exports = (contact, cb)->
 	if not contact or not contact.emails then return cb null
-	models.FullContact.findOne {contact: contact}, (err, fc_rec)->
+	models.FullContact.findOne {contact: contact._id}, (err, fc_rec)->
 		if err or fc_rec then return cb null	# don't continue if there's already full data for this contact
 		FCAPI_person {email:contact.emails[0]}, (fullDeets)->
 			if not fullDeets or fullDeets.status isnt 200 then return cb null

@@ -62,8 +62,6 @@ tag(fontSize)
 		a
 		color #666
 		display inline-block
-		background-color #DEE7F8
-		border 1px solid #CAD8F3
 
 		big = fontSize
 		little = fontSize * 0.25
@@ -77,18 +75,6 @@ tag(fontSize)
 			padding-right fontSize * 0.25
 
 .tagadmin
-	.tag
-		margin	2px
-	.tag.role
-		background-color	#dfe
-	.tag.theme
-		background-color	#fde
-	.tag.project
-		background-color	#fed
-	.tag.industry
-		background-color	#def
-	.tag.organisation
-		background-color	#eee
 	.tags
 		.main
 			z-index 1
@@ -128,20 +114,25 @@ tagger(fontSize)
 					margin 0
 					background transparent
 		.cloud
-			span.organisation span
-				background-color	#666
-			span.industry span
-				background-color	#789
-			span.project span
-				background-color	#987
-			span.theme span
-				background-color	#978
-			span.role span
-				background-color	#798
 			margin-top 10px
 			a:hover
 				text-decoration none
 
+span.label.organisation
+	background-color	#666
+	border-color		#444
+span.label.industry
+	background-color	#789
+	border-color		#456
+span.label.project
+	background-color	#987
+	border-color		#654
+span.label.theme
+	background-color	#978
+	border-color		#645
+span.label.role
+	background-color	#798
+	border-color		#564
 
 
 // Layout.
@@ -292,7 +283,31 @@ body
 			margin-left	1em
 
 
-.contact
+.tagadmin, .tagger .main
+	.tag
+		margin	2px
+		border-width	1px
+		border-style	solid
+	.tag.role
+		background-color	#dfe
+		border-color		#acb
+	.tag.theme
+		background-color	#fde
+		border-color		#cab
+	.tag.project
+		background-color	#fed
+		border-color		#cba
+	.tag.industry
+		background-color	#def
+		border-color		#abc
+	.tag.organisation
+		background-color	#eee
+		border-color		#bbb
+	.tag a.body
+		color	#036
+
+
+.contact,.feed
 	.setmeasure
 		margin-top	1em
 		>p
@@ -412,16 +427,6 @@ body
 			min-height 82px
 			border 1px dashed lightBorder
 			border-radius baseBorderRadius
-			.tag.role
-				background-color	#dfe
-			.tag.theme
-				background-color	#fde
-			.tag.project
-				background-color	#fed
-			.tag.industry
-				background-color	#def
-			.tag.organisation
-				background-color	#eee
 		.span4
 			margin-left	1%
 	.media
@@ -430,8 +435,7 @@ body
 			width 64px
 			height 64px
 	span.dumpcontact
-		float	right
-		margin-right	4em
+		margin-left	2em
 		a
 			text-decoration	none
 	.merge
@@ -457,6 +461,7 @@ body
 		margin-bottom horizontalMargin * 4
 	.bodies
 		text-align right
+
 .create
 	h1
 		margin-bottom horizontalMargin * 4
@@ -481,9 +486,11 @@ body
 		text-align center
 		font-size 200px
 		color organisation
+
 .profile
 	.pager
 		margin 0
+
 .import
 	table
 		table-layout fixed

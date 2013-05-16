@@ -122,15 +122,15 @@
 				.row-fluid.setmeasure
 					p how well do you know this contact?
 					span.leftsliderlabel Never met
+					span.rightsliderlabel Close friends
 					.starcontainer
 						+view('view.starView measure="familiarity"')
-					span.rightsliderlabel Close friends
 				.row-fluid.setmeasure
 					p how important is this contact?
 					span.leftsliderlabel Not important 
+					span.rightsliderlabel Very important 
 					.starcontainer
 						+view('view.starView measure="reachability"')
-					span.rightsliderlabel Very important 
 			.row-fluid
 				+view('view.measureBarView measure="reachability"')
 					+if('view.avgMeasure')
@@ -164,9 +164,8 @@
 						| {{canonicalName}}
 				| {{/each}}
 .row-fluid
-	.span6
+	.span12
 		.row-fluid.tag-category
-			p.lead {{App.orgTitle}} Tags
 			.span4
 				p.lead project
 				| {{view App.TaggerView contactBinding="this" category="project" full="true" tabindex="1"}}
@@ -176,12 +175,11 @@
 			.span4
 				p.lead role
 				| {{view App.TaggerView contactBinding="this" category="role" full="true" tabindex="1"}}
+.row-fluid
+	.span6
 		.row-fluid.tag-category
 			p.lead Industry Tags
 			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
-		.row-fluid.tag-category
-			p.lead other (legacy)
-			| {{view App.TaggerView contactBinding="this" category="organisation" full="true" tabindex="1"}}
 	.span6
 		.row-fluid
 			p.lead Notes

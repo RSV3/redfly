@@ -57,7 +57,7 @@ module.exports = (app, route) ->
 					model.create record, (err, doc) ->
 						throw err if err
 						cb doc
-						if model is models.Contact or model is models.Note or model is models.Tag and doc.contact
+						if model is models.Contact and doc.added or model is models.Note or model is models.Tag and doc.contact
 							feed doc
 				else
 					throw new Error 'unimplemented'
@@ -364,26 +364,31 @@ module.exports = (app, route) ->
 	route 'tags.move', (fn, conditions) ->
 		if (newcat = conditions.newcat)
 			delete conditions.newcat
-			return models.Tag.update conditions, {category:newcat}, {multi:true}, fn
+			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
+				if err.code is 11001 then return models.Tag.remove conditions, fn
+				console.dir err if err
+				return fn()
 		fn()
 
 	route 'tags.rename', (fn, conditions) ->
 		if (newtag = conditions.new)
 			delete conditions.new
-			return models.Tag.update conditions, {body:newtag}, {multi:true}, fn
+			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
+				if err.code is 11001 then return models.Tag.remove conditions, fn
+				console.dir err if err
+				return fn()
 		fn()
 
 	route 'tags.popular', (fn, conditions) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
 		else conditions.contact = $exists: true
 		models.Tag.aggregate {$match: conditions},
-			{$group:  _id: '$body', count: $sum: 1},
+			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
 			{$sort: count: -1},
-			{$project: _id: 0, body: '$_id'},
 			{$limit: 20},
 			(err, results) ->
 				throw err if err
-				fn _.pluck results, 'body'
+				fn _.map results, (r)-> {body:r._id, category:r.category}
 
 	route 'tags.stats', (fn) ->
 		group =
