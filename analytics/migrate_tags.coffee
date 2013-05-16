@@ -1,22 +1,25 @@
-mongo = require('mongodb').MongoClient
-config = require './config'
+projectRoot = require('path').dirname("/Users/kwan/workspace/redfly/analytics/")
 
-console.log config.mongo_auth
+require('../node_modules/phrenetic/lib/server/config')(projectRoot)
+service = require('../node_modules/phrenetic/lib/server/services')
+
+models = require '../lib/server/models'
 
 redstar_tags = {}
 
-mongo.connect config.mongo_auth, (err, db) ->
-  if err
-    console.log "Connectivity error"
+Tag = models.Tag
+
+tag_stream = Tag.find({category: 'organisation'}).stream()
+
+tag_stream.on 'data', (tag) ->
+  if tag.body of redstar_tags
+    redstar_tags[tag.body] += 1
   else
-    console.log "We are connected"
+    redstar_tags[tag.body] = 1
 
-  collection = db.collection 'tags'
+tag_stream.on 'error', (err) ->
+  console.log "DB error while reading"
 
-  collection.find({category: 'organisation'}).toArray (err, items) ->
-    items.forEach (tag) ->
-      if tag.body of redstar_tags
-        redstar_tags[tag.body] += 1
-      else
-        redstar_tags[tag.body] = 1
-    console.log redstar_tags
+tag_stream.on 'close', () ->
+  console.log redstar_tags
+  service.getDb().disconnect()
