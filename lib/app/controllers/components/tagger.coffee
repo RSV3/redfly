@@ -27,17 +27,18 @@ module.exports = (Ember, App, socket) ->
 			if not @get('tags')	# Not really sure why this ever comes up blank.
 				return []
 			tags = _.reject tags, (candidate) =>
-				for tag in @get('tags').mapProperty('body')
-					if tag is candidate
-						return true
+				@get('tags').find (tag)-> tag.get('body') is candidate.body
 			tags.sort()
 		_popularTags: (->
 			result = []
 			if @get 'full'
 				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					popularTags = _.difference popularTags, @get('prioritytags').getEach 'body'
+					if (priorities = @get('prioritytags'))
+						popularTags = _.reject popularTags, (t)-> _.contains priorities.getEach('body'), t.body
 					result.pushObjects popularTags
-				result.pushObjects @get('prioritytags').getEach 'body'
+				if (priorities = @get('prioritytags')) && priorities.get('length')
+					result.pushObjects priorities.map (p)-> {body:p.get('body'), category:p.get('category')}
+			result
 		).property 'prioritytags.@each'
 		prioritytags: (->
 			if @get 'full'
@@ -81,18 +82,14 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 				, 1000
 			didInsertElement: ->
-				@$().addClass @get 'parentView.category'
+				@$().addClass(@get('parentView.category') or @get('context.category'))
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
 
 		newTagView: App.NewTagView.extend()
 
-		cloudTagView: Ember.View.extend
+		cloudView: Ember.View.extend
 			tagName: 'span'
 			use: ->
-				tag = @get('content').toString()
-				@get('parentView.parentView')._add tag
-			didInsertElement: ->
-				console.dir @get('parentView.category')
-				@$().addClass @get 'parentView.category'
+				@get('parentView')._add @get('context.body')

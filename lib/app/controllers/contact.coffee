@@ -339,7 +339,7 @@ module.exports = (Ember, App, socket) ->
 				view = @
 				for i in [0...5]
 					@$().append($newstar=$("<i>"))
-					$newstar.addClass("icon-2x starcount#{i}")
+					$newstar.addClass("icon-large starcount#{i}")
 					$newstar.hover ->
 						posval = -1
 						starclasses = $(this).attr('class').split(' ')

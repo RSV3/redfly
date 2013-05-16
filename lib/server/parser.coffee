@@ -147,7 +147,11 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 							_saveMail user, contact, mail
 							sift index
 							# then, sometime in the not too distant future, go and slowly get the FC data
+							console.log "calling FC"
+							console.dir contact
 							getFC contact, (fullDeets) ->
+								console.log "called FC"
+								console.dir contact
 								if fullDeets then contact.save (err) ->		# if we get data, save it
 									if err
 										console.log "Error saving Contact with FC data in initial parse"
