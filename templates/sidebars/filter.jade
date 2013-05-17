@@ -1,0 +1,76 @@
+{{#if all.length}}
+br
+i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
+{{/if}}
+
+h3
+	| Filters
+
+{{#if orgTagsToSelect.length}}
+h4
+	| {{App.orgTitle}} Tags
+	{{view App.FilterToggleView id="toggleorg" class="icon-caret-up"}}
+.filters.toggleorg
+	{{#each item in orgTagsToSelect}}
+	.checkfilter
+		|<label>
+		{{view Ember.Checkbox checkedBinding="item.checked"}}
+		{{item.label}}
+		|</label>
+	{{/each}}
+{{/if}}
+
+{{#if indTagsToSelect.length}}
+h4
+	| Industry Tags
+	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
+.filters.toggleind.collapsed
+	{{#each item in indTagsToSelect}}
+	.checkfilter
+		|<label>
+		{{view Ember.Checkbox checkedBinding="item.checked"}}
+		{{item.label}}
+		|</label>
+	{{/each}}
+{{/if}}
+
+{{#if noseToPick.length}}
+h4
+	| Knows
+	{{view App.FilterToggleView id="togglenose" class="icon-caret-down"}}
+.row-fluid
+	{{#each item in noseToPick}}
+	.togglenose.checkfilter.collapsed
+		|<label>
+		{{view Ember.Checkbox checkedBinding="item.checked"}}
+		{{item.label}}
+		|</label>
+	{{/each}}
+{{/if}}
+
+{{#if yearsToSelect.length}}
+h4
+	| Experience
+{{view Ember.Select
+|	contentBinding="yearsToSelect"
+|	optionValuePath="content.years"
+|	optionLabelPath="content.label"
+|	valueBinding="years"
+|	prompt="Select a minimum ..."
+}}
+{{/if}}
+
+
+h3
+	| Sort
+.row-fluid
+	.span6
+		h4
+			| Proximity
+		+view ('App.SortView class="proximity"')
+
+	.span6
+		h4
+			| Influence
+		+view ('App.SortView class="influence"')
+
