@@ -33,11 +33,11 @@ module.exports = (Ember, App, socket) ->
 			result = []
 			if @get 'full'
 				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					if (priorities = @get('prioritytags'))
-						popularTags = _.reject popularTags, (t)-> _.contains priorities.getEach('body'), t.body
+					if p = @get('prioritytags')
+						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
 					result.pushObjects popularTags
-				if (priorities = @get('prioritytags')) && priorities.get('length')
-					result.pushObjects priorities.map (p)-> {body:p.get('body'), category:p.get('category')}
+				if (p = @get 'prioritytags') and p.get 'length'
+					result.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
 			result
 		).property 'prioritytags.@each'
 		prioritytags: (->

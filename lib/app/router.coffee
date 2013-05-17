@@ -5,6 +5,21 @@ module.exports = (Ember, App, socket) ->
 
 	App.Router.reopen
 		location: 'history'
+		connectem: (route, name)->
+			route.render name,
+				into: 'application'
+				outlet: 'main'
+				controller: name
+			if name is 'results'
+				route.render 'filter',
+					into: 'application'
+					outlet: 'sidebar'
+					controller: 'results'
+			else
+				route.render 'feed',
+					into: 'application'
+					outlet: 'sidebar'
+					controller: 'feed'
 
 	App.Router.map ->
 		@route 'profile', path: '/profile/:user_id'
@@ -38,28 +53,32 @@ module.exports = (Ember, App, socket) ->
 	App.ProfileRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
+		renderTemplate: ->
+			@router.connectem @, 'profile'
+
 	App.ContactRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'content', model
+		renderTemplate: ->
+			@router.connectem @, 'contact'
 
 	App.AdminRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user.get('admin')
 				controller.set 'content', App.Admin.find 1
 				controller.set 'category', 'industry'
-				###
-				socket.emit 'tags.stats', (stats) =>
-					for stat in stats
-						stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
-					controller.set 'stats', stats
-				###
 			else @transitionTo 'userProfile'
+		renderTemplate: ->
+			@router.connectem @, 'admin'
+
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user.get('admin')
 				socket.emit 'dashboard', (board)=>
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
+		renderTemplate: ->
+			@router.connectem @, 'dashboard'
 
 	App.ClassifyRoute = Ember.Route.extend
 		setupController: (controller, model) ->
@@ -69,6 +88,8 @@ module.exports = (Ember, App, socket) ->
 					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
 				else @transitionTo 'userProfile'
+		renderTemplate: ->
+			@router.connectem @, 'classify'
 
 	App.ContactsRoute = Ember.Route.extend
 		setupController: (controller, model) ->
@@ -79,6 +100,8 @@ module.exports = (Ember, App, socket) ->
 					sort: added: -1
 					limit: 10
 			}
+		renderTemplate: ->
+			@router.connectem @, 'contacts'
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
@@ -89,15 +112,18 @@ module.exports = (Ember, App, socket) ->
 			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
 			socket.emit 'fullSearch', query: model.text, (results) =>
-				if results
-					if results.query is model.text	# ignore stale results that don't match the query
+				if results and results.query is model.text	# ignore stale results that don't match the query
 						if not results.response?.length then @transitionTo 'userProfile'
 						else controller.set 'all', App.store.findMany(App.Contact, results.response)
+		renderTemplate: ->
+			@router.connectem @, 'results'
 
 	App.LeaderboardRoute = Ember.Route.extend
 		model: ->
 			App.User.find()
 			App.User.all()
+		renderTemplate: ->
+			@router.connectem @, 'leaderboard'
 	App.TagsRoute = Ember.Route.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->
@@ -105,16 +131,19 @@ module.exports = (Ember, App, socket) ->
 				for stat in stats
 					stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
 				controller.set 'stats', stats
+		renderTemplate: ->
+			@router.connectem @, 'tags'
+
 	App.UserProfileRoute = Ember.Route.extend
 		model: ->
 			App.user
-		# This is kind of ugly. Might be better to use App.inject to make userProfileController map to profileController.
 		setupController: (controller, model) ->
 			controller = @controllerFor 'profile'
 			controller.set 'content', model
 			controller.set 'self', true
 		renderTemplate: ->
-			@render 'profile', controller: @controllerFor('profile')
+			@router.connectem @, 'profile'
+
 	App.LoadRoute = Ember.Route.extend
 		activate: ->
 			# TO-DO probably set a session variable or something to ensure loading doesn't happen twice by back button or anything.
@@ -122,6 +151,9 @@ module.exports = (Ember, App, socket) ->
 			view.append()
 		redirect: ->
 			@transitionTo 'userProfile'
+		renderTemplate: ->
+			@router.connectem @, 'profile'
+
 	App.UnauthorizedRoute = Ember.Route.extend
 		activate: ->
 			util.notify
@@ -131,6 +163,9 @@ module.exports = (Ember, App, socket) ->
 					pnotify.css top: '60px'
 		redirect: ->
 			@transitionTo 'index'
+		renderTemplate: ->
+			@router.connectem @, 'index'
+
 	App.InvalidRoute = Ember.Route.extend
 		activate: ->
 			util.notify
@@ -140,12 +175,19 @@ module.exports = (Ember, App, socket) ->
 					pnotify.css top: '60px'
 		redirect: ->
 			@transitionTo 'index'
+
+	App.IndexRoute = Ember.Route.extend
+		renderTemplate: ->
+			@router.connectem @, 'index'
+
 	App.LinkRoute = Ember.Route.extend
 		activate: ->
 			view = App.LinkerView.create()
 			view.append()
 		redirect: ->
 			@transitionTo 'userProfile'
+		renderTemplate: ->
+			@router.connectem @, 'profile'
 
 
 	# authRequiredRoutes = [

@@ -40,10 +40,11 @@ module.exports = (Ember, App, socket) ->
 		).observes 'hidemailschk', 'userstoochk', 'flushsavechk'
 		_onTextArea: (->
 			if @get('domainlist')?.length
-				@set 'domains',  _.filter _.map(@get('domainlist').split('\n'), (d)->util.trim(d)), (d)->d.length
-				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
+				regexp = /(?:,|\n)+/
+				@set 'domains',  _.filter _.map(@get('domainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				
-				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
-				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split('\n'), (d)->util.trim(d)), (d)->d.length
+				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				App.store.commit()
 		)
