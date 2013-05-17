@@ -12,7 +12,8 @@ module.exports = (Ember, App, socket) ->
 			App.Measurement.find { contact: @get 'id' }
 		).property 'id'
 		waitingForMeasures: (->
-			not @get('allMeasures')?.get('isLoaded')
+			m = @get('allMeasures')
+			not m or not m.get('isLoaded')
 		).property 'allMeasures', 'allMeasures.@each'
 		gotMeasures: (->
 			@get('allMeasures')?.get 'length'

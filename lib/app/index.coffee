@@ -3,7 +3,9 @@
 require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	# TODO Figure out a more permanent solution.
 	templates = Ember.TEMPLATES
+
 	templates.application = require '../../templates/application'
+
 	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'
 	templates.contact = require '../../templates/contact'
@@ -17,6 +19,9 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	templates.results = require '../../templates/results'
 	templates.dashboard = require '../../templates/dashboard'
 	templates.admin = require '../../templates/admin'
+
+	templates.filter = require '../../templates/sidebars/filter'
+	templates.feed = require '../../templates/sidebars/feed'
 
 	Ember.Handlebars.registerBoundHelper 'plusOne', (value, options) ->
 		if typeof value == 'string'

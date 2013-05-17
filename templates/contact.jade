@@ -86,61 +86,54 @@
 						i.icon-facebook-sign.icon-large
 						|  
 					| &nbsp;&nbsp;
-					+if('isKnown')
-						+view('view.editView')
-							a(href='#', action='toggle target="view"')
-								i.icon-pencil
-							div(bindAttr='class="view.show::hide"')
-								.popover
-									a.close(href='#', action='toggle target="view"')
-										i.icon-remove
-									.nav-header Social Links
-									div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
-										span.help-inline {{view.prefixes.linkedin}}
-										+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
-										span.help-block {{view.linkedinFieldInstance.error}}
-									div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
-										span.help-inline {{view.prefixes.twitter}}
-										+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
-										span.help-block {{view.twitterFieldInstance.error}}
-									div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
-										span.help-inline {{view.prefixes.facebook}}
-										+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
-										span.help-block {{view.facebookFieldInstance.error}}
-									.pull-right
-										+unless('view.working')
-											a(href='#', action='save target="view"')
-												| Save 
-												i.icon-ok
-											+else
-											i.icon-spinner.icon-spin
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.icon-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"')
+									i.icon-remove
+								.nav-header Social Links
+								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.linkedin}}
+									+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
+									span.help-block {{view.linkedinFieldInstance.error}}
+								div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.twitter}}
+									+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
+									span.help-block {{view.twitterFieldInstance.error}}
+								div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.facebook}}
+									+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
+									span.help-block {{view.facebookFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.icon-ok
+										+else
+										i.icon-spinner.icon-spin
 
 		+if('waitingForMeasures')
 			i.icon-spinner.icon-spin
 		+unless('waitingForMeasures')
 			+if('isKnown')
 				.row-fluid.setmeasure
-					p how well do you know this contact?
-					span.leftsliderlabel Never met
-					span.rightsliderlabel Close friends
+					span.leftsliderlabel(title='how well do you know this contact?') Affinity
 					.starcontainer
 						+view('view.starView measure="familiarity"')
 				.row-fluid.setmeasure
-					p how important is this contact?
-					span.leftsliderlabel Not important 
-					span.rightsliderlabel Very important 
+					
+					span.leftsliderlabel(title='how important is this contact?') importance
 					.starcontainer
 						+view('view.starView measure="reachability"')
 			.row-fluid
 				+view('view.measureBarView measure="reachability"')
 					+if('view.avgMeasure')
 						+unless('isKnown')
-							span.leftbarlabel Not important 
+							span.leftbarlabel Importance
 						.barviewcontainer
 							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}} />
-					+if('view.avgMeasure')
-						+unless('isKnown')
-							span.rightbarlabel Very important 
 
 	.span3
 		| {{#if isKnown}}

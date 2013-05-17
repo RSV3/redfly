@@ -206,18 +206,9 @@ body
 		margin-top 30px
 
 .results
-	.clearpic
-		margin-top	0.5em
-	.right b
-		float	right
-	.tallnoteleft
-		float	left
-		margin-right	0.5em
 	margin-top	-1em
 	a:hover
 		text-decoration	none
-	.collapsed
-		display	none
 	.indtags, .orgtags
 		margin-left 1em
 		span.label
@@ -225,20 +216,33 @@ body
 	.indtags
 		margin-bottom	1em
 	.top
+		margin-top	1em
+		margin-bottom	5px
+		padding-bottom	5px
+		border-bottom	1px solid #eee
 		h3
 			margin-top	-5px
 			margin-bottom	5px
 			font-size	22px
 			display	inline-block
-		margin-top	1em
-		margin-bottom	5px
-		padding-bottom	5px
-		border-bottom: 1px solid #eee;
 		a.social
 			margin-right	4px
 		span.mailORintro
 			float	right
 			margin-right	1em
+		span.knowsome
+			display	inline-block
+		.picture
+			img.fullwidth
+				width	100%
+		.clearpic
+			margin-top	0.5em
+		.right b
+			float	right
+		.somenote
+			max-height	3em
+			overflow	hidden
+			margin-bottom	1em
 	.toppager
 		padding-bottom	1em
 		border-bottom	1px solid #ddd
@@ -251,29 +255,42 @@ body
 			color	#069
 			margin-top	0.5em
 			display	inline-block
-	.search-filters
-		a.toggle
-			color	#666
-			margin-left	0.5em
-		h3
-			padding-top	1.5em
-			margin	-10px
-		h4
-			padding-top	1em
-		.checkfilter
-			input
-				display	inline
-				margin 10px
-				margin-top 7px
-			label
-				display	inline
-				margin-left	1em
-		.sort
-			i
-				margin-left	20px
-			.icon-large:hover
-				text-decoration	none
 
+.filter
+	padding  2em
+	top  2em
+	height  100%
+	background-color  #fff
+	h3
+	a.toggle
+		color	#666
+		margin-left	0.5em
+	h3
+		padding-top	1.5em
+		margin	-10px
+	h4
+		padding-top	1em
+	.togglecarets
+		color	#48c
+		margin-left	1em
+	.checkfilter
+		height	1.5em
+		input
+			display	inline
+			margin 10px
+			margin-top 7px
+		label
+			display	inline
+			margin-left	1em
+	.sort
+		i
+			margin-left	20px
+		.icon-large:hover
+			text-decoration	none
+	.collapsed
+		display	none
+	a:hover
+		text-decoration	none
 
 .admin
 	.checkadmin
@@ -324,12 +341,6 @@ body
 // Layout.
 
 .contact,.feed
-	.setmeasure
-		margin-top	1em
-		>p
-			margin	0
-			text-align	center
-			font-style	italic
 	.contactbar
 		margin-bottom	1em
 		background	linear-gradient(left, #fff 0%, #fdd 20%, #dfd 80%, #fff 100%)
@@ -398,8 +409,7 @@ body
 		h4
 			display inline-block
 			margin-right 10px
-		padding-bottom 30px
-		margin-bottom 30px
+		margin-bottom 1em
 		border-bottom 1px solid lightBorder
 		// .tab-content
 		// overflow visible
@@ -426,7 +436,7 @@ body
 		.actions
 			margin-bottom horizontalMargin
 	.lead
-		margin-bottom horizontalMargin
+		margin-bottom 0
 	.tag-category
 		margin-bottom baseLineHeight
 		tagger(baseFontSize)

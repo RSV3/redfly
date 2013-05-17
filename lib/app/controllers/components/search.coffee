@@ -62,7 +62,7 @@ module.exports = (Ember, App, socket) ->
 						if prefix then query = util.trim(prefix)+query
 						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
 							query = util.trim @get('value')
-							if results.query is query
+							if results.query is query or results.query is "contact:#{query}"
 								@set 'results', {}
 								allResults = []
 								delete results.query

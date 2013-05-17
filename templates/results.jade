@@ -1,146 +1,78 @@
 .row-fluid
 
-	.span8
+	ul.pager.toppager
+		li.previous
+			| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
+		div.pagenums
+			| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
+		li.next
+			| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
 
-		ul.pager.toppager
-			li.previous
-				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
-			div.pagenums
-				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
-			li.next
-				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
-
-		+unless ('theResults.paginatedItems')
-			.loading
-				i.icon-spinner.icon-spin
-		| {{#each theResults.paginatedItems itemController="result"}}
-		.row-fluid.top
-			.row-fluid
-				.span9
-					.row-fluid
-						.span3.picture
-							+linkTo('contact this tagName="a"')
-								| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-						.span9
-							+if('isVip')
-								.maybevip
-									i.icon-star.icon-2x.fullredstar
-							+linkTo('contact this tagName="a"')
-								h3 {{canonicalName}}
-							div
-								i
-									| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-								
-				.span3
-					b Knows: &nbsp;
-					| {{#if isKnown}}
-					span you {{#if knowsSome}},{{/if}}
-					| {{/if}}
-					{{#each knowsSome}}
-					br
-					span &nbsp;
+	+unless ('theResults.paginatedItems')
+		.loading
+			i.icon-spinner.icon-spin
+	| {{#each theResults.paginatedItems itemController="result"}}
+	.row-fluid.top
+		.row-fluid
+			.span8
+				.row-fluid
+					.span2.picture
+						+linkTo('contact this tagName="a"')
+							| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
+					.span10
+						+if('isVip')
+							.maybevip
+								i.icon-star.icon-2x.fullredstar
+						+linkTo('contact this tagName="a"')
+							h3 {{canonicalName}}
+						div
+							i
+								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+						| {{#if lastMail}}
+						.row-fluid
+							p
+								b Last mail:&nbsp
+								span
+									+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
+								span
+									&nbsp; {{sentdate}}
+						| {{/if}}
+							
+			.span4
+				b Knows: &nbsp;
+				| {{#if isKnown}}
+				span you{{#if knowsSome}},{{/if}}&nbsp;
+				| {{/if}}
+				{{#each knowsSome}}
+				span.knowsome
 					+linkTo('profile this')
 						| {{canonicalName}}
+					|,&nbsp;
+				{{/each}}
+
+		.row-fluid.clearpic
+			| {{#if lastNote}}
+			.row-fluid
+				.somenote
+					b Last note: &nbsp;
+					+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
+					i &nbsp; {{lastNote.body}}
+			| {{/if}}
+			.row-fluid
+				.orgtags
+					{{#each orgTags}}
+					span(bindAttr='class=":label category"') {{body}}
 					{{/each}}
+					{{#each indTags}}
+					span(bindAttr='class=":label category"') {{body}}
+					{{/each}}
+	{{/each}}
 
-			.row-fluid.clearpic
-				| {{#if lastNote}}
-				.row-fluid
-					.span2.right
-						b Last note:
-					.span10
-						.tallnoteleft
-							+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
-						div
-							i {{lastNote.body}}
-				| {{/if}}
-				| {{#if lastMail}}
-				.row-fluid
-					.span2.right
-						b Last mail:
-					.span10
-						span
-							+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
-						span
-							&nbsp; {{sentdate}}
-				| {{/if}}
-				.row-fluid
-					.orgtags
-						{{#each orgTags}}
-						span(bindAttr='class=":label category"') {{body}}
-						{{/each}}
-						{{#each indTags}}
-						span(bindAttr='class=":label category"') {{body}}
-						{{/each}}
-		{{/each}}
+	ul.pager
+		li.previous
+			| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
+		div.pagenums
+			| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
+		li.next
+			| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
 
-		ul.pager
-			li.previous
-				| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
-			div.pagenums
-				| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
-			li.next
-				| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
-
-
-	.span1
-	.span3.search-filters
-		{{#if all.length}}
-		br
-		i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
-		{{/if}}
-		h3
-			| Filters
-		{{#if orgTagsToSelect.length}}
-		h4
-			| {{App.orgTitle}} Tags
-			| <a class="toggle" {{action toggleorg target="controller" href=true}}>
-			i.toggleorg.icon-caret-up
-			| </a>
-		.filters.toggleorg
-			{{#each item in orgTagsToSelect}}
-			.checkfilter
-				|<label>
-				{{view Ember.Checkbox checkedBinding="item.checked"}}
-				{{item.label}}
-				|</label>
-			{{/each}}
-		{{/if}}
-		{{#if indTagsToSelect.length}}
-		h4
-			| Industry Tags
-			| <a class="toggle" {{action toggleind target="controller" href=true}}>
-			i.toggleind.icon-caret-down
-			| </a>
-		.filters.toggleind.collapsed
-			{{#each item in indTagsToSelect}}
-			.checkfilter
-				|<label>
-				{{view Ember.Checkbox checkedBinding="item.checked"}}
-				{{item.label}}
-				|</label>
-			{{/each}}
-		{{/if}}
-		{{#if yearsToSelect.length}}
-		h4
-			| Experience
-		{{view Ember.Select
-		|	contentBinding="yearsToSelect"
-		|	optionValuePath="content.years"
-		|	optionLabelPath="content.label"
-		|	valueBinding="years"
-		|	prompt="Select a minimum ..."
-		}}
-		{{/if}}
-		h3
-			| Sort
-		.row-fluid
-			.span6
-				h4
-					| Proximity
-				+view ('App.SortView class="proximity"')
-
-			.span6
-				h4
-					| Influence
-				+view ('App.SortView class="influence"')

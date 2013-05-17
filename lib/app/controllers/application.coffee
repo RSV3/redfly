@@ -3,47 +3,11 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 
 
-	App.ApplicationController = Ember.Controller.extend
-		feed: (->
-				mutable = []
-				@get('_initialContacts').forEach (contact) ->
-					item = Ember.ObjectProxy.create content: contact
-					item.typeInitialContact = true
-					mutable.push item
-				mutable
-			).property '_initialContacts.@each'
-		_initialContacts: (->
-				App.Contact.find
-					conditions:
-						added: $exists: true
-					options:
-						sort: added: -1
-						limit: 5
-			).property()
-
 
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../templates/application'
 
 		didInsertElement: ->
-			# setTimeout ->
-			# 		throw new Error 'penis penis'
-			# 	, 3000
-
-			socket.on 'feed', (data) =>
-				type = data.type
-				model = type
-				if type is 'linkedin'
-					model = 'Contact'
-
-				item = Ember.ObjectProxy.create
-					content: App[model].find data.id
-				item['type' + _s.capitalize(type)] = true
-				if type is 'linkedin'
-					item['updater'] = App.User.find data.updater
-				else if data.addedBy
-					item['addedBy'] =  App.User.find data.addedBy
-				@get('controller.feed').unshiftObject item
 
 			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
@@ -54,7 +18,6 @@ module.exports = (Ember, App, socket) ->
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.organisation', (title) ->
-				console.log "got #{title} from server on summary.organisation"
 				App.set 'orgTitle', title
 			socket.emit 'summary.contacts', (count) =>
 				@set 'controller.contactsQueued', count
@@ -66,11 +29,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'controller.mostVerboseTag', verbose
 			socket.emit 'summary.user', (user) =>
 				@set 'controller.mostActiveUser', user
-
-		feedItemView: Ember.View.extend
-			classNames: ['feed-item']
-			didInsertElement: ->
-				@$().addClass 'animated flipInX'
 
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'

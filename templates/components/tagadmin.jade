@@ -1,18 +1,3 @@
-.span6.tagbox.bordered
-	h4 Active Tags
-	+unless('view.hastags')
-		p.textcenter
-			i.icon-spinner.icon-spin.icon-3x
-		+else
-		.tags
-			.main
-				+each('view.alltags')
-					+view('view.tagView')
-						a.add(action='add target="view"')
-							i.icon-tag  
-						a.body(href='#', action='rename target="view"') {{body}}
-						a.close(action='delete target="view"')
-							i.icon-remove
 .span6.tagbox
 	h4 Visible tags
 	i these tags will appear ahead of popular tags in the tag-cloud on the contact page
@@ -33,3 +18,18 @@
 		span New tag:&nbsp;
 		+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
 
+.span6.tagbox.bordered
+	h4 other available tags
+	+unless('view.hastags')
+		p.textcenter
+			i.icon-spinner.icon-spin.icon-3x
+		+else
+		.tags
+			.main
+				+each('view.alltags')
+					+view('view.tagView')
+						a.add(action='add target="view"')
+							i.icon-tag  
+						a.body(href='#', action='rename target="view"') {{body}}
+						a.close(action='delete target="view"')
+							i.icon-remove

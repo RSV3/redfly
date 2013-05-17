@@ -26,6 +26,9 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/social') Ember, App, socket
 	require('./controllers/components/note') Ember, App, socket
 
+	require('./controllers/sidebars/filter') Ember, App, socket
+	require('./controllers/sidebars/feed') Ember, App, socket
+
 	require('./controllers/application') Ember, App, socket
 	require('./controllers/home') Ember, App, socket
 	require('./controllers/profile') Ember, App, socket

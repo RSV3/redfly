@@ -3,10 +3,6 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 	moment = require 'moment'
 
-	toggleFilter = (which)->
-		$("i.toggle#{which}").toggleClass 'icon-caret-up icon-caret-down'
-		$d = $("div.toggle#{which}")
-		if ($d.toggleClass 'collapsed').hasClass 'collapsed' then $d.hide() else $d.show()
 
 	doTags = (whichTags, context)->
 		oT = context.get(whichTags)
@@ -52,25 +48,36 @@ module.exports = (Ember, App, socket) ->
 		indToConsider: []	# the list of tags matching contacts in the results list & checkbox tagnames 
 		orgTags: []
 		orgToSelect: []
+		noseToPick: []
 		orgToConsider: []
+		knoTags: []
+		knoToSelect: []
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
 		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
-				if _.isEmpty (oC = @get('all'))
-					return []
-				oC.filter (item) =>
-					if @years and not (item.get('yearsExperience') >= @years)
-						return false
-					noTags = true
-					for prefix in ['org', 'ind']
-						filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
-						if filterTags.length
-							noTags = false
-							for t in @get("#{prefix}TagsToConsider")
-								if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
-									return true
-					noTags
-			).property 'all.@each', 'years', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+			if _.isEmpty (oC = @get('all')) then return []
+			oC.filter (item) =>
+				if @years and not (item.get('yearsExperience') >= @years)
+					return false
+
+				hasnose = found = false
+				for n in @get "noseToPick"
+					if n.checked
+						hasnose = true
+						if _.contains item.get('knows').getEach('id'), n.id
+							found = true
+				if hasnose and not found then return false
+
+				noTags = true
+				for prefix in ['org', 'ind']
+					filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
+					if filterTags.length
+						noTags = false
+						for t in @get("#{prefix}TagsToConsider")
+							if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
+								return true
+				noTags
+			).property 'all.@each', 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
 		theResults: (->		# paginated content
 			if not @get 'filteredItems.length'
@@ -97,6 +104,38 @@ module.exports = (Ember, App, socket) ->
 				$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
 		).observes 'theResults.rangeStart'
 
+		noseFilters: (->
+			knows = @get 'allNoses'
+			if not knows or not knows.get('length') then return
+			nose = _.countBy knows.getEach('id'), (item)-> item
+			topnose = []
+			for k, v of nose
+				topnose.push {id:k, count:v}
+			if topnose.length<2 then return
+			ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
+			@set 'knoTags', Ember.ArrayProxy.create
+				content: App.User.find _id: $in: ids
+		).observes 'allNoses.@each'
+
+		setNoseTags: (->
+			if not (kT = @get 'knoTags') then return
+			if not kT.get 'length' then return
+			topKnows = []
+			kT.forEach (knows)->
+				lab = _s.capitalize knows.get 'name'
+				if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
+				topKnows.push { id:knows.get('id'), checked:false, label:lab }		# array of all checkboxes
+			@set "noseToPick", topKnows	# array of top 'knows' users
+		).observes 'knoTags.@each'
+
+		allNoses: (->
+			results = []
+			if _.isEmpty (oC = @get('all')) then return results
+			oC.forEach (c)->
+				c.get('knows').forEach (k)->
+					results.pushObjects k
+			results
+		).property 'all.@each.knowsSome.@each'
 		setOrgTags: (->
 			Ember.run.next this, ()->
 				doTags 'orgTags', @
@@ -108,7 +147,12 @@ module.exports = (Ember, App, socket) ->
 		setFilters: (->			# prepare the filters based on the sort results
 				years = []
 				oC = @get('all')
-				if not oC or not oC.get('length') then return		# don't bother if there's no data
+				if not oC or not oC.get('length')
+					@set 'indTagsToSelect', null
+					@set 'orgTagsToSelect', null
+					@set 'yearsToSelect', null
+					@set 'noseToPick', null
+					return		# don't bother if there's no data
 				max = _.max(oC.getEach('yearsExperience'), (y)-> y or 0)
 				if max > 0
 					for i in [1..max]
@@ -119,10 +163,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
 			).observes 'all.@each'
-
-		toggleind: ()-> toggleFilter 'ind'		# toggle visbility of the industry tags
-		toggleorg: ()-> toggleFilter 'org'		# toggle visbility of the organisational tags
-
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
@@ -163,16 +203,16 @@ module.exports = (Ember, App, socket) ->
 				@get('knows')?.find (user) ->
 					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
 			).property 'knows.@each.id'
-		knowsSome: (->
+		knowsSome: []
+		setKS: (->
 			fams = @get('measures.familiarity')
 			if not fams or not fams.length then f = []
 			else f = fams.getEach 'user'
 			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
 			f = _.uniq f.concat othernose
 			f = _.reject f, (u)-> u.get('id') is App.user.get('id')
-			if not f.get('length') then null
-			else f[0..4]
-		).property 'knows', 'measures'
+			if f and f.length then @set 'knowsSome', f
+		).observes 'knows.@each', 'measures.familiarity.@each'
 
 
 		gmailSearch: (->
@@ -212,14 +252,15 @@ module.exports = (Ember, App, socket) ->
 		down: (-> 0 > @get 'dir').property 'dir'
 		up: (-> 0 < @get 'dir').property 'dir'
 		sort: (ascdesc) ->
-			if ascdesc is @get 'dir'
-				@set 'controller.sortDir', 0	# reset
-			else 
-				for i of sortFields
-					if _.contains this.classNames, i
-						@set 'controller.sortType', i
-						@set 'controller.sortDir', ascdesc
+			for i of sortFields
+				if _.contains this.classNames, i
+					@set 'controller.sortType', i
+					@set 'controller.sortDir', ascdesc
 			false
-		sortdesc: () -> @sort -1
-		sortasc: () -> @sort 1
+		sortdesc: () ->
+			if @get('dir') is 0 then @sort -1
+			else if @get('dir') is 1 then @sort 0
+		sortasc: () ->
+			if @get('dir') is 0 then @sort 1
+			else if @get('dir') is -1 then @sort 0
 

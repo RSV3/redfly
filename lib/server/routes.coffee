@@ -216,6 +216,7 @@ module.exports = (app, route) ->
 
 					if model is 'Contact'
 						conditions.added = $exists: true
+						_.extend conditions, data.moreConditions
 					else if model is 'Tag'
 						conditions.contact = $exists: true
 					models[model].find(conditions).limit(limit).exec @parallel()
@@ -245,9 +246,20 @@ module.exports = (app, route) ->
 						results.query = data.query
 					return fn results		# we need this to be async
 				if _.isEmpty docs[index] then return mapSearches index+1
-				searchMap utilisedTypes[index], perfectMatch[index], docs[index], results, (res)->
-					results = res	# note that results can be an obj (search box) or array (full results)
-					mapSearches index+1
+
+				done = ->
+					searchMap utilisedTypes[index], perfectMatch[index], docs[index], results, (res)->
+						results = res
+						mapSearches index+1
+				# if the results are of type other than contact, we need to check that $exists:added
+				if docs[index][0].contact
+					cids = _.uniq _.pluck(docs[index], 'contact'), (u)-> String(u)
+					models.Contact.find({added: {$exists: true}, _id: {$in: cids}}).distinct '_id', (err, valids)->
+						valids = _.map valids, (d)-> String(d)
+						docs[index] = _.filter docs[index], (d)->
+							_.contains(valids, String(d.contact)) and (valids = _.without valids, String(d.contact))
+						done()
+				else done()
 			mapSearches 0
 
 	route 'fullSearch', (fn, data, io, session) ->
@@ -285,9 +297,9 @@ module.exports = (app, route) ->
 
 	route 'search', (fn, data, io, session)->
 
-		# after we confirm the $exists:added status of notes and tags
-		# we come here to filter out duplicates.
-		validSearch = (type, perfect, typeDocs, results)->
+		# passes an object, which accumulates arrays for each time, of the form:
+		# { tag:[{contact, id}], notes:[{contact, id}], names:[{contact, id}], emails:[{contact, id}] }
+		doSearch fn, data, session, (type, perfect, typeDocs, results={}, cb) ->
 			if not results[type] then results[type] = []
 			typeDocs = _.map typeDocs, (d)-> {id:String(d.id), contact:String(d.contact or d.id)}
 			if perfect
@@ -302,21 +314,8 @@ module.exports = (app, route) ->
 							return false
 					true
 				results[type] = _.union results[type], typeDocs
-			return results
-
-		# passes an object, which accumulates arrays for each time, of the form:
-		# { tag:[{contact, id}], notes:[{contact, id}], names:[{contact, id}], emails:[{contact, id}] }
-		doSearch fn, data, session, (type, perfect, typeDocs, results={}, cb) ->
-			# if the results are of type other than contact, we need to check that $exists:added
-			if typeDocs and typeDocs.length and typeDocs[0].contact
-				cids = _.pluck typeDocs, 'contact'
-				models.Contact.find({added: {$exists: true}, _id: {$in: cids}}).distinct '_id', (err, validcids)->
-					validcids = _.map validcids, (d)-> String(d)
-					typeDocs = _.filter typeDocs, (d)-> _.contains validcids, String(d.contact)
-					cb validSearch type, perfect, typeDocs, results
-			else 
-				cb validSearch type, perfect, typeDocs, results
-		, 10	# limit
+			cb results
+		, 10
 
 
 	route 'verifyUniqueness', (fn, data) ->
@@ -365,7 +364,7 @@ module.exports = (app, route) ->
 		if (newcat = conditions.newcat)
 			delete conditions.newcat
 			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
-				if err.code is 11001 then return models.Tag.remove conditions, fn
+				if err and err.code is 11001 then return models.Tag.remove conditions, fn
 				console.dir err if err
 				return fn()
 		fn()
@@ -374,7 +373,7 @@ module.exports = (app, route) ->
 		if (newtag = conditions.new)
 			delete conditions.new
 			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
-				if err.code is 11001 then return models.Tag.remove conditions, fn
+				if err and err.code is 11001 then return models.Tag.remove conditions, fn
 				console.dir err if err
 				return fn()
 		fn()

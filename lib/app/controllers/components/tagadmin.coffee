@@ -15,18 +15,19 @@ module.exports = (Ember, App, socket) ->
 			options = sortProperties: ['date'], sortAscending: false, content: result, limit: 20
 			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 		).property 'category'
-		notags: '...'
 		alltags: (->
 			result = Ember.ArrayController.create()
 			if c = @get('category')
 				socket.emit 'tags.all', category: c, (allTags) =>
-					allTags = _.difference allTags, @get('prioritytags').getEach 'body'
-					if not allTags.length then allTags=[@get 'notags']
-					result.set 'content', _.map allTags, (t)->{body:t}
+					if p = @get 'prioritytags'
+						allTags = _.difference allTags, p.getEach 'body'
+					if not allTags.length then result.set 'content', null
+					else result.set 'content', _.map allTags, (t)->{body:t}
 			result
 		).property 'prioritytags.@each'
 		hastags: (->
-			@get('alltags')?.get('length')
+			a = @get('alltags')
+			not a.get('content') or a.get('length')
 		).property 'alltags.@each'
 
 		click: ->
@@ -36,9 +37,7 @@ module.exports = (Ember, App, socket) ->
 				@_add tag
 			@set 'currentTag', null
 		_add: (tag) ->
-			existingTag = @get('prioritytags.content').find (candidate) ->
-				tag is candidate.body
-			if not existingTag
+			if not (existingTag = @get('prioritytags.content')?.find (candidate) -> tag is candidate.body)
 				t = App.Tag.createRecord
 					date: new Date
 					category: @get('category')
@@ -55,6 +54,7 @@ module.exports = (Ember, App, socket) ->
 					$that = that.$().find('a.body')
 					width = $that.width()+20
 					oldtxt = $that.text()
+					oldhtml = $that[0].outerHTML
 					$('input').prop('disabled', true)
 					$newone = $("<input class='tagedit' value='#{oldtxt}'/>")
 					handleInput = ->
