@@ -93,7 +93,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
 			App.Exclude.createRecord user: App.user, contact: @get 'content'
 			App.store.commit()
-			@transitionTo "userProfile"
+			@transitionToRoute "userProfile"
 
 
 	App.ContactView = Ember.View.extend
