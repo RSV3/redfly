@@ -88,7 +88,7 @@ module.exports = (Ember, App, socket) ->
 			delete: ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
-				setTimeout =>
+				if tag then setTimeout =>
 					if tag.deleteRecord 		# priority tags are real tags
 						tag.deleteRecord()
 						App.store.commit()

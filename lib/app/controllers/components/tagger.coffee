@@ -78,7 +78,7 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
-					tag.deleteRecord()
+					if tag and tag.deleteRecord then tag.deleteRecord()	# if its a real tag that exists
 					App.store.commit()
 				, 1000
 			didInsertElement: ->

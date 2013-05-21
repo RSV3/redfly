@@ -39,12 +39,16 @@ getLinked = (partial, options, oa, cb) ->
 		oauth: oa
 		json: true
 	, (error, response, body) ->
+		console.log ""
+		console.dir url
 		if not error and response.statusCode is 200
+			console.dir body
 			cb null, body
 		else
 			error =
 				message: response.body.message
 				statusCode: response.statusCode
+			console.dir error
 			cb error, null
 
 
