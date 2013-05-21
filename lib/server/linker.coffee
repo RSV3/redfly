@@ -40,7 +40,7 @@ getLinked = (partial, options, oa, cb) ->
 		json: true
 	, (error, response, body) ->
 		console.log ""
-		console.dir url
+		console.log "LINKEDIN debug: #{url}"
 		if not error and response.statusCode is 200
 			console.dir body
 			cb null, body

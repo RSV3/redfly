@@ -67,7 +67,7 @@ module.exports = (Ember, App, socket) ->
 					contact.addObserver 'id', =>
 					# TO-DO bring this back when ember-data is fixed
 					# contact.one 'didCreate', =>
-						@get('controller.target').transitionToRoute 'contact', contact
+						@get('controller').transitionToRoute 'contact', contact
 		reset: ->
 			for field in fields
 				@set field, null
