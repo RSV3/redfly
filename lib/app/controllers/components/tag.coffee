@@ -8,4 +8,4 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['tag']
 		search: ->
 			newResults = App.Results.create {text: 'tag:' + util.trim @get('context.body')}
-			@get('controller').transitionTo "results", newResults
+			@get('controller').transitionToRoute "results", newResults
