@@ -49,8 +49,8 @@ query = {email: process.argv[3]}
 
 models.User.find query, (err, users)->
 	throw err if err
-	console.log "test: parsing emails"
-	eachDoc users, eachParse, ()->
+	console.log "test: parsing linkedin"
+	eachDoc users, eachLink, ()->
 		return services.close()
 	, true
 

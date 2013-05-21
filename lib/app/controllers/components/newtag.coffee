@@ -12,7 +12,7 @@ module.exports = (Ember, App, socket) ->
 			if event.which is 8	# A backspace/delete.
 				if not @get('currentTag')
 					lastTag = @get 'parentView.tags.lastObject'
-					lastTag.deleteRecord()
+					if lastTag and lastTag.deleteRecord then lastTag.deleteRecord()
 					App.store.commit()
 			if event.which is 9	# A tab.
 				if @get('currentTag')
