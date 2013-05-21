@@ -48,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 			logout: (context) ->
 				socket.emit 'logout', =>
 					App.auth.logout()
-					@transitionToRoute 'index'
+					@transitionTo 'index'
 
 	App.ProfileRoute = Ember.Route.extend
 		setupController: (controller, model) ->
@@ -67,7 +67,7 @@ module.exports = (Ember, App, socket) ->
 			if App.user.get('admin')
 				controller.set 'content', App.Admin.find 1
 				controller.set 'category', 'industry'
-			else @transitionToRoute 'userProfile'
+			else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'admin'
 
@@ -76,7 +76,7 @@ module.exports = (Ember, App, socket) ->
 			if App.user.get('admin')
 				socket.emit 'dashboard', (board)=>
 					controller.set 'dash', board
-			else @transitionToRoute 'userProfile'
+			else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'dashboard'
 
@@ -87,7 +87,7 @@ module.exports = (Ember, App, socket) ->
 				if results and results.length
 					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
-				else @transitionToRoute 'userProfile'
+				else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'classify'
 
@@ -113,7 +113,7 @@ module.exports = (Ember, App, socket) ->
 		setupController: (controller, model) ->
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text	# ignore stale results that don't match the query
-						if not results.response?.length then @transitionToRoute 'userProfile'
+						if not results.response?.length then @transitionTo 'userProfile'
 						else controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
@@ -150,7 +150,7 @@ module.exports = (Ember, App, socket) ->
 			view = App.LoaderView.create router: this   # hack
 			view.append()
 		redirect: ->
-			@transitionToRoute 'userProfile'
+			@transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'profile'
 
@@ -162,7 +162,7 @@ module.exports = (Ember, App, socket) ->
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 		redirect: ->
-			@transitionToRoute 'index'
+			@transitionTo 'index'
 		renderTemplate: ->
 			@router.connectem @, 'index'
 
@@ -174,7 +174,7 @@ module.exports = (Ember, App, socket) ->
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 		redirect: ->
-			@transitionToRoute 'index'
+			@transitionTo 'index'
 
 	App.IndexRoute = Ember.Route.extend
 		renderTemplate: ->
@@ -185,7 +185,7 @@ module.exports = (Ember, App, socket) ->
 			view = App.LinkerView.create()
 			view.append()
 		redirect: ->
-			@transitionToRoute 'userProfile'
+			@transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'profile'
 

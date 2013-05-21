@@ -33,4 +33,4 @@ module.exports = (Ember, App, socket) ->
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'
 			select: (context) ->
-				@get('controller.target').transitionToRoute 'contact', context
+				@get('controller').transitionToRoute 'contact', context
