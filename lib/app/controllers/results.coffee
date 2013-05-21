@@ -48,10 +48,9 @@ module.exports = (Ember, App, socket) ->
 		indToConsider: []	# the list of tags matching contacts in the results list & checkbox tagnames 
 		orgTags: []
 		orgToSelect: []
-		noseToPick: []
 		orgToConsider: []
-		knoTags: []
-		knoToSelect: []
+		knoNames: []
+		noseToPick: []
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
 		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
@@ -61,11 +60,12 @@ module.exports = (Ember, App, socket) ->
 					return false
 
 				hasnose = found = false
-				for n in @get "noseToPick"
-					if n.checked
-						hasnose = true
-						if _.contains item.get('knows').getEach('id'), n.id
-							found = true
+				if (n2p = @get('noseToPick'))
+					for n in n2p
+						if n.checked
+							hasnose = true
+							if _.contains item.get('knows').getEach('id'), n.id
+								found = true
 				if hasnose and not found then return false
 
 				noTags = true
@@ -104,38 +104,37 @@ module.exports = (Ember, App, socket) ->
 				$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
 		).observes 'theResults.rangeStart'
 
-		noseFilters: (->
-			knows = @get 'allNoses'
-			if not knows or not knows.get('length') then return
-			nose = _.countBy knows.getEach('id'), (item)-> item
-			topnose = []
-			for k, v of nose
-				topnose.push {id:k, count:v}
-			if topnose.length<2 then return
-			ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
-			@set 'knoTags', Ember.ArrayProxy.create
-				content: App.User.find _id: $in: ids
-		).observes 'allNoses.@each'
+		# oh, this was tricky:
+		# in order to always get the knows array, had to watch on the @each (id/knows) of @each (knows/contacts)
+		watchAllNoses:(->
+				aC = @get('allThoseNoses')
+				if not aC or not aC.length then return
+				if not aC[0].get('length') then return
+				results = []
+				aC.forEach (c)->
+					results.pushObjects c.getEach('id')
+				nose = _.countBy results, (item)-> item
+				topnose = []
+				for k, v of nose
+					if k and v then topnose.push {id:k, count:v}
+				if topnose.length<2 then return						# no point having a filter for one user!
+				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
+				@set 'knoNames', Ember.ArrayProxy.create
+					content: App.User.find _id: $in: ids
+		).observes 'allThoseNoses.@each.@each'
 
 		setNoseTags: (->
-			if not (kT = @get 'knoTags') then return
+			if not (kT = @get 'knoNames') then return
 			if not kT.get 'length' then return
 			topKnows = []
 			kT.forEach (knows)->
 				lab = _s.capitalize knows.get 'name'
 				if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
-				topKnows.push { id:knows.get('id'), checked:false, label:lab }		# array of all checkboxes
-			@set "noseToPick", topKnows	# array of top 'knows' users
-		).observes 'knoTags.@each'
+				if lab.length		# just in case of error
+					topKnows.push { id:knows.get('id'), checked:false, label:lab }		# array of all checkboxes
+			@set "noseToPick", topKnows		# array of top 'knows' users
+		).observes 'knoNames.@each'
 
-		allNoses: (->
-			results = []
-			if _.isEmpty (oC = @get('all')) then return results
-			oC.forEach (c)->
-				c.get('knows').forEach (k)->
-					results.pushObjects k
-			results
-		).property 'all.@each.knowsSome.@each'
 		setOrgTags: (->
 			Ember.run.next this, ()->
 				doTags 'orgTags', @
@@ -162,6 +161,8 @@ module.exports = (Ember, App, socket) ->
 					content: App.Tag.find {category: {$ne: 'industry'}, contact: $in: oC.getEach('id')}
 				@set 'indTags', Ember.ArrayProxy.create
 					content: App.Tag.find {category: 'industry', contact: $in: oC.getEach('id')}
+
+				@set 'allThoseNoses', oC.getEach('knows')
 			).observes 'all.@each'
 
 	App.ResultsView = Ember.View.extend
@@ -208,9 +209,9 @@ module.exports = (Ember, App, socket) ->
 			fams = @get('measures.familiarity')
 			if not fams or not fams.length then f = []
 			else f = fams.getEach 'user'
-			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
-			f = _.uniq f.concat othernose
-			f = _.reject f, (u)-> u.get('id') is App.user.get('id')
+			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)	# prioritse most familiar
+			f = _.uniq f.concat othernose									# then add on other known users
+			f = _.reject f, (u)-> u.get('id') is App.user.get('id')		# don't list self in knowsSome list
 			if f and f.length then @set 'knowsSome', f
 		).observes 'knows.@each', 'measures.familiarity.@each'
 

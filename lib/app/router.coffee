@@ -111,6 +111,7 @@ module.exports = (Ember, App, socket) ->
 		deserialize: (param) ->
 			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model) ->
+			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text	# ignore stale results that don't match the query
 						if not results.response?.length then @transitionTo 'userProfile'
