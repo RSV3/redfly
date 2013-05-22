@@ -97,7 +97,8 @@ everyauth.linkedin.configure
 		models = require './models'
 		models.User.findById session.user, (err, user) ->
 			throw err if err
-			if not user.linkedin or (user.linkedin isnt linkedinUserMetadata.id)
+			if user.linkedin is linkedinUserMetadata.id and user.linkedInAuth and user.linkedInAuth.secret is accessTokenSecret and user.linkedInAuth.token is accessToken then promise.fulfill user
+			else
 				user.linkedin = linkedinUserMetadata.id
 				user.linkedInAuth =
 					token: accessToken
@@ -105,8 +106,6 @@ everyauth.linkedin.configure
 				user.save (err) ->
 					throw err if err
 					promise.fulfill user
-			else
-				promise.fulfill user
 		promise = @Promise()
 	redirectPath: '/link'
 everyauth.linkedin
