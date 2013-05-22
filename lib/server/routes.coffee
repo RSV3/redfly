@@ -69,6 +69,10 @@ module.exports = (app, route) ->
 				if not _.isArray record
 					model.findById record.id, (err, doc) ->
 						throw err if err
+						if not doc
+							console.log "ERROR: failed to find record to save:"
+							console.dir data
+							return cb null
 						_.extend doc, record
 						updateFeeds = (model is models.Contact) and ('added' in doc.modifiedPaths())
 						# Important to do updates through the 'save' call so middleware and validators happen.

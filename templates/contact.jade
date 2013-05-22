@@ -79,12 +79,12 @@
 			i.icon-spinner.icon-spin
 		+unless('waitingForMeasures')
 			+if('isKnown')
-				.row-fluid.setmeasure
-					span.leftsliderlabel(title='how well do you know this contact?') Affinity
+				.row-fluid.setmeasure(title='how well do you know this contact?')
+					span.leftsliderlabel Affinity
 					.starcontainer
 						+view('view.starView measure="familiarity"')
-				.row-fluid.setmeasure
-					span.leftsliderlabel(title='how important is this contact?') Importance
+				.row-fluid.setmeasure(title='how important is this contact?')
+					span.leftsliderlabel Importance
 					.starcontainer
 						+view('view.starView measure="reachability"')
 			.row-fluid

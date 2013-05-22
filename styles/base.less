@@ -9,6 +9,10 @@
 // TO-DO check if the newest bootstrap (already integrated) fixes this zindex hack.
 @zindexPopover: 1031;	// The search help popover should be in front of the top navbar and the search results dropdown.
 
+.tooltip {
+	&.in     { .opacity(95); }
+}
+
 
 .brand {
 	line-height: @baseLineHeight - 2px;

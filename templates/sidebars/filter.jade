@@ -64,12 +64,12 @@ h4
 h3
 	| Sort
 .row-fluid
-	.span6
+	.span6(title = 'prioritise contacts you already know')
 		h4
 			| Proximity
 		+view ('App.SortView class="proximity"')
 
-	.span6
+	.span6(title = 'how many users know each contact')
 		h4
 			| Influence
 		+view ('App.SortView class="influence"')
