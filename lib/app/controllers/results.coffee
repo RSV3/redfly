@@ -265,3 +265,6 @@ module.exports = (Ember, App, socket) ->
 			if @get('dir') is 0 then @sort 1
 			else if @get('dir') is -1 then @sort 0
 
+		didInsertElement: ()->
+			@$().parent().tooltip
+				placement: 'bottom'

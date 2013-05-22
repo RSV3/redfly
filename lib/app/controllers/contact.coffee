@@ -106,7 +106,7 @@ module.exports = (Ember, App, socket) ->
 			url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 			$('p.bullhorn>a').css('color','grey').bind('click', false)
 			socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
-				$('p.bullhorn>a').css('color', '#08c').unbind('click', false)
+				$('p.bullhorn').replace("<p class='requestsent'>intro<br>request<br>sent</p>")
 		)
 
 		vipHoverStr: ->
@@ -382,6 +382,8 @@ module.exports = (Ember, App, socket) ->
 						view._drawStars()
 						view.get('controller').notifyPropertyChange 'measures'
 				@_drawStars()
+				@$().parent().parent().tooltip
+					placement: 'bottom'
 
 		positionView: Ember.View.extend
 			editView: Ember.View.extend

@@ -44,7 +44,7 @@ module.exports = (Ember, App, socket) ->
 		continue: ->
 			tags = @$.find('div.tag-category:first')
 			if not tags.find('.tag').length
-				tip = tags.find('p').tooltip
+				tip = $('a.btn-success').tooltip
 					title: "Please set at least one tag"
 					placement: 'bottom'
 					trigger: 'manual'

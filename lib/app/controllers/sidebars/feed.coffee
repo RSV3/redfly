@@ -24,11 +24,10 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../templates/sidebars/feed'
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
+				if not data or not data.id then return
 				type = data.type
 				model = type
-				if type is 'linkedin'
-					model = 'Contact'
-
+				if type is 'linkedin' then model = 'Contact'
 				item = Ember.ObjectProxy.create
 					content: App[model].find data.id
 				item['type' + _s.capitalize(type)] = true
@@ -36,7 +35,8 @@ module.exports = (Ember, App, socket) ->
 					item['updater'] = App.User.find data.updater
 				else if data.addedBy
 					item['addedBy'] =  App.User.find data.addedBy
-				@get('controller.feed').unshiftObject item
+				f = @get('controller.feed')
+				if f then f.unshiftObject item
 
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
