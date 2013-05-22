@@ -39,15 +39,13 @@ getLinked = (partial, options, oa, cb) ->
 		oauth: oa
 		json: true
 	, (error, response, body) ->
-		console.log ""
-		console.log "LINKEDIN debug: #{url}"
 		if not error and response.statusCode is 200
-			console.dir body
 			cb null, body
 		else
 			error =
 				message: response.body.message
 				statusCode: response.statusCode
+			console.log "LINKEDIN debug: #{url}"
 			console.dir error
 			cb error, null
 
@@ -338,8 +336,6 @@ profileIdFrom = (item) ->
 		else i+=4
 		id = id.substr i
 	id?.substr 0, id.indexOf('&')
-	console.log "LINKEDIN debug: got #{id} for #{item.id}"
-
 
 
 linker = (user, notifications, finalCB) ->
@@ -384,6 +380,8 @@ linker = (user, notifications, finalCB) ->
 						console.log "error in linkedin process"
 						console.dir err
 				else
+					console.log "LINKEDIN debug from #{item.id}"
+					console.dir deets
 					for key, val of deets		# copy profile, splitting past and present positions
 						if key is 'positions'
 							item[key] = _.select val.values, (p) -> p.isCurrent
