@@ -6,6 +6,11 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['profile']
 
 	App.ProfileController = Ember.ObjectController.extend
+		hasQ: false
+		setHasQ: (->
+			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+				@set 'hasQ', results?.length
+		).observes 'id'
 		contacts: (->
 			Ember.ArrayProxy.createWithMixins App.Pagination,
 				content: do =>

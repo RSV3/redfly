@@ -89,6 +89,6 @@ module.exports = (Ember, App, socket) ->
 		classify: ->
 			# probably shouldn't use router, but hey: it works ...
 			socket.emit 'classifyQ', App.user.get('id'), (results) =>
-				if results and results.length then @get('router').transitionToRoute 'classify'
+				if results and results.length then @get('router').transitionTo 'classify'
 			@get('modal').modal 'hide'
 			@get('notification').pnotify_remove()

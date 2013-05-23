@@ -3,13 +3,21 @@
 		h1 {{name}}
 		p Signed up on {{date}}
 		br
-		p Added {{contacts.length}} contacts so far.
-		ul
-			| {{#each contacts.paginatedItems}}
-			li
-				+linkTo('contact this')
-					| {{canonicalName}}
-			| {{/each}}
+		.row-fluid
+			.span7
+				p Added {{contacts.length}} contacts so far.
+				ul
+					| {{#each contacts.paginatedItems}}
+					li
+						+linkTo('contact this')
+							| {{canonicalName}}
+					| {{/each}}
+			| {{#if hasQ}}
+			.span2
+				ul.pager
+					li
+						+linkTo('classify class="btn-success"') Classify
+			| {{/if}}
 		.row-fluid
 			.span4
 				ul.pager
