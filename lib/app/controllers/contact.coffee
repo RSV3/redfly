@@ -32,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 			measures = @get 'measures'
 			for eachAt of measures
 				if measures[eachAt].length
-					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / measures[eachAt].length
+					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / measures[eachAt].length or 1	# better not to have zero average
 			averages
 		).property 'measures', 'measures.@each'
 		knowsSome: (->
