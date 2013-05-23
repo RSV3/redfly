@@ -192,7 +192,7 @@ module.exports = (Ember, App, socket) ->
 			result = []
 		).property 'id'
 		orgTags: (->
-			query = category:{$ne:'industry'}, contact: @get('id')
+			query = category:{$in: ['theme', 'role', 'project']}, contact: @get('id')
 			socket.emit 'tags.popular', query, (popularTags) =>
 				result.pushObjects _.map popularTags, (t)->{body:t.body, category:t.category}
 			result = []
