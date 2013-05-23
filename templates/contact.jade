@@ -183,7 +183,9 @@
 			// TO-DO do nl2br with bindings
 			.media-body
 				p {{view.content.body}}
-				small.muted {{view.content.author.canonicalName}} | {{view.content.date}}
+				small.muted
+					+linkTo('profile view.content.author') {{view.content.author.canonicalName}}
+					span  | {{view.naturaldate}}
 				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
 			//- | {{else}}
 			//- span {{emptyNotesText}}

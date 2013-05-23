@@ -367,8 +367,8 @@ module.exports = (Ember, App, socket) ->
 						if posval+1 is oldval then posval--
 						newvalue = (posval+1)*40 - 100
 
-						if (m = allMs[thism]?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')))
-							m.get('firstObject').set 'value', newvalue
+						if (m = allMs[thism]?.find((eachM)-> eachM.get('user.id') is App.user.get('id')))
+							m.set 'value', newvalue
 						else
 							if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
 							allMs[thism].pushObject App.Measurement.createRecord {
