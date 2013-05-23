@@ -118,10 +118,10 @@ module.exports = (Ember, App, socket) ->
 									result.status.new = true
 								@get('processed.results').pushObject result
 					.on 'end', (count) =>
-						@get('stateMachine').transitionToRoute 'parsed'
+						@get('stateMachine').transitionTo 'parsed'
 					.on 'error', (err) =>
 						@set 'error', 'Something went wrong during parsing: ' + err.message
-						@get('stateMachine').transitionToRoute 'start'
+						@get('stateMachine').transitionTo 'start'
 
 			reader.readAsText @get('file')
 
@@ -145,7 +145,7 @@ module.exports = (Ember, App, socket) ->
 						if file.type isnt 'text/csv'
 							return @set 'controller.error', 'This doesn\'t appear to be a csv file.'
 						@set 'controller.file', file
-						@get('controller.stateMachine').transitionToRoute 'parsing'
+						@get('controller.stateMachine').transitionTo 'parsing'
 
 		parsingView: Ember.View.extend
 			isVisible: (->
@@ -158,7 +158,7 @@ module.exports = (Ember, App, socket) ->
 				).property 'controller.stateMachine.currentState.name'
 			reset: ->
 				@set 'controller.error', null
-				@get('controller.stateMachine').transitionToRoute 'start'
+				@get('controller.stateMachine').transitionTo 'start'
 			import: ->
 				@get('controller.processed.results').forEach (result) ->
 					if not result.status.new
@@ -187,7 +187,7 @@ module.exports = (Ember, App, socket) ->
 								contact: contact
 								body: note
 						App.store.commit()
-				@get('controller.stateMachine').transitionToRoute 'start'
+				@get('controller.stateMachine').transitionTo 'start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
 
