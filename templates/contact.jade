@@ -14,10 +14,10 @@
 			.maybevip
 				a(href='#', action='toggleVIP')
 					+if('isVip')
-						i.icon-star.icon-3x.fullredstar
+						i.icon-star.icon-2x.fullredstar
 						+else
 						+if('isKnown')
-							i.icon-star-empty.icon-3x.emptygraystar
+							i.icon-star-empty.icon-2x.emptygraystar
 			h3 {{canonicalName}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
