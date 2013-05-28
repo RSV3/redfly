@@ -622,6 +622,27 @@ body
 // Components that are just basically default mixins
 tag(baseFontSize)
 
+.search-result.knows 
+	ul.tags
+		display inline
+		margin 0
+		padding 0
+
+		li
+			display inline
+			list-style none
+			margin 0
+			padding 0
+
+		li:nth-last-child(3):after
+			content ""
+		
+		li:nth-last-child(4):after
+			content ""
+
+		li:after
+			content ", "
+			color #aaa
 
 
 // .connection
