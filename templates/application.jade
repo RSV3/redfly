@@ -22,7 +22,27 @@
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user.content}}
+				| {{#if App.admin.contextio}}
+				| {{#if App.admin.googleauth}}
+				.btn-group
+					a.btn(action='noPassword target="view"')
+						i.icon-user
+						|  Log In
+					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
+						span.caret
+					ul.dropdown-menu(role='menu')
+						li
+							a(href='/authorize') GMail
+						li
+							a(action='getPassword target="view"') Password
+				| {{else}}
+				a.btn(action='getPassword target="view"') Log In
+				| {{/if}}
+				| {{else}}
+				| {{#if App.admin.googleauth}}
 				a.btn(href='/authorize') Log In
+				| {{/if}}
+				| {{/if}}
 				| {{else}}
 				.btn-group
 					+linkTo('userProfile class="btn"')
@@ -48,7 +68,7 @@
 								i.icon-linkedin-sign.icon-large
 						li.divider
 						li
-							a(href='mailto:pharcosyle@gmail.com?subject=Dear Chris can you fix it for me...', target='_blank') Report a bug
+							a(href='mailto:justin@da.r-w.in?subject=can you fix it for me...', target='_blank') Report a bug
 						li.divider
 						{{#if App.user.admin}}
 						li
@@ -59,6 +79,39 @@
 						li
 							| <a href="#" {{action logout}}>Log Out</a>
 				| {{/unless}}
+				+view('view.loginView')
+					+view('view.editView')
+						div(bindAttr='class="view.parentView.parentView.showLogin::hide"')
+							.popover
+								.nav-header Email credentials
+								div(bindAttr='class=":control-group"')
+									+view('view.field viewName="email" class="email" placeholder="email"')
+								div(bindAttr='class=":control-group"')
+									+view('view.field type="password" viewName="password" class="password" placeholder="password"').pull-right
+								+if('view.parentView.parentView.advanced')
+									.nav-header IMAP settings
+									div(bindAttr='class=":control-group"')
+										+view('view.field viewName="user" class="user"')
+									div(bindAttr='class=":control-group"')
+										+view('view.field viewName="server" class="server"')
+									div(bindAttr='class=":control-group"')
+										span Port
+										+view('view.field viewName="port" class="port"')
+										span SSL
+										+view('view.check viewName="secure" class="secure"')
+								+unless('view.working')
+									a.advanced(href="#", action='advance target="view"')
+										+unless('view.parentView.parentView.advanced')
+											span advanced &nbsp;
+											i.icon-caret-down
+										+if('view.parentView.parentView.advanced')
+											span hide &nbsp;
+											i.icon-caret-up
+									button(href='#', action='login target="view"')
+										| Login 
+										i.icon-ok
+									+else
+										i.icon-spinner.icon-spin
 
 .container
 	.row-fluid

@@ -13,6 +13,8 @@ module.exports = (DS, App) ->
 		blacklistdomains: DS.attr 'array'
 		blacklistemails: DS.attr 'array'
 		blacklistnames: DS.attr 'array'
+		contextio: DS.attr 'boolean'	# currently, these flags are from config, not database
+		googleauth: DS.attr 'boolean'
 
 	App.User = DS.Model.extend
 		date: DS.attr 'date'

@@ -44,6 +44,20 @@ organisation = #e51937
 		border-bottom-right-radius 4px
 
 
+.password-login
+	.popover
+		margin-left	-100%
+	button
+		float	right
+	a.advanced:hover
+		text-decoration	none
+	input.port
+		margin-right	1em
+		margin-left	1em
+		width	4em
+	input.secure
+		margin-left	5px
+		margin-top	-5px
 
 
 // Utility classes.
@@ -118,19 +132,19 @@ tagger(fontSize)
 			a:hover
 				text-decoration none
 
-span.label.organisation
+span.label.organisation, a.label.organisation
 	background-color	#999
 	border-color		#444
-span.label.industry
+span.label.industry, a.label.industry
 	background-color	#789
 	border-color		#456
-span.label.project
+span.label.project, a.label.project
 	background-color	#987
 	border-color		#654
-span.label.theme
+span.label.theme, a.label.theme
 	background-color	#978
 	border-color		#645
-span.label.role
+span.label.role, a.label.role
 	background-color	#798
 	border-color		#564
 
@@ -211,7 +225,7 @@ body
 		text-decoration	none
 	.indtags, .orgtags
 		margin-left 1em
-		span.label
+		span.label, a.label
 			margin	0 3px 0 3px
 	.indtags
 		margin-bottom	1em
@@ -626,4 +640,7 @@ tag(baseFontSize)
 // 		display inline-block
 // 		line-height 21px
 
+
+.password-login input.error
+	background-color	#fdd
 

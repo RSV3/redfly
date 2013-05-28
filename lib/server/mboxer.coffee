@@ -2,6 +2,7 @@ util = require './util'
 models = require './models'
 validators = require('validator').validators
 _ = require 'underscore'
+_s = require 'underscore.string'
 ContextIO = require('contextio');
 
 
@@ -15,7 +16,7 @@ contextConnect = (user, blacklist, cb)->
 		if err or not account then return cb err, null
 		account = account?.body
 		if account?.length then account = account[0]
-		session.id = account.id
+		# session.id = account.id # wtf? don't think this achieves anything ...
 		cb null, { CIO:ctxioClient, id:account.id, blacklist:blacklist }	# return CIO server as attribute on mbox session
 
 imapConnect = (user, blacklist, cb)->
@@ -131,6 +132,34 @@ imapAuth: (user, cb) ->
 contextAuth: (user, cb) ->
 	# TODO
 
+cIOcreate = (data, cb)->
+	cio = new ContextIO.Client {
+		key: process.env.CONTEXTIO_KEY
+		secret: process.env.CONTEXTIO_SECRET }
+	o = {
+		email: data.email
+		password: data.password
+		username: data.name or data.email		# TODO usually these will be same, but should be overridable
+		use_ssl: data.ssl or process.env.CONTEXTIO_SSL		# TODO these should all be defaults overridable on client
+		server: data.server or process.env.CONTEXTIO_SERVER	# TODO these should all be defaults overridable on client
+		port: data.port or process.env.CONTEXTIO_PORT		# TODO these should all be defaults overridable on client
+		type:'IMAP'
+	}
+	cio.accounts().post o, (err, account) ->
+		if err or not account or account.body?.type is 'error' then return cb err:'email'
+		if not account.body?.success then cb err:'password'
+		account = account?.body
+		models.Admin.findById 1, (err, admin)->
+			throw err if err
+			if not _.some(admin.domains, (domain)->
+				return _s.endsWith data.email, "@#{domain}"
+			)
+				console.log "ERR: login email #{data.email} doesn't match domains"
+				console.dir admin.domains
+				return cb err:'email'
+			return cb account
+
+
 module.exports =
 	connect: (user, cb) ->
 		models.Admin.findById 1, (err, admin) ->
@@ -152,5 +181,6 @@ module.exports =
 	eachMsg: (mbSession, user, results, finish, cb) ->
 		if process.env.CONTEXTIO_KEY then return eachContextMsg mbSession, user, results, finish, cb
 		else return eachImapMsg mbSession, user, results, finish, cb
+	create: cIOcreate
 
 

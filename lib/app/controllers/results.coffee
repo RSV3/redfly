@@ -143,6 +143,7 @@ module.exports = (Ember, App, socket) ->
 			Ember.run.next this, ()->
 				doTags 'indTags', @
 		).observes 'indTags.@each'
+
 		setFilters: (->			# prepare the filters based on the sort results
 				years = []
 				oC = @get('all')
@@ -165,8 +166,15 @@ module.exports = (Ember, App, socket) ->
 				@set 'allThoseNoses', oC.getEach('knows')
 			).observes 'all.@each'
 
+		maybeToggle: (bod)->
+			for prefix in ['org', 'ind']
+				if (t = _.find(@get("#{prefix}TagsToSelect"), (item)-> item.id is bod))
+					Ember.set t, 'checked', not t.checked
+
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
+		clicktag: (ev)->
+			this.controller.maybeToggle ev.body
 
 	App.ResultController = Ember.ObjectController.extend App.ContactMixin,
 		notes: (->

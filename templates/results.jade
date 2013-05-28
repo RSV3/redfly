@@ -61,10 +61,12 @@
 			.row-fluid
 				.orgtags
 					{{#each orgTags}}
-					span(bindAttr='class=":label category"') {{body}}
+					a(bindAttr='class=":label category"', action='clicktag this target="view"')
+						span {{body}}
 					{{/each}}
 					{{#each indTags}}
-					span(bindAttr='class=":label category"') {{body}}
+					a(bindAttr='class=":label category"', action='clicktag this target="view"')
+						span {{body}}
 					{{/each}}
 	{{/each}}
 

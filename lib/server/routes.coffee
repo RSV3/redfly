@@ -1,9 +1,11 @@
 module.exports = (app, route) ->
 	_ = require 'underscore'
+	moment = require 'moment'
+	crypto = require './crypto'
 	logic = require './logic'
 	models = require './models'
-	moment = require 'moment'
 	mailer = require './mail'
+	mboxer = require './mboxer'
 
 
 	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
@@ -31,6 +33,10 @@ module.exports = (app, route) ->
 					if id = data.id
 						model.findById id, (err, doc) ->
 							throw err if err
+							if data.type is 'Admin'
+								# mongoose is cool, but we need do this to get around its protection
+								if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+								if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 							cb doc
 					else if ids = data.ids
 						model.find _id: $in: ids, (err, docs) ->
@@ -137,6 +143,38 @@ module.exports = (app, route) ->
 
 	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
+
+
+	route 'login.contextio', (fn, data, io, session) ->
+		models.User.findOne email: data.email, (err, user) ->
+			if err
+				console.log err
+				return fn err:'email'
+			if user and user.cIO
+				if crypto.hashPassword(data.password, user.cIO.salt) is user.cIO.hash
+					session.user = user.id
+					session.save()
+					return fn id:user.id
+			mboxer.create data, (cIOdata)->
+				console.dir cIOdata
+				if not cIOdata?.success then return fn err:'email'
+				if cIOdata.err then return fn err:cIOdata.err
+				if not user
+					console.log "creating new user #{data.email}"
+					console.dir cIOdata
+					user = new models.User
+				user.name = data.name or data.email
+				user.email = data.email
+				user.cIO =
+					label:cIOdata.source.label
+					salt:crypto.generateSalt()
+				user.cIO.hash = crypto.hashPassword(data.password, user.cIO.salt)
+				user.save (err, u) ->
+					if err or not u then console.dir err
+					else
+						session.user = u.id
+						session.save()
+						fn id:u.id
 
 
 	# refactored search:
