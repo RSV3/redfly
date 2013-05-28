@@ -8,9 +8,9 @@ module.exports =
 
 
 	development:
-		#HOST: '127.0.0.1:5000'
-		HOST:	'10.0.0.2:5000'
-		AUTO_AUTH: '50f7716ac458e60200000007'
+		HOST: '127.0.0.1:5000'
+		#HOST:	'10.0.0.2:5000'
+		#AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
@@ -22,8 +22,13 @@ module.exports =
 		LINKEDIN_API_KEY: '1g1zfsv0gan1'
 		LINKEDIN_API_SECRET: 'tndJIY2VyDODvobq'
 
-		#CONTEXTIO_KEY: 'tjwypeyu'
-		#CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
+		CONTEXTIO_KEY: 'tjwypeyu'
+		CONTEXTIO_SECRET: 'S6Y61Fgm0aIitFBV'
+
+		# these defaults should be overridable in the client
+		CONTEXTIO_SERVER: 'imap.googlemail.com'
+		CONTEXTIO_PORT: '993'
+		CONTEXTIO_SSL: '1'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 

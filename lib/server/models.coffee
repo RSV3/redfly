@@ -43,6 +43,14 @@ UserSchema = new Schema
 	linkedInAuth: 
 		token: type: String
 		secret: type: String
+	cIO:
+		salt: type: String
+		hash: type: String
+		label: type: String
+		user: type: String		# TODO: store and search on this where appropriate
+		host: type: String		# TODO: store if default override
+		port: type: Number		# TODO: store if default override
+		ssl: type: Boolean		# TODO: store if default override
 
 
 MeasurementSchema = new Schema

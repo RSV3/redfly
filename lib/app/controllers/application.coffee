@@ -6,6 +6,14 @@ module.exports = (Ember, App, socket) ->
 
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../templates/application'
+		loggingOn: false
+
+		showLogin: false
+		advanced: false
+		noPassword: ->
+			@set 'showLogin', false
+		getPassword: ->
+			@set 'showLogin', true
 
 		didInsertElement: ->
 
@@ -34,3 +42,33 @@ module.exports = (Ember, App, socket) ->
 			tagName: 'li'
 			select: (context) ->
 				@get('controller').transitionToRoute 'contact', context
+
+		loginView: Ember.View.extend
+			editView: Ember.View.extend
+				tagName: 'span'
+				classNames: ['overlay', 'password-login']
+				field: Ember.TextField
+				check: Ember.Checkbox
+				advance: ->
+					@toggleProperty 'parentView.parentView.advanced'
+				login: ->
+					@set 'working', true
+					@$().find(".error").removeClass("error")
+					transmit =
+						email:@get('email.value')
+						password:@get('password.value')
+					socket.emit 'login.contextio', transmit, (r) =>
+						if r.err
+							@$().find(".#{r.err}").addClass 'error'
+							@set 'working', false
+						else if r.id
+							App.user.set 'content', App.User.find r.id
+							@set 'working', false
+							@.set 'parentView.parentView.showLogin', false
+							socket.emit 'session', (session) ->
+								console.log "got session:"
+								console.dir session
+								if session.user is r.id then console.log "rite user"
+								else console.log "rong user"
+						else console.dir r
+

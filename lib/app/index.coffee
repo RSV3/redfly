@@ -44,6 +44,8 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	require('./router') Ember, App, socket
 
 	socket.emit 'session', (session) ->
+		console.log "got session:"
+		console.dir session
 		if id = session.user
 			App.auth.login id
 			App.user.get('content').on 'didLoad', ->
