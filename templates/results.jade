@@ -31,7 +31,7 @@
 						| {{#if lastMail}}
 						.row-fluid
 							p
-								b Last mail:&nbsp
+								b Last mail:&nbsp;
 								span
 									+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
 								span
@@ -40,15 +40,16 @@
 							
 			.span4
 				b Knows: &nbsp;
-				| {{#if isKnown}}
-				span you{{#if knowsSome}},{{/if}}&nbsp;
-				| {{/if}}
-				{{#each knowsSome}}
-				span.knowsome
-					+linkTo('profile this')
-						| {{canonicalName}}
-					|,&nbsp;
-				{{/each}}
+				.search-result.knows
+					ul.tags
+						| {{#if isKnown}}
+						li you
+						| {{/if}}
+						{{#each knowsSome}}
+						li
+							+linkTo('profile this')
+								| {{canonicalName}}
+						{{/each}}
 
 		.row-fluid.clearpic
 			| {{#if lastNote}}
