@@ -1,10 +1,9 @@
 extends layout
 
+block email_header 
+  strong This week at #{organization_name} 
 
 block content
-	p(style='color: #e51937') NEW THIS WEEK: "Sync Linkedin" and try the new "Search" feature by typing query and pressing enter!
-	br
-
 	p Contacts in the queue: #{contactsQueued}
 	p Tags created: #{tagsCreated}
 	p Notes authored: #{notesAuthored}

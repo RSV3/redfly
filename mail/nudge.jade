@@ -1,17 +1,61 @@
 extends layout
 
+block email_header 
+  strong This week at #{organization_name} 
 
 block content
 
-	p I noticed that you've emailed some new people recently:
+  table
+    tr
+      td
+      td
+      td 
+        //- empty space
+        &nbsp; 
+      td
+      td
+    tr
+      td
+      td
+      td
+        //- empty space
+        &nbsp;
+      td
+      td
 
-	ul
-		each name in names
-			li.strong= name
+  p(style="color: #c25130;") Who are we talking to? 
+  table
+    tr
+      td
+        ul
+          li #{emails_first} sent to employees at #{first_company}
+          li #{emails_second} sent to employees at #{second_company}
+          li #{emails_third} sent to employees at #{third_company}
 
-	p Come to Redfly and classify them!
+      td
+        // company logos 
+        &nbsp;
+
+  p(style="color: #c25130;") Redfly and You 
+  table
+    tr
+      td
+        You have made #{new_contacts} new contacts this week
+      td
+        // show linkedin or facebook pictures
+        ul
+          each name in names
+            li.strong= name
+
+
+  table 
+    tr
+      td
+        p(style="color: #c25130;") Come to Redfly to Classify or Browse our = contacts and counting
+      td
+        a(href='#{path('/classify')}', style="font-size: 18px; text-decoration: none; background-color: #556C90; padding: 5px 10px; border-radius: 5px; color: #D9FFFD") Take me there! 
+
 	p
 		i
 			Unclassified contacts will be saved automatically in five days time ...
 
-	a(href='#{path('/classify')}', style="font-size: 18px; text-decoration: none; background-color: #556C90; padding: 5px 10px; border-radius: 5px; color: #D9FFFD") IMMEDIATELY GOOD SIR
