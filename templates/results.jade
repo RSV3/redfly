@@ -11,19 +11,24 @@
 	+unless ('theResults.paginatedItems')
 		.loading
 			i.icon-spinner.icon-spin
-	| {{#each theResults.paginatedItems itemController="result"}}
+	| {{#each theResults.paginatedItems itemViewClass="App.ResultView" itemController="result"}}
 	.row-fluid.top
+		| {{#if showitall}}
+		hr.topexpanded
+		{{partial "contact"}}
+		hr.botexpanded
+		| {{else}}
 		.row-fluid
 			.span8
 				.row-fluid
 					.span2.picture
-						+linkTo('contact this tagName="a"')
+						a(href='#', action='setShowItAll this target="view"')
 							| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
 					.span10
 						+if('isVip')
 							.maybevip
 								i.icon-star.icon-2x.fullredstar
-						+linkTo('contact this tagName="a"')
+						a(href='#', action='setShowItAll this target="view"')
 							h3 {{canonicalName}}
 						div
 							i
@@ -68,6 +73,7 @@
 					a(bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
+		| {{/if}}
 	{{/each}}
 
 	ul.pager
