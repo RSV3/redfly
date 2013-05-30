@@ -166,6 +166,8 @@ module.exports = (app, route) ->
 				user.name = data.name or data.email
 				user.email = data.email
 				user.cIO =
+					expired:false
+					user:data.name
 					label:cIOdata.source.label
 					salt:crypto.generateSalt()
 				user.cIO.hash = crypto.hashPassword(data.password, user.cIO.salt)

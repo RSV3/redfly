@@ -51,6 +51,7 @@ UserSchema = new Schema
 		host: type: String		# TODO: store if default override
 		port: type: Number		# TODO: store if default override
 		ssl: type: Boolean		# TODO: store if default override
+		expired: type: Boolean		# TODO: if the password fails in nudge, set this and ask user to provide a new one
 
 
 MeasurementSchema = new Schema

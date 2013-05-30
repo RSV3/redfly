@@ -12,7 +12,7 @@ module.exports = (Ember, App, socket) ->
 		toptags = []
 		for t of tags
 			lab = _s.capitalize(t)
-			if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
+			if lab.length > 20 then lab = lab.substr(0,15) + '...'						# truncate long tags
 			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
 		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data'		# and this one's for krz
 		tagnames = _.pluck tts, 'id'
@@ -87,6 +87,7 @@ module.exports = (Ember, App, socket) ->
 				content: do =>
 					@set 'hiding', @get('all.length') - @get('filteredItems.length')
 					@set 'rangeStart', 0
+					@get('showWhich')?.set 'showitall', false
 					if @get 'sortType'
 						Ember.ArrayController.create
 							content: @get 'filteredItems'
@@ -173,10 +174,8 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
-		clicktag: (ev)->
-			this.controller.maybeToggle ev.body
 
-	App.ResultController = Ember.ObjectController.extend App.ContactMixin,
+	App.ResultController = App.ContactController.extend
 		notes: (->
 			query = contact: @get('id')
 			App.filter App.Note, {field: 'date'}, query, (data) =>
@@ -246,6 +245,17 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
+
+	App.ResultView = App.ContactView.extend
+		clicktag: (ev)->
+			@get('parentView').controller.maybeToggle ev.body
+
+		setShowItAll: (r)->
+			if (old = @get 'parentView.controller.showWhich')
+				old.set 'showitall', false
+			@get('parentView.controller.showWhich')?.set 'showitall', false
+			@set 'parentView.controller.showWhich', r
+			r.set 'showitall', true
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'
