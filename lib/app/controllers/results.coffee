@@ -52,10 +52,13 @@ module.exports = (Ember, App, socket) ->
 		knoNames: []
 		noseToPick: []
 		all: []				# every last search result
+		nofilters: false	# set for derivations that don't use filters
 		initialflag: 0		# dont scroll on initial load
 		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
 			if _.isEmpty (oC = @get('all')) then return []
 			oC.filter (item) =>
+				if @get 'nofilters' then return true
+
 				if @years and not (item.get('yearsExperience') >= @years)
 					return false
 
@@ -77,7 +80,7 @@ module.exports = (Ember, App, socket) ->
 							if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
 								return true
 				noTags
-			).property 'all.@each', 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+			).property 'all.@each', 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked', 'nofilters'
 
 		theResults: (->		# paginated content
 			if not @get 'filteredItems.length'
@@ -146,6 +149,7 @@ module.exports = (Ember, App, socket) ->
 		).observes 'indTags.@each'
 
 		setFilters: (->			# prepare the filters based on the sort results
+				if @get 'nofilters' then return
 				years = []
 				oC = @get('all')
 				if not oC or not oC.get('length')

@@ -29,16 +29,43 @@ mail.sendNudge = (user, contacts, cb) ->
 			email = _.first(contact.emails)
 			splitted = email.split '@'
 			domain = _.first _.last(splitted).split('.')
-			names.push _.first(splitted) + ' [' + domain + ']'
+			names.push "#{_.first(splitted)} [#{domain}]"
 	nicknames = (util.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
 	
 	mail.sendTemplate 'nudge',
 		to: user.email
 		from: from
-		subject: 'Tell me more about ' + nicknames.join(', ') + '...'	# TO-DO Use _s.toSentenceSerial whenever it becomes available.
-		title: 'Hi ' + user.name + '!'
+		subject: "Tell me more about #{nicknames.join(', ')}..."	# TO-DO Use _s.toSentenceSerial whenever it becomes available.
+		title: "Hi #{user.name}!"
 		names: names
 	, cb
+
+
+mail.sendNewNewsletter = (user, cb) ->
+	logic = require './logic'
+	require('step') ->
+		logic.countConts @parallel()
+		logic.myConts user.get('id'), @parallel()
+		logic.recentConts @parallel()
+		logic.recentOrgs @parallel()
+		return undefined
+	, (err, numContacts, numMyContacts, recentContacts, recentOrgs) ->
+		if err
+			console.log "exiting sNN with error:"
+			return cb err
+		templateObj = 
+			org: process.env.ORGANISATION_TITLE
+			title: "Hi #{user.name} !"
+			to: user.email
+			from: from
+			subject: 'This week on Redfly'
+			numContacts: numContacts
+			numMyContacts: numMyContacts
+			recentContacts: recentContacts
+			recentOrgs: recentOrgs
+		console.dir templateObj
+		mail.sendTemplate 'newnewsletter', templateObj, cb
+
 
 
 mail.sendNewsletter = (user, cb) ->

@@ -42,4 +42,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/classify') Ember, App, socket
 	require('./controllers/import') Ember, App, socket
 	require('./controllers/admin') Ember, App, socket
+	require('./controllers/companies') Ember, App, socket
 
