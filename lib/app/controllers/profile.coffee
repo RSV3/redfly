@@ -20,4 +20,5 @@ module.exports = (Ember, App, socket) ->
 								data.get('addedBy.id') is @get('id') and _.contains data.get('knows').getEach('id'), @get('id')
 						sortProperties: ['added']
 						sortAscending: false
+				itemsPerPage: 25
 			).property 'id'

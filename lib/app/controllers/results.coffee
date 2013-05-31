@@ -95,6 +95,7 @@ module.exports = (Ember, App, socket) ->
 							orderBy: sortFunc[@get 'sortType']
 					else
 						@get 'filteredItems'
+				itemsPerPage: 25
 		).property 'filteredItems.@each', 'sortType', 'sortDir'
 
 		scrollUp: (->
