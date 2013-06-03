@@ -64,12 +64,12 @@
 					i &nbsp; {{lastNote.body}}
 			| {{/if}}
 			.row-fluid
-				.orgtags
-					{{#each orgTags}}
+				.sometags
+					{{#each view.orgTags}}
 					a(bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
-					{{#each indTags}}
+					{{#each view.indTags}}
 					a(bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}

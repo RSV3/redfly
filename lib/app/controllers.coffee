@@ -18,6 +18,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/tag') Ember, App, socket
 	require('./controllers/components/newtag') Ember, App, socket
 	require('./controllers/components/tagger') Ember, App, socket
+	require('./controllers/components/fulltagger') Ember, App, socket
 	require('./controllers/components/tagadmin') Ember, App, socket
 	require('./controllers/components/loader') Ember, App, socket
 	require('./controllers/components/linker') Ember, App, socket
