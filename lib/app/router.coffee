@@ -6,10 +6,6 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			route.render name,
-				into: 'application'
-				outlet: 'main'
-				controller: name
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
@@ -20,6 +16,10 @@ module.exports = (Ember, App, socket) ->
 					into: 'application'
 					outlet: 'sidebar'
 					controller: 'feed'
+			route.render name,
+				into: 'application'
+				outlet: 'main'
+				controller: name
 
 	App.Router.map ->
 		@route 'profile', path: '/profile/:user_id'
@@ -42,6 +42,8 @@ module.exports = (Ember, App, socket) ->
 		@route 'invalid'
 		@route 'link'
 
+		@route 'recent'
+		@route 'companies'
 
 	App.ApplicationRoute = Ember.Route.extend
 		events:
@@ -102,6 +104,19 @@ module.exports = (Ember, App, socket) ->
 			}
 		renderTemplate: ->
 			@router.connectem @, 'contacts'
+
+	App.RecentRoute = Ember.Route.extend
+		redirect: ->
+			newResults = App.Results.create {text: "contact:10"}
+			@transitionTo 'results', newResults
+
+	App.CompaniesRoute = Ember.Route.extend
+		setupController: (controller) ->
+			controller.set 'all', null
+			socket.emit 'companies', (results)=>
+				controller.set 'all', results
+		renderTemplate: ->
+			@router.connectem @, 'companies'
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->

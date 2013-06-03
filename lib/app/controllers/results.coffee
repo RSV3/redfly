@@ -6,14 +6,15 @@ module.exports = (Ember, App, socket) ->
 
 	doTags = (whichTags, context)->
 		oT = context.get(whichTags)
-		if not oT or not oT.get('length')
-			return
+		if not oT or not oT.get('length') then return
+		contCnt = context.get('all')?.get 'length'
 		tags = _.countBy oT.getEach('body'), (item)-> item
 		toptags = []
 		for t of tags
-			lab = _s.capitalize(t)
-			if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
-			toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
+			if tags[t] < contCnt
+				lab = _s.capitalize(t)
+				if lab.length > 20 then lab = lab.substr(0,15) + '...'						# truncate long tags
+				toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
 		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data'		# and this one's for krz
 		tagnames = _.pluck tts, 'id'
 		context.set "#{whichTags}ToSelect", tts	# array of top checkboxes
@@ -56,8 +57,7 @@ module.exports = (Ember, App, socket) ->
 		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
 			if _.isEmpty (oC = @get('all')) then return []
 			oC.filter (item) =>
-				if @years and not (item.get('yearsExperience') >= @years)
-					return false
+				if @years and not (item.get('yearsExperience') >= @years) then return false
 
 				hasnose = found = false
 				if (n2p = @get('noseToPick'))
@@ -87,6 +87,7 @@ module.exports = (Ember, App, socket) ->
 				content: do =>
 					@set 'hiding', @get('all.length') - @get('filteredItems.length')
 					@set 'rangeStart', 0
+					@get('showWhich')?.set 'showitall', false
 					if @get 'sortType'
 						Ember.ArrayController.create
 							content: @get 'filteredItems'
@@ -117,8 +118,8 @@ module.exports = (Ember, App, socket) ->
 				nose = _.countBy results, (item)-> item
 				topnose = []
 				for k, v of nose
-					if k and v then topnose.push {id:k, count:v}
-				if topnose.length<2 then return						# no point having a filter for one user!
+					if k and v and v < aC.get('length') then topnose.push {id:k, count:v}
+				if not topnose.length then return				# no point having a filter for no users!
 				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
 				@set 'knoNames', Ember.ArrayProxy.create
 					content: App.User.find _id: $in: ids
@@ -174,10 +175,8 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
-		clicktag: (ev)->
-			this.controller.maybeToggle ev.body
 
-	App.ResultController = Ember.ObjectController.extend App.ContactMixin,
+	App.ResultController = App.ContactController.extend
 		notes: (->
 			query = contact: @get('id')
 			App.filter App.Note, {field: 'date'}, query, (data) =>
@@ -194,25 +193,9 @@ module.exports = (Ember, App, socket) ->
 		lastMail: (->
 			@get 'mails.lastObject'
 		).property 'mails.lastObject'
-		indTags: (->
-			query = category:'industry', contact: @get('id')
-			socket.emit 'tags.popular', query, (popularTags) =>
-				result.pushObjects _.map popularTags[0..3], (t)->{body:t.body, category:t.category}
-			result = []
-		).property 'id'
-		orgTags: (->
-			query = category:{$in: ['theme', 'role', 'project']}, contact: @get('id')
-			socket.emit 'tags.popular', query, (popularTags) =>
-				result.pushObjects _.map popularTags, (t)->{body:t.body, category:t.category}
-			result = []
-		).property 'id'
 		sentdate: (->
 			moment(@get('lastMail.sent')).fromNow()
 		).property 'lastMail'
-		isKnown: (->
-				@get('knows')?.find (user) ->
-					user.get('id') is App.user.get('id')	# TO-DO maybe this can be just "user is App.user.get('content')"
-			).property 'knows.@each.id'
 		knowsSome: []
 		setKS: (->
 			fams = @get('measures.familiarity')
@@ -225,28 +208,20 @@ module.exports = (Ember, App, socket) ->
 		).observes 'knows.@each', 'measures.familiarity.@each'
 
 
-		gmailSearch: (->
-				encodeURI '//gmail.com#search/to:' + @get('email')
-			).property 'email'
-		directMailto: (->
-				'mailto:'+ @get('canonicalName') + ' <' + @get('email') + '>' + '?subject=What are the haps my friend!'
-			).property 'canonicalName', 'email'
-		hasIntro: (->
-				@get('addedBy') and not @get('isKnown')		#and @get('addedBy.email') 
-			).property 'addedBy'
-		introMailto: (->
-				carriage = '%0D%0A'
-				baseUrl = 'http://' + window.location.hostname + (window.location.port and ":" + window.location.port)
-				url = baseUrl + '/contact/' + @get 'id'
-				'mailto:' + @get('addedBy.canonicalName') + ' <' + @get('addedBy.email') + '>' +
-					'?subject=You know ' + @get('nickname') + ', right?' +
-					'&body=Hey ' + @get('addedBy.nickname') + ', would you kindly give me an intro to ' + @get('canonicalName') + '? ' +
-					'This fella right here:' + carriage + carriage + encodeURI(url) +
-					carriage + carriage + 'Your servant,' + carriage + App.user.get('nickname')
-			).property 'nickname', 'canonicalName', 'addedBy.canonicalName', 'addedBy.email', 'addedBy.nickname'
-		linkedinMail: (->
-				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
-			).property 'linkedin'
+	App.ResultView = App.ContactView.extend
+		clicktag: (ev)->
+			@get('parentView').controller.maybeToggle ev.body
+
+		setShowItAll: (r)->
+			if (old = @get 'parentView.controller.showWhich')
+				old.set 'showitall', false
+			@get('parentView.controller.showWhich')?.set 'showitall', false
+			@set 'parentView.controller.showWhich', r
+			r.set 'showitall', true
+			that = this
+			Ember.run.next this, ()->
+				Ember.run.next this, ()->
+					$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'

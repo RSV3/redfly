@@ -54,7 +54,9 @@ imapSearch = (session, user, cb)->
 contextSearch = (session, user, cb)->
 	options = from:user.email, limit:600, folder:'[Gmail]/Sent Mail'
 	if user.lastParsed then options.date_after = user.lastParsed.getTime()/1000
-	session.CIO.accounts(session.id).messages().get options, (err, results)->
+	m = session.CIO.accounts(session.id)?.messages()
+	if not m then return cb -1, null
+	m.get options, (err, results)->
 		cb err, results?.body
 
 
@@ -165,8 +167,12 @@ module.exports =
 		models.Admin.findById 1, (err, admin) ->
 			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
 			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
-			if process.env.CONTEXTIO_KEY then return contextConnect user, blacklist, cb
-			else return imapConnect user, blacklist, cb
+			console.log "connecting to #{user.email}"
+			if process.env.GOOGLE_API_ID and user.oauth
+				return imapConnect user, blacklist, cb
+			if process.env.CONTEXTIO_KEY and user.cIO and user.cIO.hash and not user.cIO.expired
+				return contextConnect user, blacklist, cb
+			return console.log "PARSE connect ERROR: no mailbox option (contextio, googleauth) to connect to"
 	auth: (user, cb) ->
 		if process.env.CONTEXTIO_KEY then return contextAuth user, cb
 		else return imapAuth user, cb

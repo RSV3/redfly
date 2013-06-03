@@ -19,6 +19,7 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	templates.results = require '../../templates/results'
 	templates.dashboard = require '../../templates/dashboard'
 	templates.admin = require '../../templates/admin'
+	templates.companies = require '../../templates/companies'
 
 	templates.filter = require '../../templates/sidebars/filter'
 	templates.feed = require '../../templates/sidebars/feed'
@@ -44,8 +45,6 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	require('./router') Ember, App, socket
 
 	socket.emit 'session', (session) ->
-		console.log "got session:"
-		console.dir session
 		if id = session.user
 			App.auth.login id
 			App.user.get('content').on 'didLoad', ->
