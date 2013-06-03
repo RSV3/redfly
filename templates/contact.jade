@@ -93,7 +93,8 @@
 						+unless('isKnown')
 							span.leftbarlabel Importance
 						.barviewcontainer
-							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}} />
+							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}}>
+							| </div>
 
 	.span3
 		.row-fluid
@@ -139,7 +140,7 @@
 
 		| {{#if isKnown}}
 		.row-fluid.actions
-			| <a class="btn" role="button" {{action showMerge target="view"}}>
+			| <a class="btn mergebutt" role="button" {{action showMerge target="view"}}>
 			i.icon-signin
 			| &nbsp;&nbsp;Merge
 			| </a>
@@ -162,18 +163,18 @@
 		.row-fluid.tag-category
 			.span4
 				p.lead project
-				| {{view App.TaggerView contactBinding="this" category="project" full="true" tabindex="1"}}
+				| {{view App.FullTaggerView contactBinding="this" category="project" full="true" tabindex="1"}}
 			.span4
 				p.lead theme
-				| {{view App.TaggerView contactBinding="this" category="theme" full="true" tabindex="1"}}
+				| {{view App.FullTaggerView contactBinding="this" category="theme" full="true" tabindex="1"}}
 			.span4
 				p.lead role
-				| {{view App.TaggerView contactBinding="this" category="role" full="true" tabindex="1"}}
+				| {{view App.FullTaggerView contactBinding="this" category="role" full="true" tabindex="1"}}
 .row-fluid
 	.span6
 		.row-fluid.tag-category
 			p.lead Industry Tags
-			| {{view App.TaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
+			| {{view App.FullTaggerView contactBinding="this" category="industry" full="true" tabindex="2"}}
 	.span6
 		.row-fluid
 			p.lead Notes

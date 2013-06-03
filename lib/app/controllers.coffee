@@ -18,6 +18,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/components/tag') Ember, App, socket
 	require('./controllers/components/newtag') Ember, App, socket
 	require('./controllers/components/tagger') Ember, App, socket
+	require('./controllers/components/fulltagger') Ember, App, socket
 	require('./controllers/components/tagadmin') Ember, App, socket
 	require('./controllers/components/loader') Ember, App, socket
 	require('./controllers/components/linker') Ember, App, socket
@@ -32,8 +33,8 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/application') Ember, App, socket
 	require('./controllers/home') Ember, App, socket
 	require('./controllers/profile') Ember, App, socket
-	require('./controllers/results') Ember, App, socket
 	require('./controllers/contact') Ember, App, socket
+	require('./controllers/results') Ember, App, socket
 	require('./controllers/leaderboard') Ember, App, socket
 	require('./controllers/contacts') Ember, App, socket
 	require('./controllers/tags') Ember, App, socket
@@ -42,4 +43,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/classify') Ember, App, socket
 	require('./controllers/import') Ember, App, socket
 	require('./controllers/admin') Ember, App, socket
+	require('./controllers/companies') Ember, App, socket
 
