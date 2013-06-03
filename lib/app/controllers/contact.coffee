@@ -100,6 +100,34 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/contact'
 		classNames: ['contact']
 
+		indTags: (->
+			@get('catTags')?['industry']
+		).property 'catTags'
+		orgTags: (->
+			result = []
+			if not (ct = @get('catTags')) then return result
+			for own key, val of ct
+				if key isnt 'industry' then result = result.concat val
+			result
+		).property 'catTags'
+		catTags: (->
+			tags = @get 'tags'
+			cattags =
+				industry:[]
+				project:[]
+				role:[]
+				theme:[]
+			if not tags or not tags.get('length') then return cattags
+			tags.forEach (t)->
+				if (c = t.get('category'))
+					if not cattags[c] then cattags[c]=[]
+					cattags[c].push t
+			cattags
+		).property 'tags.@each'
+		tags: (->
+			App.Tag.find contact: @get 'controller.id'
+		).property 'controller.id'
+
 		introMailto: (->
 			CR = '%0D%0A'		# carriage return / line feed
 			port = if window.location.port then ":#{window.location.port}" else ""
