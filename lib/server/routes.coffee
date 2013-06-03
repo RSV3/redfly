@@ -621,7 +621,7 @@ module.exports = (app, route) ->
 		fn()
 
 	route 'recent', (fn)->
-		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(10).execFind (err, contacts)->
+		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(25).execFind (err, contacts)->
 			throw err if err
 			recent = _.map contacts, (c)->c._id.toString()
 			console.log "recent"

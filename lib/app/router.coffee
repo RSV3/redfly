@@ -107,7 +107,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.RecentRoute = Ember.Route.extend
 		redirect: ->
-			newResults = App.Results.create {text: "contact:10"}
+			newResults = App.Results.create {text: "contact:25"}
 			@transitionTo 'results', newResults
 
 	App.CompaniesRoute = Ember.Route.extend

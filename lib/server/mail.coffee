@@ -16,6 +16,8 @@ from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 
 
 mail.sendNudge = (user, contacts, cb) ->
+	return sendNewNewsletter user, cb, contacts
+
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	util = require './util'
@@ -41,7 +43,7 @@ mail.sendNudge = (user, contacts, cb) ->
 	, cb
 
 
-mail.sendNewNewsletter = (user, cb) ->
+mail.sendNewNewsletter = (user, cb, contacts) ->
 	logic = require './logic'
 	require('step') ->
 		logic.countConts @parallel()
@@ -53,6 +55,7 @@ mail.sendNewNewsletter = (user, cb) ->
 		if err
 			console.log "exiting sNN with error:"
 			return cb err
+		if contacts then recentContacts = contacts.concat recentContacts
 		templateObj = 
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name} !"
@@ -69,6 +72,7 @@ mail.sendNewNewsletter = (user, cb) ->
 
 
 mail.sendNewsletter = (user, cb) ->
+	return sendNewNewsletter user, cb
 	logic = require './logic'
 	require('step') ->
 		logic.summaryContacts @parallel()
