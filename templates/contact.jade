@@ -80,11 +80,11 @@
 		+unless('waitingForMeasures')
 			+if('isKnown')
 				.row-fluid.setmeasure(title='how well do you know this contact?')
-					span.leftsliderlabel Affinity
+					span.leftsliderlabel Relationship Strength 
 					.starcontainer
 						+view('view.starView measure="familiarity"')
-				.row-fluid.setmeasure(title='how important is this contact?')
-					span.leftsliderlabel Importance
+				.row-fluid.setmeasure(title='how influential is this contact?')
+					span.leftsliderlabel Influence 
 					.starcontainer
 						+view('view.starView measure="reachability"')
 			.row-fluid
