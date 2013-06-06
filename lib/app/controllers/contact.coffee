@@ -9,7 +9,8 @@ module.exports = (Ember, App, socket) ->
 			@get('isKnown') or a and not a.get('hidemails')
 		).property 'id'
 		allMeasures: (->
-			App.Measurement.find { contact: @get 'id' }
+			if (id=@get('id'))
+				App.Measurement.find contact:id
 		).property 'id'
 		waitingForMeasures: (->
 			m = @get('allMeasures')
@@ -125,8 +126,9 @@ module.exports = (Ember, App, socket) ->
 			cattags
 		).property 'tags.@each'
 		tags: (->
-			App.Tag.filter {contact: @get('controller.id')}, (data) =>
-				data.get('contact.id') is @get('controller.id')
+			if (id = @get('controller.id'))
+				App.Tag.filter {contact: id}, (data) =>
+					data.get('contact.id') is id
 		).property 'controller.id'
 
 		introMailto: (->

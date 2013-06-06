@@ -189,7 +189,6 @@ module.exports = (app, route) ->
 			terms = _.uniq _.compact compound[1].split(' ')
 		else terms = _.uniq _.compact data.query.split(' ')
 		search = {}
-		sort = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
 		utilisedTypes = []	# this array maps the array of results to their type
 		perfectMatch = []	# array of flags: a perfectmatch is a result set for the full query string,
@@ -200,14 +199,11 @@ module.exports = (app, route) ->
 			for term in terms
 				if terms.length is 1 or not _.contains ['and', 'to', 'with', 'a'], term
 					if compound.length > 1						# type specified, eg tag:slacker
-						if compound[0] is type
-							search[type].push term
+						if compound[0] is type then search[type].push term
 						if compound[0] is 'contact'
 							if type is 'name' then search[type].push term
-							if parseInt(compound[1], 10).toString() is compound[1]
-								limit = parseInt(compound[1], 10)
-								sort.added = -1
-							else if type is 'email' then search[type].push term
+							if parseInt(term).toString() isnt term
+								if type is 'email' then search[type].push term
 					else										# not specified, try this term in each type
 						search[type].push term
 			if not search[type].length then delete search[type]
@@ -220,6 +216,7 @@ module.exports = (app, route) ->
 
 		step = require 'step'
 		step ->
+			sort = {}
 			for type of search
 				terms = search[type]
 				if type is 'tag' or type is 'note'
@@ -231,7 +228,6 @@ module.exports = (app, route) ->
 					field = type + 's'
 				conditions = {}
 				if compound.length > 1 and compound[0] is 'contact'
-					conditions.knows = session.user
 					if parseInt(compound[1], 10).toString() is compound[1]
 						limit = parseInt(compound[1], 10)
 						sort.added = -1
