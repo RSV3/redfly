@@ -77,7 +77,7 @@ everyauth.google.configure
 			return res.redirect '/invalid'
 		if not user.lastParsed
 			return res.redirect '/load'
-		res.redirect '/profile'
+		res.redirect '/recent'
 
 
 everyauth.linkedin.configure
