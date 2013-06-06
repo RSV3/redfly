@@ -125,7 +125,8 @@ module.exports = (Ember, App, socket) ->
 			cattags
 		).property 'tags.@each'
 		tags: (->
-			App.Tag.find contact: @get 'controller.id'
+			App.Tag.filter {contact: @get('controller.id')}, (data) =>
+				data.get('contact.id') is @get('controller.id')
 		).property 'controller.id'
 
 		introMailto: (->
