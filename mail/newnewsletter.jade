@@ -1,0 +1,42 @@
+extends newlayout
+
+
+block content
+	br
+
+	table
+		tbody
+		each contact,i in recentContacts
+			if (i%4 === 0)
+				tr
+			td(style='valign:bottom; width:25%')
+				if contact.picture
+					a(href='#{path(contact.link)}')
+						img(src='#{contact.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+				span #{contact.name}<br>
+				span #{contact.position}
+	div
+		a(href='#{path("/recent")}', style='text-decoration:none; float:right') more...
+
+	br
+	h2 Who are we talking to?
+	div(style='float:left;')
+		ul
+			each org in recentOrgs
+				li(style='font-weight:bold') #{org.company} (#{org.count})
+		a(href='#{path("/companies")}', style='text-decoration:none; float:right') more...
+	
+	div(style='clear:both;')
+		br
+	h2 Redfly and You
+	p You've made #{numMyContacts} new contacts this week
+	br
+	div(style='float:left')
+		h2 Come to Redfly and Classify
+		h2(style='font-size:100%') or Browse our #{numContacts} contacts
+			i &nbsp;and counting
+	div(style='float:right')
+		div(style='border:2px solid black; padding-left:0.5em; padding-right:0.5em; background-color:#468; box-shadow: 0 5px 25px #123;')
+			a(href='#{path("/classify")}', style='text-decoration:none')
+				h1(style='color:white') Take me there!
+

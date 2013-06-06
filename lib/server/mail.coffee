@@ -64,9 +64,8 @@ mail.sendNewNewsletter = (user, cb, contacts) ->
 			subject: 'This week on Redfly'
 			numContacts: numContacts
 			numMyContacts: numMyContacts
-			recentContacts: recentContacts
+			recentContacts: recentContacts[0..12]
 			recentOrgs: recentOrgs
-		console.dir templateObj
 		mail.sendTemplate 'newnewsletter', templateObj, cb
 
 
