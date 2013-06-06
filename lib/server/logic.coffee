@@ -25,7 +25,7 @@ exports.myConts = (u, cb)->
 	models.Contact.find(addedBy:u).where('added').gt(oneWeekAgo).count cb
 
 exports.recentConts = (cb)->
-	models.Contact.find({added:{$exists:true},picture:{$exists:true}}).sort(added:-1).limit(4).execFind (err, contacts)->
+	models.Contact.find({added:{$exists:true},picture:{$exists:true}}).sort(added:-1).limit(12).execFind (err, contacts)->
 		if err then return cb err, contacts
 		rcs = []
 		_.each contacts, (contact)->
