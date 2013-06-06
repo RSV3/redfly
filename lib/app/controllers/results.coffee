@@ -161,15 +161,13 @@ module.exports = (Ember, App, socket) ->
 						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
 				@set 'yearsToSelect', years
 				query = {category: {$ne:"industry"}, contact: {$in: oC.getEach('id')}}
-				@set 'orgTags', Ember.ArrayProxy.create
-					content: App.Tag.filter query, (data) =>
-						data.get('category') isnt 'industry' and oC.some (t)->
-							t.get('id') is data.get('contact.id')
+				@set 'orgTags', App.Tag.filter query, (data) =>
+					data.get('category') isnt 'industry' and oC.some (t)->
+						t.get('id') is data.get('contact.id')
 				query = {category: "industry", contact: {$in: oC.getEach('id')}}
-				@set 'indTags', Ember.ArrayProxy.create
-					content: App.Tag.filter query, (data) =>
-						data.get('category') is 'industry' and oC.some (t)->
-							t.get('id') is data.get('contact.id')
+				@set 'indTags', App.Tag.filter query, (data) =>
+					data.get('category') is 'industry' and oC.some (t)->
+						t.get('id') is data.get('contact.id')
 
 				@set 'allThoseNoses', oC.getEach('knows')
 			).observes 'all.@each'
@@ -184,27 +182,17 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultController = App.ContactController.extend
 		notes: (->
-			###
-			query = contact: @get('id')
-			App.filter App.Note, {field: 'date'}, query, (data) =>
-				data.get('contact.id') is @get('id')
-			###
-			Ember.ArrayProxy.create
-				content: App.Note.filter {contact:@get('id')}, (data) =>
-					data.get('contact.id') is @get('id')
+			if (id=@get('id'))
+				App.Note.filter {contact:id}, (data) =>
+					data.get('contact.id') is id
 		).property 'id'
 		lastNote: (->
 			@get 'notes.lastObject'
 		).property 'notes.lastObject'
 		mails: (->
-			###
-			query = recipient: @get('id')
-			App.filter App.Mail, {field: 'sent'}, query, (data) =>
-				data.get('recipient.id') is @get('id')
-			###
-			Ember.ArrayProxy.create
-				content: App.Mail.filter {recipient:@get('sent')}, (data) =>
-					data.get('recipient.id') is @get('id')
+			if (id=@get('id'))
+				App.Mail.filter {recipient:id}, (data) =>
+					data.get('recipient.id') is id
 		).property 'id'
 		lastMail: (->
 			@get 'mails.lastObject'
