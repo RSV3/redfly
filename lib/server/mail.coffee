@@ -16,7 +16,7 @@ from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 
 
 mail.sendNudge = (user, contacts, cb) ->
-	return sendNewNewsletter user, cb, contacts
+	return mail.sendNewNewsletter user, cb, contacts
 
 	_ = require 'underscore'
 	_s = require 'underscore.string'
