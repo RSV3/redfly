@@ -71,7 +71,7 @@ mail.sendNewNewsletter = (user, cb, contacts) ->
 
 
 mail.sendNewsletter = (user, cb) ->
-	return sendNewNewsletter user, cb
+	return mail.sendNewNewsletter user, cb
 	logic = require './logic'
 	require('step') ->
 		logic.summaryContacts @parallel()
