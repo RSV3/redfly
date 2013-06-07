@@ -6,7 +6,7 @@ module.exports = (Ember, App, socket) ->
 
 		showEmail: (->
 			a = App.Admin.find 1
-			@get('isKnown') or a and not a.get('hidemails')
+			@get('isKnown') or a and not a.get('hidemails') or @get('forceShowEmail')
 		).property 'id'
 		allMeasures: (->
 			if (id=@get('id'))

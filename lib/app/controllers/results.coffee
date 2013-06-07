@@ -51,13 +51,13 @@ module.exports = (Ember, App, socket) ->
 		orgToSelect: []
 		orgToConsider: []
 		knoNames: []
+		knoIDs: []
 		noseToPick: []
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
 		filteredItems: null
 		filterItems: (->	# just the ones matching any checked items AND the specified minimum years
 			if _.isEmpty (oC = @get('all')) then return @set 'filteredItems', []
-			console.log "filtering #{oC.get('length')}"
 
 			hasnose = false
 			if (n2p = @get('noseToPick')) then for n in n2p
@@ -100,7 +100,6 @@ module.exports = (Ember, App, socket) ->
 					@set 'hiding', @get('all.length') - @get('filteredItems.length')
 					@set 'rangeStart', 0
 					@get('showWhich')?.set 'showitall', false
-					console.dir "#{@get('all.length')} - #{@get('filteredItems.length')} : #{@get('sortType')}/#{@get('sortDir')}"
 					if @get 'sortType'
 						Ember.ArrayController.create
 							content: @get 'filteredItems'
@@ -123,8 +122,8 @@ module.exports = (Ember, App, socket) ->
 		# in order to always get the knows array, had to watch on the @each (id/knows) of @each (knows/contacts)
 		watchAllNoses:(->
 				aC = @get('allThoseNoses')
-				if not aC or not aC.length then return
-				if not aC[0].get('length') then return
+				if not aC or not aC.length then return @set 'knoIDs', []
+				if not aC[0].get('length') then return @set 'knoIDs', []
 				results = []
 				aC.forEach (c)->
 					results.pushObjects c.getEach('id')
@@ -134,8 +133,18 @@ module.exports = (Ember, App, socket) ->
 					if k and v and v < aC.get('length') then topnose.push {id:k, count:v}
 				if not topnose.length then return				# no point having a filter for no users!
 				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
-				@set 'knoNames', Ember.ArrayProxy.create
-					content: App.User.find _id: $in: ids
+
+				theseids = @get('knoIDs')
+				console.dir ids
+				console.dir theseids
+				ids = _.difference ids, theseids
+				console.dir 'gives'
+				console.dir ids
+				if ids.length
+					App.User.find {_id:$in:ids}
+					@set 'knoIDs', _.union ids, @get('knoIDs')
+					@set 'knoNames', App.User.filter (data) =>
+						_.contains ids, data.get('id')
 		).observes 'allThoseNoses.@each.@each'
 
 		setNoseTags: (->
