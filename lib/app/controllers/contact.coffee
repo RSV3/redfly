@@ -9,7 +9,8 @@ module.exports = (Ember, App, socket) ->
 			@get('isKnown') or a and not a.get('hidemails')
 		).property 'id'
 		allMeasures: (->
-			App.Measurement.find { contact: @get 'id' }
+			if (id=@get('id'))
+				App.Measurement.find contact:id
 		).property 'id'
 		waitingForMeasures: (->
 			m = @get('allMeasures')
@@ -58,11 +59,19 @@ module.exports = (Ember, App, socket) ->
 		firstHistory: (->
 			@get 'histories.firstObject'
 		).property 'histories.firstObject'
+		spokenTwice: (->
+			@get('histories.length') > 1
+		).property 'histories'
+		firstTalked: (->
+			if sent = @get('histories.firstObject.sent')
+				moment = require 'moment'
+				moment(sent).fromNow()
+		).property 'histories.@each'
 		lastTalked: (->
 			if sent = @get('histories.lastObject.sent')
 				moment = require 'moment'
 				moment(sent).fromNow()
-		).property 'histories.lastObject.sent'
+		).property 'histories.@each'
 		disableAdd: (->
 			not util.trim @get('currentNote')
 		).property 'currentNote'
@@ -99,6 +108,36 @@ module.exports = (Ember, App, socket) ->
 	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']
+
+		indTags: (->
+			@get('catTags')?['industry']
+		).property 'catTags'
+		orgTags: (->
+			result = []
+			if not (ct = @get('catTags')) then return result
+			for own key, val of ct
+				if key isnt 'industry' then result = result.concat val
+			result
+		).property 'catTags'
+		catTags: (->
+			tags = @get 'tags'
+			cattags =
+				industry:[]
+				project:[]
+				role:[]
+				theme:[]
+			if not tags or not tags.get('length') then return cattags
+			tags.forEach (t)->
+				if (c = t.get('category'))
+					if not cattags[c] then cattags[c]=[]
+					cattags[c].push t
+			cattags
+		).property 'tags.@each'
+		tags: (->
+			if (id = @get('controller.id'))
+				App.Tag.filter {contact: id}, (data) =>
+					data.get('contact.id') is id
+		).property 'controller.id'
 
 		introMailto: (->
 			CR = '%0D%0A'		# carriage return / line feed

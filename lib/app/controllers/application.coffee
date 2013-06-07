@@ -52,6 +52,7 @@ module.exports = (Ember, App, socket) ->
 				advance: ->
 					@toggleProperty 'parentView.parentView.advanced'
 				login: ->
+					controller = @get('controller')
 					@set 'working', true
 					@$().find(".error").removeClass("error")
 					transmit =
@@ -66,9 +67,10 @@ module.exports = (Ember, App, socket) ->
 							@set 'working', false
 							@.set 'parentView.parentView.showLogin', false
 							socket.emit 'session', (session) ->
-								console.log "got session:"
-								console.dir session
-								if session.user is r.id then console.log "rite user"
-								else console.log "rong user"
+								if session.user is r.id
+									controller.transitionToRoute 'recent'
+								else
+									console.log "ERROR: rong user #{session.user} != #{r.id}"
+									App.auth.logout()
 						else console.dir r
 

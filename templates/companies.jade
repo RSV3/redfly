@@ -1,0 +1,15 @@
+.row-fluid
+	h1 Recent companies
+
+	+unless ('companies')
+		.loading
+			i.icon-spinner.icon-spin
+	+if ('companies')
+		| {{#each companies}}
+		.row-fluid
+			.span6.bodies
+				| <a class="body" href="#" {{action search company target="view"}}>{{company}}</a>
+			.span1
+				span.badge.badge-info {{count}}
+		| {{/each}}
+

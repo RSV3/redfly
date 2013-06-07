@@ -1,5 +1,4 @@
 {{#if all.length}}
-br
 i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
 {{/if}}
 
@@ -64,7 +63,7 @@ h4
 h3
 	| Sort
 .row-fluid
-	.span6(title = 'prioritise contacts you already know')
+	.span6(title = 'prioritize contacts you already know')
 		h4
 			| Proximity
 		+view ('App.SortView class="proximity"')

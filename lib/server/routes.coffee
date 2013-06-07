@@ -166,6 +166,8 @@ module.exports = (app, route) ->
 				user.name = data.name or data.email
 				user.email = data.email
 				user.cIO =
+					expired:false
+					user:data.name
 					label:cIOdata.source.label
 					salt:crypto.generateSalt()
 				user.cIO.hash = crypto.hashPassword(data.password, user.cIO.salt)
@@ -197,8 +199,11 @@ module.exports = (app, route) ->
 			for term in terms
 				if terms.length is 1 or not _.contains ['and', 'to', 'with', 'a'], term
 					if compound.length > 1						# type specified, eg tag:slacker
-						if compound[0] is type or compound[0] is 'contact' and (type is 'name' or type is 'email')
-							search[type].push term
+						if compound[0] is type then search[type].push term
+						if compound[0] is 'contact'
+							if type is 'name' then search[type].push term
+							if parseInt(term).toString() isnt term
+								if type is 'email' then search[type].push term
 					else										# not specified, try this term in each type
 						search[type].push term
 			if not search[type].length then delete search[type]
@@ -211,6 +216,7 @@ module.exports = (app, route) ->
 
 		step = require 'step'
 		step ->
+			sort = {}
 			for type of search
 				terms = search[type]
 				if type is 'tag' or type is 'note'
@@ -222,7 +228,10 @@ module.exports = (app, route) ->
 					field = type + 's'
 				conditions = {}
 				if compound.length > 1 and compound[0] is 'contact'
-					conditions.knows = session.user
+					if parseInt(compound[1], 10).toString() is compound[1]
+						limit = parseInt(compound[1], 10)
+						sort.added = -1
+						terms = []
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -237,8 +246,12 @@ module.exports = (app, route) ->
 
 				step ->
 					conditions = {}
+					###
+					#this restricts contact:25 to those i knows.
+
 					if compound.length > 1 and compound[0] is 'contact'
 						conditions.knows = session.user
+					###
 					for term in terms
 						try
 							reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
@@ -261,7 +274,7 @@ module.exports = (app, route) ->
 						_.extend conditions, data.moreConditions
 					else if model is 'Tag'
 						conditions.contact = $exists: true
-					models[model].find(conditions).limit(limit).exec @parallel()
+					models[model].find(conditions).sort(sort).limit(limit).exec @parallel()
 					return undefined	# Step library is insane.
 				, @parallel()
 			return undefined	# Still insane? Yes?? Fine.
@@ -584,6 +597,24 @@ module.exports = (app, route) ->
 							return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 
+	route 'companies', (fn)->
+		oneWeekAgo = moment().subtract('days', 700).toDate()
+		models.Contact.where('company').gt(oneWeekAgo).execFind (err, contacts)->
+			throw err if err
+			companies = []
+			_.each contacts, (contact)->
+				companies.push contact.company
+			companies =  _.countBy(companies, (c)->c)
+			comps = []
+			for c of companies
+				if not c.match(new RegExp(process.env.ORGANISATION_TITLE, 'i'))
+					comps.push { company:c, count:companies[c] }
+			companies = _.sortBy(comps, (c)-> -c.count)[0..20]
+			console.log "companies"
+			console.dir companies
+			fn companies
+
+
 	route 'flush', (fn, contacts, io, session) ->
 		_.each contacts, (c)->
 			classification = user: session.user, contact: c # , saved: session.admin.flushsave
@@ -593,4 +624,12 @@ module.exports = (app, route) ->
 					console.log err
 					console.dir mod
 		fn()
+
+	route 'recent', (fn)->
+		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(25).execFind (err, contacts)->
+			throw err if err
+			recent = _.map contacts, (c)->c._id.toString()
+			console.log "recent"
+			console.dir recent
+			fn recent
 
