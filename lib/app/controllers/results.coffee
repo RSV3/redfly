@@ -54,18 +54,30 @@ module.exports = (Ember, App, socket) ->
 		noseToPick: []
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
-		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
-			if _.isEmpty (oC = @get('all')) then return []
-			oC.filter (item) =>
+		filteredItems: null
+		filterItems: (->	# just the ones matching any checked items AND the specified minimum years
+			if _.isEmpty (oC = @get('all')) then return @set 'filteredItems', []
+			console.log "filtering #{oC.get('length')}"
+
+			hasnose = false
+			if (n2p = @get('noseToPick')) then for n in n2p
+				if n.checked then hasnose = true
+			noTags = true
+			for prefix in ['org', 'ind']
+				filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
+				if filterTags.length
+					noTags = false
+			if not @years and not hasnose and noTags
+				if @get('filteredItems') is oC then return
+				else return @set 'filteredItems', oC
+
+			@set 'filteredItems', oC.filter (item) =>
 				if @years and not (item.get('yearsExperience') >= @years) then return false
 
-				hasnose = found = false
-				if (n2p = @get('noseToPick'))
-					for n in n2p
-						if n.checked
-							hasnose = true
-							if _.contains item.get('knows').getEach('id'), n.id
-								found = true
+				found = false
+				if (n2p = @get('noseToPick')) then for n in n2p
+					if n.checked and _.contains item.get('knows').getEach('id'), n.id
+						found = true
 				if hasnose and not found then return false
 
 				noTags = true
@@ -77,7 +89,7 @@ module.exports = (Ember, App, socket) ->
 							if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
 								return true
 				noTags
-			).property 'all.@each', 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+		).observes 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
 		theResults: (->		# paginated content
 			if not @get 'filteredItems.length'
@@ -88,6 +100,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'hiding', @get('all.length') - @get('filteredItems.length')
 					@set 'rangeStart', 0
 					@get('showWhich')?.set 'showitall', false
+					console.dir "#{@get('all.length')} - #{@get('filteredItems.length')} : #{@get('sortType')}/#{@get('sortDir')}"
 					if @get 'sortType'
 						Ember.ArrayController.create
 							content: @get 'filteredItems'
@@ -97,7 +110,7 @@ module.exports = (Ember, App, socket) ->
 					else
 						@get 'filteredItems'
 				itemsPerPage: 25
-		).property 'filteredItems.@each', 'sortType', 'sortDir'
+		).property 'filteredItems', 'sortType', 'sortDir'
 
 		scrollUp: (->
 			rs = @get 'theResults.rangeStart'
