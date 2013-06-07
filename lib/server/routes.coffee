@@ -246,8 +246,12 @@ module.exports = (app, route) ->
 
 				step ->
 					conditions = {}
+					###
+					#this restricts contact:25 to those i knows.
+
 					if compound.length > 1 and compound[0] is 'contact'
 						conditions.knows = session.user
+					###
 					for term in terms
 						try
 							reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.

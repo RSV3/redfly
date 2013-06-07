@@ -65,11 +65,13 @@
 			| {{/if}}
 		| {{#if firstHistory}}
 		.row-fluid
+			| {{#if spokenTwice}}
 			p.messages
 				| You've <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other {{histories.length}} times</a> and last spoke 
 				strong {{lastTalked}}
+			| {{/if}}
 			p
-				| You and {{nickname}} first talked on {{firstHistory.sent}}. The email subject was
+				| You and {{nickname}} first talked {{firstTalked}}. The email subject was
 				em "{{firstHistory.subject}}"
 				| .
 		| {{/if}}

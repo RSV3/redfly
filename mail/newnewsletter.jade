@@ -9,7 +9,7 @@ block content
 		each contact,i in recentContacts
 			if (i%4 === 0)
 				tr
-			td(style='valign:bottom; width:25%')
+			td(style='valign:bottom; font-size:80%; width:25%')
 				if contact.picture
 					a(href='#{path(contact.link)}')
 						img(src='#{contact.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
