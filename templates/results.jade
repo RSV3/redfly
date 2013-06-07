@@ -11,19 +11,24 @@
 	+unless ('theResults.paginatedItems')
 		.loading
 			i.icon-spinner.icon-spin
-	| {{#each theResults.paginatedItems itemController="result"}}
+	| {{#each theResults.paginatedItems itemViewClass="App.ResultView" itemController="result"}}
 	.row-fluid.top
+		| {{#if showitall}}
+		hr.topexpanded
+		{{partial "contact"}}
+		hr.botexpanded
+		| {{else}}
 		.row-fluid
 			.span8
 				.row-fluid
 					.span2.picture
-						+linkTo('contact this tagName="a"')
+						a(href='#', action='setShowItAll this target="view"')
 							| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
 					.span10
 						+if('isVip')
 							.maybevip
 								i.icon-star.icon-2x.fullredstar
-						+linkTo('contact this tagName="a"')
+						a(href='#', action='setShowItAll this target="view"')
 							h3 {{canonicalName}}
 						div
 							i
@@ -31,7 +36,7 @@
 						| {{#if lastMail}}
 						.row-fluid
 							p
-								b Last mail:&nbsp
+								b Last mail:&nbsp;
 								span
 									+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
 								span
@@ -40,15 +45,16 @@
 							
 			.span4
 				b Knows: &nbsp;
-				| {{#if isKnown}}
-				span you{{#if knowsSome}},{{/if}}&nbsp;
-				| {{/if}}
-				{{#each knowsSome}}
-				span.knowsome
-					+linkTo('profile this')
-						| {{canonicalName}}
-					|,&nbsp;
-				{{/each}}
+				.search-result.knows
+					ul.tags
+						| {{#if isKnown}}
+						li you
+						| {{/if}}
+						{{#each knowsSome}}
+						li
+							+linkTo('profile this')
+								| {{canonicalName}}
+						{{/each}}
 
 		.row-fluid.clearpic
 			| {{#if lastNote}}
@@ -59,15 +65,16 @@
 					i &nbsp; {{lastNote.body}}
 			| {{/if}}
 			.row-fluid
-				.orgtags
-					{{#each orgTags}}
+				.sometags
+					{{#each view.orgTags}}
 					a(bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
-					{{#each indTags}}
+					{{#each view.indTags}}
 					a(bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
+		| {{/if}}
 	{{/each}}
 
 	ul.pager
