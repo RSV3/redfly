@@ -216,7 +216,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultView = App.ContactView.extend
 		clicktag: (ev)->
-			@get('parentView').controller.maybeToggle ev.body
+			@get('parentView').controller.maybeToggle ev.get('body')
 
 		setShowItAll: (r)->
 			if (old = @get 'parentView.controller.showWhich')
