@@ -59,11 +59,19 @@ module.exports = (Ember, App, socket) ->
 		firstHistory: (->
 			@get 'histories.firstObject'
 		).property 'histories.firstObject'
+		spokenTwice: (->
+			@get('histories.length') > 1
+		).property 'histories'
+		firstTalked: (->
+			if sent = @get('histories.firstObject.sent')
+				moment = require 'moment'
+				moment(sent).fromNow()
+		).property 'histories.@each'
 		lastTalked: (->
 			if sent = @get('histories.lastObject.sent')
 				moment = require 'moment'
 				moment(sent).fromNow()
-		).property 'histories.lastObject.sent'
+		).property 'histories.@each'
 		disableAdd: (->
 			not util.trim @get('currentNote')
 		).property 'currentNote'

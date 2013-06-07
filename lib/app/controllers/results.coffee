@@ -160,14 +160,16 @@ module.exports = (Ember, App, socket) ->
 					for i in [1..max]
 						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
 				@set 'yearsToSelect', years
-				query = {category: {$ne:"industry"}, contact: {$in: oC.getEach('id')}}
-				@set 'orgTags', App.Tag.filter query, (data) =>
-					data.get('category') isnt 'industry' and oC.some (t)->
-						t.get('id') is data.get('contact.id')
-				query = {category: "industry", contact: {$in: oC.getEach('id')}}
-				@set 'indTags', App.Tag.filter query, (data) =>
-					data.get('category') is 'industry' and oC.some (t)->
-						t.get('id') is data.get('contact.id')
+				Ember.run.next this, ()->
+					query = {category: {$ne:"industry"}, contact: {$in: oC.getEach('id')}}
+					@set 'orgTags', App.Tag.filter query, (data) =>
+						data.get('category') isnt 'industry' and oC.some (t)->
+							t.get('id') is data.get('contact.id')
+					Ember.run.next this, ()->
+						query = {category: "industry", contact: {$in: oC.getEach('id')}}
+						@set 'indTags', App.Tag.filter query, (data) =>
+							data.get('category') is 'industry' and oC.some (t)->
+								t.get('id') is data.get('contact.id')
 
 				@set 'allThoseNoses', oC.getEach('knows')
 			).observes 'all.@each'
@@ -183,7 +185,7 @@ module.exports = (Ember, App, socket) ->
 	App.ResultController = App.ContactController.extend
 		notes: (->
 			if (id=@get('id'))
-				App.Note.filter {contact:id}, (data) =>
+				App.filter App.Note, {field: 'date'}, {contact:id}, (data) =>
 					data.get('contact.id') is id
 		).property 'id'
 		lastNote: (->
@@ -191,7 +193,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'notes.lastObject'
 		mails: (->
 			if (id=@get('id'))
-				App.Mail.filter {recipient:id}, (data) =>
+				App.filter App.Mail, {field: 'sent'}, {recipient:id}, (data) =>
 					data.get('recipient.id') is id
 		).property 'id'
 		lastMail: (->
