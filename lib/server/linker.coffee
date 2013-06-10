@@ -1,9 +1,6 @@
 _ = require 'underscore'
 request = require 'request'
-util = require './util'
 models = require './models'
-addTags = require './addtags'
-validators = require('validator').validators
 
 linkLater = require('./linklater')
 addDeets2Contact = linkLater.addDeets2Contact
@@ -380,8 +377,6 @@ linker = (user, notifications, finalCB) ->
 						console.log "error in linkedin process"
 						console.dir err
 				else
-					console.log "LINKEDIN debug from #{item.id}"
-					console.dir deets
 					for key, val of deets		# copy profile, splitting past and present positions
 						if key is 'positions'
 							item[key] = _.select val.values, (p) -> p.isCurrent
