@@ -14,8 +14,10 @@
 				ul.nav
 					li
 						+linkTo('classify') Classify
+					| {{#if App.admin.classifyCount}}
 					li
-						span.badge.badge-important 5
+						span.badge.badge-important {{App.admin.classifyCount}}
+					| {{/if}}
 					li
 						+linkTo('create') Create
 					li

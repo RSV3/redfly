@@ -44,14 +44,16 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 	require('./controllers') Ember, App, socket
 	require('./router') Ember, App, socket
 
+	App.admin = Ember.ObjectProxy.create()
+	App.admin.set 'content', App.Admin.find 1
+
 	socket.emit 'session', (session) ->
 		if id = session.user
 			App.auth.login id
 			App.user.get('content').on 'didLoad', ->
 				App.advanceReadiness()
+				App.admin.set 'classifyCount', App.user.get 'classifyCount'
 		else
 			App.auth.logout()
 			App.advanceReadiness()
 
-	App.admin = Ember.ObjectProxy.create()
-	App.admin.set 'content', App.Admin.find 1
