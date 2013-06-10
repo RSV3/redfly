@@ -159,7 +159,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 										console.dir contact
 									_saveFullContact user, contact, fullDeets
 									if fullDeets.digitalFootprint
-											addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
+										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 
 				# only gets here iff no notifications (ie. this is part of an out of session batch task)
 				###
@@ -176,7 +176,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 								if fullDeets
 									_saveFullContact user, contact, fullDeets
 									if fullDeets.digitalFootprint
-										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
+										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 							sift index
 				###
 

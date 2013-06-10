@@ -29,7 +29,19 @@ block content
 	div(style='clear:both;')
 		br
 	h2 Redfly and You
-	p You've made #{numMyContacts} new contacts this week
+	table
+		tr
+			td
+				span You've made #{numMyContacts} new contacts this week
+				br
+				if classStr
+					span and #{classStr} to&nbsp;
+						a(href='#{path("/classify")}', style='text-decoration:none;') classify
+			td
+				if classStr
+					ul
+						each name in some2Class
+							li.strong= name
 	br
 	div(style='float:left')
 		h2 Come to Redfly and Classify

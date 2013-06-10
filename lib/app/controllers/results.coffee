@@ -134,17 +134,12 @@ module.exports = (Ember, App, socket) ->
 				if not topnose.length then return				# no point having a filter for no users!
 				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
 
-				theseids = @get('knoIDs')
-				console.dir ids
-				console.dir theseids
-				ids = _.difference ids, theseids
-				console.dir 'gives'
-				console.dir ids
+				ids = _.difference ids, @get('knoIDs')
 				if ids.length
-					App.User.find {_id:$in:ids}
 					@set 'knoIDs', _.union ids, @get('knoIDs')
 					@set 'knoNames', App.User.filter (data) =>
 						_.contains ids, data.get('id')
+					App.User.find {_id:$in:ids}
 		).observes 'allThoseNoses.@each.@each'
 
 		setNoseTags: (->
