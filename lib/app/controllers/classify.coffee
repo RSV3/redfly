@@ -30,7 +30,9 @@ module.exports = (Ember, App, socket) ->
 			).property 'model'
 		###
 		total: (->
-			@get('dynamicQ.length') - @get('classifyCount')
+			total = @get('dynamicQ.length') - @get('classifyCount')
+			App.admin.set 'classifyCount', total
+			total
 		).property 'classifyCount', 'dynamicQ'
 
 		complete: (->

@@ -11,7 +11,7 @@ module.exports = (app, route) ->
 	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
 
 
-	route 'db', (fn, data) ->
+	route 'db', (fn, data, io, session) ->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -33,10 +33,16 @@ module.exports = (app, route) ->
 					if id = data.id
 						model.findById id, (err, doc) ->
 							throw err if err
-							if data.type is 'Admin'
-								# mongoose is cool, but we need do this to get around its protection
-								if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-								if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+							# mongoose is cool, but we need do this to get around its protection
+							switch data.type
+								when 'Admin'
+									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+								when 'User'
+									if id is session.user
+										return logic.classifyCount id, (cnt)->
+											if cnt then doc._doc['classifyCount'] = cnt
+											cb doc
 							cb doc
 					else if ids = data.ids
 						model.find _id: $in: ids, (err, docs) ->
@@ -143,7 +149,6 @@ module.exports = (app, route) ->
 
 	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
-
 
 	route 'login.contextio', (fn, data, io, session) ->
 		models.User.findOne email: data.email, (err, user) ->

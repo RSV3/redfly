@@ -113,14 +113,10 @@ module.exports =
 	recentOrgs:recentOrgs
 	classifySome:classifySome
 	classifyList:classifyList
-	summaryContacts: (cb) ->
-		summaryQuery 'Contact', 'added', cb
-	summaryTags: (cb) ->
-		summaryQuery 'Tag', 'date', cb
-	summaryNotes: (cb) ->
-		summaryQuery 'Note', 'date', cb
-	countConts: (cb)->
-		models.Contact.find(added:{$exists:true}).count cb
-	myConts: (u, cb)->
-		models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
+	classifyCount: (u, cb)-> classifyList u, (neocons)-> cb neocons?.length
+	summaryContacts: (cb)-> summaryQuery 'Contact', 'added', cb
+	summaryTags: (cb)-> summaryQuery 'Tag', 'date', cb
+	summaryNotes: (cb)-> summaryQuery 'Note', 'date', cb
+	countConts: (cb)-> models.Contact.find(added:{$exists:true}).count cb
+	myConts: (u, cb)-> models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
 

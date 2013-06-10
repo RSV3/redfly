@@ -36,6 +36,9 @@ module.exports = (DS, App) ->
 		canonicalPicture: (->
 				@get('picture') or 'http://i.imgur.com/t1Svb.jpg'
 			).property 'picture'
+		classifyCount: DS.attr 'number'		# this is calculated on the server, transmitted on session user
+											# and then, just to make it interesting, stored on App.admin
+											# (because session user data may get batch loaded)
 
 	App.Contact = DS.Model.extend
 		date: DS.attr 'date'
