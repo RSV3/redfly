@@ -237,6 +237,13 @@ module.exports = (app, route) ->
 						limit = parseInt(compound[1], 10)
 						sort.added = -1
 						terms = []
+
+				if not limit
+					c=0
+					for t of search
+						c += search[t].length
+					limit = 100/c
+
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -244,9 +251,9 @@ module.exports = (app, route) ->
 						console.log err	# probably User typed an invlid regular expression, just ignore it.
 					if conditions[field]
 						if model is 'Contact'
-							conditions.added = $exists: true
+							conditions.added = $exists: true	# unclassified contacts might not be added
 						else if model is 'Tag'
-							conditions.contact = $exists: true
+							conditions.contact = $exists: true	# priority tags have no contact: ignore em.
 						models[model].find(conditions).exec @parallel()
 
 				step ->
