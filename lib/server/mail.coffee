@@ -57,8 +57,10 @@ mail.sendNewNewsletter = (user, cb) ->
 		if err then return cb err
 
 		if some2Class?.length is 1 then classStr = "one new contact"
-		else if some2Class?.length > 20 then classStr = "lots of new contacts"
-		else if some2Class?.length > 1 then classStr = "#{some2Class.length} contacts"
+		else if some2Class?.length > 10
+			classStr = "lots of new contacts"
+			some2Class = some2Class[0..10]
+		else if some2Class?.length > 1 then classStr = "#{some2Class.length} new contacts"
 		else classStr = null
 
 		templateObj = 

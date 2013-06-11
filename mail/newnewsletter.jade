@@ -32,11 +32,14 @@ block content
 	table
 		tr
 			td
-				span You've made #{numMyContacts} new contacts this week
-				br
+				span You've added #{numMyContacts} contacts this week
 				if classStr
-					span and #{classStr} to&nbsp;
+					br
+					span and have #{classStr} in your queue.
+					br
+					span Come and&nbsp;
 						a(href='#{path("/classify")}', style='text-decoration:none;') classify
+					, or Redfly will automatically add them all.
 			td
 				if classStr
 					ul
