@@ -162,31 +162,46 @@ cIOcreate = (data, cb)->
 			return cb account
 
 
+# common logic to decide whether to use google (preferred if available) or contextio (only if valid)
+googOrCio = (user, goog, cio, errmsg)->
+	if process.env.GOOGLE_API_ID and user.oauth then return goog()
+	if process.env.CONTEXTIO_KEY and user.cIO and user.cIO.hash and not user.cIO.expired then return cio()
+	if errmsg then console.log "#{errmsg} ERROR: no mailbox option (cio, goog) to #{errmsg}"
+
 module.exports =
 	connect: (user, cb) ->
 		models.Admin.findById 1, (err, admin) ->
 			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
 			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
 			console.log "connecting to #{user.email}"
-			if process.env.GOOGLE_API_ID and user.oauth
-				return imapConnect user, blacklist, cb
-			if process.env.CONTEXTIO_KEY and user.cIO and user.cIO.hash and not user.cIO.expired
-				return contextConnect user, blacklist, cb
-			return console.log "PARSE connect ERROR: no mailbox option (contextio, googleauth) to connect to"
+			googOrCio user, ->
+				imapConnect user, blacklist, cb
+			, ->
+				contextConnect user, blacklist, cb
+			, "connect"
 	auth: (user, cb) ->
-		if process.env.CONTEXTIO_KEY then return contextAuth user, cb
-		else return imapAuth user, cb
+		googOrCio user, ->
+			imapAuth user, cb
+		, ->
+			contextAuth user, cb
+		, "auth"
 	search: (mbSession, user, cb) ->
 		# if we got this far, it's really happening:
 		# so we'll need a list of excludes (contacts skipped forever)
 		models.Exclude.find {user: user._id}, (err, excludes) ->
 			if err then console.dir err
 			else mbSession.excludes = excludes
-			if process.env.CONTEXTIO_KEY then return contextSearch mbSession, user, cb
-			else return imapSearch mbSession, user, cb
+			googOrCio user, ->
+				imapSearch mbSession, user, cb
+			, ->
+				contextSearch mbSession, user, cb
+			, "search"
 	eachMsg: (mbSession, user, results, finish, cb) ->
-		if process.env.CONTEXTIO_KEY then return eachContextMsg mbSession, user, results, finish, cb
-		else return eachImapMsg mbSession, user, results, finish, cb
+		googOrCio user, ->
+			eachImapMsg mbSession, user, results, finish, cb
+		, ->
+			eachContextMsg mbSession, user, results, finish, cb
+		, "iterate over messages"
 	create: cIOcreate
 
 

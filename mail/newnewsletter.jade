@@ -29,7 +29,22 @@ block content
 	div(style='clear:both;')
 		br
 	h2 Redfly and You
-	p You've made #{numMyContacts} new contacts this week
+	table
+		tr
+			td
+				span You've added #{numMyContacts} contacts this week
+				if classStr
+					br
+					span and have #{classStr} in your queue.
+					br
+					span Come and&nbsp;
+						a(href='#{path("/classify")}', style='text-decoration:none;') classify
+					, or Redfly will automatically add them all.
+			td
+				if classStr
+					ul
+						each name in some2Class
+							li.strong= name
 	br
 	div(style='float:left')
 		h2 Come to Redfly and Classify
