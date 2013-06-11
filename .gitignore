@@ -5,6 +5,9 @@ Thumbs.db
 *.sublime-workspace
 
 config-local.coffee
+analytics/redfly_config.py
+analytics/redfly_twitters.txt
+*.pyc
 
 node_modules
 venv

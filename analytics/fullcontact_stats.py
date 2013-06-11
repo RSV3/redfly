@@ -1,9 +1,8 @@
 from pymongo import MongoClient
 import json
+from redfly_config import DEV_DB_URL
 
-client = MongoClient()
-
-client = MongoClient('mongodb://heroku_app6379653:2vos1gak0e63rjl5220mluubm6@ds043837.mongolab.com:43837/heroku_app6379653')
+client = MongoClient(DEV_DB_URL)
 
 db = client.heroku_app6379653
 collection = db.fullcontacts
