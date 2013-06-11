@@ -46,9 +46,10 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 		contact.picture = details.pictureUrl
 		dirtycontact = true
 
-	if specialties and specialties.length
-		addTags user, contact, 'industry', specialties
-	addTags user, contact, 'industry', industries
+	tagstoadd = []
+	if industries?.length then tagstoadd = tagstoadd.concat industries
+	if specialties?.length then tagstoadd = tagstoadd.concat specialties
+	if tagstoadd.length then addTags user, contact, 'industry', _.uniq tagstoadd
 
 	if (_.indexOf contact.knows, user._id) < 0
 		contact.knows.addToSet user

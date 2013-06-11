@@ -15,6 +15,7 @@ module.exports = (Ember, App, socket) ->
 
 		modelChanged: (->
 				@set 'controllers.contact.content', @get('thisContact')
+				@set 'controllers.contact.forceShowEmail', true
 			).observes 'thisContact'
 
 		###
@@ -29,7 +30,9 @@ module.exports = (Ember, App, socket) ->
 			).property 'model'
 		###
 		total: (->
-			@get('dynamicQ.length') - @get('classifyCount')
+			total = @get('dynamicQ.length') - @get('classifyCount')
+			App.admin.set 'classifyCount', total
+			total
 		).property 'classifyCount', 'dynamicQ'
 
 		complete: (->

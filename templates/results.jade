@@ -67,11 +67,11 @@
 			.row-fluid
 				.sometags
 					{{#each view.orgTags}}
-					a(bindAttr='class=":label category"', action='clicktag this target="view"')
+					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
 					{{#each view.indTags}}
-					a(bindAttr='class=":label category"', action='clicktag this target="view"')
+					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
 		| {{/if}}

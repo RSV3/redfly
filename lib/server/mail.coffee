@@ -15,9 +15,9 @@ from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 # 	, cb
 
 
-mail.sendNudge = (user, contacts, cb) ->
-	return mail.sendNewNewsletter user, cb, contacts
-
+mail.sendNudge = (user, contacts, cb) ->		# note we're now ignoring the 'contacts' list,
+	return mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
+	###
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	util = require './util'
@@ -41,21 +41,28 @@ mail.sendNudge = (user, contacts, cb) ->
 		title: "Hi #{user.name}!"
 		names: names
 	, cb
+	###
 
 
-mail.sendNewNewsletter = (user, cb, contacts) ->
+mail.sendNewNewsletter = (user, cb) ->
 	logic = require './logic'
 	require('step') ->
-		logic.countConts @parallel()
-		logic.myConts user.get('id'), @parallel()
-		logic.recentConts @parallel()
-		logic.recentOrgs @parallel()
+		logic.countConts @parallel()					# total in the system
+		logic.myConts user.get('id'), @parallel()		# total this user this week
+		logic.recentConts @parallel()					# short list of recent contacts in system
+		logic.recentOrgs @parallel()					# short list of recent orgs in system
+		logic.classifySome user.get('id'), @parallel()					# list of classifies for this user
 		return undefined
-	, (err, numContacts, numMyContacts, recentContacts, recentOrgs) ->
-		if err
-			console.log "exiting sNN with error:"
-			return cb err
-		if contacts then recentContacts = contacts.concat recentContacts
+	, (err, numContacts, numMyContacts, recentContacts, recentOrgs, some2Class) ->
+		if err then return cb err
+
+		if some2Class?.length is 1 then classStr = "one new contact"
+		else if some2Class?.length > 10
+			classStr = "lots of new contacts"
+			some2Class = some2Class[0..10]
+		else if some2Class?.length > 1 then classStr = "#{some2Class.length} new contacts"
+		else classStr = null
+
 		templateObj = 
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name} !"
@@ -66,12 +73,15 @@ mail.sendNewNewsletter = (user, cb, contacts) ->
 			numMyContacts: numMyContacts
 			recentContacts: recentContacts[0..12]
 			recentOrgs: recentOrgs
+			some2Class: some2Class
+			classStr: classStr
 		mail.sendTemplate 'newnewsletter', templateObj, cb
 
 
 
 mail.sendNewsletter = (user, cb) ->
 	return mail.sendNewNewsletter user, cb
+	###
 	logic = require './logic'
 	require('step') ->
 		logic.summaryContacts @parallel()
@@ -89,6 +99,7 @@ mail.sendNewsletter = (user, cb) ->
 			tagsCreated: numTags
 			notesAuthored: numNotes
 		, cb
+	###
 
 
 mail.requestIntro = (userfrom, userto, contact, url, cb) ->

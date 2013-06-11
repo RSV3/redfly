@@ -11,7 +11,7 @@ module.exports = (app, route) ->
 	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
 
 
-	route 'db', (fn, data) ->
+	route 'db', (fn, data, io, session) ->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -33,10 +33,16 @@ module.exports = (app, route) ->
 					if id = data.id
 						model.findById id, (err, doc) ->
 							throw err if err
-							if data.type is 'Admin'
-								# mongoose is cool, but we need do this to get around its protection
-								if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-								if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+							# mongoose is cool, but we need do this to get around its protection
+							switch data.type
+								when 'Admin'
+									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+								when 'User'
+									if id is session.user
+										return logic.classifyCount id, (cnt)->
+											if cnt then doc._doc['classifyCount'] = cnt
+											cb doc
 							cb doc
 					else if ids = data.ids
 						model.find _id: $in: ids, (err, docs) ->
@@ -144,7 +150,6 @@ module.exports = (app, route) ->
 	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
-
 	route 'login.contextio', (fn, data, io, session) ->
 		models.User.findOne email: data.email, (err, user) ->
 			if err
@@ -232,6 +237,13 @@ module.exports = (app, route) ->
 						limit = parseInt(compound[1], 10)
 						sort.added = -1
 						terms = []
+
+				if not limit
+					c=0
+					for t of search
+						c += search[t].length
+					limit = 100/c
+
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -239,9 +251,9 @@ module.exports = (app, route) ->
 						console.log err	# probably User typed an invlid regular expression, just ignore it.
 					if conditions[field]
 						if model is 'Contact'
-							conditions.added = $exists: true
+							conditions.added = $exists: true	# unclassified contacts might not be added
 						else if model is 'Tag'
-							conditions.contact = $exists: true
+							conditions.contact = $exists: true	# priority tags have no contact: ignore em.
 						models[model].find(conditions).exec @parallel()
 
 				step ->
@@ -553,48 +565,10 @@ module.exports = (app, route) ->
 				if not _.isEmpty changes then io.emit 'linked', changes
 				fn err
 
+
 	route 'classifyQ', (fn, id) ->
-		# for power users, there'll eventually be a large number of excludes
-		# whereas with an aggressive classification policy there'll never be too many unclassified contacts per user
-		# so first get the list of new contacts, then the subset of those who are excluded
-		lastMonth = moment().subtract('months', 1)
-		models.Mail.find({sender:id, sent: $gt: lastMonth}).select('recipient added sent').exec (err, msgs) ->
-			throw err if err
-			# every recent recipient is a candidate for the queue
-			neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
-
-			# first strip out those who are permanently excluded
-			models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
-				throw err if err
-				neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
-
-				# then strip out those which we've classified
-				# (cron job will clear these out after a month, so that data doesn't go stale)
-				models.Classify.find(user:id, saved:true, contact:$in:neocons).select('contact').exec (err, saves) ->
-					throw err if err
-					neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
-
-					# finally, most difficult filter: the (temporary) skips.
-					# skips are classified records that dont have the 'saved' flag set.
-					models.Classify.find(user:id, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
-						throw err if err
-						skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
-							not _.some msgs, (msg)->
-								msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
-						neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
-
-						if neocons.length < 20
-							return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
-
-						# but if there's more than 20, let's prioritise those that are brand new
-						models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
-							if not err and unadded.length
-								unadded = _.map unadded, (c)->c._id.toString()
-								if unadded.length < 20
-									neocons = _.union unadded, neocons
-								else neocons = unadded
-							neocons = neocons[0..20]
-							return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+		logic.classifyList id, (neocons)->
+			return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 
 	route 'companies', (fn)->

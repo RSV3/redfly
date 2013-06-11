@@ -51,21 +51,33 @@ module.exports = (Ember, App, socket) ->
 		orgToSelect: []
 		orgToConsider: []
 		knoNames: []
+		knoIDs: []
 		noseToPick: []
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
-		filteredItems: (->	# just the ones matching any checked items AND the specified minimum years
-			if _.isEmpty (oC = @get('all')) then return []
-			oC.filter (item) =>
+		filteredItems: null
+		filterItems: (->	# just the ones matching any checked items AND the specified minimum years
+			if _.isEmpty (oC = @get('all')) then return @set 'filteredItems', []
+
+			hasnose = false
+			if (n2p = @get('noseToPick')) then for n in n2p
+				if n.checked then hasnose = true
+			noTags = true
+			for prefix in ['org', 'ind']
+				filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
+				if filterTags.length
+					noTags = false
+			if not @years and not hasnose and noTags
+				if @get('filteredItems') is oC then return
+				else return @set 'filteredItems', oC
+
+			@set 'filteredItems', oC.filter (item) =>
 				if @years and not (item.get('yearsExperience') >= @years) then return false
 
-				hasnose = found = false
-				if (n2p = @get('noseToPick'))
-					for n in n2p
-						if n.checked
-							hasnose = true
-							if _.contains item.get('knows').getEach('id'), n.id
-								found = true
+				found = false
+				if (n2p = @get('noseToPick')) then for n in n2p
+					if n.checked and _.contains item.get('knows').getEach('id'), n.id
+						found = true
 				if hasnose and not found then return false
 
 				noTags = true
@@ -77,7 +89,7 @@ module.exports = (Ember, App, socket) ->
 							if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
 								return true
 				noTags
-			).property 'all.@each', 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+		).observes 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
 		theResults: (->		# paginated content
 			if not @get 'filteredItems.length'
@@ -97,7 +109,7 @@ module.exports = (Ember, App, socket) ->
 					else
 						@get 'filteredItems'
 				itemsPerPage: 25
-		).property 'filteredItems.@each', 'sortType', 'sortDir'
+		).property 'filteredItems', 'sortType', 'sortDir'
 
 		scrollUp: (->
 			rs = @get 'theResults.rangeStart'
@@ -110,8 +122,8 @@ module.exports = (Ember, App, socket) ->
 		# in order to always get the knows array, had to watch on the @each (id/knows) of @each (knows/contacts)
 		watchAllNoses:(->
 				aC = @get('allThoseNoses')
-				if not aC or not aC.length then return
-				if not aC[0].get('length') then return
+				if not aC or not aC.length then return @set 'knoIDs', []
+				if not aC[0].get('length') then return @set 'knoIDs', []
 				results = []
 				aC.forEach (c)->
 					results.pushObjects c.getEach('id')
@@ -121,8 +133,13 @@ module.exports = (Ember, App, socket) ->
 					if k and v and v < aC.get('length') then topnose.push {id:k, count:v}
 				if not topnose.length then return				# no point having a filter for no users!
 				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
-				@set 'knoNames', Ember.ArrayProxy.create
-					content: App.User.find _id: $in: ids
+
+				ids = _.difference ids, @get('knoIDs')
+				if ids.length
+					@set 'knoIDs', _.union ids, @get('knoIDs')
+					@set 'knoNames', App.User.filter (data) =>
+						_.contains ids, data.get('id')
+					App.User.find {_id:$in:ids}
 		).observes 'allThoseNoses.@each.@each'
 
 		setNoseTags: (->
@@ -216,7 +233,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultView = App.ContactView.extend
 		clicktag: (ev)->
-			@get('parentView').controller.maybeToggle ev.body
+			@get('parentView').controller.maybeToggle ev.get('body')
 
 		setShowItAll: (r)->
 			if (old = @get 'parentView.controller.showWhich')
