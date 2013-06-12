@@ -202,4 +202,6 @@ exports.Classify = models.db.model 'Classify', ClassifySchema
 exports.FullContact = models.db.model 'FullContact', FullContactSchema
 exports.Measurement = models.db.model 'Measurement', MeasurementSchema
 exports.ObjectId = models.db.Types.ObjectId
+exports.tmStmp = (id)->
+	parseInt id.toString().slice(0,8), 16
 

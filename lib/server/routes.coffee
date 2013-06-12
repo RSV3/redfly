@@ -7,10 +7,6 @@ module.exports = (app, route) ->
 	mailer = require './mail'
 	mboxer = require './mboxer'
 
-
-	tmStmp = (id)-> parseInt id.toString().slice(0,8), 16
-
-
 	route 'db', (fn, data, io, session) ->
 		feed = (doc) ->
 			o =
