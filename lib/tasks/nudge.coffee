@@ -6,14 +6,15 @@ services = require 'phrenetic/lib/server/services'
 
 models = require '../server/models'
 
+
+
+# automagically save new contacts if they're not classified (or skipped) within 5 days.
 eachSave = (user, done)->
 
 	id = user._id
-	lastMonth = moment().subtract('months', 1)		# I wish we could filter on this too
 	fiveDays = moment().subtract('days', 5)
 	models.Mail.find({
 		sender: id
-		addedBy: {$exists: false}
 		sent: $gt: fiveDays
 	}).select('recipient added sent').exec (err, msgs) ->
 		throw err if err
@@ -27,19 +28,18 @@ eachSave = (user, done)->
 			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
 
 			# then strip out the temporary skips:
-			# classify records that dont have the 'saved' flag set.
-			models.Classify.find(user:id, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
+			# recent classify records that dont have the 'saved' flag set.
+			class_match = { user:id, saved:{$exists:false}, contact:$in:neocons }
+			models.Classify.find(class_match).select('contact').exec (err, skips) ->
 				throw err if err
 				skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
 					not _.some msgs, (msg)->
-						msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
+						msg.recipient.toString() is skip.contact.toString() and models.tmStmp(msg._id) > models.tmStmp(skip._id)
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if neocons.length
-					theUp = {
-						added: new Date()
-						addedBy: id
-					}
-					models.Contact.update {id: $in: neocons}, theUp, (err)->
+					updates = { added: new Date(), addedBy: id }
+					matches = { added: {$exists:false}, id: {$in:neocons} }
+					models.Contact.update matches, updates, (err)->
 						if err
 							console.log "Error updating contacts:"
 							console.dir neocons

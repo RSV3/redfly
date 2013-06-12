@@ -70,7 +70,7 @@ classifyList = (u, cb)->
 					throw err if err
 					skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
 						not _.some msgs, (msg)->
-							msg.recipient.toString() is skip.contact.toString() and tmStmp(msg._id) > tmStmp(skip._id)
+							msg.recipient.toString() is skip.contact.toString() and models.tmStmp(msg._id) > models.tmStmp(skip._id)
 					neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 
 					if neocons.length < 20 then return cb neocons
