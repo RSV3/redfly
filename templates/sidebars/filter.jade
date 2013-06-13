@@ -8,7 +8,7 @@ h3
 {{#if orgTagsToSelect.length}}
 h4
 	| {{App.orgTitle}} Tags
-	{{view App.FilterToggleView id="toggleorg" class="icon-caret-up"}}
+	{{view App.FilterToggleView id="toggleorg" class="icon-caret-down"}}
 .filters.toggleorg
 	{{#each item in orgTagsToSelect}}
 	.checkfilter
@@ -23,7 +23,7 @@ h4
 h4
 	| Industry Tags
 	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
-.filters.toggleind.collapsed
+.filters.toggleind
 	{{#each item in indTagsToSelect}}
 	.checkfilter
 		|<label>
@@ -39,7 +39,7 @@ h4
 	{{view App.FilterToggleView id="togglenose" class="icon-caret-down"}}
 .row-fluid
 	{{#each item in noseToPick}}
-	.togglenose.checkfilter.collapsed
+	.togglenose.checkfilter
 		|<label>
 		{{view Ember.Checkbox checkedBinding="item.checked"}}
 		{{item.label}}
