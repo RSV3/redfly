@@ -65,7 +65,7 @@ mail.sendNewNewsletter = (user, cb) ->
 
 		templateObj = 
 			org: process.env.ORGANISATION_TITLE
-			title: "Hi #{user.name} !"
+			title: "Hi #{user.name}!"
 			to: user.email
 			from: from
 			subject: 'This week on Redfly'
