@@ -6,6 +6,7 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
+			if not App.user.get('id') then name='index'
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
