@@ -8,7 +8,7 @@
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			+linkTo('index class="brand"') Redfly
+			+linkTo('recent class="brand"') Redfly
 			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav
@@ -21,7 +21,7 @@
 					li
 						+linkTo('create') Create
 					li
-						+linkTo('tags') Tags
+						+linkTo('companies') Companies 
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right

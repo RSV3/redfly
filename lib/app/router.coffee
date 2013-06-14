@@ -90,7 +90,7 @@ module.exports = (Ember, App, socket) ->
 				if results and results.length
 					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
-				else @transitionTo 'userProfile'
+				else @transitionTo 'recent'
 		renderTemplate: ->
 			@router.connectem @, 'classify'
 
@@ -141,6 +141,7 @@ module.exports = (Ember, App, socket) ->
 			App.User.all()
 		renderTemplate: ->
 			@router.connectem @, 'leaderboard'
+
 	App.TagsRoute = Ember.Route.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->
