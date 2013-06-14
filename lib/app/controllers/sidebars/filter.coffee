@@ -11,6 +11,6 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ()->
 			$i = @$()
 			$i.click ->
-				$(this).toggleClass 'icon-caret-up icon-caret-down'
+				$(this).toggleClass 'icon-caret-right icon-caret-down'
 				$d = $("div.#{$(this).attr 'id'}")
 				if ($d.toggleClass 'collapsed').hasClass 'collapsed' then $d.hide() else $d.show()
