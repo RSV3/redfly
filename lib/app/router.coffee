@@ -6,7 +6,14 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id') then name = 'unauthorized'
+			if not App.user.get('id')
+				if name isnt 'index'
+					util.notify
+						title: 'Session Cleared'
+						text: 'You must login to access Redfly.'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
+				name = 'index'
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
