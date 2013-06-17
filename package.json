@@ -17,7 +17,8 @@
     "step": "0.0.5",
     "fullcontact.js": "~0.1.1",
     "contextio": "~0.3.0",
-    "source-map-support": "~0.1.2"
+    "source-map-support": "~0.1.2",
+    "icalendar": "0.6.x"
   },
   "devDependencies": {
     "chai": "1.4.2"
