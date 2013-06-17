@@ -6,7 +6,7 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id') then name='index'
+			if not App.user.get('id') then name = 'unauthorized'
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
@@ -130,8 +130,8 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text	# ignore stale results that don't match the query
-						if not results.response?.length then @transitionTo 'userProfile'
-						else controller.set 'all', App.store.findMany(App.Contact, results.response)
+					if not results.response?.length then @transitionTo 'recent'
+					else controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
 
