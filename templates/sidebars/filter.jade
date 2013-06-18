@@ -1,5 +1,7 @@
 {{#if all.length}}
-i viewing {{#if hiding}}{{theResults.length}} of {{/if}}{{all.length}} search results
+i viewing {{#if hiding}}{{filteredCount}} of {{/if}}{{totalCount}} search results
+{{else}}
+i &nbsp;
 {{/if}}
 
 h3
@@ -9,7 +11,7 @@ h3
 h4
 	| {{App.orgTitle}} Tags
 	{{view App.FilterToggleView id="toggleorg" class="icon-caret-down"}}
-.filters.toggleorg
+div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 	{{#each item in orgTagsToSelect}}
 	.checkfilter
 		|<label>
@@ -23,7 +25,7 @@ h4
 h4
 	| Industry Tags
 	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
-.filters.toggleind
+div(bindAttr='class=":filters :toggleind theResults::disabled"')
 	{{#each item in indTagsToSelect}}
 	.checkfilter
 		|<label>
@@ -37,7 +39,7 @@ h4
 h4
 	| Knows
 	{{view App.FilterToggleView id="togglenose" class="icon-caret-down"}}
-.row-fluid
+div(bindAttr='class=":filters theResults::disabled"')
 	{{#each item in noseToPick}}
 	.togglenose.checkfilter
 		|<label>
@@ -58,18 +60,4 @@ h4
 |	prompt="Select a minimum ..."
 }}
 {{/if}}
-
-
-h3
-	| Sort
-.row-fluid
-	.span6(title = 'prioritize contacts you already know')
-		h4
-			| Proximity
-		+view ('App.SortView class="proximity"')
-
-	.span6(title = 'how many users know each contact')
-		h4
-			| Influence
-		+view ('App.SortView class="influence"')
 
