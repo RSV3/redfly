@@ -108,7 +108,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.RecentRoute = Ember.Route.extend
 		redirect: ->
-			newResults = App.Results.create {text: "contact:25"}
+			newResults = App.Results.create {text: "contact:0"}
 			@transitionTo 'results', newResults
 
 	App.CompaniesRoute = Ember.Route.extend
@@ -126,12 +126,16 @@ module.exports = (Ember, App, socket) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
 			{ text: decodeURIComponent param.query_text }
-		setupController: (controller, model) ->
+		setupController: (controller, model)->
 			controller.set 'all', null
-			socket.emit 'fullSearch', query: model.text, (results) =>
-				if results and results.query is model.text	# ignore stale results that don't match the query
-						if not results.response?.length then @transitionTo 'userProfile'
-						else controller.set 'all', App.store.findMany(App.Contact, results.response)
+			socket.emit 'fullSearch', query: model.text, (results)=>
+				if results and results.query is model.text		# ignore stale results that don't match the query
+					if not results.response?.length then return @transitionTo 'userProfile'
+					for own key, val of results
+						controller.set key, results[key]
+					controller.set 'sortDir', 0
+					controller.set 'sortType', null
+					controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
 

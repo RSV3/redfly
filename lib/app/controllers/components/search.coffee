@@ -31,7 +31,8 @@ module.exports = (Ember, App, socket) ->
 
 		doSearch: ->
 			newResults = App.Results.create {text: util.trim @get('query')}
-			@get('controller').transitionToRoute "results", newResults
+			#@get('controller').transitionToRoute "results", newResults
+			App.Router.router.transitionTo "results", newResults
 
 		focusIn: ->
 			@set 'using', true
