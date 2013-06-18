@@ -6,7 +6,14 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id') then name='index'
+			if not App.user.get('id')
+				if name isnt 'index'
+					util.notify
+						title: 'Session Cleared'
+						text: 'You must login to access Redfly.'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
+				name = 'index'
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
@@ -130,7 +137,7 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results)=>
 				if results and results.query is model.text		# ignore stale results that don't match the query
-					if not results.response?.length then return @transitionTo 'userProfile'
+					if not results.response?.length then return @transitionTo 'recent'
 					for own key, val of results
 						controller.set key, results[key]
 					controller.set 'sortDir', 0
