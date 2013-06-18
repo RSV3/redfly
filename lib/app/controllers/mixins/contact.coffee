@@ -20,6 +20,6 @@ module.exports = (Ember, App, socket) ->
 				"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
 			).property 'canonicalName', 'email'
 		linkedinMail: (->
-				'http://www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
 
