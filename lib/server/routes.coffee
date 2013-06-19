@@ -350,8 +350,6 @@ module.exports = (app, route) ->
 					if parseInt(compound[1], 10).toString() is compound[1]
 						limit = parseInt(compound[1], 10)
 						terms = []
-						sort = data.sort
-						delete data.sort
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -386,22 +384,25 @@ module.exports = (app, route) ->
 					if model is 'Contact'
 						conditions.added = $exists: true
 						_.extend conditions, data.moreConditions
-						sort = sort or "-added"
 						if not terms?.length		# special case: no terms means we're looking at all contacts
 							if data.knows?.length
 								_.extend conditions, knows:$in:data.knows
 								delete data.knows
-								delete data.sort
 							else if data.industry?.length
 								conditions = category:'industry'
 								conditions.body = $in:data.industry
+								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.industry
 							else if data.organisation?.length
 								conditions = category:$ne:'industry'
 								conditions.body = $in:data.organisation
+								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.organisation
+							if model is 'Contact'
+								sort = data.sort or "-added"
+								delete data.sort
 					else if model is 'Tag'
 						conditions.contact = $exists: true
 					models[model].find(conditions).sort(sort).limit(limit).exec @parallel()
