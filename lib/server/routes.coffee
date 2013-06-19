@@ -266,7 +266,7 @@ module.exports = (app, route) ->
 				type = sort
 				dir = 1
 			switch type
-				when 'name'
+				when 'names'
 					query = _id:$in:results.response
 					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
 						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
@@ -291,8 +291,9 @@ module.exports = (app, route) ->
 								_.some c.knows, (k)-> String(k) is String(session.user)
 							results.response = _.map contacts, (t)-> String(t.get('_id'))
 						filterSearch session, data, results, fn, page
-			return
 
+		# fall thru to pagination
+		console.log "filterSearch falling thru to pagination"
 		results.filteredCount = results.response.length
 		results.response = results.response[page*searchPagePageSize..(page+1)*searchPagePageSize]		# finally, paginate
 		fn results
@@ -349,7 +350,8 @@ module.exports = (app, route) ->
 					if parseInt(compound[1], 10).toString() is compound[1]
 						limit = parseInt(compound[1], 10)
 						terms = []
-
+						sort = data.sort
+						delete data.sort
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -455,33 +457,35 @@ module.exports = (app, route) ->
 					id: String(d.contact or d.id)
 				), (u)-> u.id
 				# perfect matches replace anything already in the results list
-				cb _.union _.reject(results, (r)->_.contains _.pluck(matches, 'id'), r.id), matches
-			else
-				matches = _.uniq _.map typeDocs, (d)->
-					count: 0											# default
-					id: String(d.contact or d.id)
-				, (u)-> u.id
-				if matches?.length
-					cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
-				###
-				# this clause was used to prioritise results with more tags
-				#
-				ids = _.map typeDocs, (d) -> if d.contact then d.contact else d.id
-				models.Tag.aggregate {$match: {contact:{$in:ids}}},
-					{$group:  _id: '$contact', count: $sum: 1},
-					{$sort: count: -1},
-					(err, aggresults) ->
-						if not err and aggresults.length > 1
-							aggresults = _.map aggresults, (d)->
-								return {
-									id: String(d._id)
-									count:d.count
-								}
-							results = _.union results, _.filter aggresults, (r)-> not _.contains _.pluck(results, 'id'), r.id
-						# defaults won't replace anything already in the results list
-						if matches?.length
-							cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
-				###
+				return cb _.union _.reject(results, (r)->_.contains _.pluck(matches, 'id'), r.id), matches
+			matches = _.uniq _.map typeDocs, (d)->
+				count: 0											# default
+				id: String(d.contact or d.id)
+			, (u)-> u.id
+
+			# if we have too many results, or we're searching all contacts, thatsit.
+			if results.length > 999 or (data.query or data.filter) is 'contact:0'
+				return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
+
+			###
+			# this clause is used to prioritise results with more tags
+			###
+			ids = _.map typeDocs, (d) -> if d.contact then d.contact else d.id
+			ids = _.reject ids, (r)-> _.contains _.pluck(results, 'id'), r.id
+			if ids.length then models.Tag.aggregate {$match: {contact:{$in:ids}}},
+				{$group:  _id: '$contact', count: $sum: 1},
+				{$sort: count: -1},
+				(err, aggresults) ->
+					if not err and aggresults.length
+						aggresults = _.map aggresults, (d)->
+							return {
+								id: String(d._id)
+								count:d.count
+							}
+						results = _.union results, _.filter aggresults, (r)-> not _.contains _.pluck(results, 'id'), r.id
+					# defaults won't replace anything already in the results list
+					return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
+			return results
 
 
 	route 'search', (fn, data, io, session)->

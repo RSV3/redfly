@@ -116,6 +116,7 @@ mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 		#from: userfrom.get('email')
 		to: "#{userto.name} <#{userto.email}>"
 		from: userfrom.email
+		cc: userfrom.email
 		subject: "Redfly Intro: You know #{contactnick}, right?"
 		title: "Hi #{tonick}"
 		nick: contactnick

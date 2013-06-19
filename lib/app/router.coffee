@@ -35,6 +35,8 @@ module.exports = (Ember, App, socket) ->
 		@route 'contacts'
 		@route 'leaderboard'
 		@resource 'results', path: '/results/:query_text'
+		@route 'noresults', path: '/results'
+		@route 'noresults', path: '/results/'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -113,6 +115,11 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'contacts'
 
+	App.NoresultsRoute = Ember.Route.extend
+		redirect: ->
+			newResults = App.Results.create {text: "contact:0"}
+			@transitionTo 'results', newResults
+
 	App.RecentRoute = Ember.Route.extend
 		redirect: ->
 			newResults = App.Results.create {text: "contact:0"}
@@ -132,7 +139,9 @@ module.exports = (Ember, App, socket) ->
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
-			{ text: decodeURIComponent param.query_text }
+			qt = decodeURIComponent param.query_text
+			if not qt?.length then qt='contact:0'
+			{ text: qt }
 		setupController: (controller, model)->
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results)=>
@@ -208,6 +217,8 @@ module.exports = (Ember, App, socket) ->
 	App.IndexRoute = Ember.Route.extend
 		renderTemplate: ->
 			@router.connectem @, 'index'
+		redirect: ->
+			if App.user.get('id') then @transitionTo 'recent'
 
 	App.LinkRoute = Ember.Route.extend
 		activate: ->
