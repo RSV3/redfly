@@ -24,7 +24,7 @@ AdminSchema = new Schema
 ClassifySchema = new Schema
 	user: type: Types.ObjectId, ref: 'User'
 	contact: type: Types.ObjectId, ref: 'Contact', required: true
-	saved: type: Boolean
+	saved: type: Date
 
 ExcludeSchema = new Schema
 	user: type: Types.ObjectId, ref: 'User'

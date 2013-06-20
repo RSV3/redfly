@@ -7,6 +7,8 @@ module.exports = (app, route) ->
 	mailer = require './mail'
 	mboxer = require './mboxer'
 
+	searchPagePageSize = 25
+
 	route 'db', (fn, data, io, session) ->
 		feed = (doc) ->
 			o =
@@ -179,16 +181,123 @@ module.exports = (app, route) ->
 						session.save()
 						fn id:u.id
 
+	# adds filter lists on results object before returning first page
+	#
+	# results ;		results object (so far) including query, response and total
+	# fn ;			callback function to send the data back to the client
+	# termcount ;	if this flag is false, the filters are built from the entire collection
+	# 				if this flag is non-zero, the filters are built against the subset of results
+	buildFilters = (results, fn, termCount, step=0)->
+		switch step
+			when 0
+				query = added:$exists:true
+				if termCount then query._id = $in:results.response
+				models.Contact.find(query).select('knows').exec (err, contacts)->
+					knows = _.countBy _.flatten(_.pluck contacts, 'knows'), (k)->k
+					results.f_knows = _.sortBy(_.keys(knows), (k)->-knows[k])[0..5]
+					buildFilters results, fn, termCount, 1
+			when 1
+				conditions = category: 'industry'
+				if termCount
+					ids = []
+					for id in results.response
+						ids.push models.ObjectId(id)
+					conditions.contact = $in: ids
+				models.Tag.aggregate {$match: conditions},
+					{$group:  _id: '$body', count: {$sum: 1}},
+					{$sort: count: -1},
+					{$limit: 5},
+					(err, tags) ->
+						throw err if err
+						results.f_industry = _.pluck(tags, '_id')[0..5]
+						buildFilters results, fn, termCount, 2
+			when 2
+				conditions = category: $ne: 'industry'
+				if termCount
+					ids = []
+					for id in results.response
+						ids.push models.ObjectId(id)
+					conditions.contact = $in: ids
+				models.Tag.aggregate {$match: conditions},
+					{$group:  _id: '$body', count: {$sum: 1}},
+					{$sort: count: -1},
+					{$limit: 5},
+					(err, tags) ->
+						throw err if err
+						results.f_organisation = _.pluck(tags,'_id')[0..5]
+						results.response = results.response[0..searchPagePageSize]			# ... first page
+						fn results
+		
+
+	# filters and paginates search results using the parameters specified on the data object
+	filterSearch = (session, data, results, fn, page=0)->
+		if data.page
+			page = data.page
+			delete data.page
+		if data.knows?.length
+			query = {_id:{$in:results.response}, knows:{$in:data.knows}}
+			delete data.knows
+			return models.Contact.find(query).select('_id').exec (err, contactids)->
+				contactids = _.map contactids, (t)-> String(t.get('_id'))
+				if not err then results.response = _.intersection results.response, contactids
+				filterSearch session, data, results, fn, page
+		if data.industry?.length
+			query = {contact:{$in:results.response}, category:'industry', body:{$in:data.industry}}
+			delete data.industry
+			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
+				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
+				if not err then results.response = _.intersection results.response, tagcontacts
+				filterSearch session, data, results, fn, page
+		if data.organisation?.length
+			query = {contact:{$in:results.response}, category:{$ne:'industry'}, body:{$in:data.organisation}}
+			delete data.organisation
+			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
+				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
+				if not err then results.response = _.intersection results.response, tagcontacts
+				filterSearch session, data, results, fn, page
+		if data.sort # sort filtered objects
+			query = _id:$in:results.response		# query the subset we're sorting
+			dir = -1								# sort ascending
+			key = data.sort							# sort term
+			delete data.sort
+			if key[0] is '-' then key = key.substr 1
+			else dir = 1
+			if key is 'names' then key='names.0'	# if sorting by names, only look at first instance
+			sort = {}
+			sort[key]=dir
+			switch key
+				when 'influence'
+					return models.Contact.find(query).exec (err, contacts)->
+						if not err
+							contacts = _.sortBy contacts, (c)->c.knows.length * dir
+							results.response = _.map contacts, (t)-> String(t.get('_id'))
+						filterSearch session, data, results, fn, page
+				when 'proximity'
+					return models.Contact.find(query).exec (err, contacts)->
+						if not err
+							contacts = _.sortBy contacts, (c)->
+								_.some c.knows, (k)-> String(k) is String(session.user)
+							results.response = _.map contacts, (t)-> String(t.get('_id'))
+						filterSearch session, data, results, fn, page
+				else
+					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
+						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
+						filterSearch session, data, results, fn, page
+
+		# fall thru to pagination
+		results.filteredCount = results.response.length
+		results.response = results.response[page*searchPagePageSize..(page+1)*searchPagePageSize]		# finally, paginate
+		fn results
+
 
 	# refactored search:
 	# optional limit for the dynamic searchbox,
 	# and a final callback where we can decide what attributes to package for returning
 	doSearch = (fn, data, session, searchMap, limit=0) ->
-		if not data.query then return []
-		compound = _.compact data.query.split ':'
-		if compound.length > 1						# type specified, eg tag:slacker
-			terms = _.uniq _.compact compound[1].split(' ')
-		else terms = _.uniq _.compact data.query.split(' ')
+		if not (query = data.filter or data.query) then return []
+		compound = _.compact query.split ':'
+		if compound.length > 1 then terms = _.uniq _.compact compound[1].split(' ')			# type specified, eg tag:slacker
+		else terms = _.uniq _.compact query.split(' ')			# multiple search terms, eg john doe
 		search = {}
 		availableTypes = ['name', 'email', 'tag', 'note']
 		utilisedTypes = []	# this array maps the array of results to their type
@@ -217,8 +326,8 @@ module.exports = (app, route) ->
 
 		step = require 'step'
 		step ->
-			sort = {}
 			for type of search
+				sort = {}
 				terms = search[type]
 				if type is 'tag' or type is 'note'
 					_s = require 'underscore.string'
@@ -231,15 +340,7 @@ module.exports = (app, route) ->
 				if compound.length > 1 and compound[0] is 'contact'
 					if parseInt(compound[1], 10).toString() is compound[1]
 						limit = parseInt(compound[1], 10)
-						sort.added = -1
 						terms = []
-
-				if not limit
-					c=0
-					for t of search
-						c += search[t].length
-					limit = 100/c
-
 				if terms.length > 1			# eg. search on "firstname lastname"
 					try
 						conditions[field] = new RegExp _.last(compound), 'i'
@@ -254,12 +355,6 @@ module.exports = (app, route) ->
 
 				step ->
 					conditions = {}
-					###
-					#this restricts contact:25 to those i knows.
-
-					if compound.length > 1 and compound[0] is 'contact'
-						conditions.knows = session.user
-					###
 					for term in terms
 						try
 							reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
@@ -280,6 +375,37 @@ module.exports = (app, route) ->
 					if model is 'Contact'
 						conditions.added = $exists: true
 						_.extend conditions, data.moreConditions
+						if not terms?.length		# special case: no terms means we're looking at all contacts
+							if data.knows?.length
+								_.extend conditions, knows:$in:data.knows
+								delete data.knows
+							else if data.industry?.length
+								conditions = category:'industry'
+								conditions.body = $in:data.industry
+								conditions.contact = $exists:true
+								model = 'Tag'
+								delete data.industry
+							else if data.organisation?.length
+								conditions = category:$ne:'industry'
+								conditions.body = $in:data.organisation
+								conditions.contact = $exists:true
+								model = 'Tag'
+								delete data.organisation
+							if model is 'Contact'
+								dir = -1
+								if not data.sort
+									key = "added"
+								else
+									key = data.sort
+									if key[0] is '-' then key=key.substr 1
+									else dir = 1
+									if key is "names"
+										key = "names.0"
+										sort[key]=dir
+										delete data.sort
+									else if key is 'added'
+										sort[key]=dir
+										delete data.sort
 					else if model is 'Tag'
 						conditions.contact = $exists: true
 					models[model].find(conditions).sort(sort).limit(limit).exec @parallel()
@@ -295,18 +421,18 @@ module.exports = (app, route) ->
 					# note the query parameter is returned in the results
 					# to ensure that stale old results don't overwrite more recent search requests
 					# that happened to respond earlier
-					if not results
-						results = {query:data.query, response:null}
+					if not results then results = {query:query, response:null}
 					else if _.isArray results
-						results =
-							query: data.query
-							response: _.pluck _.sortBy(results, (r)-> -r.count), 'id'
+						resultsObj = query:query
+						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
+						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response.length
+						if data.filter then return filterSearch session, data, resultsObj, fn
+						else return buildFilters resultsObj, fn, terms?.length
 					else
 						for type of results
-							if results[type].length
-								results[type] = _.pluck results[type], 'id'
-							else delete results[type]
-						results.query = data.query
+							if not results[type].length then delete results[type]
+							else results[type] = _.pluck results[type], 'id'
+						results.query = query
 					return fn results		# we need this to be async
 				if _.isEmpty docs[index] then return mapSearches index+1
 
@@ -335,27 +461,35 @@ module.exports = (app, route) ->
 					id: String(d.contact or d.id)
 				), (u)-> u.id
 				# perfect matches replace anything already in the results list
-				cb _.union _.reject(results, (r)->_.contains _.pluck(matches, 'id'), r.id), matches
-			else
-				matches = _.uniq _.map typeDocs, (d)->
-					count: 0											# default
-					id: String(d.contact or d.id)
-				, (u)-> u.id
-				ids = _.map typeDocs, (d) -> if d.contact then d.contact else d.id
-				models.Tag.aggregate {$match: {contact:{$in:ids}}},
-					{$group:  _id: '$contact', count: $sum: 1},
-					{$sort: count: -1},
-					(err, aggresults) ->
-						if not err and aggresults.length > 1
-							aggresults = _.map aggresults, (d)->
-								return {
-									id: String(d._id)
-									count:d.count
-								}
-							results = _.union results, _.filter aggresults, (r)-> not _.contains _.pluck(results, 'id'), r.id
-						# defaults won't replace anything already in the results list
-						if matches and matches.length
-							cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
+				return cb _.union _.reject(results, (r)->_.contains _.pluck(matches, 'id'), r.id), matches
+			matches = _.uniq _.map typeDocs, (d)->
+				count: 0											# default
+				id: String(d.contact or d.id)
+			, (u)-> u.id
+
+			# if we have too many results, or we're searching all contacts, thatsit.
+			if results.length > 999 or (data.query or data.filter) is 'contact:0'
+				return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
+
+			###
+			# this clause is used to prioritise results with more tags
+			###
+			ids = _.map typeDocs, (d) -> if d.contact then d.contact else d.id
+			ids = _.reject ids, (r)-> _.contains _.pluck(results, 'id'), r.id
+			if ids.length then models.Tag.aggregate {$match: {contact:{$in:ids}}},
+				{$group:  _id: '$contact', count: $sum: 1},
+				{$sort: count: -1},
+				(err, aggresults) ->
+					if not err and aggresults.length
+						aggresults = _.map aggresults, (d)->
+							return {
+								id: String(d._id)
+								count:d.count
+							}
+						results = _.union results, _.filter aggresults, (r)-> not _.contains _.pluck(results, 'id'), r.id
+					# defaults won't replace anything already in the results list
+					return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
+			return results
 
 
 	route 'search', (fn, data, io, session)->
@@ -569,7 +703,10 @@ module.exports = (app, route) ->
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
-		models.Contact.where('company').gt(oneWeekAgo).execFind (err, contacts)->
+		# TODO: fix companies
+		# this is still kinda nonsense. we really wanna search mails from the last week,
+		# then search all contacts in those mails, to then get their company
+		models.Contact.find({company:{$exists:true}, added:{$gt:oneWeekAgo}}).execFind (err, contacts)->
 			throw err if err
 			companies = []
 			_.each contacts, (contact)->
@@ -580,14 +717,13 @@ module.exports = (app, route) ->
 				if not c.match(new RegExp(process.env.ORGANISATION_TITLE, 'i'))
 					comps.push { company:c, count:companies[c] }
 			companies = _.sortBy(comps, (c)-> -c.count)[0..20]
-			console.log "companies"
-			console.dir companies
 			fn companies
 
 
 	route 'flush', (fn, contacts, io, session) ->
 		_.each contacts, (c)->
-			classification = user: session.user, contact: c # , saved: session.admin.flushsave
+			classification = {user:session.user, contact:c}
+			if session.admin.flushsave then classification.saved = moment().toDate()
 			models.Classify.create classification, (err, mod)->
 				if err
 					console.log 'flush err:'
@@ -596,7 +732,7 @@ module.exports = (app, route) ->
 		fn()
 
 	route 'recent', (fn)->
-		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(25).execFind (err, contacts)->
+		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
 			throw err if err
 			recent = _.map contacts, (c)->c._id.toString()
 			console.log "recent"

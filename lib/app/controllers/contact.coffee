@@ -199,26 +199,33 @@ module.exports = (Ember, App, socket) ->
 					# Ideally there's a way to get a list of itemViews and pick the last one, and not do this with jquery.
 					@$('input').last().focus()
 			save: ->
-				@set 'working', true
+				# here's an ugly way to check the context:
+				# if we get here because of the newlinebinding on the undefined textobject,
+				# the context will be the embertextview, so step up one level.
+				that = @
+				if that.get('parentView')._makeProxyArray
+					that = that.get('parentView')	# ugly context test.
+				that.set 'working', true
 
-				all = @get('others').getEach 'content'
-				all.unshift @get('primary')
+				all = that.get('others')?.getEach('content') or []
+				all.unshift that.get('primary')
 				all = _.compact _.map all, (item)-> util.trim item
 
 				nothing = _.isEmpty all
-				@set 'nothing', nothing
+				that.set 'nothing', nothing
 
 				# Set primary and others to the new values so the user can see any modifications to the input while stuff saves.
-				@set 'primary', _.first all
-				@set 'others.content', @_makeProxyArray _.rest all
-				socket.emit 'deprecatedVerifyUniqueness', id: @get('controller.id'), field: @get('allAttribute'), candidates: all, (duplicate) =>
-					@set 'duplicate', duplicate
+				that.set 'primary', _.first all
+				that.set 'others.content', that._makeProxyArray _.rest all
+				socket.emit 'deprecatedVerifyUniqueness', id: that.get('controller.id'), field: that.get('allAttribute'), candidates: all, (duplicate) ->
+					that.set 'duplicate', duplicate
 
 					if (not nothing) and (not duplicate)
-						@set 'controller.' + @get('allAttribute'), all
+						that.set "controller.#{that.get('allAttribute')}", all
 						App.store.commit()
-						@toggle()
-					@set 'working', false
+						that.toggle()
+					that.set 'working', false
+
 			initiateMerge: ->
 				@toggle()
 				@get('parentView').showMerge()
@@ -428,7 +435,9 @@ module.exports = (Ember, App, socket) ->
 			editView: Ember.View.extend
 				tagName: 'span'
 				classNames: ['overlay', 'edit-position']
-				field: Ember.TextField
+				field: Ember.TextField.extend
+					insertNewline: ->
+						@.get('parentView').save()
 				toggle: ->
 					if not @toggleProperty('show')
 						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.
@@ -449,7 +458,10 @@ module.exports = (Ember, App, socket) ->
 						@set 'error', null
 					focusOut: ->
 						@_fire()
+					insertNewline: ->
+						@_fire()
 					_fire: ->
+						@set 'error', null
 						network = @get 'network'
 						if (value = @get('value')) and not value.match(util.socialPatterns[network])
 							_s = require 'underscore.string'

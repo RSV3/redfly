@@ -1,17 +1,40 @@
 .row-fluid
 
-	ul.pager.toppager
-		li.previous
-			| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
-		div.pagenums
-			| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
-		li.next
-			| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
+	div(bindAttr='class=":row-fluid theResults::disabled"')
+		.span2
+		| {{#unless othersorts}}
+		.span2
+		| {{/unless}}
+		.span2(title = 'sort name alphabetically')
+			span Name
+			+view ('App.SortView class="names"')
+		| {{#if othersorts}}
+		.span2(title = 'how many users know each contact')
+			span Influence
+			+view ('App.SortView class="influence"')
+		.span2(title = 'prioritize contacts you already know')
+			span Proximity
+			+view ('App.SortView class="proximity"')
+		| {{/if}}
+		.span2(title = 'sort by chronology of classification')
+			span Date
+			+view ('App.SortView class="added"')
 
-	+unless ('theResults.paginatedItems')
+	+if ('theResults')
+		| {{#if paging}}
+		ul.pager.toppager
+			li.previous
+				| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+		| {{/if}}
+
+	+unless ('theResults')
 		.loading
 			i.icon-spinner.icon-spin
-	| {{#each theResults.paginatedItems itemViewClass="App.ResultView" itemController="result"}}
+	| {{#each theResults itemViewClass="App.ResultView" itemController="result"}}
 	.row-fluid.top
 		| {{#if showitall}}
 		hr.topexpanded
@@ -47,12 +70,9 @@
 				b Knows: &nbsp;
 				.search-result.knows
 					ul.tags
-						| {{#if isKnown}}
-						li you
-						| {{/if}}
 						{{#each knowsSome}}
 						li
-							+linkTo('profile this')
+							a(href="#", action='clickname this target="view"')
 								| {{canonicalName}}
 						{{/each}}
 
@@ -77,11 +97,14 @@
 		| {{/if}}
 	{{/each}}
 
-	ul.pager
-		li.previous
-			| {{#if theResults.hasPrevious}}<a href="#" {{action previousPage target="theResults"}}>&larr; Prev</a>{{/if}}
-		div.pagenums
-			| {{#if theResults.total}}{{plusOne theResults.rangeStart}}-{{theResults.rangeStop}}{{/if}}{{#if theResults.hasNext}} / {{theResults.total}}{{/if}}
-		li.next
-			| {{#if theResults.hasNext}}<a href="#" {{action nextPage target="theResults"}}>Next &rarr;</a>{{/if}}
+	+if ('theResults')
+		| {{#if paging}}
+		ul.pager
+			li.previous
+				| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+		| {{/if}}
 

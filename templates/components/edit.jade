@@ -15,7 +15,7 @@ i.icon-pencil
 	a.close(href='#', action='toggle target="view"')
 		i.icon-remove
 	.nav-header {{view.prettyPrimaryAttribute}}
-	| {{view Ember.TextField valueBinding="view.primary"}}
+	| {{view Ember.TextField insertNewlineBinding="view.save" valueBinding="view.primary"}}
 	| {{#if view.others.length}}
 	.nav-header {{view.prettyOtherAttribute}}
 	| {{#each other in view.others}}
