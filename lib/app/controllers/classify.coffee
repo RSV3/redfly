@@ -61,7 +61,7 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
 				@set 'thisContact.addedBy', App.user
-			App.Classify.createRecord user: App.user, saved: true, contact:@get('thisContact')
+			App.Classify.createRecord user:App.user, saved:require('moment')().toDate(), contact:@get('thisContact')
 			App.store.commit()
 			@incrementProperty 'classifyCount'
 			@_next()

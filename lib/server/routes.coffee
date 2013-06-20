@@ -255,45 +255,36 @@ module.exports = (app, route) ->
 				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
 				if not err then results.response = _.intersection results.response, tagcontacts
 				filterSearch session, data, results, fn, page
-		if data.sort
-			sort = data.sort
+		if data.sort # sort filtered objects
+			query = _id:$in:results.response		# query the subset we're sorting
+			dir = -1								# sort ascending
+			key = data.sort							# sort term
 			delete data.sort
-			# sort filtered objects
-			if sort[0] is '-'
-				type = sort.substr 1
-				dir = -1
-			else
-				type = sort
-				dir = 1
-			switch type
-				when 'names'
-					query = _id:$in:results.response
-					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
-						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
-						filterSearch session, data, results, fn, page
-				when 'added'
-					query = _id:$in:results.response
-					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
-						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
-						filterSearch session, data, results, fn, page
+			if key[0] is '-' then key = key.substr 1
+			else dir = 1
+			if key is 'names' then key='names.0'	# if sorting by names, only look at first instance
+			sort = {}
+			sort[key]=dir
+			switch key
 				when 'influence'
-					query = _id:$in:results.response
 					return models.Contact.find(query).exec (err, contacts)->
 						if not err
 							contacts = _.sortBy contacts, (c)->c.knows.length * dir
 							results.response = _.map contacts, (t)-> String(t.get('_id'))
 						filterSearch session, data, results, fn, page
 				when 'proximity'
-					query = _id:$in:results.response
 					return models.Contact.find(query).exec (err, contacts)->
 						if not err
 							contacts = _.sortBy contacts, (c)->
 								_.some c.knows, (k)-> String(k) is String(session.user)
 							results.response = _.map contacts, (t)-> String(t.get('_id'))
 						filterSearch session, data, results, fn, page
+				else
+					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
+						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
+						filterSearch session, data, results, fn, page
 
 		# fall thru to pagination
-		console.log "filterSearch falling thru to pagination"
 		results.filteredCount = results.response.length
 		results.response = results.response[page*searchPagePageSize..(page+1)*searchPagePageSize]		# finally, paginate
 		fn results
@@ -335,8 +326,8 @@ module.exports = (app, route) ->
 
 		step = require 'step'
 		step ->
-			sort = {}
 			for type of search
+				sort = {}
 				terms = search[type]
 				if type is 'tag' or type is 'note'
 					_s = require 'underscore.string'
@@ -401,8 +392,20 @@ module.exports = (app, route) ->
 								model = 'Tag'
 								delete data.organisation
 							if model is 'Contact'
-								sort = data.sort or "-added"
-								delete data.sort
+								dir = -1
+								if not data.sort
+									key = "added"
+								else
+									key = data.sort
+									if key[0] is '-' then key=key.substr 1
+									else dir = 1
+									if key is "names"
+										key = "names.0"
+										sort[key]=dir
+										delete data.sort
+									else if key is 'added'
+										sort[key]=dir
+										delete data.sort
 					else if model is 'Tag'
 						conditions.contact = $exists: true
 					models[model].find(conditions).sort(sort).limit(limit).exec @parallel()
@@ -700,7 +703,10 @@ module.exports = (app, route) ->
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
-		models.Contact.where('company').gt(oneWeekAgo).execFind (err, contacts)->
+		# TODO: fix companies
+		# this is still kinda nonsense. we really wanna search mails from the last week,
+		# then search all contacts in those mails, to then get their company
+		models.Contact.find({company:{$exists:true}, added:{$gt:oneWeekAgo}}).execFind (err, contacts)->
 			throw err if err
 			companies = []
 			_.each contacts, (contact)->
@@ -716,7 +722,8 @@ module.exports = (app, route) ->
 
 	route 'flush', (fn, contacts, io, session) ->
 		_.each contacts, (c)->
-			classification = user: session.user, contact: c # , saved: session.admin.flushsave
+			classification = {user:session.user, contact:c}
+			if session.admin.flushsave then classification.saved = moment().toDate()
 			models.Classify.create classification, (err, mod)->
 				if err
 					console.log 'flush err:'
