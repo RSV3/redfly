@@ -59,6 +59,7 @@ module.exports = (Ember, App, socket) ->
 					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
 			topnose
 		).property 'known.@each.isLoaded'
+
 		known: (->
 			ids = @get('f_knows')
 			App.User.find {_id:$in:ids}
@@ -79,8 +80,8 @@ module.exports = (Ember, App, socket) ->
 			if indTags?.length then emission.industry = indTags
 			orgTags = _.pluck _.filter(@get("orgTagsToSelect"), (item)-> item and item.checked), 'id'
 			if orgTags?.length then emission.organisation = orgTags
-			if (d=@get 'sortDir')
-				if d<0 then emission.sort = "-#{@get('sortType')}"
+			if (d = @get 'sortDir')
+				if d < 0 then emission.sort = "-#{@get('sortType')}"
 				else emission.sort = @get('sortType')
 			emission
 
