@@ -18,6 +18,16 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				console.log "Error saving Mail record"
 				console.dir err
 				console.dir mail
+			models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
+				if err
+					console.log "Error finding classify for #{user}, #{contact}"
+					console.dir err
+				else if classify
+					classify.saved = require('moment')().toDate()		# update the saved stamp
+					classify.save (err)->
+						if err
+							console.log "updating classify for #{user}, #{contact}"
+							console.dir err
 
 	_saveFullContact = (user, contact, fullDeets) ->
 		fullDeets.contact = contact
@@ -117,7 +127,11 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 
 				contact = new models.Contact
 				contact.emails.addToSet mail.recipientEmail
-				if name = mail.recipientName then contact.names.addToSet name
+				if not (name = mail.recipientName)
+					splitted = mail.recipientEmail.split '@'
+					domain = _.first _.last(splitted).split '.'
+					name =  _.first(splitted) + " [#{domain}]"
+				contact.names.addToSet name
 				newContacts.push contact
 				notifications?.foundNewContact?()
 				contact.knows.addToSet user

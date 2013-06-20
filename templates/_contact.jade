@@ -18,7 +18,12 @@
 						+else
 						+if('isKnown')
 							i.icon-star-empty.icon-2x.emptygraystar
+			| {{#if canHide}}
+			a(href='#', action='hideItAll this target="view"')
+				h3 {{canonicalName}}
+			| {{else}}
 			h3 {{canonicalName}}
+			| {{/if}}
 			| {{#if isKnown}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}

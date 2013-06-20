@@ -123,7 +123,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'page', 0
 			socket.emit 'fullSearch', emission, (results) =>
 				@set 'all', App.store.findMany(App.Contact, results.response)
-		).observes 'sortDir'
+		).observes 'sortDir', 'sortType'
 
 		query:null				# query string
 		page:0					# pagination
@@ -192,6 +192,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['results']
 
 	App.ResultController = App.ContactController.extend
+		canHide: true
 		notes: (->
 			if (id=@get('id'))
 				App.filter App.Note, {field: 'date'}, {contact:id}, (data) =>
@@ -225,9 +226,11 @@ module.exports = (Ember, App, socket) ->
 		clickname: (ev)->
 			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
 
-		setShowItAll: (r)->
+		hideItAll: (r)->
 			if (old = @get 'parentView.controller.showWhich')
 				old.set 'showitall', false
+		setShowItAll: (r)->
+			@hideItAll()
 			@get('parentView.controller.showWhich')?.set 'showitall', false
 			@set 'parentView.controller.showWhich', r
 			r.set 'showitall', true
