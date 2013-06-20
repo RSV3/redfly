@@ -235,9 +235,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'parentView.controller.showWhich', r
 			r.set 'showitall', true
 			that = this
-			Ember.run.next this, ()->
-				Ember.run.next this, ()->
-					$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
+			#Ember.run.next this, ()->
+			#	Ember.run.next this, ()->
+			#		$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'
