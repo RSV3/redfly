@@ -8,6 +8,7 @@ require('phrenetic/lib/app') (Ember, DS, App, socket) ->
 
 	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'
+	templates._contact = require '../../templates/_contact'
 	templates.contact = require '../../templates/contact'
 	templates.contacts = require '../../templates/contacts'
 	templates.create = require '../../templates/create'

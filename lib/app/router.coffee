@@ -6,7 +6,14 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id') then name='index'
+			if not App.user.get('id')
+				if name isnt 'index'
+					util.notify
+						title: 'Session Cleared'
+						text: 'You must login to access Redfly.'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
+				name = 'index'
 			if name is 'results'
 				route.render 'filter',
 					into: 'application'
@@ -28,6 +35,8 @@ module.exports = (Ember, App, socket) ->
 		@route 'contacts'
 		@route 'leaderboard'
 		@resource 'results', path: '/results/:query_text'
+		@route 'noresults', path: '/results'
+		@route 'noresults', path: '/results/'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -106,9 +115,14 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'contacts'
 
+	App.NoresultsRoute = Ember.Route.extend
+		redirect: ->
+			newResults = App.Results.create {text: "contact:0"}
+			@transitionTo 'results', newResults
+
 	App.RecentRoute = Ember.Route.extend
 		redirect: ->
-			newResults = App.Results.create {text: "contact:25"}
+			newResults = App.Results.create {text: "contact:0"}
 			@transitionTo 'results', newResults
 
 	App.CompaniesRoute = Ember.Route.extend
@@ -125,13 +139,19 @@ module.exports = (Ember, App, socket) ->
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
-			{ text: decodeURIComponent param.query_text }
-		setupController: (controller, model) ->
+			qt = decodeURIComponent param.query_text
+			if not qt?.length then qt='contact:0'
+			{ text: qt }
+		setupController: (controller, model)->
 			controller.set 'all', null
-			socket.emit 'fullSearch', query: model.text, (results) =>
-				if results and results.query is model.text	# ignore stale results that don't match the query
-						if not results.response?.length then @transitionTo 'userProfile'
-						else controller.set 'all', App.store.findMany(App.Contact, results.response)
+			socket.emit 'fullSearch', query: model.text, (results)=>
+				if results and results.query is model.text		# ignore stale results that don't match the query
+					if not results.response?.length then return @transitionTo 'recent'
+					for own key, val of results
+						controller.set key, results[key]
+					controller.set 'sortDir', 0
+					controller.set 'sortType', null
+					controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
 
@@ -197,6 +217,8 @@ module.exports = (Ember, App, socket) ->
 	App.IndexRoute = Ember.Route.extend
 		renderTemplate: ->
 			@router.connectem @, 'index'
+		redirect: ->
+			if App.user.get('id') then @transitionTo 'recent'
 
 	App.LinkRoute = Ember.Route.extend
 		activate: ->

@@ -1,0 +1,51 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20130627T230000Z
+DTEND:20130628T000000Z
+DTSTAMP:20130612T123725Z
+ORGANIZER;CN=Alex Rosenfeld:mailto:arosenfeld.mba2009.hbs@gmail.com
+UID:4vc4gdvqjp11o5q6tikv4m0idc@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Kwan Lee;X-NUM-GUESTS=0:mailto:kwan@redstar.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Alex Rosenfeld;X-NUM-GUESTS=0:mailto:arosenfeld.mba2009.hbs@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=whaas@redstar.com;X-NUM-GUESTS=0:mailto:whaas@redstar.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=ewisch@redstar.com;X-NUM-GUESTS=0:mailto:ewisch@redstar.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Adam Weisman;X-NUM-GUESTS=0:mailto:adam@redstar.com
+CREATED:20130612T123725Z
+DESCRIPTION:On Tue\, Jun 11\, 2013 at 10:34 AM\, Eric Wisch <ewisch@redstar
+ .com> wrote:\nI am in.\n\n-e\n\n\nOn Tue\, Jun 11\, 2013 at 10:07 AM\, Walt
+ er Haas <whaas@redstar.com> wrote:\nSounds great. I love German food. \n\nO
+ n Jun 10\, 2013\, at 10:00 PM\, Alex Rosenfeld <alex@redstar.com> wrote:\n\
+ nHey\, guys.  I've chatted with most of you about getting a small group tog
+ ether for dinner at Bronwyn one night in the next few weeks.  (Given the sm
+ all size and popularity of the restaurant and the fact that they don't take
+  reservations\, I think keeping it to around six people would work best.)  
+ Bronwyn just opened last month and is in Union Square in Somerville\, a sho
+ rt drive from the office.  I have my eye on the evening of Thursday the 27t
+ h but wanted to check and see if folks are available that night.  Let me kn
+ ow and we'll get something on the calendar.  To get you excited...\n\nhttp:
+ //bronwynrestaurant.com/pdfs/bronwyn-restaurant-food-menu-05-13.pdf\nhttp:/
+ /bronwynrestaurant.com/pdfs/bronwyn-restaurant-beer-and-wine-menu-05-13.pdf
+ \n\n\nBest\,\nAlex\n\n\n___________________________________________________
+ _____________________\nAlex Rosenfeld\nDevelopment Director | Redstar\nM: (
+ 516) 698-0016\nalex@redstar.com | http://www.redstar.com\n\n\nView your eve
+ nt at http://www.google.com/calendar/event?action=VIEW&eid=NHZjNGdkdnFqcDEx
+ bzVxNnRpa3Y0bTBpZGMga3dhbkByZWRzdGFyLmNvbQ&tok=MzIjYXJvc2VuZmVsZC5tYmEyMDA5
+ Lmhic0BnbWFpbC5jb21lNGZjYjczZTgwYWI0ODIwMmM5OGQyYzdjNTdlODc4MDE1MWViZmQx&ct
+ z=America/New_York&hl=en.
+LAST-MODIFIED:20130612T123725Z
+LOCATION:Bronwyn - 255 Washington Street - Somerville\, MA 02143
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Dinner
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

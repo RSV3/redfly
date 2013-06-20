@@ -91,13 +91,20 @@ eachDoc = (docs, operate, fcb, succinct_manual) ->
 dailyRoutines = (doneDailies)->
 
 	# tidy up the classify records each day, to expire skips and saves
+	###
+	# we used to do it on the ID,
+	# but now the 'saved' field is a Date.
 	suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
 	prefix = Math.floor(moment().subtract('months', 1).valueOf()/1000).toString(16)
 	models.Classify.remove {_id : $lt : new models.ObjectId "#{prefix}#{suffix}"}, (err)->
+	###
+	models.Classify.remove {saved:{$exists:true}, saved:$lt:moment().subtract('months',1).toDate()}, (err)->
 		if err
 			console.log "Error removing old classifies (saves): IDs less than #{prefix}#{suffix}"
 			console.dir err
+
 		# skips (not saved) are removed after two weeks
+		suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
 		prefix = Math.floor(moment().subtract('days', 14).valueOf()/1000).toString(16)
 		models.Classify.remove {saved: {$exists: false}, _id: {$lt: new models.ObjectId "#{prefix}#{suffix}"}}, (err)->
 			if err

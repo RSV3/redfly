@@ -47,7 +47,7 @@ recentOrgs = (cb)->
 classifyList = (u, cb)->
 	# for power users, there'll eventually be a large number of excludes
 	# whereas with an aggressive classification policy there'll never be too many unclassified contacts/user
-	# so first get the list of new contacts, then the subset of those who are excluded
+	# so first get the list of new contacts, then the subset of those who are not excluded
 	models.Mail.find({sender:u, sent: $gt: lastMonth}).select('recipient added sent').exec (err, msgs) ->
 		throw err if err
 		# every recent recipient is a candidate for the queue
@@ -60,7 +60,7 @@ classifyList = (u, cb)->
 
 			# then strip out those which we've classified
 			# (cron job will clear these out after a month, so that data doesn't go stale)
-			models.Classify.find(user:u, saved:true, contact:$in:neocons).select('contact').exec (err, saves) ->
+			models.Classify.find(user:u, saved:{$exists:true}, contact:{$in:neocons}).select('contact').exec (err, saves) ->
 				throw err if err
 				neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
 

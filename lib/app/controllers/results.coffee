@@ -1,28 +1,12 @@
+
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	_s = require 'underscore.string'
+	_str = require 'underscore.string'
+	_.mixin(_str.exports());
 	moment = require 'moment'
 
-
-	doTags = (whichTags, context)->
-		oT = context.get(whichTags)
-		if not oT or not oT.get('length') then return
-		contCnt = context.get('all')?.get 'length'
-		tags = _.countBy oT.getEach('body'), (item)-> item
-		toptags = []
-		for t of tags
-			if tags[t] < contCnt
-				lab = _s.capitalize(t)
-				if lab.length > 20 then lab = lab.substr(0,15) + '...'						# truncate long tags
-				toptags.push { data: {id:t, checked:false, label:lab}, count: tags[t] }		# array of all checkboxes
-		tts = _.pluck toptags.sort((a,b) -> b.count - a.count).slice(0,7), 'data'		# and this one's for krz
-		tagnames = _.pluck tts, 'id'
-		context.set "#{whichTags}ToSelect", tts	# array of top checkboxes
-		context.set "#{whichTags}ToConsider", oT.filter (tag)=> _.contains tagnames, tag.get 'body'	# the Tags to keep track of
-
-	sortFields =
-		influence: 'knows.length'
-		proximity: 'knows addedBy'
+	searchPagePageSize = 25
+	sortFieldNames = ['influence', 'proximity', 'names', 'added']
 
 	sortFunc =
 		influence: (v, w)->
@@ -42,164 +26,173 @@ module.exports = (Ember, App, socket) ->
 		hiding: 0			# this is just for templating, whether or not results are filtered out
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending
-		years: 0			# value of selection from 'years experience' drop down
-		yearsToSelect: []	# array of years from 1..max
-		indTags: []			# all industry tags in the search
-		indToSelect: []		# the short list of checkboxes for industry tags
-		indToConsider: []	# the list of tags matching contacts in the results list & checkbox tagnames 
-		orgTags: []
-		orgToSelect: []
-		orgToConsider: []
-		knoNames: []
-		knoIDs: []
-		noseToPick: []
+
+		f_knows: []
+		f_industry: []
+		f_organisation: []
+
+		othersorts: (->
+			return @get('totalCount')<99
+		).property 'totalCount'
+
+		orgTagsToSelect: (->
+			tags = @get 'f_organisation'
+			toptags = []
+			for t in tags
+				toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
+			toptags
+		).property 'f_organisation'
+
+		indTagsToSelect: (->
+			tags = @get 'f_industry'
+			toptags = []
+			for t in tags
+				toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
+			toptags
+		).property 'f_industry'
+
+		noseToPick: (->
+			topnose = []
+			gno = @get('known')
+			if gno?.get('length') is @get('f_knows.length')
+				gno.forEach (n)->
+					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
+			topnose
+		).property 'known.@each.isLoaded'
+		known: (->
+			ids = @get('f_knows')
+			App.User.find {_id:$in:ids}
+			App.User.filter (data) =>
+				_.contains ids, data.get('id')
+		).property 'f_knows'
+
 		all: []				# every last search result
 		initialflag: 0		# dont scroll on initial load
-		filteredItems: null
-		filterItems: (->	# just the ones matching any checked items AND the specified minimum years
-			if _.isEmpty (oC = @get('all')) then return @set 'filteredItems', []
 
-			hasnose = false
+		buildFilter: ->
+			emission = filter:@get('query')
 			if (n2p = @get('noseToPick')) then for n in n2p
-				if n.checked then hasnose = true
-			noTags = true
-			for prefix in ['org', 'ind']
-				filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
-				if filterTags.length
-					noTags = false
-			if not @years and not hasnose and noTags
-				if @get('filteredItems') is oC then return
-				else return @set 'filteredItems', oC
+				if n.checked
+					if not emission.knows then emission.knows = [n.id]
+					else emission.knows.push n.id
+			indTags = _.pluck _.filter(@get("indTagsToSelect"), (item)-> item and item.checked), 'id'
+			if indTags?.length then emission.industry = indTags
+			orgTags = _.pluck _.filter(@get("orgTagsToSelect"), (item)-> item and item.checked), 'id'
+			if orgTags?.length then emission.organisation = orgTags
+			if (d=@get 'sortDir')
+				if d<0 then emission.sort = "-#{@get('sortType')}"
+				else emission.sort = @get('sortType')
+			emission
 
-			@set 'filteredItems', oC.filter (item) =>
-				if @years and not (item.get('yearsExperience') >= @years) then return false
+		previousPage: ->
+			if (p = @get 'page')
+				@set 'all', []
+				p = p-1
+				@set 'page', p
+				emission = @buildFilter()
+				emission.page = p
+				socket.emit 'fullSearch', emission, (results) =>
+					@set 'all', App.store.findMany(App.Contact, results.response)
 
-				found = false
-				if (n2p = @get('noseToPick')) then for n in n2p
-					if n.checked and _.contains item.get('knows').getEach('id'), n.id
-						found = true
-				if hasnose and not found then return false
+		nextPage: ->
+			p = @get('page')+1
+			if p*searchPagePageSize < @get('filteredCount')
+				@set 'all', []
+				@set 'page', p
+				emission = @buildFilter()
+				emission.page = p
+				socket.emit 'fullSearch', emission, (results) =>
+					@set 'all', App.store.findMany(App.Contact, results.response)
 
-				noTags = true
-				for prefix in ['org', 'ind']
-					filterTags = _.pluck _.filter(@get("#{prefix}TagsToSelect"), (item)-> item and item.checked), 'id'
-					if filterTags.length
-						noTags = false
-						for t in @get("#{prefix}TagsToConsider")
-							if t.get('contact.id') is item.get('id') and _.contains filterTags, t.get('body')
-								return true
-				noTags
-		).observes 'years', 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+		filterAgain:(->
+			if not @get('all') or not @get('totalCount') then return
 
+			emission = @buildFilter()
+			if emission.knows?.length or emission.industry?.length or emission.organisation?.length or @get('totalCount') isnt @get('filteredCount')
+				@set 'all', []
+				@set 'page', 0
+				socket.emit 'fullSearch', emission, (results) =>
+					@set 'all', App.store.findMany(App.Contact, results.response)
+					@set 'filteredCount', results?.filteredCount
+		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+
+		sortAgain:(->
+			if not @get('all') or not @get('totalCount') then return
+			emission = @buildFilter()
+			@set 'all', []
+			@set 'page', 0
+			socket.emit 'fullSearch', emission, (results) =>
+				@set 'all', App.store.findMany(App.Contact, results.response)
+		).observes 'sortDir', 'sortType'
+
+		query:null				# query string
+		page:0					# pagination
+		totalCount:0			# unfiltered total
+		filteredCount:0			# filtered total (showing filteredCount of totalCount)
+		hiding: (->
+			@get('totalCount') - @get('filteredCount')
+		).property 'totalCount', 'filteredCount'
+		rangeStart: (->
+			@get('page')*searchPagePageSize
+		).property 'page'
+		rangeStop: (->
+			stop = (@get('page')+1)*searchPagePageSize
+			if stop > @get('filteredCount') then stop = @get('filteredCount')
+			stop
+		).property 'page', 'filteredCount'
+		hasPrevious: (->
+			@get 'page'
+		).property 'page'
+		hasNext: (->
+			@get('rangeStop') < @get('filteredCount')
+		).property 'rangeStop', 'filteredCount'
+		paging: (->
+			@get('hasPrevious') or @get('hasNext')
+		).property 'hasPrevious', 'hasNext'
 		theResults: (->		# paginated content
-			if not @get 'filteredItems.length'
-				@initialflag=0
-				[]
-			else Ember.ArrayProxy.createWithMixins App.Pagination,
-				content: do =>
-					@set 'hiding', @get('all.length') - @get('filteredItems.length')
-					@set 'rangeStart', 0
-					@get('showWhich')?.set 'showitall', false
-					if @get 'sortType'
-						Ember.ArrayController.create
-							content: @get 'filteredItems'
-							sortProperties: [sortFields[@get 'sortType']]
-							sortAscending: @get('sortDir') is 1
-							orderBy: sortFunc[@get 'sortType']
-					else
-						@get 'filteredItems'
-				itemsPerPage: 25
-		).property 'filteredItems', 'sortType', 'sortDir'
+			a = @get 'all'
+			if not a?.get('length') then null
+			else a
+		).property 'all'
 
 		scrollUp: (->
-			rs = @get 'theResults.rangeStart'
+			rs = @get 'rangeStart'
 			if @initialflag isnt rs
 				@initialflag = rs
 				$('html, body').animate {scrollTop: 0}, 666		# when the paginated content changes
-		).observes 'theResults.rangeStart'
+		).observes 'rangeStart'
 
-		# oh, this was tricky:
-		# in order to always get the knows array, had to watch on the @each (id/knows) of @each (knows/contacts)
-		watchAllNoses:(->
-				aC = @get('allThoseNoses')
-				if not aC or not aC.length then return @set 'knoIDs', []
-				if not aC[0].get('length') then return @set 'knoIDs', []
-				results = []
-				aC.forEach (c)->
-					results.pushObjects c.getEach('id')
-				nose = _.countBy results, (item)-> item
-				topnose = []
-				for k, v of nose
-					if k and v and v < aC.get('length') then topnose.push {id:k, count:v}
-				if not topnose.length then return				# no point having a filter for no users!
-				ids = _.pluck _.sortBy(topnose, (n)-> -n.count)[0..7], 'id'
+		userToggle: (id, name)->
+			if not (n2p = @get('noseToPick')) then return
+			for n in n2p
+				if id is n.id then return Ember.set n, 'checked', not n.checked
+			# new user, not listed, so add to list, and filter on this user only
+			newnose = []
+			for n in n2p
+				newnose.push {id:n.id, checked:false, label:n.label}
+			newnose.push { id:id, checked:true, label:_.prune _.capitalize(name), 20 }
+			@set 'noseToPick', newnose
 
-				ids = _.difference ids, @get('knoIDs')
-				if ids.length
-					@set 'knoIDs', _.union ids, @get('knoIDs')
-					@set 'knoNames', App.User.filter (data) =>
-						_.contains ids, data.get('id')
-					App.User.find {_id:$in:ids}
-		).observes 'allThoseNoses.@each.@each'
+		tagToggle: (cat, bod)->
+			if cat is 'industry' then prefix = 'ind'
+			else prefix = 'org'
+			tts = @get "#{prefix}TagsToSelect"
+			if (t = _.find(tts, (item)-> item.id is bod))
+				return Ember.set t, 'checked', not t.checked	# already in list? toggle and quit
+			# new tag, not listed, so add to list, and filter on this tag only
+			chckbxs = []
+			for t in tts
+				chckbxs.push { id:t.id, checked:false, label:t.label }
+			chckbxs.push { id:bod, checked:true, label:_.prune _.capitalize(bod), 20 }
+			@set "#{prefix}TagsToSelect", chckbxs
 
-		setNoseTags: (->
-			if not (kT = @get 'knoNames') then return
-			if not kT.get 'length' then return
-			topKnows = []
-			kT.forEach (knows)->
-				lab = _s.capitalize knows.get 'name'
-				if lab.length > 20 then lab = lab.substr(0,20) + '...'						# truncate long tags
-				if lab.length		# just in case of error
-					topKnows.push { id:knows.get('id'), checked:false, label:lab }		# array of all checkboxes
-			@set "noseToPick", topKnows		# array of top 'knows' users
-		).observes 'knoNames.@each'
 
-		setOrgTags: (->
-			Ember.run.next this, ()->
-				doTags 'orgTags', @
-		).observes 'orgTags.@each'
-		setIndTags: (->
-			Ember.run.next this, ()->
-				doTags 'indTags', @
-		).observes 'indTags.@each'
-
-		setFilters: (->			# prepare the filters based on the sort results
-				years = []
-				oC = @get('all')
-				if not oC or not oC.get('length')
-					@set 'indTagsToSelect', null
-					@set 'orgTagsToSelect', null
-					@set 'yearsToSelect', null
-					@set 'noseToPick', null
-					return		# don't bother if there's no data
-				max = _.max(oC.getEach('yearsExperience'), (y)-> y or 0)
-				if max > 0
-					for i in [1..max]
-						years.push Ember.Object.create(label: 'at least ' + i + ' years', years: i) 
-				@set 'yearsToSelect', years
-				Ember.run.next this, ()->
-					query = {category: {$ne:"industry"}, contact: {$in: oC.getEach('id')}}
-					@set 'orgTags', App.Tag.filter query, (data) =>
-						data.get('category') isnt 'industry' and oC.some (t)->
-							t.get('id') is data.get('contact.id')
-					Ember.run.next this, ()->
-						query = {category: "industry", contact: {$in: oC.getEach('id')}}
-						@set 'indTags', App.Tag.filter query, (data) =>
-							data.get('category') is 'industry' and oC.some (t)->
-								t.get('id') is data.get('contact.id')
-
-				@set 'allThoseNoses', oC.getEach('knows')
-			).observes 'all.@each'
-
-		maybeToggle: (bod)->
-			for prefix in ['org', 'ind']
-				if (t = _.find(@get("#{prefix}TagsToSelect"), (item)-> item.id is bod))
-					Ember.set t, 'checked', not t.checked
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
 
 	App.ResultController = App.ContactController.extend
+		canHide: true
 		notes: (->
 			if (id=@get('id'))
 				App.filter App.Note, {field: 'date'}, {contact:id}, (data) =>
@@ -221,36 +214,36 @@ module.exports = (Ember, App, socket) ->
 		).property 'lastMail'
 		knowsSome: []
 		setKS: (->
-			fams = @get('measures.familiarity')
-			if not fams or not fams.length then f = []
-			else f = fams.getEach 'user'
-			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)	# prioritse most familiar
-			f = _.uniq f.concat othernose									# then add on other known users
-			f = _.reject f, (u)-> u.get('id') is App.user.get('id')		# don't list self in knowsSome list
-			if f and f.length then @set 'knowsSome', f
-		).observes 'knows.@each', 'measures.familiarity.@each'
+			if (f = @get('knows'))
+				if f.get('length') then @set 'knowsSome', f
+		).observes 'knows.@each.isLoaded'
 
 
 	App.ResultView = App.ContactView.extend
 		clicktag: (ev)->
-			@get('parentView').controller.maybeToggle ev.get('body')
+			@get('parentView').controller.tagToggle ev.get('category'), ev.get('body')
 
-		setShowItAll: (r)->
+		clickname: (ev)->
+			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
+
+		hideItAll: (r)->
 			if (old = @get 'parentView.controller.showWhich')
 				old.set 'showitall', false
+		setShowItAll: (r)->
+			@hideItAll()
 			@get('parentView.controller.showWhich')?.set 'showitall', false
 			@set 'parentView.controller.showWhich', r
 			r.set 'showitall', true
 			that = this
-			Ember.run.next this, ()->
-				Ember.run.next this, ()->
-					$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
+			#Ember.run.next this, ()->
+			#	Ember.run.next this, ()->
+			#		$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'
 		classNames: ['sort']
 		dir: (->
-			for i of sortFields
+			for i in sortFieldNames
 				if _.contains this.classNames, i
 					if i is @get 'controller.sortType'
 						return @get 'controller.sortDir'
@@ -260,7 +253,7 @@ module.exports = (Ember, App, socket) ->
 		down: (-> 0 > @get 'dir').property 'dir'
 		up: (-> 0 < @get 'dir').property 'dir'
 		sort: (ascdesc) ->
-			for i of sortFields
+			for i in sortFieldNames
 				if _.contains this.classNames, i
 					@set 'controller.sortType', i
 					@set 'controller.sortDir', ascdesc
