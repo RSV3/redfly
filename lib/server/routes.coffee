@@ -395,6 +395,7 @@ module.exports = (app, route) ->
 								dir = -1
 								if not data.sort
 									key = "added"
+									sort[key]=dir
 								else
 									key = data.sort
 									if key[0] is '-' then key=key.substr 1
