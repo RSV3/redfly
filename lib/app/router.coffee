@@ -139,9 +139,7 @@ module.exports = (Ember, App, socket) ->
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
-			qt = decodeURIComponent param.query_text
-			if not qt?.length then qt='contact:0'
-			{ text: qt }
+			{ text: decodeURIComponent param.query_text }
 		setupController: (controller, model)->
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results)=>

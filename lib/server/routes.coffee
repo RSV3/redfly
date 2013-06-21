@@ -262,7 +262,7 @@ module.exports = (app, route) ->
 			delete data.sort
 			if key[0] is '-' then key = key.substr 1
 			else dir = 1
-			if key is 'names' then key='names.0'	# if sorting by names, only look at first instance
+			if key is 'names' then key='sortname'	# if sorting by names, only look at first instance
 			sort = {}
 			sort[key]=dir
 			switch key
@@ -286,7 +286,7 @@ module.exports = (app, route) ->
 
 		# fall thru to pagination
 		results.filteredCount = results.response.length
-		results.response = results.response[page*searchPagePageSize..(page+1)*searchPagePageSize]		# finally, paginate
+		results.response = results.response[page*searchPagePageSize...(page+1)*searchPagePageSize]		# finally, paginate
 		fn results
 
 
@@ -395,12 +395,13 @@ module.exports = (app, route) ->
 								dir = -1
 								if not data.sort
 									key = "added"
+									sort[key]=dir
 								else
 									key = data.sort
 									if key[0] is '-' then key=key.substr 1
 									else dir = 1
 									if key is "names"
-										key = "names.0"
+										key = "sortname"
 										sort[key]=dir
 										delete data.sort
 									else if key is 'added'
