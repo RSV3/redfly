@@ -42,7 +42,7 @@ module.exports = (Ember, App, socket) ->
 
 		continueText: (->
 				if not @get 'thisContact.added'
-					return 'Save and continue'
+					return 'Save and Continue'
 				'Continue'
 			).property 'thisContact.added'
 		continue: ->
