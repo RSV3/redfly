@@ -6,18 +6,18 @@
 		.span2
 		| {{/unless}}
 		.span2(title = 'sort name alphabetically')
-			span Name
+			span Alphabetical 
 			+view ('App.SortView class="names"')
 		| {{#if othersorts}}
 		.span2(title = 'how many users know each contact')
 			span Influence
 			+view ('App.SortView class="influence"')
 		.span2(title = 'prioritize contacts you already know')
-			span Proximity
+			span Relationship Strength
 			+view ('App.SortView class="proximity"')
 		| {{/if}}
 		.span2(title = 'sort by chronology of classification')
-			span Date
+			span Added Date 
 			+view ('App.SortView class="added"')
 
 	+if ('theResults')
