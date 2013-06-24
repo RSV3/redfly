@@ -117,6 +117,11 @@ module.exports = (Ember, App, socket) ->
 
 	App.NoresultsRoute = Ember.Route.extend
 		redirect: ->
+			util.notify
+				title: 'No results found'
+				text: 'Reverting to all results.'
+				before_open: (pnotify) =>
+					pnotify.css top: '60px'
 			newResults = App.Results.create {text: "contact:0"}
 			@transitionTo 'results', newResults
 
@@ -140,11 +145,11 @@ module.exports = (Ember, App, socket) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
 			qt = decodeURIComponent param.query_text
-			if not qt?.length then qt='contact:0'
+			if not qt?.length then qt = 'contact:0'
 			{ text: qt }
-		setupController: (controller, model)->
+		setupController: (controller, model) ->
 			controller.set 'all', null
-			socket.emit 'fullSearch', query: model.text, (results)=>
+			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length then return @transitionTo 'recent'
 					for own key, val of results
