@@ -63,6 +63,7 @@ MeasurementSchema = new Schema
 ContactSchema = new Schema
 	emails: [ type: String ]
 	names: [ type: String ]
+	sortname: type:String, lowercase:true
 	picture: type: String, trim: true, validate: validators.isUrl
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
