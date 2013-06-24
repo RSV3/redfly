@@ -41,7 +41,7 @@ module.exports =
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 		NUDGE_DAYS: 'Monday Thursday'
 
-	test:
+	onboarding:
 		# for testing fresh new onboarding of users
 
 		HOST: 'redfly-test.herokuapp.com'	# 'staging.redfly.com'
