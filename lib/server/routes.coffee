@@ -192,6 +192,7 @@ module.exports = (app, route) ->
 			when 0
 				query = added:$exists:true
 				if termCount then query._id = $in:results.response
+				else query.knows = $not:$size:1
 				models.Contact.find(query).select('knows').exec (err, contacts)->
 					knows = _.countBy _.flatten(_.pluck contacts, 'knows'), (k)->k
 					results.f_knows = _.sortBy(_.keys(knows), (k)->-knows[k])[0..5]
@@ -328,6 +329,7 @@ module.exports = (app, route) ->
 		step ->
 			for type of search
 				sort = {}
+				skip = 0
 				terms = search[type]
 				if type is 'tag' or type is 'note'
 					_s = require 'underscore.string'
@@ -407,9 +409,12 @@ module.exports = (app, route) ->
 									else if key is 'added'
 										sort[key]=dir
 										delete data.sort
+								if not data.industry?.length and not data.organisation?.length and not data.knows?.length
+									limit = searchPagePageSize
+									if data.page then skip = data.page*searchPagePageSize
 					else if model is 'Tag'
 						conditions.contact = $exists: true
-					models[model].find(conditions).sort(sort).limit(limit).exec @parallel()
+					models[model].find(conditions).sort(sort).limit(limit).skip(skip).exec @parallel()
 					return undefined	# Step library is insane.
 				, @parallel()
 			return undefined	# Still insane? Yes?? Fine.
@@ -426,6 +431,11 @@ module.exports = (app, route) ->
 					else if _.isArray results
 						resultsObj = query:query
 						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
+						if not terms?.length then return models.Contact.count {}, (e, c)->
+							resultsObj.totalCount = resultsObj.filteredCount = c
+							if not data.filter then buildFilters resultsObj, fn, terms?.length
+							else if limit then fn resultsObj
+							else filterSearch session, data, resultsObj, fn
 						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response.length
 						if data.filter then return filterSearch session, data, resultsObj, fn
 						else return buildFilters resultsObj, fn, terms?.length
