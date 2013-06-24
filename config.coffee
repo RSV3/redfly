@@ -54,7 +54,7 @@ module.exports =
 		LINKEDIN_API_KEY: 'jfztm93esgrb'
 		LINKEDIN_API_SECRET: 'S8kdvese40NdC4Dg'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6375910:osf31ssqike03ju6i6852jd0v2@ds037097-a.mongolab.com:37097/heroku_app6375910'
+		MONGOLAB_URI: 'mongodb://heroku_app6375910:umg163ot6gdnac0edu018rb8es@ds031608.mongolab.com:31608/heroku_app6375910'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
