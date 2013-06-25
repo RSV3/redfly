@@ -143,7 +143,7 @@ span.label.industry, a.label.industry
 	background-color	#86afc7
 	border-color		#456
 	color #fff
-	text-shadow: none
+	text-shadow none
 span.label.project, a.label.project
 	background-color	#987
 	border-color		#654
@@ -153,7 +153,11 @@ span.label.theme, a.label.theme
 span.label.role, a.label.role
 	background-color	#798
 	border-color		#564
-
+a.label.knows
+	background-color #fff
+	border 1px solid #0088cc
+	color #0088cc
+	text-shadow none
 
 // Layout.
 
@@ -255,6 +259,11 @@ body
 	margin-top	-1em
 	a:hover
 		text-decoration	none
+	.knowstags
+		min-height	1.5em
+		overflow	hidden
+		span.label, a.label
+			margin	0 3px 0 3px		
 	.sometags
 		//height	1.5em
 		min-height	1.5em
@@ -309,11 +318,6 @@ body
 	.toppager
 		margin-top 40px
 		margin-bottom -5px
-
-// Search results
-.total-results
-	margin-left -10px
-	color #aaa
 
 // Search filter
 .filter
@@ -671,9 +675,13 @@ body
 	.progress.progress2 .bar
 		opacity 0.5
 
-
 // Components that are just basically default mixins
 tag(baseFontSize)
+
+// Search results page
+.total-results
+	margin-left -10px
+	color #aaa
 
 // used per search result
 .search-result.knows 
@@ -688,16 +696,15 @@ tag(baseFontSize)
 			margin 0
 			padding 0
 
-		li:nth-last-child(3):after
-			content ""
-
-		li:nth-last-child(4):after
-			content ""
-
-		li:after
-			content ", "
-			color #aaa
-
+		//li:nth-last-child(3):after
+		//	content ""
+		//
+		//li:nth-last-child(4):after
+		//	content ""
+		//
+		//li:after
+		//	content ", "
+		//	color #aaa
 
 // .connection
 // 	position fixed
