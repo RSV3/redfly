@@ -116,7 +116,7 @@ module.exports = (Ember, App, socket) ->
 			result = []
 			if not (ct = @get('catTags')) then return result
 			for own key, val of ct
-				if key isnt 'industry' then result = result.concat val
+				if key not in ['industry', 'organisation'] then result = result.concat val
 			result
 		).property 'catTags'
 		catTags: (->
