@@ -148,6 +148,7 @@ module.exports = (Ember, App, socket) ->
 			if not qt?.length then qt = 'contact:0'
 			{ text: qt }
 		setupController: (controller, model) ->
+			this._super controller, model
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
@@ -181,6 +182,7 @@ module.exports = (Ember, App, socket) ->
 		model: ->
 			App.user
 		setupController: (controller, model) ->
+			this._super controller, model
 			controller = @controllerFor 'profile'
 			controller.set 'content', model
 			controller.set 'self', true

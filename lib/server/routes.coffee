@@ -9,7 +9,7 @@ module.exports = (app, route) ->
 
 	searchPagePageSize = 25
 
-	route 'db', (fn, data, io, session) ->
+	route 'db', (data, io, session, fn)->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -34,6 +34,7 @@ module.exports = (app, route) ->
 							# mongoose is cool, but we need do this to get around its protection
 							switch data.type
 								when 'Admin'
+									if not doc?._doc then doc = _doc: {}
 									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 								when 'User'
@@ -101,9 +102,9 @@ module.exports = (app, route) ->
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
 				else
-					throw new Error
+					throw new Error 'no id on remove'
 			else
-				throw new Error
+				throw new Error 'un recognised db route'
 
 
 	route 'dashboard', (fn)->
@@ -148,7 +149,7 @@ module.exports = (app, route) ->
 	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
-	route 'login.contextio', (fn, data, io, session) ->
+	route 'login.contextio', (data, io, session, fn) ->
 		models.User.findOne email: data.email, (err, user) ->
 			if err
 				console.log err
@@ -462,7 +463,7 @@ module.exports = (app, route) ->
 				else done()
 			mapSearches 0
 
-	route 'fullSearch', (fn, data, io, session) ->
+	route 'fullSearch', (data, io, session, fn) ->
 		# passes a results array to accumulate a list of contact ids
 		doSearch fn, data, session, (type, perfect, typeDocs, results=[], cb)->
 			if not typeDocs or not typeDocs.length then return cb results
@@ -503,7 +504,7 @@ module.exports = (app, route) ->
 			return results
 
 
-	route 'search', (fn, data, io, session)->
+	route 'search', (data, io, session, fn)->
 
 		# passes an object, which accumulates arrays for each time, of the form:
 		# { tag:[{contact, id}], notes:[{contact, id}], names:[{contact, id}], emails:[{contact, id}] }
@@ -526,7 +527,7 @@ module.exports = (app, route) ->
 		, 10
 
 
-	route 'verifyUniqueness', (fn, data) ->
+	route 'verifyUniqueness', (data, fn) ->
 		field = data.field + 's'
 		conditions = {}
 		conditions[field] = data.value
@@ -534,7 +535,7 @@ module.exports = (app, route) ->
 			throw err if err
 			fn contact?[field][0]
 
-	route 'getIntro', (fn, data) ->	# get an email introduction
+	route 'getIntro', (data, fn) ->	# get an email introduction
 		models.Contact.findById data.contact, (err, contact) ->
 			throw err if err
 			models.User.findById data.userfrom, (err, userfrom) ->
@@ -544,7 +545,7 @@ module.exports = (app, route) ->
 					mailer.requestIntro userfrom, userto, contact, data.url, ()->
 						fn()
 
-	route 'deprecatedVerifyUniqueness', (fn, data) ->	# Deprecated, bitches
+	route 'deprecatedVerifyUniqueness', (data, fn) ->	# Deprecated, bitches
 		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[data.field])
@@ -552,7 +553,7 @@ module.exports = (app, route) ->
 				.first()
 				.value()
 
-	route 'tags.remove', (fn, conditions) ->
+	route 'tags.remove', (conditions, fn) ->
 		models.Tag.find conditions, '_id', (err, ids)->
 			throw err if err
 			ids =  _.pluck ids, '_id'
@@ -563,12 +564,12 @@ module.exports = (app, route) ->
 					console.dir err
 			fn ids
 
-	route 'tags.all', (fn, conditions) ->
+	route 'tags.all', (conditions, fn) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
 			fn bodies.sort()
 
-	route 'tags.move', (fn, conditions) ->
+	route 'tags.move', (conditions, fn) ->
 		if (newcat = conditions.newcat)
 			delete conditions.newcat
 			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
@@ -577,7 +578,7 @@ module.exports = (app, route) ->
 				return fn()
 		fn()
 
-	route 'tags.rename', (fn, conditions) ->
+	route 'tags.rename', (conditions, fn) ->
 		if (newtag = conditions.new)
 			delete conditions.new
 			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
@@ -586,7 +587,7 @@ module.exports = (app, route) ->
 				return fn()
 		fn()
 
-	route 'tags.popular', (fn, conditions) ->
+	route 'tags.popular', (conditions, fn) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
 		else conditions.contact = $exists: true
 		models.Tag.aggregate {$match: conditions},
@@ -621,7 +622,7 @@ module.exports = (app, route) ->
 		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
 		# ]
 
-	route 'merge', (fn, data) ->
+	route 'merge', (data, fn) ->
 		models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
 			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
@@ -666,7 +667,7 @@ module.exports = (app, route) ->
 						return fn()
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
-	route 'parse', (fn, id, io) ->
+	route 'parse', (id, io, fn) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
@@ -684,7 +685,7 @@ module.exports = (app, route) ->
 			require('./parser') user, notifications, (err, contacts) ->
 				fn err
 
-	route 'linkin', (fn, id, io, session) ->
+	route 'linkin', (id, io, session, fn) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn err	# in case this gets called and there's not logged in user
@@ -707,9 +708,9 @@ module.exports = (app, route) ->
 				fn err
 
 
-	route 'classifyQ', (fn, id) ->
+	route 'classifyQ', (id, fn) ->
 		logic.classifyList id, (neocons)->
-			return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 
 	route 'companies', (fn)->
@@ -731,7 +732,7 @@ module.exports = (app, route) ->
 			fn companies
 
 
-	route 'flush', (fn, contacts, io, session) ->
+	route 'flush', (contacts, io, session, fn) ->
 		_.each contacts, (c)->
 			classification = {user:session.user, contact:c}
 			if session.admin.flushsave then classification.saved = moment().toDate()
