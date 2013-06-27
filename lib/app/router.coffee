@@ -194,10 +194,14 @@ module.exports = (Ember, App, socket) ->
 			# TO-DO probably set a session variable or something to ensure loading doesn't happen twice by back button or anything.
 			view = App.LoaderView.create router: this   # hack
 			view.append()
-		redirect: ->
 			@transitionTo 'userProfile'
-		renderTemplate: ->
-			@router.connectem @, 'profile'
+			###
+			# this was interfering with the activation
+			redirect: ->
+				@transitionTo 'userProfile'
+			renderTemplate: ->
+				@router.connectem @, 'profile'
+			###
 
 	App.UnauthorizedRoute = Ember.Route.extend
 		activate: ->
