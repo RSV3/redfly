@@ -28,7 +28,7 @@ everyauth.google.configure
 		email = googleUserMetadata.email.toLowerCase()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if not _.some(admin.domains, (domain)->
+			if admin.domains.length and not _.some(admin.domains, (domain)->
 				_s.endsWith email, "@#{domain}"
 			)
 				return {}

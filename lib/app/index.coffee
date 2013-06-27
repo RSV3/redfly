@@ -4,6 +4,10 @@ preHook = (Ember, DS, App, socket) ->
 	App.auth =
 		login: (id) ->
 			App.set 'user', App.User.find id
+			App.user.on 'didLoad', ->
+				App.advanceReadiness()
+				socket.emit 'classifyCount', App.user.get('id'), (count) ->
+					App.admin.set 'classifyCount', count
 		logout: ->
 			App.set 'user', null
 
@@ -22,13 +26,10 @@ postHook = (Ember, DS, App, socket) ->
 	require('./router') Ember, App, socket
 
 	App.admin = Ember.ObjectProxy.create()
-	App.admin.set 'content', App.Admin.find 1
+	App.set 'admin', App.Admin.find 1
 	socket.emit 'session', (session) ->
 		if id = session.user
 			App.auth.login id
-			App.user.on 'didLoad', ->
-				App.advanceReadiness()
-				App.admin.set 'classifyCount', App.user.get 'classifyCount'
 		else
 			App.auth.logout()
 			App.advanceReadiness()
