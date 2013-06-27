@@ -41,6 +41,24 @@ module.exports =
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 		NUDGE_DAYS: 'Monday Thursday'
 
+	onboarding:
+		# for testing fresh new onboarding of users
+
+		HOST: 'redfly-test.herokuapp.com'	# 'staging.redfly.com'
+		NODE_ENV: 'production'
+		INTERCEPT_EMAIL: 'kwan+redfly_test@redstar.com, justin+redfly_test@redstar.com'
+
+		GOOGLE_API_ID: '614207063627-g9m7b7c23cmtpueqhqlr6k3pghv18jsp.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'aqbMdiK5EyYjxANPI5_2wQsQ'
+
+		LINKEDIN_API_KEY: 'jfztm93esgrb'
+		LINKEDIN_API_SECRET: 'S8kdvese40NdC4Dg'
+
+		MONGOLAB_URI: 'mongodb://heroku_app6375910:umg163ot6gdnac0edu018rb8es@ds031608.mongolab.com:31608/heroku_app6375910'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
+
+		NUDGE_DAYS: 'Monday Thursday'
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
@@ -58,7 +76,6 @@ module.exports =
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Monday Thursday'
-
 
 	production:
 		HOST: 'redfly.redstar.com'

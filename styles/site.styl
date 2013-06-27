@@ -27,6 +27,10 @@ organisation = #e51937
 		.nav-header
 			padding-left 0
 
+.logo-up
+	margin-top: -10px
+	margin-left: -5px
+
 .picture
 	position relative
 	.img-polaroid
@@ -133,11 +137,13 @@ tagger(fontSize)
 				text-decoration none
 
 span.label.organisation, a.label.organisation
-	background-color	#999
+	background-color	#ff6600
 	border-color		#444
 span.label.industry, a.label.industry
-	background-color	#789
+	background-color	#86afc7
 	border-color		#456
+	color #fff
+	text-shadow none
 span.label.project, a.label.project
 	background-color	#987
 	border-color		#654
@@ -147,7 +153,11 @@ span.label.theme, a.label.theme
 span.label.role, a.label.role
 	background-color	#798
 	border-color		#564
-
+a.label.knows
+	background-color #fff
+	border 1px solid #0088cc
+	color #0088cc
+	text-shadow none
 
 // Layout.
 
@@ -198,6 +208,9 @@ body
 				font-weight 300
 
 
+// Search sort bar
+.sort-by
+	color #666
 
 
 // Pages.
@@ -224,14 +237,11 @@ body
 		display	inline-block
 		i
 			margin-left	5px
+			color	#aaa
 		.icon-large
 			color	#3af
 		.icon-large:hover
 			text-decoration	none
-	.disabled
-		.sort
-			i
-				color	#aaa
 	hr.topexpanded
 		border	0
 		height	12px
@@ -246,11 +256,16 @@ body
 	margin-top	-1em
 	a:hover
 		text-decoration	none
-	.sometags
-		height	1.5em
+	.knowstags
 		min-height	1.5em
 		overflow	hidden
-		margin-left 1em
+		span.label, a.label
+			margin	0 3px 0 3px		
+	.sometags
+		//height	1.5em
+		min-height	1.5em
+		overflow	hidden
+		margin-top 1em
 		span.label, a.label
 			margin	0 3px 0 3px
 	.indtags
@@ -290,21 +305,25 @@ body
 			margin-bottom	1em
 	.pager
 		position relative
-		width 50%
+		width 70%
 		left 50%
 		margin-left -25%
 		.pagenums
 			color	#069
 			margin-top	0.5em
 			display	inline-block
+	.toppager
+		margin-top 40px
+		margin-bottom -5px
 
+// Search filter
 .filter
 	.disabled
 		color	#aaa
 		font-style	italic
 	select
 		width	11em
-	padding  2em
+	padding  1em
 	top  2em
 	height  100%
 	background-color  #fff
@@ -653,9 +672,13 @@ body
 	.progress.progress2 .bar
 		opacity 0.5
 
-
 // Components that are just basically default mixins
 tag(baseFontSize)
+
+// Search results page
+.total-results
+	margin-left -10px
+	color #aaa
 
 // used per search result
 .search-result.knows 
@@ -670,16 +693,15 @@ tag(baseFontSize)
 			margin 0
 			padding 0
 
-		li:nth-last-child(3):after
-			content ""
-
-		li:nth-last-child(4):after
-			content ""
-
-		li:after
-			content ", "
-			color #aaa
-
+		//li:nth-last-child(3):after
+		//	content ""
+		//
+		//li:nth-last-child(4):after
+		//	content ""
+		//
+		//li:after
+		//	content ", "
+		//	color #aaa
 
 // .connection
 // 	position fixed

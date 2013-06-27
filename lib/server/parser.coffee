@@ -128,10 +128,13 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				contact = new models.Contact
 				contact.emails.addToSet mail.recipientEmail
 				if not (name = mail.recipientName)
+					if mail.recipientEmail[0] >= '0' and mail.recipientEmail[0] <= '9'
+						return sift index	# skip emails that start with digit
 					splitted = mail.recipientEmail.split '@'
 					domain = _.first _.last(splitted).split '.'
 					name =  _.first(splitted) + " [#{domain}]"
 				contact.names.addToSet name
+				contact.sortname = name.toLowerCase()
 				newContacts.push contact
 				notifications?.foundNewContact?()
 				contact.knows.addToSet user

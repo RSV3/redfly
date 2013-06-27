@@ -29,27 +29,32 @@ module.exports = (Ember, App, socket) ->
 				@get('tags').find (tag)-> tag.get('body') is candidate.body
 			tags.sort()
 		_popularTags: (->
-			result = []
-			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-				if p = @get('prioritytags')
-					popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
-				result.pushObjects popularTags
-			if (p = @get 'prioritytags') and p.get 'length'
-				result.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
-			result
+			if not parentPopularTags = @get('parentView.populartags')
+				parentPopularTags = []
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					if p = @get('prioritytags')
+						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
+					parentPopularTags.pushObjects popularTags
+				if (p = @get 'prioritytags') and p.get 'length'
+					parentPopularTags.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
+				@set 'parentView.populartags', parentPopularTags
+			parentPopularTags
 		).property 'prioritytags.@each'
 		prioritytags: (->
-			query = category: @get('category'), contact: $exists: false
-			result = App.Tag.filter query, (data) =>
-				if (category = @get('category')) and (category isnt data.get('category'))
-					return false
-				not data.get('contact')
-			options =
-				sortProperties: ['date']
-				sortAscending: false
-				content: result
-				limit: 20
-			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
+			if not parentPriorityTags = @get('parentView.prioritytags')
+				query = category: @get('category'), contact: $exists: false
+				result = App.Tag.filter query, (data) =>
+					if (category = @get('category')) and (category isnt data.get('category'))
+						return false
+					not data.get('contact')
+				options =
+					sortProperties: ['date']
+					sortAscending: false
+					content: result
+					limit: 20
+				parentPriorityTags = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
+				@set 'parentView.prioritytags', parentPriorityTags
+			parentPriorityTags
 		).property 'category'
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
