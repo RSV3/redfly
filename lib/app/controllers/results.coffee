@@ -8,6 +8,8 @@ module.exports = (Ember, App, socket) ->
 	searchPagePageSize = 25
 	sortFieldNames = ['influence', 'proximity', 'names', 'added']
 
+	###
+	#this is from when we used to sort in the browser. redundant.
 	sortFunc =
 		influence: (v, w)->
 			value = (v.get('knows.length') - w.get('knows.length'))
@@ -21,6 +23,7 @@ module.exports = (Ember, App, socket) ->
 			if (@get 'sortAscending')
 				return -value
 			value
+	###
 
 	App.ResultsController = Ember.ObjectController.extend
 		hiding: 0			# this is just for templating, whether or not results are filtered out
@@ -244,11 +247,9 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/components/sort'
 		classNames: ['sort']
 		dir: (->
-			for i in sortFieldNames
-				if _.contains this.classNames, i
-					if i is @get 'controller.sortType'
-						return @get 'controller.sortDir'
-					return 0
+			if t = @get 'controller.sortType'
+				if _.contains this.classNames, t
+					return @get 'controller.sortDir'
 			0
 		).property 'controller.sortType', 'controller.sortDir'
 		down: (-> 0 > @get 'dir').property 'dir'
@@ -259,6 +260,18 @@ module.exports = (Ember, App, socket) ->
 					@set 'controller.sortType', i
 					@set 'controller.sortDir', ascdesc
 			false
+		sorttoggle: () ->
+			nudir = 0
+			if thistype = @get 'controller.sortType'
+				if _.contains this.classNames, thistype
+					nudir = -1*@get('dir')
+			if not nudir
+				for i in sortFieldNames
+					if _.contains this.classNames, i
+						@set 'controller.sortType', i
+				nudir = 1
+			@set 'controller.sortDir', nudir
+
 		sortdesc: () ->
 			if @get('dir') is 0 then @sort -1
 			else if @get('dir') is 1 then @sort 0

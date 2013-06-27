@@ -140,7 +140,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
-			{ text: params.text }
+			{ text: params.query_text }
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
