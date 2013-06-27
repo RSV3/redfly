@@ -39,11 +39,13 @@ module.exports = (app, route) ->
 										# mongoose is cool, but we need do this to get around its protection
 										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
-									else return model.create {_id:1}, (err, doc) ->
-										throw err if err
-										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
-										cb doc
+									else
+										new_adm = {_id:1, domains:process.env.ORGANISATION_DOMAIN}
+										return model.create new_adm, (err, doc) ->
+											throw err if err
+											if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+											if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+											cb doc
 							cb doc
 					else if ids = data.ids
 						if not ids.length then return cb []

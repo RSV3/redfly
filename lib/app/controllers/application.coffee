@@ -63,7 +63,7 @@ module.exports = (Ember, App, socket) ->
 							@$().find(".#{r.err}").addClass 'error'
 							@set 'working', false
 						else if r.id
-							App.user.set 'content', App.User.find r.id
+							App.set 'user', App.User.find r.id
 							@set 'working', false
 							@.set 'parentView.parentView.showLogin', false
 							socket.emit 'session', (session) ->
