@@ -13,35 +13,31 @@ module.exports = (Ember, App, socket) ->
 					return false
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
+
+		autoTags:{}
 		autocompleteTags: (->
-			socket.emit 'tags.all', category: @get('category'), (allTags) =>
-				allTags = @_filterTags allTags
-				result.pushObjects allTags
-			result = []
+			if not autoTags = @get("autoTags.#{@get('category')}")
+				socket.emit 'tags.all', category: @get('category'), (allTags) =>
+					allTags = @_filterTags allTags
+					result.pushObjects allTags
+				result = []
+				@set "autoTags.#{@get('category')}", result
 		).property 'category', 'tags.@each', '_popularTags.@each'
+
 		cloudTags: (->
 			@_filterTags @get('_popularTags')
 		).property 'category', 'tags.@each', '_popularTags.@each'
+
 		_filterTags: (tags) ->
 			if not @get('tags')	# Not really sure why this ever comes up blank.
 				return []
 			tags = _.reject tags, (candidate) =>
 				@get('tags').find (tag)-> tag.get('body') is candidate.body
 			tags.sort()
-		_popularTags: (->
-			if not parentPopularTags = @get('parentView.populartags')
-				parentPopularTags = []
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					if p = @get('prioritytags')
-						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
-					parentPopularTags.pushObjects popularTags
-				if (p = @get 'prioritytags') and p.get 'length'
-					parentPopularTags.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
-				@set 'parentView.populartags', parentPopularTags
-			parentPopularTags
-		).property 'prioritytags.@each'
+
+		savePriorTags: {}		# hash priority tags on category
 		prioritytags: (->
-			if not parentPriorityTags = @get('parentView.prioritytags')
+			if not priorTags = @get("savePriorTags.#{@get('category')}")
 				query = category: @get('category'), contact: $exists: false
 				result = App.Tag.filter query, (data) =>
 					if (category = @get('category')) and (category isnt data.get('category'))
@@ -52,10 +48,27 @@ module.exports = (Ember, App, socket) ->
 					sortAscending: false
 					content: result
 					limit: 20
-				parentPriorityTags = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
-				@set 'parentView.prioritytags', parentPriorityTags
-			parentPriorityTags
+				priorTags = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
+				@set "savePriorTags.#{@get('category')}", priorTags
+			priorTags
 		).property 'category'
+
+		savePopTags: {}		# hash popular tags on category
+		_popularTags: (->
+			if not @get("savePriorTags.#{@get('category')}") then return null
+			if not popTags = @get("savePopTags.#{@get('category')}")
+				popTags = []
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					if p = @get("prioritytags.#{@get('category')}")
+						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
+					popTags.pushObjects popularTags
+				if (p = @get 'prioritytags') and p.get 'length'
+					popTags.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
+				@set "savePopTags.#{@get('category')}", popTags
+			popTags
+		).property 'prioritytags.@each'
+
+
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
 		add: ->
