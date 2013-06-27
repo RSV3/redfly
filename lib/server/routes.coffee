@@ -216,7 +216,7 @@ module.exports = (app, route) ->
 						results.f_industry = _.pluck(tags, '_id')[0..5]
 						buildFilters results, fn, termCount, 2
 			when 2
-				conditions = category: $ne: 'industry'
+				conditions = {$and: [ category: $ne: 'industry', category: $ne: 'organisation' ]}
 				if termCount
 					ids = []
 					for id in results.response
@@ -266,9 +266,9 @@ module.exports = (app, route) ->
 			delete data.sort
 			if key[0] is '-' then key = key.substr 1
 			else dir = 1
-			if key is 'names' then key='sortname'	# if sorting by names, only look at first instance
+			if key is 'names' then key = 'sortname'	# if sorting by names, only look at first instance
 			sort = {}
-			sort[key]=dir
+			sort[key] = dir
 			switch key
 				when 'influence'
 					return models.Contact.find(query).exec (err, contacts)->

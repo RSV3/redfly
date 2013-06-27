@@ -8,7 +8,9 @@
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			+linkTo('recent class="brand"') Redfly
+			+linkTo('recent class="brand"')
+				| Redfly
+				img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
 			| {{#if App.user.content}}
 			.nav-collapse.collapse
 				ul.nav
@@ -19,7 +21,7 @@
 						span.badge.badge-important {{App.admin.classifyCount}}
 					| {{/if}}
 					li
-						+linkTo('create') Create
+						+linkTo('create') Add a Contact
 					li
 						+linkTo('companies') Companies 
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}

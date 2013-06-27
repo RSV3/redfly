@@ -79,6 +79,16 @@
 				| You and {{nickname}} first talked {{firstTalked}}. The email subject was
 				em "{{firstHistory.subject}}"
 				| .
+		| {{else}}	
+		| {{#if lastMail}}
+		.row-fluid
+			p
+				b Last mail:&nbsp;
+				span
+					+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
+				span
+					&nbsp;{{sentdate}}
+		| {{/if}}		
 		| {{/if}}
 
 
