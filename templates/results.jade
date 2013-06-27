@@ -1,7 +1,7 @@
 .row-fluid
-
 	div(bindAttr='class=":row-fluid theResults::disabled"')
 		.span2
+			h4.sort-by SORT BY
 		| {{#unless othersorts}}
 		.span2
 		| {{/unless}}
@@ -20,20 +20,21 @@
 			span Added Date 
 			+view ('App.SortView class="added"')
 
-	+if ('theResults')
-		| {{#if paging}}
-		ul.pager.toppager
-			li.previous
-				| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
-			div.pagenums
-				| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
-			li.next
-				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
-		| {{/if}}
-
 	+unless ('theResults')
 		.loading
 			i.icon-spinner.icon-spin
+	+if ('theResults')
+		| {{#if paging}}
+		.row-fluid
+			.span7
+				ul.pager.toppager
+					li.previous
+						| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
+					div.pagenums
+						| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
+					li.next
+						| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+			| {{/if}}			
 	| {{#each theResults itemViewClass="App.ResultView" itemController="result"}}
 	.row-fluid.top
 		| {{#if showitall}}
@@ -42,7 +43,7 @@
 		hr.botexpanded
 		| {{else}}
 		.row-fluid
-			.span8
+			.span7
 				.row-fluid
 					.span2.picture
 						a(href='#', action='setShowItAll this target="view"')
@@ -65,26 +66,23 @@
 								span
 									&nbsp; {{sentdate}}
 						| {{/if}}
+						| {{#if lastNote}}
+						.row-fluid
+							.somenote
+								b Last note: &nbsp;
+								+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
+								i &nbsp; {{lastNote.body}}
+						| {{/if}}						
 							
-			.span4
+			.span5
 				b Knows: &nbsp;
-				.search-result.knows
+				.search-result.knows.knowstags
 					ul.tags
 						{{#each knowsSome}}
 						li
-							a(href="#", action='clickname this target="view"')
+							a(href="#", class='label knows', action='clickname this target="view"')
 								| {{canonicalName}}
 						{{/each}}
-
-		.row-fluid.clearpic
-			| {{#if lastNote}}
-			.row-fluid
-				.somenote
-					b Last note: &nbsp;
-					+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
-					i &nbsp; {{lastNote.body}}
-			| {{/if}}
-			.row-fluid
 				.sometags
 					{{#each view.orgTags}}
 					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
@@ -93,18 +91,23 @@
 					{{#each view.indTags}}
 					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
 						span {{body}}
-					{{/each}}
+					{{/each}}					
+
+
+
 		| {{/if}}
 	{{/each}}
 
 	+if ('theResults')
 		| {{#if paging}}
-		ul.pager
-			li.previous
-				| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
-			div.pagenums
-				| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
-			li.next
-				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+		.row-fluid
+			.span7
+				ul.pager
+					li.previous
+						| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
+					div.pagenums
+						| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
+					li.next
+						| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
 		| {{/if}}
 
