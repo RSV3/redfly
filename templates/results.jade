@@ -5,20 +5,16 @@
 		| {{#unless othersorts}}
 		.span2
 		| {{/unless}}
-		.span2(title = 'sort name alphabetically')
-			span Alphabetical 
-			+view ('App.SortView class="names"')
+		.span2
+			+view ('App.SortView class="names" sortTitle = "sort name alphabetically" sortName = "Alphabetical"')
 		| {{#if othersorts}}
-		.span2(title = 'how many users know each contact')
-			span Influence
-			+view ('App.SortView class="influence"')
-		.span2(title = 'prioritize contacts you already know')
-			span Relationship Strength
-			+view ('App.SortView class="proximity"')
+		.span2
+			+view ('App.SortView class="influence" sortTitle = "how many users know each contact" sortName = "Influence"')
+		.span2
+			+view ('App.SortView class="proximity" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
 		| {{/if}}
-		.span2(title = 'sort by chronology of classification')
-			span Added Date 
-			+view ('App.SortView class="added"')
+		.span2
+			+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')
 
 	+if ('theResults')
 		| {{#if paging}}

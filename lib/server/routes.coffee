@@ -9,7 +9,7 @@ module.exports = (app, route) ->
 
 	searchPagePageSize = 25
 
-	route 'db', (data, io, session, fn)->
+	route 'db', (data, fn)->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -18,11 +18,13 @@ module.exports = (app, route) ->
 			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
-			root = data.type.toLowerCase()
+			_s = require 'underscore.string'
+			root = _s.underscored data.type
 			if _.isArray payload then root += 's'
 			hash = {}
 			hash[root] = payload
 			fn hash
+
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -34,41 +36,54 @@ module.exports = (app, route) ->
 							# mongoose is cool, but we need do this to get around its protection
 							switch data.type
 								when 'Admin'
-									if not doc?._doc then doc = _doc: {}
+									if not doc then return model.create {_id:1}, (err, doc) ->
+										throw err if err
+										cb doc
 									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 								when 'User'
+									###
 									if id is session.user
 										return logic.classifyCount id, (cnt)->
 											if cnt then doc._doc['classifyCount'] = cnt
 											cb doc
+									###
 							cb doc
 					else if ids = data.ids
+						if not ids.length then return cb []
 						model.find _id: $in: ids, (err, docs) ->
 							throw err if err
 							docs = _.sortBy docs, (doc) ->
 								ids.indexOf doc.id
 							cb docs
-					else if query = data.query
-						if not query.conditions and not query.options
-							query = conditions: query
-						model.find query.conditions, null, query.options, (err, docs) ->
-							throw err if err
-							cb docs
 					else
-						model.find (err, docs) ->
-							throw err if err
-							cb docs
+						schemas = require '../schemas'
+						if schemas[data.type].base
+							data.query ?= conditions: {}
+							data.query.conditions._type = data.type
+						if query = data.query
+							if not query.conditions and not query.options
+								query = conditions: query
+							model.find query.conditions, null, query.options, (err, docs) ->
+								throw err if err
+								cb docs
+						else
+							model.find (err, docs) ->
+								throw err if err
+								cb docs
 				catch err
 					console.error 'Error in db API: ' + err
 					cb()
 			when 'create'
 				record = data.record
 				if not _.isArray record
+					if model is models.Contact
+						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase
+						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
 					model.create record, (err, doc) ->
 						throw err if err
 						cb doc
-						if model is models.Contact and doc.added or model is models.Note or model is models.Tag and doc.contact
+						if model is models.Contact and doc.addedBy or model is models.Note or model is models.Tag and doc.contact
 							feed doc
 				else
 					throw new Error 'unimplemented'
@@ -90,8 +105,7 @@ module.exports = (app, route) ->
 						doc.save (err) ->
 							throw err if err
 							cb doc
-							if updateFeeds
-								feed doc
+							if updateFeeds then feed doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -379,6 +393,7 @@ module.exports = (app, route) ->
 						conditions.added = $exists: true
 						_.extend conditions, data.moreConditions
 						if not terms?.length		# special case: no terms means we're looking at all contacts
+							hazFilter = true
 							if data.knows?.length
 								_.extend conditions, knows:$in:data.knows
 								delete data.knows
@@ -394,6 +409,7 @@ module.exports = (app, route) ->
 								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.organisation
+							else hazFilter = false
 							if model is 'Contact'
 								dir = -1
 								if not data.sort
@@ -410,7 +426,7 @@ module.exports = (app, route) ->
 									else if key is 'added'
 										sort[key]=dir
 										delete data.sort
-								if not data.industry?.length and not data.organisation?.length and not data.knows?.length
+								if not hazFilter
 									limit = searchPagePageSize
 									if data.page then skip = data.page*searchPagePageSize
 					else if model is 'Tag'
@@ -432,7 +448,7 @@ module.exports = (app, route) ->
 					else if _.isArray results
 						resultsObj = query:query
 						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
-						if not terms?.length then return models.Contact.count {}, (e, c)->
+						if not terms?.length then return models.Contact.count {added:$exists:true}, (e, c)->
 							resultsObj.totalCount = resultsObj.filteredCount = c
 							if not data.filter then buildFilters resultsObj, fn, terms?.length
 							else if limit then fn resultsObj

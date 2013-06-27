@@ -9,7 +9,7 @@ Types = schemasUtil.Types
 schemas = []
 
 schemas.push Schema 'Admin',
-	_id: Number					# special case: there is only one admin record, so let's call it _id:1
+	_id: type: Number			# special case: there is only one admin record, so let's call it _id:1
 	domains: [ type: String ]	# list of domains served by this instance
 	blacklistdomains: [ type: String ]	# list of domains blacklisted from the service
 	blacklistemails: [ type: String ]	# list of emails blacklisted from the service
@@ -111,7 +111,7 @@ schemas.push Schema 'LinkedIn',
 
 
 schemas.push Schema 'Merge',
-	contacts: [Types.Mixed]
+	contacts: [type: Types.Mixed]
 
 
 schemas.push Schema 'FullContact',
@@ -120,7 +120,7 @@ schemas.push Schema 'FullContact',
 		familyName: type: String
 		givenName: type: String
 		fullName: type: String
-	websites: [types: String]
+	websites: [type: String]
 	chats: [
 		handle: type: String
 		client: type: String
