@@ -36,7 +36,7 @@ module.exports = (Ember, App, socket) ->
 				# temporary mesasure
 				if err
 					return alert err.message + ' Are you connected to the internet? Did you mistype your email?'
-				App.refresh App.user.get('content')	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
+				App.refresh App.user	# Classify queue has been determined and saved on the server, refresh the user.	# TODO try without .get('content')
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
 				@set 'stateQueueing', false

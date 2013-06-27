@@ -27,13 +27,9 @@
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right
-				span oh
 				| {{#unless App.user}}
-				span hi
 				| {{#if App.admin.contextio}}
-				span there
 				| {{#if App.admin.googleauth}}
-				span buddy
 				.btn-group
 					a.btn(action='noPassword target="view"')
 						i.icon-user
