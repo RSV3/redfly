@@ -1,15 +1,12 @@
-| <a href="#" {{action sortasc target="view"}}>
+| <a href="#" class="{{view.class}}" {{action sorttoggle title="{{view.sortTitle}}" target="view"}}>
+span {{view.sortName}}
 {{#if view.up}}
-i.icon-arrow-up.icon-large
+i.icon-caret-up.icon-large
 {{else}}
-i.icon-arrow-up
-{{/if}}
-| </a>
-| <a href="#" {{action sortdesc target="view"}}>
 {{#if view.down}}
-i.icon-arrow-down.icon-large
+i.icon-caret-down.icon-large
 {{else}}
-i.icon-arrow-down
+i.icon-caret-up
+{{/if}}
 {{/if}}
 | </a>
-

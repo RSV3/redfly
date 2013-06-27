@@ -6,7 +6,8 @@ module.exports = (Ember, App, socket) ->
 		feed: (->
 				mutable = []
 				@get('_initialContacts').forEach (contact) ->
-					item = Ember.ObjectProxy.create content: contact
+					console.dir contact
+					item = Ember.ObjectProxy.create content:contact
 					item.typeInitialContact = true
 					mutable.push item
 				mutable
