@@ -33,21 +33,17 @@ module.exports = (app, route) ->
 					if id = data.id
 						model.findById id, (err, doc) ->
 							throw err if err
-							# mongoose is cool, but we need do this to get around its protection
 							switch data.type
 								when 'Admin'
-									if not doc then return model.create {_id:1}, (err, doc) ->
+									if doc
+										# mongoose is cool, but we need do this to get around its protection
+										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+									else return model.create {_id:1}, (err, doc) ->
 										throw err if err
+										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
+										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 										cb doc
-									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
-								when 'User'
-									###
-									if id is session.user
-										return logic.classifyCount id, (cnt)->
-											if cnt then doc._doc['classifyCount'] = cnt
-											cb doc
-									###
 							cb doc
 					else if ids = data.ids
 						if not ids.length then return cb []
@@ -727,6 +723,7 @@ module.exports = (app, route) ->
 		logic.classifyList id, (neocons)->
 			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
+	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()

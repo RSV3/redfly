@@ -6,7 +6,7 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id')
+			if not App.user?.get('id')
 				if name isnt 'index'
 					util.notify
 						title: 'Session Cleared'
@@ -76,7 +76,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.AdminRoute = Ember.Route.extend
 		setupController: (controller) ->
-			if App.user.get('admin')
+			if App.user?.get('admin')
 				controller.set 'content', App.Admin.find 1
 				controller.set 'category', 'industry'
 			else @transitionTo 'userProfile'
@@ -85,7 +85,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
-			if App.user.get('admin')
+			if App.user?.get('admin')
 				socket.emit 'dashboard', (board)=>
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
@@ -95,7 +95,7 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'model', null
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			socket.emit 'classifyQ', App.user?.get('id'), (results) =>
 				if results and results.length
 					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
@@ -225,7 +225,7 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'index'
 		redirect: ->
-			if App.user.get('id') then @transitionTo 'recent'
+			if App.user?.get('id') then @transitionTo 'recent'
 
 	App.LinkRoute = Ember.Route.extend
 		activate: ->

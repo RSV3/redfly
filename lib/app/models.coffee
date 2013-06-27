@@ -6,6 +6,10 @@ module.exports = (DS, App) ->
 	App.Results = Em.Object.extend
 		text: ''
 
+	App.Admin.reopen
+		contextio: DS.attr 'boolean'
+		googleauth: DS.attr 'boolean'
+
 	App.User.reopen
 		canonicalName: (->
 				if this is App.user.get('content')
