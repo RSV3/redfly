@@ -34,6 +34,9 @@ module.exports = (app, route) ->
 							# mongoose is cool, but we need do this to get around its protection
 							switch data.type
 								when 'Admin'
+									if not doc then return model.create {_id:1} (err, doc)->
+										throw err if err
+										cb doc
 									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 								when 'User'
