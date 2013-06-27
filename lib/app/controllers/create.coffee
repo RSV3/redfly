@@ -55,7 +55,6 @@ module.exports = (Ember, App, socket) ->
 					properties =
 						emails: @get('email')
 						names: @get('name')
-						knows: Ember.ArrayProxy.create {content: [App.user.get 'content']}
 						added: new Date
 						addedBy: App.user
 					if picture = util.trim @get('picture')

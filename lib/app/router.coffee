@@ -6,7 +6,7 @@ module.exports = (Ember, App, socket) ->
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
-			if not App.user.get('id')
+			if not App.user?.get('id')
 				if name isnt 'index'
 					util.notify
 						title: 'Session Cleared'
@@ -76,7 +76,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.AdminRoute = Ember.Route.extend
 		setupController: (controller) ->
-			if App.user.get('admin')
+			if App.user?.get('admin')
 				controller.set 'content', App.Admin.find 1
 				controller.set 'category', 'industry'
 			else @transitionTo 'userProfile'
@@ -85,7 +85,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
-			if App.user.get('admin')
+			if App.user?.get('admin')
 				socket.emit 'dashboard', (board)=>
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
@@ -95,7 +95,7 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'model', null
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			socket.emit 'classifyQ', App.user?.get('id'), (results) =>
 				if results and results.length
 					controller.set 'classifyCount', 0
 					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
@@ -117,6 +117,11 @@ module.exports = (Ember, App, socket) ->
 
 	App.NoresultsRoute = Ember.Route.extend
 		redirect: ->
+			util.notify
+				title: 'No results found'
+				text: 'Reverting to all results.'
+				before_open: (pnotify) =>
+					pnotify.css top: '60px'
 			newResults = App.Results.create {text: "contact:0"}
 			@transitionTo 'results', newResults
 
@@ -135,16 +140,17 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
-			{ text: params.text }
+			{ text: params.query_text }
 		serialize: (model, param) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
 			qt = decodeURIComponent param.query_text
-			if not qt?.length then qt='contact:0'
+			if not qt?.length then qt = 'contact:0'
 			{ text: qt }
-		setupController: (controller, model)->
+		setupController: (controller, model) ->
+			this._super controller, model
 			controller.set 'all', null
-			socket.emit 'fullSearch', query: model.text, (results)=>
+			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length then return @transitionTo 'recent'
 					for own key, val of results
@@ -176,6 +182,7 @@ module.exports = (Ember, App, socket) ->
 		model: ->
 			App.user
 		setupController: (controller, model) ->
+			this._super controller, model
 			controller = @controllerFor 'profile'
 			controller.set 'content', model
 			controller.set 'self', true
@@ -218,7 +225,7 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'index'
 		redirect: ->
-			if App.user.get('id') then @transitionTo 'recent'
+			if App.user?.get('id') then @transitionTo 'recent'
 
 	App.LinkRoute = Ember.Route.extend
 		activate: ->

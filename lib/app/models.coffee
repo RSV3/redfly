@@ -1,30 +1,16 @@
 module.exports = (DS, App) ->
 	_ = require 'underscore'
 	util = require '../util'
+	require('phrenetic/lib/app/models') DS, App, require '../schemas'
 
 	App.Results = Em.Object.extend
 		text: ''
 
-	App.Admin = DS.Model.extend
-		domains: DS.attr 'array'		# list of domains served by this instance
-		userstoo: DS.attr 'boolean'		# if set, employees (inc. users) can also be classified as contacts
-		flushsave: DS.attr 'boolean'	# if set, FLUSH saves queued contacts: otherwise, skips
-		hidemails: DS.attr 'boolean'		# hide the email of unknown contacts
-		blacklistdomains: DS.attr 'array'
-		blacklistemails: DS.attr 'array'
-		blacklistnames: DS.attr 'array'
-		contextio: DS.attr 'boolean'	# currently, these flags are from config, not database
+	App.Admin.reopen
+		contextio: DS.attr 'boolean'
 		googleauth: DS.attr 'boolean'
 
-	App.User = DS.Model.extend
-		date: DS.attr 'date'
-		email: DS.attr 'string'
-		name: DS.attr 'string'
-		picture: DS.attr 'string'
-		oauth: DS.attr 'string'
-		#queue: DS.hasMany 'App.Contact'
-		#excludes: DS.attr 'array'
-		admin: DS.attr 'boolean'
+	App.User.reopen
 		canonicalName: (->
 				if this is App.user.get('content')
 					return 'You'
@@ -40,21 +26,7 @@ module.exports = (DS, App) ->
 											# and then, just to make it interesting, stored on App.admin
 											# (because session user data may get batch loaded)
 
-	App.Contact = DS.Model.extend
-		date: DS.attr 'date'
-		emails: DS.attr 'array'
-		names: DS.attr 'array'
-		picture: DS.attr 'string'
-		knows: DS.hasMany 'App.User'
-		added: DS.attr 'date'
-		addedBy: DS.belongsTo 'App.User'
-		position: DS.attr 'string'
-		company: DS.attr 'string'
-		yearsExperience: DS.attr 'number'
-		linkedin: DS.attr 'string'
-		twitter: DS.attr 'string'
-		facebook: DS.attr 'string'
-		isVip: DS.attr 'boolean'
+	App.Contact.reopen
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
@@ -88,42 +60,9 @@ module.exports = (DS, App) ->
 					data.get('contact.id') is @get('id')
 			).property 'id'
 
-	App.Tag = DS.Model.extend
-		date: DS.attr 'date'
-		creator: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		category: DS.attr 'string'
-		body: DS.attr 'string'
 
-	App.Note = DS.Model.extend
-		date: DS.attr 'date'
-		author: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		body: DS.attr 'string'
+	App.Note.reopen
 		preview: (->
 				_s = require 'underscore.string'
 				_s.prune @get('body'), 80
 			).property 'body'
-
-	App.Mail = DS.Model.extend
-		date: DS.attr 'date'
-		sender: DS.belongsTo 'App.User'
-		recipient: DS.belongsTo 'App.Contact'
-		subject: DS.attr 'string'
-		sent: DS.attr 'date'
-
-	App.Exclude = DS.Model.extend
-		user: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-
-	App.Classify = DS.Model.extend
-		user: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		saved: DS.attr 'boolean'
-
-	App.Measurement = DS.Model.extend
-		user: DS.belongsTo 'App.User'
-		contact: DS.belongsTo 'App.Contact'
-		attribute: DS.attr 'string'
-		value: DS.attr 'number'
-

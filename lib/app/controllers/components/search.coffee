@@ -30,8 +30,9 @@ module.exports = (Ember, App, socket) ->
 			return false   # Prevent a form submit.
 
 		doSearch: ->
-			newResults = App.Results.create {text: util.trim @get('query')}
-			#@get('controller').transitionToRoute "results", newResults
+			t = util.trim @get('query')
+			if not t.length then t = 'contact:0'	# default to entire collection
+			newResults = App.Results.create {text: t}
 			App.Router.router.transitionTo "results", newResults
 
 		focusIn: ->
