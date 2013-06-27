@@ -120,14 +120,14 @@ module.exports = (Ember, App, socket) ->
 					@set 'filteredCount', results?.filteredCount
 		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
-		sortAgain:(->
+		sortAgain: ->
 			if not @get('all') or not @get('totalCount') then return
 			emission = @buildFilter()
 			@set 'all', []
 			@set 'page', 0
 			socket.emit 'fullSearch', emission, (results) =>
 				@set 'all', App.store.findMany(App.Contact, results.response)
-		).observes 'sortDir', 'sortType'
+				#).observes 'sortDir', 'sortType'
 
 		query:null				# query string
 		page:0					# pagination
@@ -271,13 +271,16 @@ module.exports = (Ember, App, socket) ->
 						@set 'controller.sortType', i
 				nudir = 1
 			@set 'controller.sortDir', nudir
+			@get('controller').sortAgain()
 
+		###
 		sortdesc: () ->
 			if @get('dir') is 0 then @sort -1
 			else if @get('dir') is 1 then @sort 0
 		sortasc: () ->
 			if @get('dir') is 0 then @sort 1
 			else if @get('dir') is -1 then @sort 0
+		###
 
 		didInsertElement: ()->
 			@$().parent().tooltip

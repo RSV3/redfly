@@ -155,6 +155,7 @@ module.exports = (Ember, App, socket) ->
 					if not results.response?.length then return @transitionTo 'recent'
 					for own key, val of results
 						controller.set key, results[key]
+					controller.set 'page', 0
 					controller.set 'sortDir', 0
 					controller.set 'sortType', null
 					controller.set 'all', App.store.findMany(App.Contact, results.response)
