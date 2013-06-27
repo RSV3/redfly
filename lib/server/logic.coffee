@@ -45,6 +45,7 @@ recentOrgs = (cb)->
 
 
 classifyList = (u, cb)->
+	if _.isString(u) then u = models.ObjectId(u)
 	# for power users, there'll eventually be a large number of excludes
 	# whereas with an aggressive classification policy there'll never be too many unclassified contacts/user
 	# so first get the list of new contacts, then the subset of those who are not excluded

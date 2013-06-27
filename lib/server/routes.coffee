@@ -9,7 +9,7 @@ module.exports = (app, route) ->
 
 	searchPagePageSize = 25
 
-	route 'db', (fn, data, io, session) ->
+	route 'db', (data, fn)->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -18,11 +18,13 @@ module.exports = (app, route) ->
 			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
-			root = data.type.toLowerCase()
+			_s = require 'underscore.string'
+			root = _s.underscored data.type
 			if _.isArray payload then root += 's'
 			hash = {}
 			hash[root] = payload
 			fn hash
+
 		model = models[data.type]
 		switch data.op
 			when 'find'
@@ -34,43 +36,54 @@ module.exports = (app, route) ->
 							# mongoose is cool, but we need do this to get around its protection
 							switch data.type
 								when 'Admin'
-									if not doc then return model.create {_id:1}, (err, doc)->
+									if not doc then return model.create {_id:1}, (err, doc) ->
 										throw err if err
 										cb doc
 									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 								when 'User'
+									###
 									if id is session.user
 										return logic.classifyCount id, (cnt)->
 											if cnt then doc._doc['classifyCount'] = cnt
 											cb doc
+									###
 							cb doc
 					else if ids = data.ids
+						if not ids.length then return cb []
 						model.find _id: $in: ids, (err, docs) ->
 							throw err if err
 							docs = _.sortBy docs, (doc) ->
 								ids.indexOf doc.id
 							cb docs
-					else if query = data.query
-						if not query.conditions and not query.options
-							query = conditions: query
-						model.find query.conditions, null, query.options, (err, docs) ->
-							throw err if err
-							cb docs
 					else
-						model.find (err, docs) ->
-							throw err if err
-							cb docs
+						schemas = require '../schemas'
+						if schemas[data.type].base
+							data.query ?= conditions: {}
+							data.query.conditions._type = data.type
+						if query = data.query
+							if not query.conditions and not query.options
+								query = conditions: query
+							model.find query.conditions, null, query.options, (err, docs) ->
+								throw err if err
+								cb docs
+						else
+							model.find (err, docs) ->
+								throw err if err
+								cb docs
 				catch err
 					console.error 'Error in db API: ' + err
 					cb()
 			when 'create'
 				record = data.record
 				if not _.isArray record
+					if model is models.Contact
+						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
+						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
 					model.create record, (err, doc) ->
 						throw err if err
 						cb doc
-						if model is models.Contact and doc.added or model is models.Note or model is models.Tag and doc.contact
+						if model is models.Contact and doc.addedBy or model is models.Note or model is models.Tag and doc.contact
 							feed doc
 				else
 					throw new Error 'unimplemented'
@@ -92,8 +105,7 @@ module.exports = (app, route) ->
 						doc.save (err) ->
 							throw err if err
 							cb doc
-							if updateFeeds
-								feed doc
+							if updateFeeds then feed doc
 				else
 					throw new Error 'unimplemented'
 			when 'remove'
@@ -104,9 +116,9 @@ module.exports = (app, route) ->
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
 				else
-					throw new Error
+					throw new Error 'no id on remove'
 			else
-				throw new Error
+				throw new Error 'un recognised db route'
 
 
 	route 'dashboard', (fn)->
@@ -151,7 +163,7 @@ module.exports = (app, route) ->
 	route 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
-	route 'login.contextio', (fn, data, io, session) ->
+	route 'login.contextio', (data, io, session, fn) ->
 		models.User.findOne email: data.email, (err, user) ->
 			if err
 				console.log err
@@ -184,11 +196,30 @@ module.exports = (app, route) ->
 						session.save()
 						fn id:u.id
 
+
+
+	# helper, used when building filters: get most common tags matching conditions
+	loadSomeTagNames = (ids, conditions, cb)->
+		conditions = category:conditions
+		if ids?.length
+			oIDs = []
+			for id in ids
+				oIDs.push models.ObjectId(id)
+			conditions.contact = $in: oIDs
+		models.Tag.aggregate {$match: conditions},
+			{$group:  _id: '$body', count: {$sum: 1}},
+			{$sort: count: -1},
+			{$limit: 5},
+			(err, tags) ->
+				throw err if err
+				cb _.pluck(tags, '_id')[0..5]
+
+
 	# adds filter lists on results object before returning first page
 	#
 	# results ;		results object (so far) including query, response and total
 	# fn ;			callback function to send the data back to the client
-	# termcount ;	if this flag is false, the filters are built from the entire collection
+	# termCount ;	if this flag is false, the filters are built from the entire collection
 	# 				if this flag is non-zero, the filters are built against the subset of results
 	buildFilters = (results, fn, termCount, step=0)->
 		switch step
@@ -201,36 +232,16 @@ module.exports = (app, route) ->
 					results.f_knows = _.sortBy(_.keys(knows), (k)->-knows[k])[0..5]
 					buildFilters results, fn, termCount, 1
 			when 1
-				conditions = category: 'industry'
-				if termCount
-					ids = []
-					for id in results.response
-						ids.push models.ObjectId(id)
-					conditions.contact = $in: ids
-				models.Tag.aggregate {$match: conditions},
-					{$group:  _id: '$body', count: {$sum: 1}},
-					{$sort: count: -1},
-					{$limit: 5},
-					(err, tags) ->
-						throw err if err
-						results.f_industry = _.pluck(tags, '_id')[0..5]
-						buildFilters results, fn, termCount, 2
+				ids = if termCount then results.response else null
+				loadSomeTagNames ids, 'industry', (tags)->
+					results.f_industry = tags
+					buildFilters results, fn, termCount, 2
 			when 2
-				conditions = {$and: [ category: $ne: 'industry', category: $ne: 'organisation' ]}
-				if termCount
-					ids = []
-					for id in results.response
-						ids.push models.ObjectId(id)
-					conditions.contact = $in: ids
-				models.Tag.aggregate {$match: conditions},
-					{$group:  _id: '$body', count: {$sum: 1}},
-					{$sort: count: -1},
-					{$limit: 5},
-					(err, tags) ->
-						throw err if err
-						results.f_organisation = _.pluck(tags,'_id')[0..5]
-						results.response = results.response[0..searchPagePageSize]			# ... first page
-						fn results
+				ids = if termCount then results.response else null
+				loadSomeTagNames ids, $not: $in: [ 'industry', 'organisation' ], (tags)->
+					results.f_organisation = tags
+					results.response = results.response[0..searchPagePageSize]			# ... first page
+					fn results
 		
 
 	# filters and paginates search results using the parameters specified on the data object
@@ -381,6 +392,7 @@ module.exports = (app, route) ->
 						conditions.added = $exists: true
 						_.extend conditions, data.moreConditions
 						if not terms?.length		# special case: no terms means we're looking at all contacts
+							hazFilter = true
 							if data.knows?.length
 								_.extend conditions, knows:$in:data.knows
 								delete data.knows
@@ -396,6 +408,7 @@ module.exports = (app, route) ->
 								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.organisation
+							else hazFilter = false
 							if model is 'Contact'
 								dir = -1
 								if not data.sort
@@ -412,7 +425,7 @@ module.exports = (app, route) ->
 									else if key is 'added'
 										sort[key]=dir
 										delete data.sort
-								if not data.industry?.length and not data.organisation?.length and not data.knows?.length
+								if not hazFilter
 									limit = searchPagePageSize
 									if data.page then skip = data.page*searchPagePageSize
 					else if model is 'Tag'
@@ -434,7 +447,7 @@ module.exports = (app, route) ->
 					else if _.isArray results
 						resultsObj = query:query
 						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
-						if not terms?.length then return models.Contact.count {}, (e, c)->
+						if not terms?.length then return models.Contact.count {added:$exists:true}, (e, c)->
 							resultsObj.totalCount = resultsObj.filteredCount = c
 							if not data.filter then buildFilters resultsObj, fn, terms?.length
 							else if limit then fn resultsObj
@@ -465,7 +478,7 @@ module.exports = (app, route) ->
 				else done()
 			mapSearches 0
 
-	route 'fullSearch', (fn, data, io, session) ->
+	route 'fullSearch', (data, io, session, fn) ->
 		# passes a results array to accumulate a list of contact ids
 		doSearch fn, data, session, (type, perfect, typeDocs, results=[], cb)->
 			if not typeDocs or not typeDocs.length then return cb results
@@ -506,7 +519,7 @@ module.exports = (app, route) ->
 			return results
 
 
-	route 'search', (fn, data, io, session)->
+	route 'search', (data, io, session, fn)->
 
 		# passes an object, which accumulates arrays for each time, of the form:
 		# { tag:[{contact, id}], notes:[{contact, id}], names:[{contact, id}], emails:[{contact, id}] }
@@ -529,7 +542,7 @@ module.exports = (app, route) ->
 		, 10
 
 
-	route 'verifyUniqueness', (fn, data) ->
+	route 'verifyUniqueness', (data, fn) ->
 		field = data.field + 's'
 		conditions = {}
 		conditions[field] = data.value
@@ -537,7 +550,7 @@ module.exports = (app, route) ->
 			throw err if err
 			fn contact?[field][0]
 
-	route 'getIntro', (fn, data) ->	# get an email introduction
+	route 'getIntro', (data, fn) ->	# get an email introduction
 		models.Contact.findById data.contact, (err, contact) ->
 			throw err if err
 			models.User.findById data.userfrom, (err, userfrom) ->
@@ -547,7 +560,7 @@ module.exports = (app, route) ->
 					mailer.requestIntro userfrom, userto, contact, data.url, ()->
 						fn()
 
-	route 'deprecatedVerifyUniqueness', (fn, data) ->	# Deprecated, bitches
+	route 'deprecatedVerifyUniqueness', (data, fn) ->	# Deprecated, bitches
 		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[data.field])
@@ -555,7 +568,7 @@ module.exports = (app, route) ->
 				.first()
 				.value()
 
-	route 'tags.remove', (fn, conditions) ->
+	route 'tags.remove', (conditions, fn) ->
 		models.Tag.find conditions, '_id', (err, ids)->
 			throw err if err
 			ids =  _.pluck ids, '_id'
@@ -566,12 +579,12 @@ module.exports = (app, route) ->
 					console.dir err
 			fn ids
 
-	route 'tags.all', (fn, conditions) ->
+	route 'tags.all', (conditions, fn) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
 			fn bodies.sort()
 
-	route 'tags.move', (fn, conditions) ->
+	route 'tags.move', (conditions, fn) ->
 		if (newcat = conditions.newcat)
 			delete conditions.newcat
 			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
@@ -580,7 +593,7 @@ module.exports = (app, route) ->
 				return fn()
 		fn()
 
-	route 'tags.rename', (fn, conditions) ->
+	route 'tags.rename', (conditions, fn) ->
 		if (newtag = conditions.new)
 			delete conditions.new
 			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
@@ -589,7 +602,7 @@ module.exports = (app, route) ->
 				return fn()
 		fn()
 
-	route 'tags.popular', (fn, conditions) ->
+	route 'tags.popular', (conditions, fn) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
 		else conditions.contact = $exists: true
 		models.Tag.aggregate {$match: conditions},
@@ -624,7 +637,7 @@ module.exports = (app, route) ->
 		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
 		# ]
 
-	route 'merge', (fn, data) ->
+	route 'merge', (data, fn) ->
 		models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
 			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
@@ -669,7 +682,7 @@ module.exports = (app, route) ->
 						return fn()
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
-	route 'parse', (fn, id, io) ->
+	route 'parse', (id, io, fn) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
@@ -687,7 +700,7 @@ module.exports = (app, route) ->
 			require('./parser') user, notifications, (err, contacts) ->
 				fn err
 
-	route 'linkin', (fn, id, io, session) ->
+	route 'linkin', (id, io, session, fn) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn err	# in case this gets called and there's not logged in user
@@ -710,9 +723,9 @@ module.exports = (app, route) ->
 				fn err
 
 
-	route 'classifyQ', (fn, id) ->
+	route 'classifyQ', (id, fn) ->
 		logic.classifyList id, (neocons)->
-			return fn  _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 
 	route 'companies', (fn)->
@@ -734,7 +747,7 @@ module.exports = (app, route) ->
 			fn companies
 
 
-	route 'flush', (fn, contacts, io, session) ->
+	route 'flush', (contacts, io, session, fn) ->
 		_.each contacts, (c)->
 			classification = {user:session.user, contact:c}
 			if session.admin.flushsave then classification.saved = moment().toDate()

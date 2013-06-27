@@ -11,7 +11,7 @@
 			+linkTo('recent class="brand"')
 				| Redfly
 				img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
-			| {{#if App.user.content}}
+			| {{#if App.user}}
 			.nav-collapse.collapse
 				ul.nav
 					li
@@ -27,7 +27,7 @@
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 			| {{/if}}
 			.pull-right
-				| {{#unless App.user.content}}
+				| {{#unless App.user}}
 				| {{#if App.admin.contextio}}
 				| {{#if App.admin.googleauth}}
 				.btn-group
