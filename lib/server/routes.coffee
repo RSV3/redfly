@@ -742,14 +742,14 @@ module.exports = (app, route) ->
 			for c of companies
 				if not c.match(new RegExp(process.env.ORGANISATION_TITLE, 'i'))
 					comps.push { company:c, count:companies[c] }
-			companies = _.sortBy(comps, (c)-> -c.count)[0..20]
+			companies = _.sortBy(comps, (c)-> -c.count)[0...20]
 			fn companies
 
 
 	route 'flush', (contacts, io, session, fn) ->
 		_.each contacts, (c)->
 			classification = {user:session.user, contact:c}
-			if session.admin.flushsave then classification.saved = moment().toDate()
+			if session?.admin?.flushsave then classification.saved = moment().toDate()
 			models.Classify.create classification, (err, mod)->
 				if err
 					console.log 'flush err:'

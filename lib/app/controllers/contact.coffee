@@ -48,6 +48,7 @@ module.exports = (Ember, App, socket) ->
 			if not (@get('position') or @get('company') or @get('yearsExperience'))
 				"Edit details about #{@get('nickname')}'s professional experience"
 		).property 'position', 'company', 'yearsExperience'
+		###
 		histories: (->
 			# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
 			# fake contact is below the page break and has no ID set
@@ -56,25 +57,31 @@ module.exports = (Ember, App, socket) ->
 			App.filter App.Mail, {field: 'sent'}, query, (data) =>
 				(data.get('sender.id') is App.user.get('id')) and (data.get('recipient.id') is @get('id'))
 		).property 'id'
-		firstHistory: (->
-			@get 'histories.firstObject'
-		).property 'histories.firstObject'
+		###
+		firstHistory: null
+		lastHistory: null
+		setHistories: (->
+			if id=@get('id')
+				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'date'}
+				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'-date'}
+		).observes 'id'
 		spokenTwice: (->
-			@get('histories.length') > 1
-		).property 'histories'
+			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
+		).property 'lastHistory.id', 'firstHistory.id'
 		firstTalked: (->
-			if sent = @get('histories.firstObject.sent')
-				moment = require 'moment'
-				moment(sent).fromNow()
-		).property 'histories.@each'
+			if not sent = @get('firstHistory.sent') then return null
+			moment = require 'moment'
+			moment(sent).fromNow()
+		).property 'firstHistory.sent'
 		lastTalked: (->
-			if sent = @get('histories.lastObject.sent')
-				moment = require 'moment'
-				moment(sent).fromNow()
-		).property 'histories.@each'
+			if not sent = @get('lastHistory.sent') then return null
+			moment = require 'moment'
+			moment(sent).fromNow()
+		).property 'lastHistory.sent'
 		disableAdd: (->
 			not util.trim @get('currentNote')
 		).property 'currentNote'
+
 		# emptyNotesText: (->
 		# 		if _.random(1, 10) < 9
 		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work? Something to do with volatile?
@@ -84,6 +91,7 @@ module.exports = (Ember, App, socket) ->
 		# 			 'always leave a note!</a>'
 		# 		).htmlSafe()
 		# 	).property().volatile()
+
 		add: ->
 			if note = util.trim @get('currentNote')
 				App.Note.createRecord
@@ -198,10 +206,11 @@ module.exports = (Ember, App, socket) ->
 				_.defer =>   # TO-DO Ember.run.next is equivalent but would be semantically more appropriate.
 					# Ideally there's a way to get a list of itemViews and pick the last one, and not do this with jquery.
 					@$('input').last().focus()
+
 			save: ->
-				# here's an ugly way to check the context:
-				# if we get here because of the newlinebinding on the undefined textobject,
-				# the context will be the embertextview, so step up one level.
+				# now, here's an ugly way to check the context.
+				# If we get here because of the newlinebinding on the undefined textobject,
+				# the context will be the embertextview - so step up one level.
 				that = @
 				if that.get('parentView')._makeProxyArray
 					that = that.get('parentView')	# ugly context test.
@@ -236,6 +245,7 @@ module.exports = (Ember, App, socket) ->
 				primaryBinding: 'parentView.primary'
 				othersBinding: 'parentView.others'
 				promote: ->
+					el = @$().parent().find('input:first')
 					primary = @get 'primary'
 					promoted = @get 'other.content'
 					@set 'primary', promoted
@@ -243,6 +253,7 @@ module.exports = (Ember, App, socket) ->
 					_.defer =>
 						@get('others').removeObject @get('other')
 						@get('others').unshiftObject Ember.ObjectProxy.create content: primary
+						$(el).focus()
 				remove: ->
 					@get('others').removeObject @get('other')
 

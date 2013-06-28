@@ -153,7 +153,7 @@ cIOcreate = (data, cb)->
 		account = account?.body
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if not _.some(admin.domains, (domain)->
+			if admin?.domains?.length and not _.some(admin.domains, (domain)->
 				return _s.endsWith data.email, "@#{domain}"
 			)
 				console.log "ERR: login email #{data.email} doesn't match domains"

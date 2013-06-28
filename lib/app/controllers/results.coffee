@@ -8,22 +8,6 @@ module.exports = (Ember, App, socket) ->
 	searchPagePageSize = 25
 	sortFieldNames = ['influence', 'proximity', 'names', 'added']
 
-	###
-	#this is from when we used to sort in the browser. redundant.
-	sortFunc =
-		influence: (v, w)->
-			value = (v.get('knows.length') - w.get('knows.length'))
-			if (@get 'sortAscending')
-				return -value
-			value
-		proximity: (v, w)->
-			value = (v.get('addedBy.id') is App.user.get('id')) - (w.get('addedBy.id') is App.user.get('id'))
-			if not value
-				value = _.contains(v.get('knows').getEach('id'), App.user.get('id')) - _.contains(w.get('knows').getEach('id'), App.user.get('id'))
-			if (@get 'sortAscending')
-				return -value
-			value
-	###
 
 	App.ResultsController = Ember.ObjectController.extend
 		hiding: 0			# this is just for templating, whether or not results are filtered out
@@ -33,6 +17,11 @@ module.exports = (Ember, App, socket) ->
 		f_knows: []
 		f_industry: []
 		f_organisation: []
+
+		loseTag: ->
+			@set 'searchtag', null
+			newResults = App.Results.create {text: 'contact:0'}
+			App.Router.router.transitionTo "results", newResults
 
 		othersorts: (->
 			return @get('totalCount')<99
@@ -199,7 +188,7 @@ module.exports = (Ember, App, socket) ->
 		canHide: true
 		lastNote: (->
 			if id=@get('id')
-				App.findOne App.Note, conditions:{recipient:id}, options:{sort:'-date'}
+				App.findOne App.Note, conditions:{contact:id}, options:{sort:'-date'}
 		).property 'notes.lastObject'
 		lastMail: (->
 			if id=@get('id')

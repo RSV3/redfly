@@ -12,8 +12,7 @@ module.exports = (DS, App) ->
 
 	App.User.reopen
 		canonicalName: (->
-				if this is App.user.get('content')
-					return 'You'
+				if this is App.user then return 'You'
 				@get 'name'
 			).property 'App.user.content', 'name'
 		nickname: (->

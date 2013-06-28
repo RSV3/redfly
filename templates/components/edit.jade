@@ -20,7 +20,7 @@ i.icon-pencil
 	.nav-header {{view.prettyOtherAttribute}}
 	| {{#each other in view.others}}
 	| {{#view view.itemView otherBinding="other"}}
-	| {{view Ember.TextField valueBinding="other.content"}}
+	| {{view Ember.TextField insertNewlineBinding="view.save" valueBinding="other.content"}}
 	.pull-right
 		| <a href="#" {{action promote target="view"}}>
 		i.icon-arrow-up

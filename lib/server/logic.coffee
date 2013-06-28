@@ -83,7 +83,7 @@ classifyList = (u, cb)->
 							if unadded.length < 20
 								neocons = _.union unadded, neocons
 							else neocons = unadded
-						cb neocons[0..20]
+						cb neocons[0...20]
 
 
 classifySome = (u, cb)->
