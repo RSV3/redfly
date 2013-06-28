@@ -197,22 +197,14 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultController = App.ContactController.extend
 		canHide: true
-		notes: (->
-			if (id=@get('id'))
-				App.filter App.Note, {field: 'date'}, {contact:id}, (data) =>
-					data.get('contact.id') is id
-		).property 'id'
 		lastNote: (->
-			@get 'notes.lastObject'
+			if id=@get('id')
+				App.findOne App.Note, conditions:{recipient:id}, options:{sort:'-date'}
 		).property 'notes.lastObject'
-		mails: (->
-			if (id=@get('id'))
-				App.filter App.Mail, {field: 'sent'}, {recipient:id}, (data) =>
-					data.get('recipient.id') is id
-		).property 'id'
 		lastMail: (->
-			@get 'mails.lastObject'
-		).property 'mails.lastObject'
+			if id=@get('id')
+				App.findOne App.Mail, conditions:{recipient:id}, options:{sort:'-date'}
+		).property 'id'
 		sentdate: (->
 			moment(@get('lastMail.sent')).fromNow()
 		).property 'lastMail'
