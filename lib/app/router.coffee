@@ -155,6 +155,8 @@ module.exports = (Ember, App, socket) ->
 					if not results.response?.length then return @transitionTo 'recent'
 					for own key, val of results
 						controller.set key, results[key]
+					if results.query?.length and results.query isnt 'contact:0'
+						controller.set 'searchtag', results.query
 					controller.set 'page', 0
 					controller.set 'sortDir', 0
 					controller.set 'sortType', null
@@ -236,10 +238,14 @@ module.exports = (Ember, App, socket) ->
 		activate: ->
 			view = App.LinkerView.create()
 			view.append()
-		redirect: ->
 			@transitionTo 'userProfile'
-		renderTemplate: ->
-			@router.connectem @, 'profile'
+			###
+			# this was interfering with the activation
+			redirect: ->
+				@transitionTo 'userProfile'
+			renderTemplate: ->
+				@router.connectem @, 'profile'
+			###
 
 
 	# authRequiredRoutes = [

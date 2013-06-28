@@ -28,7 +28,7 @@ everyauth.google.configure
 		email = googleUserMetadata.email.toLowerCase()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if admin.domains.length and not _.some(admin.domains, (domain)->
+			if admin?.domains?.length and not _.some(admin.domains, (domain)->
 				_s.endsWith email, "@#{domain}"
 			)
 				return {}
@@ -36,6 +36,7 @@ everyauth.google.configure
 				throw err if err
 				token = accessTokenExtra.refresh_token
 				if user
+					if process.env.ADMIN_EMAIL is user.email then user.admin = true
 					# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
 					if not user.oauth
 						console.log "no oauth on user #{email} with #{googleUserMetadata.name} : adding #{token}"
@@ -65,6 +66,7 @@ everyauth.google.configure
 					if picture = googleUserMetadata.picture
 						user.picture = picture
 					user.oauth = token
+					if process.env.ADMIN_EMAIL is user.email then user.admin = true
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user

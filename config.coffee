@@ -60,6 +60,9 @@ module.exports =
 
 		NUDGE_DAYS: 'Monday Thursday'
 
+		# one default admin
+		ADMIN_EMAIL:	'kwan@redstar.com'
+
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'

@@ -32,12 +32,13 @@ div.navbar
 							th Message Sent
 							th Message Subject
 					tbody
-						+each('flushlist')
-							tr
-								td {{view Ember.Checkbox checkedBinding="checked"}} &nbsp; {{canonicalName}}
-								td {{email}}
-								td {{firstHistory.sent}}
-								td {{firstHistory.subject}}
+						| {{#each flushlist itemController="contact"}}
+						tr
+							td {{view Ember.Checkbox checkedBinding="checked"}} &nbsp; {{canonicalName}}
+							td {{email}}
+							td {{firstTalked}}
+							td {{firstHistory.subject}}
+						| {{/each}}
 
 			| {{else}}
 

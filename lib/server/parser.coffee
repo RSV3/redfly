@@ -111,7 +111,13 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 					if not _.contains contact.emails, mail.recipientEmail
 						dirty = contact.emails.addToSet mail.recipientEmail
 					if name = mail.recipientName
-						if not _.contains contact.names, name
+						splitted = mail.recipientEmail.split '@'
+						domain = _.first _.last(splitted).split '.'
+						mockname =  _.first(splitted) + " [#{domain}]"
+						if contact.names?.length and contact.names[0] is mockname
+							contact.names[0] = mail.recipientName
+							dirty = contact.sortname = mail.recipientName.toLowerCase()
+						else if not _.contains contact.names, name
 							dirty = contact.names.addToSet name
 					if not _.contains contact.knows, user
 						dirty = contact.knows.addToSet user

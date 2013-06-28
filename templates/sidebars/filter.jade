@@ -4,6 +4,13 @@ i.total-results {{#if hiding}}{{filteredCount}} of {{/if}}{{totalCount}} results
 i &nbsp;
 {{/if}}
 
+{{#if searchtag}}
+.searchtag
+	span	{{searchtag}}
+	a(href='#', action='loseTag')
+		i.icon-remove
+{{/if}}
+
 h3
 	| Filters
 
