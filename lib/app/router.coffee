@@ -3,6 +3,8 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 	util = require './util'
 
+	recent_query_string = 'contact:0'	# this is the query that returns the list of all contacts
+
 	App.Router.reopen
 		location: 'history'
 		connectem: (route, name)->
@@ -122,12 +124,12 @@ module.exports = (Ember, App, socket) ->
 				text: 'Reverting to all results.'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
-			newResults = App.Results.create {text: "contact:0"}
+			newResults = App.Results.create {text: recent_query_string}
 			@transitionTo 'results', newResults
 
 	App.RecentRoute = Ember.Route.extend
 		redirect: ->
-			newResults = App.Results.create {text: "contact:0"}
+			newResults = App.Results.create {text: recent_query_string}
 			@transitionTo 'results', newResults
 
 	App.CompaniesRoute = Ember.Route.extend
@@ -145,17 +147,19 @@ module.exports = (Ember, App, socket) ->
 			{ query_text: model.text}
 		deserialize: (param) ->
 			qt = decodeURIComponent param.query_text
-			if not qt?.length then qt = 'contact:0'
+			if not qt?.length then qt = recent_query_string
 			{ text: qt }
 		setupController: (controller, model) ->
 			this._super controller, model
 			controller.set 'all', null
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
-					if not results.response?.length then return @transitionTo 'recent'
+					if not results.response?.length
+						if model.text isnt recent_query_string then return @transitionTo 'recent'
+						else return @transitionTo 'userProfile'
 					for own key, val of results
 						controller.set key, results[key]
-					if results.query?.length and results.query isnt 'contact:0'
+					if results.query?.length and results.query isnt recent_query_string
 						controller.set 'searchtag', results.query
 					controller.set 'page', 0
 					controller.set 'sortDir', 0

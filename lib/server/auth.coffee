@@ -1,6 +1,7 @@
 everyauth = module.exports = require 'everyauth'
 models = require './models'
 _ = require 'underscore'
+_s = require 'underscore.string'
 
 
 everyauth.everymodule.findUserById (userId, cb)->
@@ -12,19 +13,22 @@ everyauth.google.configure
 	entryPath: '/authorize'
 	callbackPath: '/authorized'
 	authQueryParam:
+		approval_prompt: 'force'
 		access_type: 'offline'
-		approval_prompt: 'auto'
 	scope: [
 			'https://www.googleapis.com/auth/userinfo.profile'
 			'https://www.googleapis.com/auth/userinfo.email'
 			'https://mail.google.com/'
 			'https://www.google.com/m8/feeds'
 		].join ' '
+
 	handleAuthCallbackError: (req, res) ->
 		res.redirect '/unauthorized'
-	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
-		_s = require 'underscore.string'
 
+	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
+		console.dir googleUserMetadata
+		console.dir accessToken
+		console.dir accessTokenExtra
 		email = googleUserMetadata.email.toLowerCase()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
@@ -34,45 +38,38 @@ everyauth.google.configure
 				return {}
 			models.User.findOne email: email, (err, user) ->
 				throw err if err
-				token = accessTokenExtra.refresh_token
-				if user
-					if process.env.ADMIN_EMAIL is user.email then user.admin = true
-					# TEMPORARY ########## have to save stuff for existing users who signed up before the switch to oauth2
-					if not user.oauth
-						console.log "no oauth on user #{email} with #{googleUserMetadata.name} : adding #{token}"
-						user.name = googleUserMetadata.name
-						if picture = googleUserMetadata.picture
-							user.picture = picture
-						user.oauth = token
-						user.save (err) ->
-							throw err if err
-							promise.fulfill user
-					# END TEMPORARY ###########
-					# Update the refresh token if google gave us a new one.
-					else if token and user.oauth isnt token
-						console.log "wrong token on user #{email} with #{googleUserMetadata.name} : overwriting with #{token}"
-						user.oauth = token
-						user.save (err) ->
-							throw err if err
-							promise.fulfill user
-					else
-						#console.log "user #{email} with #{googleUserMetadata.name} already had correct token #{token}"
-						promise.fulfill user
-				else
+				if not user
 					console.log "creating new user #{email} with #{googleUserMetadata.name}"
 					user = new models.User
 					user.email = email
 					user.name = googleUserMetadata.name
-					if picture = googleUserMetadata.picture
-						user.picture = picture
-					user.oauth = token
+					if googleUserMetadata.picture then user.picture = googleUserMetadata.picture
 					if process.env.ADMIN_EMAIL is user.email then user.admin = true
+
+				token = accessTokenExtra.refresh_token
+				if not user.oauth		# OA2 virgin?
+					console.log "no oauth on user #{email} with #{googleUserMetadata.name} : adding #{token}"
+					if not user.oauth = token
+						console.log "ERROR: user #{email} has no token in database, and token didnt arrive via OA2"
+					if not user.name then user.name = googleUserMetadata.name			# if user was created by cIO
+					if not user.picture then user.picture = googleUserMetadata.picture	# but then logs in with gOA2
+					console.dir "nu user oauth"
+					console.dir user
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user
+				else if token and user.oauth isnt token		# Update the refresh token if google gave us a new one.
+					console.log "wrong token on user #{email} with #{googleUserMetadata.name} : overwriting with #{token}"
+					user.oauth = token
+					user.save (err) ->
+						throw err if err
+						promise.fulfill user
+				else promise.fulfill user			# user #{email} already had correct token #{token}
 		promise = @Promise()
+
 	addToSession: (session, auth) ->
 		session.user = auth.user.id
+
 	sendResponse: (res, data) ->
 		user = data.user
 		if not user.id
