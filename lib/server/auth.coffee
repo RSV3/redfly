@@ -52,7 +52,8 @@ everyauth.google.configure
 					if not user.oauth = token
 						console.log "ERROR: user #{email} has no token in database, and token didnt arrive via OA2"
 					if not user.name then user.name = googleUserMetadata.name			# if user was created by cIO
-					if not user.picture then user.picture = googleUserMetadata.picture	# but then logs in with gOA2
+					if not user.picture?.length and googleUserMetadata.picture?.length
+						user.picture = googleUserMetadata.picture	# but then logs in with gOA2
 					console.dir "nu user oauth"
 					console.dir user
 					user.save (err) ->
