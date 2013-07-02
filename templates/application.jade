@@ -22,8 +22,6 @@
 						span.badge.badge-important {{App.admin.classifyCount}}
 					| {{/if}}
 					li
-						+linkTo('create') Add a Contact
-					li
 						+linkTo('companies') Companies
 					li
 						+linkTo('leaderboard') Leaderboard
@@ -60,11 +58,13 @@
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
+							+linkTo('create') Add a Contact					
+						li
 							+linkTo('userProfile') Profile
 						li
 							+linkTo('import') Bulk Upload
 						li
-							+linkTo('contacts') Contacts
+							+linkTo('contacts') All Contacts
 						li.divider
 						li
 							a(href='/linker')
