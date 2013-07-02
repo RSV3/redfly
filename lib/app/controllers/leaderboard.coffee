@@ -38,6 +38,7 @@ module.exports = (Ember, App, socket) ->
 	App.LaggardView = App.LeadLagView.extend
 		pos: (->
 			#@get('parentView.controller.lowest') - @get('contentIndex') 
-			@get('contentIndex')
+			# TODO: little hack, might need better way to make it correct
+			@get('parentView.controller.lowest') - (4 - @get('contentIndex'))
 		).property()
 
