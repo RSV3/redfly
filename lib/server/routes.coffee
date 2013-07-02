@@ -788,7 +788,7 @@ module.exports = (app, route) ->
 	route 'leaderboard', (fn)->
 		models.User.find().select('_id contactCount dataCount').exec (err, users)->
 			throw err if err
-			users = _.map _.sortBy(users, (u) -> u.contactCount + u.dataCount), (u)-> String(u.get('_id'))
+			users = _.map _.sortBy(users, (u) -> (u.contactCount or 0) + (u.dataCount or 0)), (u)-> String(u.get('_id'))
 			l = users.length
 			fn l, users[l-5...l].reverse(), users[0...5]
 
