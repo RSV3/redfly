@@ -96,15 +96,19 @@ module.exports = (Ember, App, socket) ->
 			if note = util.trim @get('currentNote')
 				App.Note.createRecord
 					date: new Date	# Only so that sorting is smooth.
-					author: App.user
+					author: App.User.find App.user.get 'id'
 					contact: @get 'content'
 					body: note
+				@set 'updated', new Date
+				@set 'updatedBy', App.user.get 'id'
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
 		toggleVIP: ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
+				@set 'updated', new Date
+				@set 'updatedBy', App.user.get 'id'
 				App.store.commit()
 		dumpContact: ->
 			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
@@ -231,6 +235,8 @@ module.exports = (Ember, App, socket) ->
 
 					if (not nothing) and (not duplicate)
 						that.set "controller.#{that.get('allAttribute')}", all
+						that.set 'controller.updated', new Date
+						that.set 'controller.updatedBy', App.user.get 'id'
 						App.store.commit()
 						that.toggle()
 					that.set 'working', false
@@ -435,6 +441,8 @@ module.exports = (Ember, App, socket) ->
 								value: newvalue
 							}
 						view.set 'value', (newvalue+100)/40
+						view.set 'controller.updated', new Date
+						view.set 'controller.updatedBy', App.user
 						App.store.commit()
 						view._drawStars()
 						view.get('controller').notifyPropertyChange 'measures'
@@ -454,6 +462,8 @@ module.exports = (Ember, App, socket) ->
 						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.
 				save: ->
 					@set 'working', true
+					@set 'controller.updated', new Date
+					@set 'controller.updatedBy', App.user
 					App.store.commit()
 					@toggleProperty 'show'
 					@set 'working', false
@@ -485,6 +495,8 @@ module.exports = (Ember, App, socket) ->
 					for field in ['linkedinFieldInstance', 'twitterFieldInstance', 'facebookFieldInstance']
 						@get(field)._fire()
 					if not (@get('linkedinFieldInstance.error') or @get('twitterFieldInstance.error') or @get('facebookFieldInstance.error'))
+						@set 'controller.updated', new Date
+						@set 'controller.updatedBy', App.user
 						App.store.commit()
 						@toggleProperty 'show'
 					@set 'working', false

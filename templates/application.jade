@@ -14,6 +14,7 @@
 			| {{#if App.user}}
 			.nav-collapse.collapse
 				ul.nav
+					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 					li
 						+linkTo('classify') Classify
 					| {{#if App.admin.classifyCount}}
@@ -23,8 +24,9 @@
 					li
 						+linkTo('create') Add a Contact
 					li
-						+linkTo('companies') Companies 
-					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
+						+linkTo('companies') Companies
+					li
+						+linkTo('leaderboard') Leaderboard
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
@@ -60,11 +62,7 @@
 						li
 							+linkTo('userProfile') Profile
 						li
-							+linkTo('classify') Classify
-						li
 							+linkTo('import') Bulk Upload
-						li
-							+linkTo('leaderboard') Leaderboard
 						li
 							+linkTo('contacts') Contacts
 						li.divider

@@ -1,0 +1,31 @@
+h3 Weekly Leaderboard
+hr
+table.table.toplead
+	thead
+		tr
+			th Rank
+			th Contributor
+			th New
+	tbody
+		| {{#each leader itemViewClass="App.LeaderView"}}
+		td.pos {{view.pos}}
+		td
+			+linkTo('profile this')
+				span {{canonicalName}}
+		td.count {{contactCount}}
+		| {{/each}}
+br
+table.table.botlead
+	thead
+		tr
+			th Rank
+			th Contributor
+			th New
+	tbody
+		| {{#each laggard itemViewClass="App.LaggardView"}}
+		td.pos {{view.pos}}
+		td
+			+linkTo('profile this')
+				span {{canonicalName}}
+		td.count {{contactCount}}
+		| {{/each}}

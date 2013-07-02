@@ -21,6 +21,11 @@ module.exports = (Ember, App, socket) ->
 					into: 'application'
 					outlet: 'sidebar'
 					controller: 'results'
+			else if name is 'classify'
+				route.render 'leaders',
+					into: 'application'
+					outlet: 'sidebar'
+					controller: 'leaders'
 			else
 				route.render 'feed',
 					into: 'application'
@@ -169,9 +174,11 @@ module.exports = (Ember, App, socket) ->
 			@router.connectem @, 'results'
 
 	App.LeaderboardRoute = Ember.Route.extend
-		model: ->
-			App.User.find()
-			App.User.all()
+		setupController: (controller, model) ->
+			socket.emit 'leaderboard', (lowest, leaders, laggards) =>
+				controller.set 'lowest', lowest
+				controller.set 'leader', App.store.findMany(App.User, leaders)
+				controller.set 'laggard', App.store.findMany(App.User, laggards)
 		renderTemplate: ->
 			@router.connectem @, 'leaderboard'
 

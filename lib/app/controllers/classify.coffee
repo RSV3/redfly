@@ -58,6 +58,10 @@ module.exports = (Ember, App, socket) ->
 					tip.tooltip 'hide'
 				, 2000
 
+			@set 'thisContact.updated', new Date
+			@set 'thisContact.updatedBy', App.user
+			if not @get 'thisContact.classified'
+				@set 'thisContact.classified', new Date
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
 				@set 'thisContact.addedBy', App.user
