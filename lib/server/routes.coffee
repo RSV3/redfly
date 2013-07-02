@@ -9,7 +9,7 @@ module.exports = (app, route) ->
 
 	searchPagePageSize = 25
 
-	route 'db', (data, fn)->
+	route 'db', (data, io, session, fn)->
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -72,40 +72,60 @@ module.exports = (app, route) ->
 				catch err
 					console.error 'Error in db API: ' + err
 					cb()
+
 			when 'create'
 				record = data.record
-				if not _.isArray record
-					if model is models.Contact
-						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
-						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
-					model.create record, (err, doc) ->
-						throw err if err
-						cb doc
-						if model is models.Contact and doc.addedBy or model is models.Note or model is models.Tag and doc.contact
-							feed doc
-				else
-					throw new Error 'unimplemented'
-					# model.create record, (err, docs...) ->
-					# 	throw err if err
-					# 	cb docs
+				if _.isArray record then throw new Error 'unimplemented'
+				if model is models.Contact
+					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
+					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+				model.create record, (err, doc) ->
+					throw err if err
+					if model is models.Note and doc.contact
+						models.User.update {_id:doc.author}, $inc: 'dataCount': 1, (err)->
+							if err
+								console.log "error incrementing data count for #{doc.author}"
+								console.dir err
+						feed doc
+					if model is models.Tag and doc.contact
+						console.dir "#{doc.creator}"
+						models.User.update {_id:doc.creator}, $inc: 'dataCount': 1, (err)->
+							if err
+								console.log "error incrementing data count for #{doc.creator}"
+								console.dir err
+						feed doc
+					else if model is models.Contact and doc.addedBy
+						feed doc
+					cb doc
+
 			when 'save'
 				record = data.record
-				if not _.isArray record
-					model.findById record.id, (err, doc) ->
+				if _.isArray record then throw new Error 'unimplemented'
+				model.findById record.id, (err, doc) ->
+					throw err if err
+					if not doc
+						console.log "ERROR: failed to find record to save:"
+						console.dir data
+						return cb null
+					_.extend doc, record
+					modified = doc.modifiedPaths()
+					# Important to do updates through the 'save' call so middleware and validators happen.
+					doc.save (err) ->
 						throw err if err
-						if not doc
-							console.log "ERROR: failed to find record to save:"
-							console.dir data
-							return cb null
-						_.extend doc, record
-						updateFeeds = (model is models.Contact) and ('added' in doc.modifiedPaths())
-						# Important to do updates through the 'save' call so middleware and validators happen.
-						doc.save (err) ->
-							throw err if err
-							cb doc
-							if updateFeeds then feed doc
-				else
-					throw new Error 'unimplemented'
+						if model is models.Contact 
+							if 'added' in modified then feed doc
+							if 'classified' in modified
+								models.User.update {_id:doc.updatedBy}, $inc: 'contactCount': 1, (err)->
+									if err
+										console.log "error incrementing data count for #{doc.updatedBy}"
+										console.dir err
+							else if 'updatedBy' in modified
+								models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
+									if err
+										console.log "error incrementing data count for #{session.user}"
+										console.dir err
+						cb doc
+
 			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
@@ -764,4 +784,11 @@ module.exports = (app, route) ->
 			console.log "recent"
 			console.dir recent
 			fn recent
+
+	route 'leaderboard', (fn)->
+		models.User.find().select('_id contactCount dataCount').exec (err, users)->
+			throw err if err
+			users = _.map _.sortBy(users, (u) -> u.contactCount + u.dataCount), (u)-> String(u.get('_id'))
+			l = users.length
+			fn l, users[l-5...l].reverse(), users[0...5]
 

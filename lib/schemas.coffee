@@ -49,6 +49,9 @@ schemas.push Schema 'User',
 		port: type: Number		# TODO: store if default override
 		ssl: type: Boolean		# TODO: store if default override
 		expired: type: Boolean		# TODO: if the password fails in nudge, set this and ask user to provide a new one
+	lastRank: type: Number
+	contactCount: type: Number
+	dataCount: type: Number
 
 
 schemas.push Schema 'Measurement',
@@ -58,7 +61,6 @@ schemas.push Schema 'Measurement',
 	value: type: Number
 
 schemas.push Schema 'Contact',
-	_type: type: String
 	emails: [ type: String ]
 	names: [ type: String ]
 	sortname: type:String, lowercase:true
@@ -66,6 +68,9 @@ schemas.push Schema 'Contact',
 	knows: [ type: Types.ObjectId, ref: 'User' ]
 	added: type: Date
 	addedBy: type: Types.ObjectId, ref: 'User'
+	classified: type: Date
+	updated: type: Date
+	updatedBy: type: Types.ObjectId, ref: 'User'
 	position: type: String, trim: true
 	company: type: String, trim: true
 	yearsExperience: type: Number
@@ -77,7 +82,7 @@ schemas.push Schema 'Contact',
 schemas.push Schema 'Tag',
 	creator: type: Types.ObjectId, ref: 'User'#, required: true
 	contact: type: Types.ObjectId, ref: 'Contact'#, required: true
-	category: type: String, required: true, enum: ['role', 'theme', 'project', 'organisation', 'industry']
+	category: type:String, required:true, enum:['role', 'theme', 'project', 'organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 
 schemas.push Schema 'Note',
