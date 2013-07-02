@@ -19,6 +19,7 @@ module.exports = (Ember) ->
 	templates.admin = require '../../templates/admin'
 	templates.companies = require '../../templates/companies'
 
+	templates.leaders = require '../../templates/sidebars/leaders'
 	templates.filter = require '../../templates/sidebars/filter'
 	templates.feed = require '../../templates/sidebars/feed'
 
