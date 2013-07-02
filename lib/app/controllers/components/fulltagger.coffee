@@ -81,8 +81,8 @@ module.exports = (Ember, App, socket) ->
 			if not existingTag
 				App.Tag.createRecord
 					date: new Date	# Only so that sorting is smooth.
-					creator: App.user
-					contact: @get 'contact'
+					creator: App.User.find App.user.get 'id'
+					contact: App.Contact.find @get 'contact.id'
 					category: @get('category')
 					body: tag
 				App.store.commit()
