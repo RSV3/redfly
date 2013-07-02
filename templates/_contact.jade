@@ -4,6 +4,18 @@
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
+
+		| {{#if isKnown}}
+		.row-fluid.actions
+			span.contact-actions
+				a(href='#', role="button", action='showMerge target="view"')
+					i.icon-resize-small.icon-2x
+			| {{#if iAdded}}
+			span.contact-actions
+				a(href='#', action='dumpContact')
+					i.icon-trash.icon-2x
+			| {{/if}}
+		| {{/if}}
 	.span6
 		.row-fluid
 			| {{#if hasIntro}}
@@ -72,7 +84,7 @@
 		.row-fluid
 			| {{#if spokenTwice}}
 			p.messages
-				| You last <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other</a>
+				| You last <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other </a>
 				strong {{lastTalked}}
 			| {{/if}}
 			p
@@ -155,26 +167,16 @@
 										+else
 										i.icon-spinner.icon-spin
 
-		| {{#if isKnown}}
-		.row-fluid.actions
-			| <a class="btn mergebutt" role="button" {{action showMerge target="view"}}>
-			i.icon-signin
-			| &nbsp;&nbsp;Merge
-			| </a>
-			| {{#if iAdded}}
-			span.dumpcontact
-				a(href='#', action='dumpContact')
-					i.icon-trash.icon-2x
-			| {{/if}}
-		| {{/if}}
 		.row-fluid
-			h5 People who know {{nickname}}
-			ul
+			h5.knows-header People who know {{nickname}}
+			ul.knows-list
 				| {{#each knowsSome}}
 				li
 					+linkTo('profile this')
 						| {{canonicalName}}
 				| {{/each}}
+
+
 .row-fluid
 	.span12
 		.row-fluid.tag-category
