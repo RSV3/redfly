@@ -1,9 +1,31 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	util = require '../util'
+	moment = require 'moment'
 
-	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
+	App.ContactController = Ember.ObjectController.extend
 
+		isKnown: (->
+			u = App.user.get 'id'
+			k = @get('knows')?.getEach 'id'
+			@get('addedBy.id') is u or k and _.contains k, u
+		).property 'addedBy', 'knows.@each.id'
+		iAdded: (->
+			App.user.get('id') is @get('addedBy.id')
+		).property 'addedBy'
+		hasIntro: (->
+			@get('addedBy') and not @get('isKnown')
+		).property 'addedBy', 'isKnown'
+
+		gmailSearch: (->
+				encodeURI "//gmail.com#search/to:#{@get('email')}"
+			).property 'email'
+		directMailto: (->
+				"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
+			).property 'canonicalName', 'email'
+		linkedinMail: (->
+				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
 		showEmail: (->
 			a = App.Admin.find 1
 			@get('isKnown') or a and not a.get('hidemails') or @get('forceShowEmail')
@@ -60,17 +82,21 @@ module.exports = (Ember, App, socket) ->
 		###
 		firstHistory: null
 		lastHistory: null
+		lastNote: null
+		sentdate: (->
+			moment(@get('lastMail.sent')).fromNow()
+		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
 				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'date'}
 				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'-date'}
+				@set 'lastNote', App.findOne App.Note, conditions:{contact:id}, options:{sort:'-date'}
 		).observes 'id'
 		spokenTwice: (->
 			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
 		).property 'lastHistory.id', 'firstHistory.id'
 		firstTalked: (->
 			if not sent = @get('firstHistory.sent') then return null
-			moment = require 'moment'
 			moment(sent).fromNow()
 		).property 'firstHistory.sent'
 		lastTalked: (->
@@ -100,7 +126,7 @@ module.exports = (Ember, App, socket) ->
 					contact: @get 'content'
 					body: note
 				@set 'updated', new Date
-				@set 'updatedBy', App.user.get 'id'
+				@set 'updatedBy', App.User.find App.user.get 'id'
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
@@ -110,11 +136,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'updated', new Date
 				@set 'updatedBy', App.user.get 'id'
 				App.store.commit()
-		dumpContact: ->
-			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
-			App.Exclude.createRecord user: App.user, contact: @get 'content'
-			App.store.commit()
-			@transitionToRoute "userProfile"
 
 
 	App.ContactView = Ember.View.extend
@@ -216,7 +237,9 @@ module.exports = (Ember, App, socket) ->
 				# If we get here because of the newlinebinding on the undefined textobject,
 				# the context will be the embertextview - so step up one level.
 				that = @
-				if that.get('parentView')._makeProxyArray
+				if that.get('parentView.parentView')?._makeProxyArray
+					that = that.get('parentView.parentView')	# ugly context test.
+				else if that.get('parentView')?._makeProxyArray
 					that = that.get('parentView')	# ugly context test.
 				that.set 'working', true
 
