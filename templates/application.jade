@@ -14,6 +14,7 @@
 			| {{#if App.user}}
 			.nav-collapse.collapse
 				ul.nav
+					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 					li
 						+linkTo('classify') Classify
 					| {{#if App.admin.classifyCount}}
@@ -21,10 +22,9 @@
 						span.badge.badge-important {{App.admin.classifyCount}}
 					| {{/if}}
 					li
-						+linkTo('create') Add a Contact
+						+linkTo('companies') Companies
 					li
-						+linkTo('companies') Companies 
-					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
+						+linkTo('leaderboard') Leaderboard
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
@@ -58,15 +58,13 @@
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
-							+linkTo('userProfile') Profile
+							+linkTo('create') Add a Contact					
 						li
-							+linkTo('classify') Classify
+							+linkTo('userProfile') Profile
 						li
 							+linkTo('import') Bulk Upload
 						li
-							+linkTo('leaderboard') Leaderboard
-						li
-							+linkTo('contacts') Contacts
+							+linkTo('contacts') All Contacts
 						li.divider
 						li
 							a(href='/linker')
