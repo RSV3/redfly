@@ -108,13 +108,17 @@ module.exports = (app, route) ->
 						console.dir data
 						return cb null
 					_.extend doc, record
+					if model is models.Contact 
+						if record.added is null
+							doc.set 'added', undefined
+							doc.set 'classified', undefined
 					modified = doc.modifiedPaths()
 					# Important to do updates through the 'save' call so middleware and validators happen.
 					doc.save (err) ->
 						throw err if err
 						cb doc
 						if model is models.Contact 
-							if 'added' in modified then feed doc
+							if 'added' in modified and doc.added then feed doc
 							if 'classified' in modified
 								models.User.update {_id:doc.updatedBy}, $inc: 'contactCount': 1, (err)->
 									if err
