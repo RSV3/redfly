@@ -10,7 +10,7 @@
 		| {{#if othersorts}}
 		.span2
 			+view ('App.SortView class="influence" sortTitle = "how many users know each contact" sortName = "Influence"')
-		.span2
+		.span3
 			+view ('App.SortView class="proximity" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
 		| {{/if}}
 		.span2

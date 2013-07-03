@@ -134,7 +134,7 @@ module.exports = (Ember, App, socket) ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
 				@set 'updated', new Date
-				@set 'updatedBy', App.user.get 'id'
+				@set 'updatedBy', App.User.find App.user.get 'id'
 				App.store.commit()
 
 
