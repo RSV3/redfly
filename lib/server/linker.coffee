@@ -363,6 +363,7 @@ linker = (user, notifications, finalCB) ->
 		countSomeFeed = 9		# only add the first few new items to the feed
 
 		liProcess = (item, contact, cb, counter=-1) ->
+			if item.id is 'private' then return cb()	# don't even bother trying for contacts who block API access
 			getDeets item.id, contact, oauth, (err, deets) ->
 				notifications?.completedContact?()
 				if err or not deets
