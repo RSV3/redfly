@@ -1,4 +1,3 @@
-
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_str = require 'underscore.string'
@@ -7,7 +6,6 @@ module.exports = (Ember, App, socket) ->
 
 	searchPagePageSize = 25
 	sortFieldNames = ['influence', 'proximity', 'names', 'added']
-
 
 	App.ResultsController = Ember.ObjectController.extend
 		hiding: 0			# this is just for templating, whether or not results are filtered out
@@ -186,17 +184,6 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultController = App.ContactController.extend
 		canHide: true
-		lastNote: (->
-			if id=@get('id')
-				App.findOne App.Note, conditions:{contact:id}, options:{sort:'-date'}
-		).property 'notes.lastObject'
-		lastMail: (->
-			if id=@get('id')
-				App.findOne App.Mail, conditions:{recipient:id}, options:{sort:'-date'}
-		).property 'id'
-		sentdate: (->
-			moment(@get('lastMail.sent')).fromNow()
-		).property 'lastMail'
 		knowsSome: []
 		setKS: (->
 			if (f = @get('knows'))
@@ -205,12 +192,14 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ResultView = App.ContactView.extend
+
 		clicktag: (ev)->
 			@get('parentView').controller.tagToggle ev.get('category'), ev.get('body')
-
 		clickname: (ev)->
 			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
 
+		didInsertElement: ()->
+			@get('controller').set 'showitall', false
 		hideItAll: (r)->
 			if (old = @get 'parentView.controller.showWhich')
 				old.set 'showitall', false
@@ -220,9 +209,6 @@ module.exports = (Ember, App, socket) ->
 			@set 'parentView.controller.showWhich', r
 			r.set 'showitall', true
 			that = this
-			#Ember.run.next this, ()->
-			#	Ember.run.next this, ()->
-			#		$('html, body').animate scrollTop:"#{that.$().position().top-31}px"
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'

@@ -1,9 +1,31 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	util = require '../util'
+	moment = require 'moment'
 
 	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
 
+		isKnown: (->
+			u = App.user.get 'id'
+			k = @get('knows')?.getEach 'id'
+			@get('addedBy.id') is u or k and _.contains k, u
+		).property 'addedBy', 'knows.@each.id'
+		iAdded: (->
+			App.user.get('id') is @get('addedBy.id')
+		).property 'addedBy'
+		hasIntro: (->
+			@get('addedBy') and not @get('isKnown')
+		).property 'addedBy', 'isKnown'
+
+		gmailSearch: (->
+				encodeURI "//gmail.com#search/to:#{@get('email')}"
+			).property 'email'
+		directMailto: (->
+				"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
+			).property 'canonicalName', 'email'
+		linkedinMail: (->
+				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+			).property 'linkedin'
 		showEmail: (->
 			a = App.Admin.find 1
 			@get('isKnown') or a and not a.get('hidemails') or @get('forceShowEmail')
@@ -60,17 +82,21 @@ module.exports = (Ember, App, socket) ->
 		###
 		firstHistory: null
 		lastHistory: null
+		lastNote: null
+		sentdate: (->
+			moment(@get('lastMail.sent')).fromNow()
+		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
 				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'date'}
 				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'-date'}
+				@set 'lastNote', App.findOne App.Note, conditions:{contact:id}, options:{sort:'-date'}
 		).observes 'id'
 		spokenTwice: (->
 			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
 		).property 'lastHistory.id', 'firstHistory.id'
 		firstTalked: (->
 			if not sent = @get('firstHistory.sent') then return null
-			moment = require 'moment'
 			moment(sent).fromNow()
 		).property 'firstHistory.sent'
 		lastTalked: (->

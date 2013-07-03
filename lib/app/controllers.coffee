@@ -11,8 +11,6 @@ module.exports = (Ember, App, socket) ->
 		Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 
 
-	require('./controllers/mixins/contact') Ember, App, socket
-
 	require('./controllers/components/connection') Ember, App, socket
 	require('./controllers/components/search') Ember, App, socket
 	require('./controllers/components/tag') Ember, App, socket
