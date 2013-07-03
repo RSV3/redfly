@@ -456,7 +456,7 @@ module.exports = (Ember, App, socket) ->
 				classNames: ['overlay', 'edit-position']
 				field: Ember.TextField.extend
 					insertNewline: ->
-						@.get('parentView').save()
+						@get('parentView').save()
 				toggle: ->
 					if not @toggleProperty('show')
 						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.

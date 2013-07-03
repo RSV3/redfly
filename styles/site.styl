@@ -321,16 +321,18 @@ body
 .filter
 	.searchtag
 		width	66%
-		margin	3px
-		padding	3px 13px 1px 13px
+		margin	15px 3px 3px 3px
+		padding	3px 13px 5px 13px
 		background-color	#def
-		border-radius	13px
+		border-radius	10px
 		i
 			font-weight	normal
 			color	#666
 			float	right
+			margin-top 3px
 		i:hover
 			color	#c66
+
 	.disabled
 		color	#aaa
 		font-style	italic
@@ -522,7 +524,7 @@ body
 					text-align right
 					margin-right 5px
 		.actions
-			margin-bottom horizontalMargin
+			margin-top horizontalMargin
 	.lead
 		margin-bottom 0
 	.tag-category
@@ -539,8 +541,8 @@ body
 		.media-object
 			width 64px
 			height 64px
-	span.dumpcontact
-		margin-left	2em
+	span.contact-actions
+		margin-right 5px
 		a
 			text-decoration	none
 	.merge
@@ -556,6 +558,15 @@ body
 		.search .dropdown-menu
 			max-width 528px
 			margin-top 40px // TO-DO hackily hackface mchackerson
+
+// For _contact partial
+//ul.knows-list
+//	li
+//		margin-left 25px
+.knows-header
+	margin-bottom 0px
+
+
 .contacts
 	.waitingformorecontacts
 		margin-left	44%
@@ -584,6 +595,7 @@ body
 			margin-bottom 0
 		.form-actions
 			margin-top horizontalMargin * 4
+
 .classify
 	.navbar
 		.navbar-inner
@@ -596,6 +608,9 @@ body
 		ul
 			display inline-block
 			margin 0
+		ul.knows-list
+			li
+				margin-left 25px
 		ul.pager
 			.tooltip-inner
 				background-color	#c44
