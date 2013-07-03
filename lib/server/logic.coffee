@@ -74,8 +74,12 @@ classifyList = (u, cb)->
 							msg.recipient.toString() is skip.contact.toString() and models.tmStmp(msg._id) > models.tmStmp(skip._id)
 					neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 
-					if neocons.length < 20 then return cb neocons
-
+					if neocons.length is 20 then return cb neocons
+					if neocons.length < 20	# less than 20? look for added but not classified
+						return models.Contact.find(added:{$exists:true}, addedBy:u, classified:{$exists:false}).select('_id').limit(20-neocons.length).exec (err, unclassified) ->
+							if not err and unclassified.length
+								neocons = _.union unclassified, neocons
+							return cb neocons
 					# but if there's more than 20, let's prioritise those that are brand new
 					models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
 						if not err and unadded.length
@@ -83,7 +87,7 @@ classifyList = (u, cb)->
 							if unadded.length < 20
 								neocons = _.union unadded, neocons
 							else neocons = unadded
-						cb neocons[0...20]
+						return cb neocons[0...20]
 
 
 classifySome = (u, cb)->

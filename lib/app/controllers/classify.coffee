@@ -83,7 +83,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'flushing', false
 
 		skip: ->
-			App.Classify.createRecord user: App.user, contact: @get('thisContact')
+			App.Classify.createRecord
+				contact: @get('thisContact')
+				user: App.User.find App.user.get 'id'
 			App.store.commit()
 			knows = @get('thisContact.knows').filter (u)-> u.get('id') isnt App.user.get('id')
 			@set 'thisContact.knows.content', knows
@@ -91,9 +93,14 @@ module.exports = (Ember, App, socket) ->
 			@_next()
 		ignore: ->
 			App.Exclude.createRecord user: App.user, contact: @get 'thisContact'
-			App.store.commit()
-			knows = @get('thisContact.knows').filter (u)-> u.get('id') isnt App.user.get('id')
+			knows = @get('thisContact').get('knows.content').filter (u)-> u.id isnt App.user.get('id')
 			@set 'thisContact.knows.content', knows
+			ab = @get('thisContact.addedBy') 
+			if ab?.get('id') is App.user.get('id')
+				@set 'thisContact.addedBy', null
+				ab = null
+			if not ab then @set 'thisContact.added', null
+			App.store.commit()
 			@incrementProperty 'classifyCount'
 			@_next()
 		_next: ->

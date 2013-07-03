@@ -3,7 +3,7 @@ module.exports = (Ember, App, socket) ->
 	util = require '../util'
 	moment = require 'moment'
 
-	App.ContactController = Ember.ObjectController.extend App.ContactMixin,
+	App.ContactController = Ember.ObjectController.extend
 
 		isKnown: (->
 			u = App.user.get 'id'
@@ -136,11 +136,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'updated', new Date
 				@set 'updatedBy', App.user.get 'id'
 				App.store.commit()
-		dumpContact: ->
-			@set 'knows.content', @get('knows').filter (u)-> u.get('id') isnt App.user.get('id')
-			App.Exclude.createRecord user: App.user, contact: @get 'content'
-			App.store.commit()
-			@transitionToRoute "userProfile"
 
 
 	App.ContactView = Ember.View.extend
