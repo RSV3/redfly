@@ -113,6 +113,26 @@ dailyRoutines = (doneDailies)->
 			doneDailies();
 
 
+resetEachRank = (cb, users)->
+	if not l = users.length then return cb()
+	user = users.shift()
+	user.dataCount=0
+	user.contactCount=0
+	user.lastRank=l
+	console.log "setting #{user.name} to #{l}"
+	user.save (err)->
+		if err then console.log "Error resetting rank .. #{user._id}"
+		resetEachRank cb, users
+
+
+maybeResetRank = (doit, userlistcopy, cb)->
+	if not doit then return cb()
+	if process.env.RANK_DAY isnt moment().format('dddd') then return cb()
+	if not l = userlistcopy.length then return cb()
+	console.dir "resetting rank on #{l} users"
+	resetEachRank cb, _.sortBy userlistcopy, (u)->
+		((u.contactCount or 0) + (u.dataCount or 0))*l + l - (u.lastRank or 0)
+
 
 # work begins here:
 console.log "starting nudge with flag: #{process.argv[3]}"
@@ -128,23 +148,25 @@ dailyRoutines ()->
 	models.User.find (err, users) ->
 		throw err if err
 
-		console.log "nudge: auto saving old queue items"
-		eachDoc users.slice(), eachSave, ()->
+		maybeResetRank not succinct_manual, users.slice(), ->
 
-			if only_daily
-				console.log "nudge: just manually ran the daily routines."
-				return services.close()
-			if not succinct_manual 
-				console.log "not running manual nudge."
-				if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
-					console.log "Today = #{moment().format('dddd')} isnt in the list :"
-					console.dir process.env.NUDGE_DAYS.split(' ')
-					return services.close()
+			console.log "nudge: auto saving old queue items"
+			eachDoc users.slice(), eachSave, ()->
 
-			console.log "nudge: scanning linkedin"
-			eachDoc users.slice(), eachLink, ()->
-				console.log "nudge: parsing emails"
-				eachDoc users, eachParse, ()->
+				if only_daily
+					console.log "nudge: just manually ran the daily routines."
 					return services.close()
-				, succinct_manual
+				if not succinct_manual 
+					console.log "not running manual nudge."
+					if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
+						console.log "Today = #{moment().format('dddd')} isnt in the list :"
+						console.dir process.env.NUDGE_DAYS.split(' ')
+						return services.close()
+
+				console.log "nudge: scanning linkedin"
+				eachDoc users.slice(), eachLink, ()->
+					console.log "nudge: parsing emails"
+					eachDoc users, eachParse, ()->
+						return services.close()
+					, succinct_manual
 
