@@ -81,6 +81,7 @@ module.exports = (app, route) ->
 					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
 				model.create record, (err, doc) ->
 					throw err if err
+					cb doc
 					if model is models.Note and doc.contact
 						models.User.update {_id:doc.author}, $inc: 'dataCount': 1, (err)->
 							if err
@@ -96,7 +97,6 @@ module.exports = (app, route) ->
 						feed doc
 					else if model is models.Contact and doc.addedBy
 						feed doc
-					cb doc
 
 			when 'save'
 				record = data.record
@@ -112,6 +112,7 @@ module.exports = (app, route) ->
 					# Important to do updates through the 'save' call so middleware and validators happen.
 					doc.save (err) ->
 						throw err if err
+						cb doc
 						if model is models.Contact 
 							if 'added' in modified then feed doc
 							if 'classified' in modified
@@ -124,7 +125,6 @@ module.exports = (app, route) ->
 									if err
 										console.log "error incrementing data count for #{session.user}"
 										console.dir err
-						cb doc
 
 			when 'remove'
 				if id = data.id

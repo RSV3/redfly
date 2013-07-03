@@ -100,7 +100,7 @@ module.exports = (Ember, App, socket) ->
 					contact: @get 'content'
 					body: note
 				@set 'updated', new Date
-				@set 'updatedBy', App.user.get 'id'
+				@set 'updatedBy', App.User.find App.user.get 'id'
 				App.store.commit()
 				@set 'animate', true
 				@set 'currentNote', null
