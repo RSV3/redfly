@@ -53,12 +53,12 @@
 						div
 							i
 								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-						| {{#if lastMail}}
+						| {{#if lastHistory}}
 						.row-fluid
 							p
 								b Last mail:&nbsp;
 								span
-									+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
+									+linkTo('profile lastHistory.sender') {{lastHistory.sender.canonicalName}}
 								span
 									&nbsp; {{sentdate}}
 						| {{/if}}
