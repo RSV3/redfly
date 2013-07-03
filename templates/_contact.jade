@@ -5,7 +5,7 @@
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
 
-		| {{#if isKnown}}
+		| {{#if view.parentView.classifying}}
 		.row-fluid.actions
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')

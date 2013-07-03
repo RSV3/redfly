@@ -107,3 +107,4 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['classify']
 		didInsertElement: ->
 			@set 'controller.$', @$()
+		classifying:true
