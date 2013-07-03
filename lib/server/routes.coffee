@@ -216,21 +216,38 @@ module.exports = (app, route) ->
 
 
 
+	# this helper goes through a list of tag aggregate candidates,
+	# picking the first five which have one valid contact in its list
+	# candidates: from loadSomeTagNames. _id is the body, contacts is the array of contact IDs
+	_considerHash = {}
+	considerTags = (candidates, cb, goodtags=[])->
+		if not candidates?.length then return cb goodtags
+		if goodtags.length is 5 then return cb goodtags
+		if tag = candidates.shift()
+			if _considerHash[tag._id]
+				goodtags.push tag._id
+				return considerTags candidates, cb, goodtags
+			models.Contact.count {added:{$exists:true}, _id:{$in:tag.contacts}}, (e, c)->
+				if (not e) and c
+					_considerHash[tag._id]=true
+					goodtags.push tag._id
+				return considerTags candidates, cb, goodtags
+
 	# helper, used when building filters: get most common tags matching conditions
-	loadSomeTagNames = (ids, conditions, cb)->
-		conditions = category:conditions
+	loadSomeTagNames = (ids, cat, cb)->
+		conditions = category:cat
 		if ids?.length
 			oIDs = []
 			for id in ids
 				oIDs.push models.ObjectId(id)
 			conditions.contact = $in: oIDs
 		models.Tag.aggregate {$match: conditions},
-			{$group:  _id: '$body', count: {$sum: 1}},
+			{$group:  _id: '$body', count: {$sum: 1}, contacts:$addToSet:'$contact'},
 			{$sort: count: -1},
-			{$limit: 5},
 			(err, tags) ->
 				throw err if err
-				cb _.pluck(tags, '_id')[0..5]
+				if ids?.length then return cb _.pluck(tags, '_id')[0..5]
+				considerTags tags, cb
 
 
 	# adds filter lists on results object before returning first page
