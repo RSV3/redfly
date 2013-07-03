@@ -786,9 +786,11 @@ module.exports = (app, route) ->
 			fn recent
 
 	route 'leaderboard', (fn)->
-		models.User.find().select('_id contactCount dataCount').exec (err, users)->
+		models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
-			users = _.map _.sortBy(users, (u) -> (u.contactCount or 0) + (u.dataCount or 0)), (u)-> String(u.get('_id'))
 			l = users.length
-			fn l, users[l-5...l].reverse(), users[0...5]
+			users = _.map _.sortBy(users, (u) ->
+				((u.contactCount or 0) + (u.dataCount or 0))*l + l - (u.lastRank or 0)
+			), (u)-> String(u.get('_id'))
+			fn l, users[l-5...l].reverse(), users[0...5].reverse()
 
