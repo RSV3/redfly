@@ -78,7 +78,7 @@ classifyList = (u, cb)->
 					if neocons.length < 20	# less than 20? look for added but not classified
 						return models.Contact.find(added:{$exists:true}, addedBy:u, classified:{$exists:false}).select('_id').limit(20-neocons.length).exec (err, unclassified) ->
 							if not err and unclassified.length
-								neocons = _.union neocons, _.map unclassifieid, (c)->c._id.toString()
+								neocons = _.union neocons, _.map unclassified, (c)->c._id.toString()
 							return cb neocons
 					# but if there's more than 20, let's prioritise those that are brand new
 					models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
