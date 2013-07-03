@@ -15,7 +15,7 @@
 		div New contacts found: {{view.totalQueued}}
 		| {{/if}}
 		| {{#if view.stateDone}}
-		| All done! <a href="#" {{action classify target="view"}}>Start classifying</a>, dude.
+		| All done! <a href="/linker">Sync LinkedIn</a> to enrich your contacts and <a href="#" {{action classify target="view"}}>start classifying</a>!
 		| {{/if}}
 
 .modal.fade.hide(tabindex='-1', role='dialog')
