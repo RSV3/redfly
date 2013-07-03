@@ -216,7 +216,9 @@ module.exports = (Ember, App, socket) ->
 				# If we get here because of the newlinebinding on the undefined textobject,
 				# the context will be the embertextview - so step up one level.
 				that = @
-				if that.get('parentView')._makeProxyArray
+				if that.get('parentView.parentView')?._makeProxyArray
+					that = that.get('parentView.parentView')	# ugly context test.
+				else if that.get('parentView')?._makeProxyArray
 					that = that.get('parentView')	# ugly context test.
 				that.set 'working', true
 
