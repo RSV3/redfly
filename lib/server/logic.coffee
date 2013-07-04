@@ -8,7 +8,7 @@ lastMonth = moment().subtract('months', 1)
 
 
 recentConts = (cb)->
-	models.Contact.find({added:{$exists:true},picture:{$exists:true}}).sort(added:-1).limit(12).execFind (err, contacts)->
+	models.Contact.find({added:{$exists:true}}).sort(added:-1).limit(12).execFind (err, contacts)->
 		if err then return cb err, contacts
 		rcs = []
 		_.each contacts, (contact)->
@@ -24,7 +24,7 @@ recentConts = (cb)->
 				name = _.first(splitted) + ' [' + domain + ']'
 			rcs.push
 				name: name
-				picture: contact.picture
+				picture: contact.picture or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
 				position: pos
 				link: '/contact/'+contact._id
 		cb null, rcs
