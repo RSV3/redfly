@@ -15,6 +15,7 @@ REescape = (str) ->
 
 # make a case-insensitive regexp from a string
 REImake = (str) ->
+	if not str?.replace then return null
 	return new RegExp('^' + REescape(str) + '$', 'i')
 
 
@@ -101,7 +102,7 @@ findAndUpdateOtherLinkedInDataFor = (u, c, calldone) ->
 	else
 		rNames = []
 		for n in c.names		# try to match the linkedin name to any of the contact's names
-			rNames.push(REImake n)
+			if rn = REImake(n) then rNames.push rn
 		models.LinkedIn.findOne {contact:null, 'name.formattedName': $in: rNames}, (err, l) ->	# for each unmatched linkedin in the system
 			if not err and l
 				copyLI2contact u, c, l
