@@ -84,7 +84,7 @@ module.exports = (Ember, App, socket) ->
 		lastHistory: null
 		lastNote: null
 		sentdate: (->
-			moment(@get('lastMail.sent')).fromNow()
+			moment(@get('lastHistory.sent')).fromNow()
 		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
