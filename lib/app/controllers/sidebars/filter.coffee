@@ -4,6 +4,12 @@ module.exports = (Ember, App, socket) ->
 	App.FilterView = Ember.View.extend
 		template: require '../../../../templates/sidebars/filter'
 		classNames: ['filter']
+		newtag: (c)->
+			console.dir c
+		newTag: (e) ->
+			cat = if $(e.target).hasClass("industry") then 'industry' else 'org'
+			@get('controller').tagToggle cat, $(e.target).val()
+			$(e.target).val('')
 
 	App.FilterToggleView = Ember.View.extend
 		tagName: 'i'

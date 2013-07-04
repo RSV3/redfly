@@ -12,6 +12,7 @@ module.exports = (Ember, App, socket) ->
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending
 
+
 		f_knows: []
 		f_industry: []
 		f_organisation: []
@@ -83,7 +84,9 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				socket.emit 'fullSearch', emission, (results) =>
-					@set 'all', App.store.findMany(App.Contact, results.response)
+					if results?.response?.length
+						@set 'all', App.store.findMany(App.Contact, results.response)
+					else @set 'all', null
 
 		nextPage: ->
 			p = @get('page')+1
@@ -93,7 +96,9 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				socket.emit 'fullSearch', emission, (results) =>
-					@set 'all', App.store.findMany(App.Contact, results.response)
+					if results?.response?.length
+						@set 'all', App.store.findMany(App.Contact, results.response)
+					else @set 'all', null
 
 		filterAgain:(->
 			if not @get('all') or not @get('totalCount') then return
@@ -103,7 +108,9 @@ module.exports = (Ember, App, socket) ->
 				@set 'all', []
 				@set 'page', 0
 				socket.emit 'fullSearch', emission, (results) =>
-					@set 'all', App.store.findMany(App.Contact, results.response)
+					if results?.response?.length
+						@set 'all', App.store.findMany(App.Contact, results.response)
+					else @set 'all', null
 					@set 'filteredCount', results?.filteredCount
 		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
@@ -113,7 +120,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'all', []
 			@set 'page', 0
 			socket.emit 'fullSearch', emission, (results) =>
-				@set 'all', App.store.findMany(App.Contact, results.response)
+				if results?.response?.length
+					@set 'all', App.store.findMany(App.Contact, results.response)
+				else @set 'all', null
 				#).observes 'sortDir', 'sortType'
 
 		query:null				# query string
@@ -181,6 +190,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
+
 
 	App.ResultController = App.ContactController.extend
 		canHide: true
