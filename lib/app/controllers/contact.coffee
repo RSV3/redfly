@@ -28,7 +28,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'linkedin'
 		showEmail: (->
 			a = App.Admin.find 1
-			@get('isKnown') or a and not a.get('hidemails') or @get('forceShowEmail')
+			@get('isKnown') or a and a.get('hidemails') is false or @get('forceShowEmail')
 		).property 'id'
 		allMeasures: (->
 			if (id=@get('id'))
