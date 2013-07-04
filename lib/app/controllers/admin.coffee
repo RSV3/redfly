@@ -14,10 +14,10 @@ module.exports = (Ember, App, socket) ->
 			@get 'flushsave'
 		).property 'flushsave'
 		hidemailschk: (->
-			@get 'hidemails'
+			@get('hidemails') isnt false		# default (init) to true
 		).property 'hidemails'
 		userstoochk: (->
-			@get 'userstoo'
+			@get('userstoo') is true			# default (init) to false
 		).property 'userstoo'
 		domainlist: (->
 			@get('domains')?.join '\n'
@@ -32,11 +32,10 @@ module.exports = (Ember, App, socket) ->
 			@get('blacklistemails')?.join '\n'
 		).property 'blacklistemails'
 		onChk: (->
-			if _.isBoolean(@get 'flushsavechk') and not _.isUndefined @get 'flushsave'
-				@set 'flushsave', @get 'flushsavechk'
-				@set 'userstoo', @get 'userstoochk'
-				@set 'hidemails', @get 'hidemailschk'
-				App.store.commit()
+			@set 'flushsave', @get 'flushsavechk'
+			@set 'userstoo', @get 'userstoochk'
+			@set 'hidemails', @get 'hidemailschk'
+			App.store.commit()
 		).observes 'hidemailschk', 'userstoochk', 'flushsavechk'
 		_onTextArea: (->
 			if @get('domainlist')?.length
