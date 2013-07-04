@@ -125,17 +125,17 @@ module.exports = (Ember, App, socket) ->
 					author: App.User.find App.user.get 'id'
 					contact: @get 'content'
 					body: note
-				@set 'updated', new Date
-				@set 'updatedBy', App.User.find App.user.get 'id'
-				App.store.commit()
+				@commitNcount()
 				@set 'animate', true
 				@set 'currentNote', null
 		toggleVIP: ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
-				@set 'updated', new Date
-				@set 'updatedBy', App.user.get 'id'
-				App.store.commit()
+				@commitNcount()
+		commitNcount: ->
+			@set 'updated', new Date
+			@set 'updatedBy', App.User.find App.user.get 'id'
+			App.store.commit()
 
 
 	App.ContactView = Ember.View.extend
@@ -257,10 +257,7 @@ module.exports = (Ember, App, socket) ->
 					that.set 'duplicate', duplicate
 
 					if (not nothing) and (not duplicate)
-						that.set "controller.#{that.get('allAttribute')}", all
-						that.set 'controller.updated', new Date
-						that.set 'controller.updatedBy', App.user.get 'id'
-						App.store.commit()
+						that.get("controller").commitNcount()
 						that.toggle()
 					that.set 'working', false
 

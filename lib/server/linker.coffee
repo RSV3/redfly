@@ -295,7 +295,7 @@ matchInsensitiveContact = (name, cb) ->
 			cb contacts
 		else
 	###
-	rName = REImake name
+	if not rName = REImake(name) then return cb null
 	models.Contact.find names: rName, (err, contacts) ->
 		throw err if err
 		cb contacts
