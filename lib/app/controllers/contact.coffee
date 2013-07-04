@@ -137,7 +137,6 @@ module.exports = (Ember, App, socket) ->
 			@set 'updatedBy', App.User.find App.user.get 'id'
 			App.store.commit()
 
-
 	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']

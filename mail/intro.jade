@@ -1,17 +1,15 @@
 extends layout
 
 block email_header 
-  strong Request for Introduction 
+	p Request for Introduction 
 
 block content
 
 	p Would you kindly give me an intro to #{name}?
 	br
-	p This fella right here: 
+	p This fella right here:
 	p #{encodeURI(url)}
 	br
 	br
 	p Your servant,
 	p #{fromnick}
-
-
