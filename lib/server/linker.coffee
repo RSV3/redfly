@@ -31,20 +31,27 @@ syncForEach = (list, iterator, final_cb) ->
 getLinked = (partial, options, oa, cb) ->
 	url = 'http://api.linkedin.com/v1/people' + partial + '?format=json'
 	if options and options.length then url = "#{url}&#{options}"
-	request.get
-		url: url
-		oauth: oa
-		json: true
-	, (error, response, body) ->
-		if not error and response.statusCode is 200
-			cb null, body
-		else
-			error =
-				message: response.body.message
-				statusCode: response.statusCode
-			console.log "LINKEDIN debug: #{url}"
-			console.dir error
-			cb error, null
+	try
+		request.get
+			url: url
+			oauth: oa
+			json: true
+		, (error, response, body) ->
+			if not error and response.statusCode is 200
+				cb null, body
+			else
+				error =
+					message: response.body.message
+					statusCode: response.statusCode
+				console.log "LINKEDIN debug: #{url}"
+				console.dir error
+				cb error, null
+	catch error
+		console.log "ERROR getting LINKEDIN #{partial}"
+		console.dir oa
+		console.dir error
+		cb error, null
+
 
 
 #

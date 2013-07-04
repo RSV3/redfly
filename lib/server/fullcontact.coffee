@@ -7,13 +7,19 @@ FCAPI_person = (options, cb) ->
 	opts = apiKey: process.env.FULLCONTACT_API_KEY
 	if options then for key of options
 		opts[key] = options[key]
-	request {
-		url: 'https://api.fullcontact.com/v2/person.json'
-		qs: opts
-	}, (e,r,b)->
-		if b && (JSON.parse(b).status is 202)
-			setTimeout (()-> FCAPI_person opts, cb), 300000
-		else cb JSON.parse b
+	try
+		request {
+			url: 'https://api.fullcontact.com/v2/person.json'
+			qs: opts
+		}, (e,r,b)->
+			if b && (JSON.parse(b).status is 202)
+				setTimeout (()-> FCAPI_person opts, cb), 300000
+			else cb JSON.parse b
+	catch err
+		console.log "ERROR doing FC query on:"
+		console.dir opts
+		console.dir err
+		cb()
 
 
 #
