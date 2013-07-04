@@ -25,6 +25,7 @@ div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{view Ember.TextField class="newtag org" changeBinding="view.newTag" placeholder="new organisation tag"}}
 {{/if}}
 
 {{#if indTagsToSelect.length}}
@@ -39,6 +40,7 @@ div(bindAttr='class=":filters :toggleind theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{view Ember.TextField class="newtag industry" changeBinding="view.newTag" placeholder="new industry tag"}}
 {{/if}}
 
 {{#if noseToPick.length}}
