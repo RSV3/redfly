@@ -124,7 +124,7 @@ module.exports = (app, route) ->
 									if err
 										console.log "error incrementing data count for #{doc.updatedBy}"
 										console.dir err
-							else if 'updatedBy' in modified
+							else if 'updated' in modified
 								models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
 									if err
 										console.log "error incrementing data count for #{session.user}"
