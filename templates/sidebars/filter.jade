@@ -18,6 +18,9 @@ h4
 	| {{App.orgTitle}} Tags
 	{{view App.FilterToggleView id="toggleorg" class="icon-caret-down"}}
 div(bindAttr='class=":filters :toggleorg theResults::disabled"')
+	.opradbutts
+		{{view Em.RadioButton title="OR" option="0" group="org"}}
+		{{view Em.RadioButton title="AND" option="1" group="org"}}
 	{{#each item in orgTagsToSelect}}
 	.checkfilter
 		|<label>
@@ -33,6 +36,9 @@ h4
 	| Industry Tags
 	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
 div(bindAttr='class=":filters :toggleind theResults::disabled"')
+	.opradbutts
+		{{view Em.RadioButton title="OR" option="0" group="industry"}}
+		{{view Em.RadioButton title="AND" option="1" group="industry"}}
 	{{#each item in indTagsToSelect}}
 	.checkfilter
 		|<label>

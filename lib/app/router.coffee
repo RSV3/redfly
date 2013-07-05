@@ -169,6 +169,8 @@ module.exports = (Ember, App, socket) ->
 					controller.set 'page', 0
 					controller.set 'sortDir', 0
 					controller.set 'sortType', null
+					controller.set 'orgOp', 0
+					controller.set 'industryOp', 0
 					controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
