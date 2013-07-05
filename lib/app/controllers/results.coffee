@@ -29,18 +29,18 @@ module.exports = (Ember, App, socket) ->
 		).property 'totalCount'
 
 		orgTagsToSelect: (->
-			tags = @get 'f_organisation'
 			toptags = []
-			for t in tags
-				toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
+			if tags = @get 'f_organisation'
+				for t in tags
+					toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
 			toptags
 		).property 'f_organisation'
 
 		indTagsToSelect: (->
-			tags = @get 'f_industry'
 			toptags = []
-			for t in tags
-				toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
+			if tags = @get 'f_industry'
+				for t in tags
+					toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
 			toptags
 		).property 'f_industry'
 
@@ -55,6 +55,7 @@ module.exports = (Ember, App, socket) ->
 
 		known: (->
 			ids = @get('f_knows')
+			if not ids?.length then return null
 			App.User.find {_id:$in:ids}
 			App.User.filter (data) =>
 				_.contains ids, data.get('id')
@@ -116,7 +117,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'filteredCount', results?.filteredCount
 
 		filterAgain:(->
-			if @get('all') and @get('totalCount') then @runFilter()
+			if @get('noseToPick')?.length and @get('indTagsToSelect')?.length and @get('orgTagsToSelect')?.length then @runFilter()
 		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
 		maybeRun: (prefix)->
