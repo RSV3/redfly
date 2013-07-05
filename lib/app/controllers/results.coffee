@@ -12,6 +12,8 @@ module.exports = (Ember, App, socket) ->
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending
 
+		industryOp: 0	# boolean operation : or = 0, and = 1
+		orgOp: 0
 
 		f_knows: []
 		f_industry: []
@@ -74,6 +76,8 @@ module.exports = (Ember, App, socket) ->
 			if (d = @get 'sortDir')
 				if d < 0 then emission.sort = "-#{@get('sortType')}"
 				else emission.sort = @get('sortType')
+			if @get('industryOp') then emission.industryAND=true
+			if @get('orgOp') then emission.orgAND=true
 			emission
 
 		previousPage: ->
@@ -100,9 +104,7 @@ module.exports = (Ember, App, socket) ->
 						@set 'all', App.store.findMany(App.Contact, results.response)
 					else @set 'all', null
 
-		filterAgain:(->
-			if not @get('all') or not @get('totalCount') then return
-
+		runFilter: ->
 			emission = @buildFilter()
 			if emission.knows?.length or emission.industry?.length or emission.organisation?.length or @get('totalCount') isnt @get('filteredCount')
 				@set 'all', []
@@ -112,7 +114,23 @@ module.exports = (Ember, App, socket) ->
 						@set 'all', App.store.findMany(App.Contact, results.response)
 					else @set 'all', null
 					@set 'filteredCount', results?.filteredCount
+
+		filterAgain:(->
+			if @get('all') and @get('totalCount') then @runFilter()
 		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
+
+		maybeRun: (prefix)->
+			tags = _.filter @get("#{prefix}TagsToSelect"), (item)-> item and item.checked
+			if tags?.length > 1
+				if @get('all') and @get('totalCount') then @runFilter()
+
+		refilterIfIndustryOpsMatter: (->
+			@maybeRun 'ind'
+		).observes 'industryOp'
+
+		refilterIfOrgOpsMatter: (->
+			@maybeRun 'org'
+		).observes 'orgOp'
 
 		sortAgain: ->
 			if not @get('all') or not @get('totalCount') then return
