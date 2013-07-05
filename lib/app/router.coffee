@@ -157,6 +157,14 @@ module.exports = (Ember, App, socket) ->
 		setupController: (controller, model) ->
 			this._super controller, model
 			controller.set 'all', null
+			controller.set 'f_knows', null
+			controller.set 'f_industry', null
+			controller.set 'f_organisation', null
+			controller.set 'page', 0
+			controller.set 'sortDir', 0
+			controller.set 'industryOp', 0
+			controller.set 'orgOp', 0
+			controller.set 'sortType', null
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
@@ -166,11 +174,6 @@ module.exports = (Ember, App, socket) ->
 						controller.set key, results[key]
 					if results.query?.length and results.query isnt recent_query_string
 						controller.set 'searchtag', results.query
-					controller.set 'page', 0
-					controller.set 'sortDir', 0
-					controller.set 'sortType', null
-					controller.set 'orgOp', 0
-					controller.set 'industryOp', 0
 					controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'

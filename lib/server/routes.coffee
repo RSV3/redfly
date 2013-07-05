@@ -296,15 +296,23 @@ module.exports = (app, route) ->
 				if not err then results.response = _.intersection results.response, contactids
 				filterSearch session, data, results, fn, page
 		if data.industry?.length
-			query = {contact:{$in:results.response}, category:'industry', body:{$in:data.industry}}
-			delete data.industry
+			query = contact:{$in:results.response}, category:'industry'
+			if data.industryAND
+				query.body = data.industry.shift()
+			else 
+				query.body = $in:data.industry
+				delete data.industry
 			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
 				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
 				if not err then results.response = _.intersection results.response, tagcontacts
 				filterSearch session, data, results, fn, page
 		if data.organisation?.length
-			query = {contact:{$in:results.response}, category:{$ne:'industry'}, body:{$in:data.organisation}}
-			delete data.organisation
+			query = contact:{$in:results.response}, category:{$ne:'industry'}
+			if data.orgAND
+				query.body = data.organisation.shift()
+			else
+				query.body = $in:data.organisation
+				delete data.organisation
 			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
 				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
 				if not err then results.response = _.intersection results.response, tagcontacts
@@ -435,18 +443,28 @@ module.exports = (app, route) ->
 							if data.knows?.length
 								_.extend conditions, knows:$in:data.knows
 								delete data.knows
-							else if data.industry?.length
+							else if data.industry?.length and not data.industryAND
 								conditions = category:'industry'
 								conditions.body = $in:data.industry
 								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.industry
-							else if data.organisation?.length
+							else if data.organisation?.length and not data.orgAND
 								conditions = category:$ne:'industry'
 								conditions.body = $in:data.organisation
 								conditions.contact = $exists:true
 								model = 'Tag'
 								delete data.organisation
+							else if data.industry?.length # AND flag, so just get first one
+								conditions = category:'industry'
+								conditions.body = data.industry.shift()
+								conditions.contact = $exists:true
+								model = 'Tag'
+							else if data.organisation?.length # AND flag, so just get first one
+								conditions = category:$ne:'industry'
+								conditions.body = data.organisation.shift()
+								conditions.contact = $exists:true
+								model = 'Tag'
 							else hazFilter = false
 							if model is 'Contact'
 								dir = -1
