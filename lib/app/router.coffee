@@ -156,22 +156,19 @@ module.exports = (Ember, App, socket) ->
 			{ text: qt }
 		setupController: (controller, model) ->
 			this._super controller, model
-			controller.set 'all', null
-			controller.set 'f_knows', null
-			controller.set 'f_industry', null
-			controller.set 'f_organisation', null
-			controller.set 'page', 0
-			controller.set 'sortDir', 0
-			controller.set 'industryOp', 0
-			controller.set 'orgOp', 0
-			controller.set 'sortType', null
+			for nullit in ['all', 'f_knows', 'f_industry', 'f_organisation', 'sortType']
+				controller.set nullit, null
+			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
+				controller.set zeroit, 0
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
 						if model.text isnt recent_query_string then return @transitionTo 'recent'
 						else return @transitionTo 'userProfile'
 					for own key, val of results
-						controller.set key, results[key]
+						if key isnt 'response'
+							console.log "in router Setting #{key}"
+							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string
 						controller.set 'searchtag', results.query
 					controller.set 'all', App.store.findMany(App.Contact, results.response)
