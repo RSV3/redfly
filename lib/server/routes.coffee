@@ -7,7 +7,7 @@ module.exports = (app, route) ->
 	mailer = require './mail'
 	mboxer = require './mboxer'
 
-	searchPagePageSize = 25
+	searchPagePageSize = 10
 
 	route 'db', (data, io, session, fn)->
 		feed = (doc) ->
@@ -258,28 +258,26 @@ module.exports = (app, route) ->
 	#
 	# results ;		results object (so far) including query, response and total
 	# fn ;			callback function to send the data back to the client
-	# termCount ;	if this flag is false, the filters are built from the entire collection
-	# 				if this flag is non-zero, the filters are built against the subset of results
-	buildFilters = (results, fn, termCount, step=0)->
+	buildFilters = (results, fn, step=0)->
+		ids = results.response or null
 		switch step
 			when 0
 				query = added:$exists:true
-				if termCount then query._id = $in:results.response
+				if ids then query._id = $in:ids
 				else query.knows = $not:$size:1
 				models.Contact.find(query).select('knows').exec (err, contacts)->
 					knows = _.countBy _.flatten(_.pluck contacts, 'knows'), (k)->k
 					results.f_knows = _.sortBy(_.keys(knows), (k)->-knows[k])[0..5]
-					buildFilters results, fn, termCount, 1
+					buildFilters results, fn, 1
 			when 1
-				ids = if termCount then results.response else null
 				loadSomeTagNames ids, 'industry', (tags)->
 					results.f_industry = tags
-					buildFilters results, fn, termCount, 2
+					buildFilters results, fn, 2
 			when 2
-				ids = if termCount then results.response else null
 				loadSomeTagNames ids, $not: $in: [ 'industry', 'organisation' ], (tags)->
 					results.f_organisation = tags
-					results.response = results.response[0..searchPagePageSize]			# ... first page
+					if results.response
+						results.response = results.response[0..searchPagePageSize]		# ... first page
 					fn results
 		
 
@@ -506,12 +504,14 @@ module.exports = (app, route) ->
 						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
 						if not terms?.length then return models.Contact.count {added:$exists:true}, (e, c)->
 							resultsObj.totalCount = resultsObj.filteredCount = c
-							if not data.filter then buildFilters resultsObj, fn, terms?.length
+							if not data.filter
+								resultsObj.response = resultsObj.response[0..searchPagePageSize]
+								fn resultsObj	# ... first page
 							else if limit then fn resultsObj
 							else filterSearch session, data, resultsObj, fn
 						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response.length
 						if data.filter then return filterSearch session, data, resultsObj, fn
-						else return buildFilters resultsObj, fn, terms?.length
+						else return buildFilters resultsObj, fn
 					else
 						for type of results
 							if not results[type].length then delete results[type]
@@ -598,6 +598,9 @@ module.exports = (app, route) ->
 			cb results
 		, 10
 
+
+	route 'recentFilters', (data, fn) ->
+		buildFilters {}, fn		# an empty object means we find filters for the whole set
 
 	route 'verifyUniqueness', (data, fn) ->
 		field = data.field + 's'

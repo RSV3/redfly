@@ -4,7 +4,7 @@ module.exports = (Ember, App, socket) ->
 	_.mixin(_str.exports());
 	moment = require 'moment'
 
-	searchPagePageSize = 25
+	searchPagePageSize = 10
 	sortFieldNames = ['influence', 'proximity', 'names', 'added']
 
 	App.ResultsController = Ember.ObjectController.extend
@@ -46,10 +46,10 @@ module.exports = (Ember, App, socket) ->
 
 		noseToPick: (->
 			topnose = []
-			gno = @get('known')
-			if gno?.get('length') is @get('f_knows.length')
-				gno.forEach (n)->
-					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
+			if gno = @get('known')
+				if gno?.get('length') is @get('f_knows.length')
+					gno.forEach (n)->
+						topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
 			topnose
 		).property 'known.@each.isLoaded'
 
@@ -170,8 +170,16 @@ module.exports = (Ember, App, socket) ->
 		).property 'hasPrevious', 'hasNext'
 		theResults: (->		# paginated content
 			a = @get 'all'
-			if not a?.get('length') then null
-			else a
+			if not a?.get('length') then return null
+			Ember.run.next =>
+				if not f = @get('f_knows')?.length
+					socket.emit 'recentFilters', (filters) =>
+						for own key, val of filters
+							@set key, val
+						for zeroit in ['industryOp', 'orgOp']
+							@set zeroit, 0
+						null
+			a
 		).property 'all'
 
 		scrollUp: (->

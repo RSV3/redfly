@@ -13,6 +13,16 @@ h3
 		i.icon-remove
 {{/if}}
 
+{{#unless orgTagsToSelect.length}}
+{{#unless indTagsToSelect.length}}
+{{#unless noseToPick.length}}
+br
+p
+	i.icon-spinner.icon-spin
+{{/unless}}
+{{/unless}}
+{{/unless}}
+
 {{#if orgTagsToSelect.length}}
 h4
 	| {{App.orgTitle}} Tags
