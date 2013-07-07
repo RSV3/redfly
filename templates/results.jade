@@ -18,7 +18,10 @@
 
 	+unless ('theResults')
 		.loading
-			i.icon-spinner.icon-spin
+			+unless ('empty')
+				i.icon-spinner.icon-spin
+			+if ('empty')
+				span.empty	No results match filter
 	+if ('theResults')
 		| {{#if paging}}
 		.row-fluid

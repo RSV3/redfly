@@ -62,6 +62,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'f_knows'
 
 		all: []				# every last search result
+		empty: false		# flag for empty results message
 		initialflag: 0		# dont scroll on initial load
 
 		buildFilter: ->
@@ -88,10 +89,11 @@ module.exports = (Ember, App, socket) ->
 				@set 'page', p
 				emission = @buildFilter()
 				emission.page = p
+				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', App.store.findMany(App.Contact, results.response)
-					else @set 'all', null
+					else @set 'empty', true
 
 		nextPage: ->
 			p = @get('page')+1
@@ -100,20 +102,22 @@ module.exports = (Ember, App, socket) ->
 				@set 'page', p
 				emission = @buildFilter()
 				emission.page = p
+				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', App.store.findMany(App.Contact, results.response)
-					else @set 'all', null
+					else @set 'empty', true
 
 		runFilter: ->
 			emission = @buildFilter()
 			if emission.knows?.length or emission.industry?.length or emission.organisation?.length or @get('totalCount') isnt @get('filteredCount')
 				@set 'all', []
 				@set 'page', 0
+				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', App.store.findMany(App.Contact, results.response)
-					else @set 'all', null
+					else @set 'empty', true
 					@set 'filteredCount', results?.filteredCount
 
 		filterAgain:(->
@@ -138,10 +142,11 @@ module.exports = (Ember, App, socket) ->
 			emission = @buildFilter()
 			@set 'all', []
 			@set 'page', 0
+			@set 'empty', false
 			socket.emit 'fullSearch', emission, (results) =>
 				if results?.response?.length
 					@set 'all', App.store.findMany(App.Contact, results.response)
-				else @set 'all', null
+				else @set 'empty', true
 				#).observes 'sortDir', 'sortType'
 
 		query:null				# query string

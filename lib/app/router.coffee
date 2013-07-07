@@ -160,6 +160,7 @@ module.exports = (Ember, App, socket) ->
 				controller.set nullit, null
 			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
 				controller.set zeroit, 0
+			controller.set 'empty', false
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
