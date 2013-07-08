@@ -2,17 +2,20 @@
 	div(bindAttr='class=":row-fluid theResults::disabled"')
 		.span2
 			h4.sort-by SORT BY
-		| {{#unless othersorts}}
-		.span2
-		| {{/unless}}
 		.span2
 			+view ('App.SortView class="names" sortTitle = "sort name alphabetically" sortName = "Alphabetical"')
-		| {{#if othersorts}}
 		.span2
+			{{#if othersorts}}
 			+view ('App.SortView class="influence" sortTitle = "how many users know each contact" sortName = "Influence"')
+			{{else}}
+			+view ('App.SortView dontclick=true class="influence" sortName = "Influence"')
+			{{/if}}
 		.span3
+			{{#if othersorts}}
 			+view ('App.SortView class="proximity" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
-		| {{/if}}
+			{{else}}
+			+view ('App.SortView dontclick=true class="proximity" sortName = "Relationship Strength"')
+			{{/if}}
 		.span2
 			+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')
 

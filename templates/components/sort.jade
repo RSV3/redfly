@@ -1,4 +1,6 @@
+{{#unless view.dontclick}}
 | <a href="#" class="{{view.class}}" {{action sorttoggle title="{{view.sortTitle}}" target="view"}}>
+{{/unless}}
 span {{view.sortName}}
 {{#if view.up}}
 i.icon-caret-up.icon-large
@@ -9,4 +11,6 @@ i.icon-caret-down.icon-large
 i.icon-caret-up
 {{/if}}
 {{/if}}
+{{#unless view.dontclick}}
 | </a>
+{{/unless}}
