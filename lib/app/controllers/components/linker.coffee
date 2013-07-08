@@ -36,7 +36,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
 				@get('notification').effect 'bounce'
-				@get('notification').pnotify type: 'success', closer: true, hide: true
+				@get('notification').pnotify type: 'success', closer: true#, hide: true
 
 			socket.on 'link.total', (total) =>
 				@set 'current', 0
@@ -48,20 +48,19 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateThrottled', false
 				socket.on 'link.linkedin', =>
 					@incrementProperty 'current2'
-					current = @get 'current2'
-					total = @get 'total'
 				socket.on 'link.contact', =>
 					@incrementProperty 'current'
-					current = @get 'current'
-					total = @get 'total'
 
 		percent2: (->
-				current = @get 'current2'
+				current2 = @get 'current2'
 				total = @get 'total'
 				percentage = 0
-				if current and total
-					percentage = Math.round (current / total) * 100
-				'width: ' + percentage + '%;'
+				if current2 and total
+					percentage = Math.round (current2*100 / total)
+					if current2 is total
+						@set 'stateParsing', false
+						@set 'stateDone', true
+				"width: #{percentage}%"
 			).property 'current2', 'total'
 
 		percent: (->
@@ -69,6 +68,7 @@ module.exports = (Ember, App, socket) ->
 				total = @get 'total'
 				percentage = 0
 				if current and total
-					percentage = Math.round (current / total) * 100
-				'width: ' + percentage + '%;'
+					percentage = Math.round (current*100 / total)
+				"width: #{percentage}%"
 			).property 'current', 'total'
+

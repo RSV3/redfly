@@ -28,9 +28,9 @@ module.exports = (Ember, App, socket) ->
 				model = type = data.type
 				if type is 'linkedin' then model = 'Contact'
 				Ember.run.next this, ->
-					item = App[model].find data.id
-					item['type' + _s.capitalize(type)] = true
-					if f = @get('controller.feed') then f.unshiftObject item
+					if item = App[model].find data.id
+						item['type' + _s.capitalize(type)] = true
+						if f = @get('controller.feed') then f.unshiftObject item
 
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']
