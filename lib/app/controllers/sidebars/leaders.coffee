@@ -11,7 +11,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['leaders']
 		didInsertElement: ->
 			socket.emit 'leaderboard', (lowest, leaders, laggards) =>
-				@set 'controller.lowest', lowest
-				@set 'controller.leader', App.store.findMany(App.User, leaders)
-				@set 'controller.laggard', App.store.findMany(App.User, laggards)
-
+				if @get 'controller'	# in case we already switched out
+					@set 'controller.lowest', lowest
+					@set 'controller.leader', App.store.findMany(App.User, leaders)
+					@set 'controller.laggard', App.store.findMany(App.User, laggards)
