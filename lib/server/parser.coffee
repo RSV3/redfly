@@ -105,18 +105,18 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 			models.Contact.findOne {emails: mail.recipientEmail}, (err, contact) ->
 				throw err if err
+				splitted = mail.recipientEmail.split '@'
+				domain = _.first _.last(splitted).split '.'
+				mockname =  _.first(splitted) + " [#{domain}]"
 				if contact
 					_saveMail user, contact, mail
 					dirty = null
 					if not _.contains contact.emails, mail.recipientEmail
 						dirty = contact.emails.addToSet mail.recipientEmail
 					if name = mail.recipientName
-						splitted = mail.recipientEmail.split '@'
-						domain = _.first _.last(splitted).split '.'
-						mockname =  _.first(splitted) + " [#{domain}]"
 						if contact.names?.length and contact.names[0] is mockname
-							contact.names[0] = mail.recipientName
-							dirty = contact.sortname = mail.recipientName.toLowerCase()
+							contact.names[0] = name
+							dirty = contact.sortname = name.toLowerCase()
 						else if not _.contains contact.names, name
 							dirty = contact.names.addToSet name
 					if not _.contains contact.knows, user
@@ -136,9 +136,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				if not (name = mail.recipientName)
 					if mail.recipientEmail[0] >= '0' and mail.recipientEmail[0] <= '9'
 						return sift index	# skip emails that start with digit
-					splitted = mail.recipientEmail.split '@'
-					domain = _.first _.last(splitted).split '.'
-					name =  _.first(splitted) + " [#{domain}]"
+					name =  mockname
 				contact.names.addToSet name
 				contact.sortname = name.toLowerCase()
 				newContacts.push contact
