@@ -176,7 +176,7 @@ module.exports = (Ember, App, socket) ->
 		theResults: (->		# paginated content
 			a = @get 'all'
 			if not a?.get('length') then return null
-			Ember.run.next =>
+			Ember.run.next this, =>
 				if not f = @get('f_knows')?.length
 					socket.emit 'recentFilters', (filters) =>
 						for own key, val of filters
