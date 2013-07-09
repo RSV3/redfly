@@ -256,6 +256,7 @@ module.exports = (Ember, App, socket) ->
 					that.set 'duplicate', duplicate
 
 					if (not nothing) and (not duplicate)
+						that.set "controller.#{that.get('allAttribute')}", all
 						that.get("controller").commitNcount()
 						that.toggle()
 					that.set 'working', false
