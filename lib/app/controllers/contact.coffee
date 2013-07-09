@@ -88,9 +88,9 @@ module.exports = (Ember, App, socket) ->
 		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
-				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'date'}
-				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:'-date'}
-				@set 'lastNote', App.findOne App.Note, conditions:{contact:id}, options:{sort:'-date'}
+				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:1}}
+				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:-1}}
+				@set 'lastNote', App.findOne App.Note, conditions:{contact:id}, options:{sort:{date:-1}}
 		).observes 'id'
 		spokenTwice: (->
 			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
