@@ -4,6 +4,10 @@
 		| Makin' pals with gmail...
 		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
+		| {{#if view.stateStillConnecting}}
+		| Taking a moment to connect to your inbox.
+		i.icon-spinner.icon-spin.pull-right
+		| {{/if}}
 		| {{#if view.stateParsing}}
 		div {{view.current}} of {{view.total}}
 		.progress1.progress.progress-striped.active
