@@ -92,9 +92,9 @@ module.exports =
 		LINKEDIN_API_KEY: 'wyctyn1vhpqn'
 		LINKEDIN_API_SECRET: 'gDuJEXDNJb1BlUIZ'
 
-		S3_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
-		S3_SECRET_KEY: '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'
-		BACKUP_BUCKET: 'backups.redfly.redstar.com'
+		AWS_ACCESS_KEY: 'AKIAITJCEOND6UFFJA7Q'
+		AWS_SECRET_KEY: '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'
+		S3_BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 

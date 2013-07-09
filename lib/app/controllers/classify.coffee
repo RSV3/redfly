@@ -65,7 +65,7 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
 				@set 'thisContact.addedBy', App.user
-			App.user.incrementProperty 'contactCount'
+				App.user.incrementProperty 'contactCount'
 			App.Classify.createRecord
 				saved:require('moment')().toDate()
 				user: App.User.find App.user.get 'id'
