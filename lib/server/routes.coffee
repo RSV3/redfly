@@ -776,8 +776,6 @@ module.exports = (app, route) ->
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
-			console.dir user
-			fn null
 			require('./linker') user, notifications, (err, changes) ->
 				if not _.isEmpty changes then io.emit 'linked', changes
 				fn err

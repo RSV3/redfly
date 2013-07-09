@@ -12,7 +12,10 @@
 				| <div class="bar" {{bindAttr style="view.percent2"}}></div>
 		| {{/if}}
 		| {{#if view.stateDone}}
-		| Be patient while we connect and parse through your connections.
+		| Be patient while we update your connections.
+		| {{/if}}
+		| {{#if view.stateDoneAndDone}}
+		| LinkedIn connections updated.
 		| {{/if}}
 		| {{#if view.stateThrottled}}
 		| <br>That's enough for today:<br>come back and do some more tomorrow.
