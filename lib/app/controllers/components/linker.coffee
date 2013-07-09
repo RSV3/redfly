@@ -31,12 +31,15 @@ module.exports = (Ember, App, socket) ->
 					@set 'stateThrottled', true
 					@set 'stateDone', false
 				else
-					@set 'stateDone', true
-					@set 'stateThrottled', false
+					@set 'stateDone', false
+					@set 'stateDoneAndDone', true
 				@set 'stateConnecting', false
 				@set 'stateParsing', false
 				@get('notification').effect 'bounce'
-				@get('notification').pnotify type: 'success', closer: true#, hide: true
+				@get('notification').pnotify
+					type: 'success'
+					closer: true
+					hide: true
 
 			socket.on 'link.total', (total) =>
 				@set 'current', 0
@@ -58,9 +61,8 @@ module.exports = (Ember, App, socket) ->
 				if current2 and total
 					percentage = Math.round (current2*100 / total)
 					if current2 is total
-						@set 'stateParsing', false
 						@set 'stateDone', true
-				"width: #{percentage}%"
+				"width: #{percentage}%;"
 			).property 'current2', 'total'
 
 		percent: (->
@@ -69,6 +71,6 @@ module.exports = (Ember, App, socket) ->
 				percentage = 0
 				if current and total
 					percentage = Math.round (current*100 / total)
-				"width: #{percentage}%"
+				"width: #{percentage}%;"
 			).property 'current', 'total'
 
