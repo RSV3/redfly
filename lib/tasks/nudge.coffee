@@ -116,20 +116,20 @@ dailyRoutines = (doneDailies)->
 resetEachRank = (cb, users)->
 	if not l = users.length then return cb()
 	user = users.shift()
-	user.dataCount=0
-	user.contactCount=0
-	user.lastRank=l
-	console.log "setting #{user.name} to #{l}"
-	user.save (err)->
-		if err then console.log "Error resetting rank .. #{user._id}"
-		resetEachRank cb, users
+	models.Contact.count {addedBy:user.id}, (err, f)->
+		if not err then user.fullCount=f
+		user.dataCount=0
+		user.contactCount=0
+		user.lastRank=l
+		user.save (err)->
+			if err then console.log "Error resetting rank .. #{user._id}"
+			resetEachRank cb, users
 
 
 maybeResetRank = (doit, userlistcopy, cb)->
 	if not doit then return cb()
 	if process.env.RANK_DAY isnt moment().format('dddd') then return cb()
 	if not l = userlistcopy.length then return cb()
-	console.dir "resetting rank on #{l} users"
 	resetEachRank cb, _.sortBy userlistcopy, (u)->
 		((u.contactCount or 0) + (u.dataCount or 0))*l + l - (u.lastRank or 0)
 
