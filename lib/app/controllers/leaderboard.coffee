@@ -1,8 +1,12 @@
 module.exports = (Ember, App, socket) ->
 
+	moment = require('moment')
+
 
 	App.LeaderboardController = Ember.Controller.extend
 		sortProperties: ['name']
+		fromdate: moment().day(-2).format("MMMM DD, YYYY")
+		todate: moment().day(4).format("MMMM DD, YYYY")
 
 	App.LeaderboardView = Ember.View.extend
 		template: require '../../../templates/leaderboard'

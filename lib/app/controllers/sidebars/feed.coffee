@@ -8,6 +8,7 @@ module.exports = (Ember, App, socket) ->
 				@get('_initialContacts').forEach (contact) ->
 					item = Ember.ObjectProxy.create content:contact
 					item.typeInitialContact = true
+					item.when = require('moment')(contact.get "added").fromNow()
 					mutable.push item
 				mutable
 			).property '_initialContacts.@each'
