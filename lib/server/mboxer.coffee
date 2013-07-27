@@ -163,14 +163,17 @@ cIOcreate = (data, cb)->
 
 
 # common logic to decide whether to use google (preferred if available) or contextio (only if valid)
-googOrCio = (user, goog, cio, errmsg)->
+googOrCio = (user, goog, cio, cb, action)->
+	errmsg = null
 	if process.env.GOOGLE_API_ID 
 		if user.oauth then return goog()
-		else if errmsg then console.log "#{errmsg} ERROR: google oauth unavailable, #{errmsg}"
+		errmsg = "#{action} ERROR: google oauth unavailable, "
 	if process.env.CONTEXTIO_KEY 
 		if user.cIO and user.cIO.hash and not user.cIO.expired then return cio()
-		else if errmsg then console.log "#{errmsg} ERROR: cIO unavailable or expired, #{errmsg}"
-	if errmsg then console.log "#{errmsg} ERROR: no mailbox option (cio, goog) to #{errmsg}"
+		errmsg = "#{errmsg} ERROR: cIO unavailable or expired, #{action}"
+	if not errmsg then errmsg = "#{action} ERROR: no mailbox option (cio, goog) to #{action}"
+	console.log errmsg
+	cb -1, {status:'failure', reason:errmsg}
 
 module.exports =
 	connect: (user, cb) ->
@@ -182,13 +185,13 @@ module.exports =
 				imapConnect user, blacklist, cb
 			, ->
 				contextConnect user, blacklist, cb
-			, "connect"
+			, cb, "connect"
 	auth: (user, cb) ->
 		googOrCio user, ->
 			imapAuth user, cb
 		, ->
 			contextAuth user, cb
-		, "auth"
+		, cb, "auth"
 	search: (mbSession, user, cb) ->
 		# if we got this far, it's really happening:
 		# so we'll need a list of excludes (contacts skipped forever)
@@ -199,13 +202,13 @@ module.exports =
 				imapSearch mbSession, user, cb
 			, ->
 				contextSearch mbSession, user, cb
-			, "search"
+			, cb, "search"
 	eachMsg: (mbSession, user, results, finish, cb) ->
 		googOrCio user, ->
 			eachImapMsg mbSession, user, results, finish, cb
 		, ->
 			eachContextMsg mbSession, user, results, finish, cb
-		, "iterate over messages"
+		, cb, "iterate over messages"
 	create: cIOcreate
 
 
