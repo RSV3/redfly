@@ -15,7 +15,8 @@ eachSave = (user, done)->
 	fiveDays = moment().subtract('days', 5)
 	models.Mail.find({
 		sender: id
-		sent: $gt: fiveDays
+		added: $exists: false
+		sent: $lt: fiveDays
 	}).select('recipient added sent').exec (err, msgs) ->
 		throw err if err
 
@@ -38,7 +39,7 @@ eachSave = (user, done)->
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if neocons.length
 					updates = { added: new Date(), addedBy: id }
-					matches = { added: {$exists:false}, id: {$in:neocons} }
+					matches = id: $in: neocons
 					models.Contact.update matches, updates, (err)->
 						if err
 							console.log "Error updating contacts:"

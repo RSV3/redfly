@@ -50,8 +50,7 @@ module.exports = (socket) ->
 					return cb messages.required
 				if not validators.isEmail email
 					return cb messages.format 'email'
-				if (_.last(email.split('@')) in blacklist.domains) or
-						(email in blacklist.emails)
+				if (_.last(email.split('@')) in blacklist.domains) or (email in blacklist.emails)
 					return cb messages.blacklisted
 				socket.emit 'verifyUniqueness', field: 'email', value: email, (duplicate) ->
 					if duplicate
