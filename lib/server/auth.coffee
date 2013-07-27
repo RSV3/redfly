@@ -73,11 +73,10 @@ everyauth.google.configure
 
 	sendResponse: (res, data) ->
 		user = data.user
-		if not user.id
-			return res.redirect '/invalid'
-		if not user.lastParsed
-			return res.redirect '/load'
-		res.redirect '/recent'
+		if not user.id then return res.redirect '/invalid'
+		# this might be good enough ...
+		# if user.lastParsed and user.oauth then return res.redirect '/recent'
+		res.redirect '/load'
 
 
 everyauth.linkedin.configure
