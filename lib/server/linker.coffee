@@ -74,8 +74,7 @@ alreadyLinked = (id, contact, confirm) ->
 #
 getDeets = (id, contact, oa, cb) ->
 	alreadyLinked id, contact, (test) ->
-		if test
-			return cb null, null
+		if test then return cb null, null
 		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary)')
 		getLinked u, null, oa, cb
 
@@ -278,12 +277,10 @@ _matchContact = (user, contacts, cb) ->
 		return cb null
 	if (contacts.length > 1)
 		nc = _.select contacts, (c) -> (_.indexOf c.knows, user._id) >= 0
-		if nc.length
-			contacts = nc
+		if nc.length then contacts = nc
 	if (contacts.length > 1)
 		nc = _.select contacts, (i) -> i.addedBy is user._id
-		if nc.length
-			contacts = nc
+		if nc.length then contacts = nc
 	if (contacts.length > 1)
 		return cb contacts				# oh dear, what a challenge: more than one? work it out later ...
 	cb contacts[0]
@@ -392,11 +389,8 @@ linker = (user, notifications, finalCB) ->
 						else if key is 'pictureUrls'
 							if val._total then item.pictureUrl = val.values[0]
 						else item[key] = val
-
-					if countSomeFeed
-						countSomeFeed--
-					else
-						notifications?.updateFeeds = null
+					if countSomeFeed then countSomeFeed--
+					else notifications?.updateFeeds = null
 					id = push2linkQ notifications, user, contact, item
 					if id then changed.push id
 				cb()
