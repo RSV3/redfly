@@ -39,9 +39,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 
 	parse = (user, notifications, cb) ->
 		mboxer.connect user, (err, server)->
-			if err
+			if err		# Just log an error, send the newsletter and quit if the user can't be parsed.
 				console.dir err
-				# Just send the newsletter and quit if the user can't be parsed.
 				if succinct_manual then return cb null
 				return mailer.sendNewsletter user, cb
 

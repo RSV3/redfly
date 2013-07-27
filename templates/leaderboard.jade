@@ -1,13 +1,27 @@
 .row-fluid
-	h1 Weekly Leaders
+	.partheading
+		h1 Weekly Leaders
+	.partheading
+		h3
+			i {{fromdate}} ~ {{todate}}
 	table.table.table-hover
 		thead
 			tr
 				th Rank
 				th Change
 				th Contributor
-				th New Contacts
-				th New Data Points
+				th
+					span New
+					br
+					span Data Points
+				th
+					span New
+					br
+					span Contacts
+				th
+					span Total
+					br
+					span Contacts
 		tbody
 			| {{#each leader itemViewClass="App.LeaderView"}}
 			td {{view.pos}}
@@ -26,6 +40,7 @@
 					span {{canonicalName}}
 			td {{contactCount}}
 			td {{dataCount}}
+			td {{fullCount}}
 			| {{/each}}
 
 	h1 Weekly Laggards
@@ -35,8 +50,18 @@
 				th Rank
 				th Change
 				th Contributor
-				th New Contacts
-				th New Data Points
+				th
+					span New
+					br
+					span Data Points
+				th
+					span New
+					br
+					span Contacts
+				th
+					span Total
+					br
+					span Contacts
 		tbody
 			| {{#each laggard itemViewClass="App.LaggardView"}}
 			td {{view.pos}}
@@ -55,4 +80,5 @@
 					span {{canonicalName}}
 			td {{contactCount}}
 			td {{dataCount}}
+			td {{fullCount}}
 			| {{/each}}
