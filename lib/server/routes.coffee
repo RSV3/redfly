@@ -120,7 +120,7 @@ module.exports = (app, route) ->
 						if model is models.Contact 
 							if 'added' in modified and doc.added then feed doc
 							if 'classified' in modified
-								models.User.update {_id:doc.updatedBy}, $inc: 'contactCount': 1, (err)->
+								models.User.update {_id:doc.updatedBy}, $inc: {'contactCount':1, 'fullCount':1}, (err)->
 									if err
 										console.log "error incrementing data count for #{doc.updatedBy}"
 										console.dir err
@@ -830,7 +830,7 @@ module.exports = (app, route) ->
 			throw err if err
 			l = users.length
 			users = _.map _.sortBy(users, (u) ->
-				((u.contactCount or 0) + (u.dataCount or 0))*l + l - (u.lastRank or 0)
+				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
 			fn l, users[l-5...l].reverse(), users[0...5].reverse()
 

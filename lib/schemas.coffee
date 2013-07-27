@@ -52,6 +52,7 @@ schemas.push Schema 'User',
 	lastRank: type: Number
 	contactCount: type: Number
 	dataCount: type: Number
+	fullCount: type: Number
 
 
 schemas.push Schema 'Measurement',

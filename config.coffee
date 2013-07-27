@@ -5,7 +5,7 @@ module.exports =
 		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
-		RANK_DAY: 'Friday'
+		RANK_DAY: 'Monday'
 
 
 	development:
