@@ -67,8 +67,8 @@ _acceptableContact = (user, name, email, excludes, blacklist)->
 			(_.last(email.split('@')) not in blacklist.domains) and
 			(name not in blacklist.names) and
 			(email not in blacklist.emails) and
-			(name not in _.pluck(excludes, 'name')) and
-			(email not in _.pluck(excludes, 'email'))
+			(not excludes?.names or (name not in excludes.names)) and
+			(not excludes?.emails or (email not in excludes.emails))
 
 # make sure the name isn't just an email address, then tidy it up
 _normaliseName = (name)->
@@ -195,9 +195,15 @@ module.exports =
 	search: (mbSession, user, cb) ->
 		# if we got this far, it's really happening:
 		# so we'll need a list of excludes (contacts skipped forever)
-		models.Exclude.find {user: user._id}, (err, excludes) ->
+		models.Exclude.find(user: user._id).populate('contact').exec (err, excludes) ->
 			if err then console.dir err
-			else mbSession.excludes = excludes
+			else
+				excludes = _.map excludes, (x)->
+					{name:x.contact?.names or x.get('name'), email:x.contact?.emails or x.get('email')}
+				mbSession.excludes =
+					names: _.compact _.flatten _.pluck excludes, 'name'
+					emails: _.compact _.flatten _.pluck excludes, 'email'
+				excludes = null
 			googOrCio user, ->
 				imapSearch mbSession, user, cb
 			, ->
