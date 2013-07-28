@@ -1,5 +1,6 @@
 module.exports = (app, route) ->
 	_ = require 'underscore'
+	_s = require 'underscore.string'
 	moment = require 'moment'
 	crypto = require './crypto'
 	logic = require './logic'
@@ -18,7 +19,6 @@ module.exports = (app, route) ->
 			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
-			_s = require 'underscore.string'
 			root = _s.underscored data.type
 			if _.isArray payload then root += 's'
 			hash = {}
@@ -391,7 +391,6 @@ module.exports = (app, route) ->
 				skip = 0
 				terms = search[type]
 				if type is 'tag' or type is 'note'
-					_s = require 'underscore.string'
 					model = _s.capitalize type
 					field = 'body'
 				else
