@@ -12,9 +12,16 @@ FCAPI_person = (options, cb) ->
 			url: 'https://api.fullcontact.com/v2/person.json'
 			qs: opts
 		}, (e,r,b)->
-			if b && (JSON.parse(b).status is 202)
-				setTimeout (()-> FCAPI_person opts, cb), 300000
-			else cb JSON.parse b
+			try
+				if b then b = JSON.parse b
+			catch err
+				console.log "ERROR parsing FC response:"
+				console.dir err
+				console.dir b
+				console.dir opts
+				b = null
+			if b?.status is 202 then setTimeout (()-> FCAPI_person opts, cb), 300000
+			else cb b
 	catch err
 		console.log "ERROR doing FC query on:"
 		console.dir opts
