@@ -149,25 +149,31 @@ dailyRoutines ()->
 	models.User.find (err, users) ->
 		throw err if err
 
-		maybeResetRank not succinct_manual, users.slice(), ->
+		maybeResetRank not succinct_manual, users, ->
 
-			console.log "nudge: auto saving old queue items"
-			eachDoc users.slice(), eachSave, ()->
+			models.User.find (err, users) ->
+				throw err if err
+				console.log "nudge: auto saving old queue items"
+				eachDoc users.slice(), eachSave, ()->
 
-				if only_daily
-					console.log "nudge: just manually ran the daily routines."
-					return services.close()
-				if not succinct_manual 
-					console.log "not running manual nudge."
-					if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
-						console.log "Today = #{moment().format('dddd')} isnt in the list :"
-						console.dir process.env.NUDGE_DAYS.split(' ')
+					if only_daily
+						console.log "nudge: just manually ran the daily routines."
 						return services.close()
+					if not succinct_manual 
+						console.log "not running manual nudge."
+						if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
+							console.log "Today = #{moment().format('dddd')} isnt in the list :"
+							console.dir process.env.NUDGE_DAYS.split(' ')
+							return services.close()
 
-				console.log "nudge: scanning linkedin"
-				eachDoc users.slice(), eachLink, ()->
-					console.log "nudge: parsing emails"
-					eachDoc users, eachParse, ()->
-						return services.close()
-					, succinct_manual
+					models.User.find (err, users) ->
+						throw err if err
+						console.log "nudge: scanning linkedin"
+						eachDoc users, eachLink, ()->
+							models.User.find (err, users) ->
+								throw err if err
+								console.log "nudge: parsing emails"
+								eachDoc users, eachParse, ()->
+									return services.close()
+								, succinct_manual
 

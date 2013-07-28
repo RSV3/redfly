@@ -737,7 +737,8 @@ module.exports = (app, route) ->
 						throw err if err
 						merge.remove cb
 				, (err) ->
-					contact.save (err) ->
+					throw err if err
+					contact?.save (err) ->		# we had a crash here once ...
 						throw err if err
 						return fn()
 

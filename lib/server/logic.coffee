@@ -49,21 +49,24 @@ classifyList = (u, cb)->
 	# for power users, there'll eventually be a large number of excludes
 	# whereas with an aggressive classification policy there'll never be too many unclassified contacts/user
 	# so first get the list of new contacts, then the subset of those who are not excluded
-	models.Mail.find({sender:u, sent: $gt: lastMonth}).select('recipient added sent').exec (err, msgs) ->
+	models.Mail.find({sender:u, sent: $gt: lastMonth}).select('recipient').exec (err, msgs) ->
 		throw err if err
 		# every recent recipient is a candidate for the queue
 		neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
+		msgs=null
 
 		# first strip out those who are permanently excluded
 		models.Exclude.find(user:u, contact:$in:neocons).select('contact').exec (err, ludes) ->
 			throw err if err
 			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
+			ludes=null
 
 			# then strip out those which we've classified
 			# (cron job will clear these out after a month, so that data doesn't go stale)
 			models.Classify.find(user:u, saved:{$exists:true}, contact:{$in:neocons}).select('contact').exec (err, saves) ->
 				throw err if err
 				neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
+				saves=null
 
 				# finally, most difficult filter: the (temporary) skips.
 				# skips are classified records that dont have the 'saved' flag set.
@@ -73,6 +76,7 @@ classifyList = (u, cb)->
 						not _.some msgs, (msg)->
 							msg.recipient.toString() is skip.contact.toString() and models.tmStmp(msg._id) > models.tmStmp(skip._id)
 					neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
+					skips=null
 
 					if neocons.length is 20 then return cb neocons
 					if neocons.length < 20	# less than 20? look for added but not classified

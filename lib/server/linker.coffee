@@ -10,15 +10,13 @@ REImake = linkLater.REImake
 # async (but serial, consecutive with callback) collection processing
 
 _syncForEach = (list, iterator, final_cb, count=0) ->
-	if not list.length
-		return final_cb()
+	if not list.length then return final_cb()
 	item = list.shift()
 	iterator item, count++, () ->
 		_syncForEach list, iterator, final_cb, count
 
 syncForEach = (list, iterator, final_cb) ->
-	if not list.length
-		return final_cb()
+	if not list?.length then return final_cb()
 	_syncForEach list.slice(0), iterator, final_cb
 
 
