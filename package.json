@@ -19,6 +19,7 @@
     "contextio": "~0.3.0",
     "source-map-support": "~0.1.2",
     "nodetime": "0.8.13",
+	"strong-agent": "latest",
     "icalendar": "0.6.x"
   },
   "devDependencies": {
