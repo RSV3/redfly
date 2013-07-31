@@ -154,7 +154,7 @@ dailyRoutines ()->
 			models.User.find (err, users) ->
 				throw err if err
 				console.log "nudge: auto saving old queue items"
-				eachDoc users.slice(), eachSave, ()->
+				eachDoc users, eachSave, ()->
 
 					if only_daily
 						console.log "nudge: just manually ran the daily routines."
