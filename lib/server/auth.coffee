@@ -74,8 +74,7 @@ everyauth.google.configure
 	sendResponse: (res, data) ->
 		user = data.user
 		if not user.id then return res.redirect '/invalid'
-		# this might be good enough ...
-		# if user.lastParsed and user.oauth then return res.redirect '/recent'
+		if user.lastParsed and user.oauth then return res.redirect '/recent'	# this might be good enough ...
 		res.redirect '/load'
 
 

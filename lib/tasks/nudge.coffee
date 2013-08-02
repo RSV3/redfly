@@ -82,7 +82,7 @@ eachDoc = (docs, operate, fcb, succinct_manual) ->
 	if not docs.length then return fcb()
 	doc = docs.pop()
 	operate doc, ()->
-		eachDoc docs, operate, fcb
+		eachDoc docs, operate, fcb, succinct_manual
 	, succinct_manual
 
 
@@ -154,7 +154,7 @@ dailyRoutines ()->
 			models.User.find (err, users) ->
 				throw err if err
 				console.log "nudge: auto saving old queue items"
-				eachDoc users.slice(), eachSave, ()->
+				eachDoc users, eachSave, ()->
 
 					if only_daily
 						console.log "nudge: just manually ran the daily routines."
@@ -166,7 +166,7 @@ dailyRoutines ()->
 							console.dir process.env.NUDGE_DAYS.split(' ')
 							return services.close()
 
-					models.User.find (err, users) ->
+					models.User.find (err, users)->
 						throw err if err
 						console.log "nudge: scanning linkedin"
 						eachDoc users, eachLink, ()->
