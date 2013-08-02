@@ -1,8 +1,8 @@
 // profiler plugins:
 // should not have both of these at once
 var profile_config = {
-//	NODETIME_ACCOUNTKEY: '9ed3b83d70427d402822795e80426b7ec5343e2f'	
-	STRONG_AGENT_ID: '7f9fd8ac-056b-467b-94a1-12e2babdead9'
+	NODETIME_ACCOUNTKEY: '9ed3b83d70427d402822795e80426b7ec5343e2f'	
+//	STRONG_AGENT_ID: '7f9fd8ac-056b-467b-94a1-12e2babdead9'
 };
 
 if (profile_config.NODETIME_ACCOUNT_KEY) {
