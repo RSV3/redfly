@@ -10,7 +10,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 	getFC = require './fullcontact'
 	mboxer = require './mboxer'
 
-	_saveMail = (user, contact, mail) ->
+	_saveMail = (user, contact, mail, done) ->
 		mail.sender = user
 		mail.recipient = contact
 		models.Mail.create mail, (err) ->
@@ -18,18 +18,22 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				console.log "Error saving Mail record"
 				console.dir err
 				console.dir mail
+				return done()
 			models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
 				if err
 					console.log "Error finding classify for #{user}, #{contact}"
 					console.dir err
+					return done()
 				else if classify
 					classify.saved = require('moment')().toDate()		# update the saved stamp
 					classify.save (err)->
 						if err
 							console.log "updating classify for #{user}, #{contact}"
 							console.dir err
+						return done()
+				else return done()
 
-	_saveFullContact = (user, contact, fullDeets) ->
+	_saveFullContact = (contact, fullDeets) ->
 		fullDeets.contact = contact
 		models.FullContact.create fullDeets, (err)->
 			if err
@@ -107,8 +111,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				splitted = mail.recipientEmail.split '@'
 				domain = _.first _.last(splitted).split '.'
 				mockname =  _.first(splitted) + " [#{domain}]"
-				if contact
-					_saveMail user, contact, mail
+				if contact then _saveMail user, contact, mail, ->
 					dirty = null
 					if not _.contains contact.emails, mail.recipientEmail
 						dirty = contact.emails.addToSet mail.recipientEmail
@@ -138,9 +141,9 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 					name =  mockname
 				contact.names.addToSet name
 				contact.sortname = name.toLowerCase()
+				contact.knows.addToSet user
 				newContacts.push contact
 				notifications?.foundNewContact?()
-				contact.knows.addToSet user
 
 				#
 				# If this is the regular nudge, notifications will be null: get fullcontact data.
@@ -162,9 +165,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 							console.log "Error saving Contact data for new user"
 							console.dir err
 							console.dir contact
-							sift index
-						else
-							_saveMail user, contact, mail
+							return sift index
+						_saveMail user, contact, mail, ->
 							sift index
 							# then, sometime in the not too distant future, go and slowly get the FC data
 							getFC contact, (fullDeets) ->
@@ -173,7 +175,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 										console.log "Error saving Contact with FC data in initial parse"
 										console.dir err
 										console.dir contact
-									_saveFullContact user, contact, fullDeets
+									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
 										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 
@@ -190,7 +192,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 							else	# now save other records that need the contact reference: mail, FC, tags
 								_saveMail user, contact, mail
 								if fullDeets
-									_saveFullContact user, contact, fullDeets
+									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
 										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 							sift index
