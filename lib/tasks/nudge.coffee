@@ -112,6 +112,7 @@ dailyRoutines = (doneDailies)->
 				console.log "Error removing old classifies (skips): IDs less than #{prefix}#{suffix}"
 				console.dir err
 			doneDailies();
+			console.log "fullydone"
 
 
 resetEachRank = (cb, users)->
@@ -139,12 +140,13 @@ maybeResetRank = (doit, userlistcopy, cb)->
 console.log "starting nudge with flag: #{process.argv[3]}"
 
 # first, run the daily routines
-dailyRoutines ()->
+dailyRoutines ->
 
 	# then, the nudge and linkedin only happen on scheduled days,
 	# (or if we force it with the manual flag from the command line)
 	succinct_manual = (process.argv[3] is 'manual')
 	only_daily = (process.argv[3] is 'daily')
+	dont_do_parse = false
 
 	models.User.find (err, users) ->
 		throw err if err
@@ -164,16 +166,19 @@ dailyRoutines ()->
 						if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
 							console.log "Today = #{moment().format('dddd')} isnt in the list :"
 							console.dir process.env.NUDGE_DAYS.split(' ')
-							return services.close()
+							# return services.close()
+							dont_do_parse = true
 
 					models.User.find (err, users)->
 						throw err if err
 						console.log "nudge: scanning linkedin"
 						eachDoc users, eachLink, ()->
+							if dont_do_parse then return services.close()
 							models.User.find (err, users) ->
 								throw err if err
 								console.log "nudge: parsing emails"
 								eachDoc users, eachParse, ()->
+									console.log "nudge: DONE parsed emails"
 									return services.close()
 								, succinct_manual
 

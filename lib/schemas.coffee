@@ -16,7 +16,8 @@ schemas.push Schema 'Admin',
 	blacklistnames: [ type: String ]	# list of names blacklisted from the service
 	userstoo: type: Boolean		# if set, employees (inc. users) can also be classified as contacts
 	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
-	hidemails: type: Boolean		# hide the email of unknown contacts
+	hidemails: type: Boolean	# hide the email of unknown contacts
+	anyedit: type: Boolean		# allow any user to edit some contact fields
 
 schemas.push Schema 'Classify',
 	user: type: Types.ObjectId, ref: 'User'

@@ -7,7 +7,7 @@
     "underscore.string": "2.3.1",
     "async": "0.2.6",
     "validator": "0.4.28",
-    "moment": "2.0.0",
+    "moment": "2.1.0",
     "everyauth": "0.3.1",
     "xoauth2": "0.1.4",
     "imap": "git://github.com/RSV3/node-imap.git#v0.7.13-jTNT",

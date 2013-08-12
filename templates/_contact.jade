@@ -36,13 +36,13 @@
 			| {{else}}
 			h3 {{canonicalName}}
 			| {{/if}}
-			| {{#if isKnown}}
+			| {{#if allowEdits}}
 			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
 			| {{/if}}
 			br
 			+view('view.positionView')
 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-				+if('isKnown')
+				+if('allowEdits')
 					| {{#if editpositiondetails}}
 					i {{editpositiondetails}}&nbsp;
 					| {{/if}}

@@ -419,6 +419,7 @@ linker = (user, notifications, finalCB) ->
 #
 # If the notifications object has the right vectors they fire during the process
 #
+# module.exports = linker
 module.exports = (user, notifications, cb) ->
 	linker user, notifications, (err, changes) ->
 		cb err, changes
