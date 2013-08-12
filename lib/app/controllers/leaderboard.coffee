@@ -5,13 +5,33 @@ module.exports = (Ember, App, socket) ->
 
 	App.LeaderboardController = Ember.Controller.extend
 		sortProperties: ['name']
-		fromdate: moment().day(-2).format("MMMM DD, YYYY")
-		todate: moment().day(4).format("MMMM DD, YYYY")
 
 	App.LeaderboardView = Ember.View.extend
 		template: require '../../../templates/leaderboard'
 		classNames: ['leaderboard']
 		lowest: 0
+		rankday: 'Sunday'
+		fromdate: (->
+			r = moment().day(@get('rankday'))
+			if (r.unix() > moment().unix()) then r.subtract(7, 'days')
+			r
+		).property 'rankday'
+		todate: (->
+			r = moment().day(@get('rankday'))
+			if (r.unix() <= moment().unix()) then r.add(7, 'days')
+			r
+		).property 'rankday'
+		formattedfromdate: (->
+			if @get('todate').toString().split(' ')[3] is @get('fromdate').toString().split(' ')[3] then ind=2
+			else ind=3
+			@get('fromdate').toString().split(' ')[0..ind].join(' ')
+		).property 'todate', 'fromdate'
+		formattedtodate: (->
+			a = @get('todate').toString().split(' ')[1..3]
+			a[1] = @get('todate').lang().ordinal(a[1])
+			if @get('todate').toString().split(' ')[1] is @get('fromdate').toString().split(' ')[1] then a=a[1..]
+			a.join(' ')
+		).property 'todate', 'fromdate'
 
 	App.LeadLagController = Ember.Controller.extend()
 

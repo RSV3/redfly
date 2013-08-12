@@ -5,6 +5,11 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 
+		allowEdits: (->
+			if @get('isKnown') then return true
+			a = App.Admin.find 1
+			a and a.get('anyedit') isnt false
+		).property 'id'
 		isKnown: (->
 			u = App.user.get 'id'
 			k = @get('knows')?.getEach 'id'
@@ -177,7 +182,17 @@ module.exports = (Ember, App, socket) ->
 			url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 			$('p.bullhorn>a').css('color','grey').bind('click', false)
 			socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
-				$('p.bullhorn').replace("<p class='requestsent'>intro<br>request<br>sent</p>")
+				util.notify
+					title: 'Introduction requested'
+					text: '<div id="requestintro"></div>'
+					type: 'success'
+					closer: true
+					sticker: false
+					hide: false
+					effect: 'bounce'
+					before_open: (pnotify) =>
+						pnotify.css top: '60px'
+
 		)
 
 		vipHoverStr: ->

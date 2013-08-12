@@ -13,6 +13,9 @@ module.exports = (Ember, App, socket) ->
 		flushsavechk: (->
 			@get 'flushsave'
 		).property 'flushsave'
+		anyeditchk: (->
+			@get('anyedit') isnt false		# default (init) to true
+		).property 'anyedit'
 		hidemailschk: (->
 			@get('hidemails') isnt false		# default (init) to true
 		).property 'hidemails'
@@ -35,8 +38,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'flushsave', @get 'flushsavechk'
 			@set 'userstoo', @get 'userstoochk'
 			@set 'hidemails', @get 'hidemailschk'
+			@set 'anyedit', @get 'anyeditchk'
 			App.store.commit()
-		).observes 'hidemailschk', 'userstoochk', 'flushsavechk'
+		).observes 'hidemailschk', 'userstoochk', 'flushsavechk', 'anyeditchk'
 		_onTextArea: (->
 			if @get('domainlist')?.length
 				regexp = /(?:,|\n)+/

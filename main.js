@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // profiler plugins:
 // should not have both of these at once
 var profile_config = {
@@ -17,4 +18,6 @@ if (profile_config.NODETIME_ACCOUNT_KEY) {
 	);
 }
 
+=======
+>>>>>>> master
 require('phrenetic/main');
