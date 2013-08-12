@@ -29,6 +29,13 @@ ul.dropdown-menu.search-results
 	| {{/each}}
 	li.divider
 	| {{/if}}
+	| {{#if view.results.company}}
+	.nav-header Company name matches
+	| {{#each view.results.company}}
+	li
+		| <a href="#" {{action select this target="view"}}>{{canonicalName}} &mdash; "{{email}}"</a>
+	| {{/each}}
+	| {{/if}}
 	| {{#if view.results.note}}
 	.nav-header Matches in notes
 	| {{#each view.results.note}}

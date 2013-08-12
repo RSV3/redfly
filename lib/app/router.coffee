@@ -178,7 +178,8 @@ module.exports = (Ember, App, socket) ->
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			socket.emit 'leaderboard', (lowest, leaders, laggards) =>
+			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards) =>
+				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', App.store.findMany(App.User, leaders)
 				controller.set 'laggard', App.store.findMany(App.User, laggards)
