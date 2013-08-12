@@ -359,7 +359,7 @@ module.exports = (app, route) ->
 		if compound.length > 1 then terms = _.uniq _.compact compound[1].split(' ')			# type specified, eg tag:slacker
 		else terms = _.uniq _.compact query.split(' ')			# multiple search terms, eg john doe
 		search = {}
-		availableTypes = ['name', 'email', 'tag', 'note']
+		availableTypes = ['name', 'email', 'tag', 'company', 'note']
 		utilisedTypes = []	# this array maps the array of results to their type
 		perfectMatch = []	# array of flags: a perfectmatch is a result set for the full query string,
 							# other than merely one of multiple terms.
@@ -395,7 +395,8 @@ module.exports = (app, route) ->
 					field = 'body'
 				else
 					model = 'Contact'
-					field = type + 's'
+					field = type
+					if type isnt 'company' then field = "#{field}s"
 				conditions = {}
 				if compound.length > 1 and compound[0] is 'contact'
 					if parseInt(compound[1], 10).toString() is compound[1]
@@ -832,5 +833,5 @@ module.exports = (app, route) ->
 			users = _.map _.sortBy(users, (u) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
-			fn l, users[l-5...l].reverse(), users[0...5].reverse()
+			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
 

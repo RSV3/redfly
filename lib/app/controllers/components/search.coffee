@@ -70,9 +70,8 @@ module.exports = (Ember, App, socket) ->
 								delete results.query
 								for type, ids of results
 									if ids and ids.length
-										model = 'Contact'
-										if type is 'tag' or type is 'note'
-											model = _s.capitalize type
+										if type is 'tag' or type is 'note' then model = _s.capitalize type
+										else model = 'Contact'
 										@set 'results.' + type, App.store.findMany(App[model], ids)
 										allResults.push model
 								@set 'allResults', allResults

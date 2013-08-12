@@ -57,6 +57,13 @@
 				&nbsp;Hide e-mail when contact is not known to me
 				|</label>
 
+		h3 Editing Contacts
+			.row-fluid.checkadmin
+				|<label>
+				{{view Ember.Checkbox valueBinding="anyedit" checkedBinding="anyeditchk"}}
+				&nbsp;Allow any user to edit some contact fields
+				|</label>
+
 		h3 Blacklists
 		.row-fluid
 			.span4
