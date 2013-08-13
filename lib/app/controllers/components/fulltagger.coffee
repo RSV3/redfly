@@ -19,7 +19,6 @@ module.exports = (Ember, App, socket) ->
 			if not autoTags = @get("autoTags.#{@get('category')}")
 				socket.emit 'tags.all', category: @get('category'), (allTags) =>
 					allTags = @_filterTags allTags
-					console.dir allTags
 					result.pushObjects allTags
 				result = []
 				@set "autoTags.#{@get('category')}", result
