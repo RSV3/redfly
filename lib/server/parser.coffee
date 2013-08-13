@@ -24,14 +24,13 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 					console.log "Error finding classify for #{user}, #{contact}"
 					console.dir err
 					return done()
-				else if classify
-					classify.saved = require('moment')().toDate()		# update the saved stamp
-					classify.save (err)->
-						if err
-							console.log "updating classify for #{user}, #{contact}"
-							console.dir err
-						return done()
-				else return done()
+				if not classify then return done()
+				classify.saved = require('moment')().toDate()		# update the saved stamp
+				classify.save (err)->
+					if err
+						console.log "updating classify for #{user}, #{contact}"
+						console.dir err
+					return done()
 
 	_saveFullContact = (contact, fullDeets) ->
 		fullDeets.contact = contact
@@ -107,11 +106,12 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			# Find an existing contact with one of the same emails 
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 			models.Contact.findOne {emails: mail.recipientEmail}, (err, contact) ->
+
 				throw err if err
 				splitted = mail.recipientEmail.split '@'
 				domain = _.first _.last(splitted).split '.'
 				mockname =  _.first(splitted) + " [#{domain}]"
-				if contact then _saveMail user, contact, mail, ->
+				if contact then return _saveMail user, contact, mail, ->	# if we found a contact, return after saving it on the mail
 					dirty = null
 					if not _.contains contact.emails, mail.recipientEmail
 						dirty = contact.emails.addToSet mail.recipientEmail
@@ -132,7 +132,6 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						sift index
 
 				# only gets here if we didn't find contact
-
 				contact = new models.Contact
 				contact.emails.addToSet mail.recipientEmail
 				if not (name = mail.recipientName)
