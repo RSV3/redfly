@@ -9,15 +9,11 @@ REImake = linkLater.REImake
 
 # async (but serial, consecutive with callback) collection processing
 
-_syncForEach = (list, iterator, final_cb, count=0) ->
-	if not list.length then return final_cb()
+syncForEach = (list, iterator, final_cb, count=0) ->
+	if not list?.length then return final_cb()
 	item = list.shift()
 	iterator item, count++, () ->
-		_syncForEach list, iterator, final_cb, count
-
-syncForEach = (list, iterator, final_cb) ->
-	if not list?.length then return final_cb()
-	_syncForEach list.slice(0), iterator, final_cb
+		syncForEach list, iterator, final_cb, count
 
 
 #
@@ -56,11 +52,11 @@ getLinked = (partial, options, oa, cb) ->
 # confirm is a callback that takes a boolean
 # to indicate whether the linkedin id, or matched contact, have already been done this week
 #
-alreadyLinked = (id, contact, confirm) ->
+alreadyLinked = (profid, contact, confirm) ->
 	lastWeek = new Date()
 	lastWeek.setDate(lastWeek.getDate() - 7)
 	if contact then query = {contact:contact}
-	else query = {linkedinId: id}
+	else query = {linkedinId: profid}
 	models.LinkedIn.findOne query, {lastLink:true}, (err, linkedin) ->
 		if err or not linkedin then return confirm false
 		if not linkedin.lastLink or linkedin.lastLink < lastWeek then return confirm false
@@ -70,8 +66,8 @@ alreadyLinked = (id, contact, confirm) ->
 #
 # confirm whether the linkedin id, or matched contact, have already been done today
 #
-getDeets = (id, contact, oa, cb) ->
-	alreadyLinked id, contact, (test) ->
+getDeets = (id, profid, contact, oa, cb) ->
+	alreadyLinked profid, contact, (test) ->
 		if test then return cb null, null
 		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary)')
 		getLinked u, null, oa, cb
@@ -262,7 +258,7 @@ addDeets2Linkedin = (user, contact, details, listedDetails) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
 	else
-		models.LinkedIn.findOne {linkedinId: details.id}, (err, linkedin) ->
+		models.LinkedIn.findOne {linkedinId: details.profileid}, (err, linkedin) ->
 			throw err if err
 			saveLinkedin details, listedDetails, user, contact, linkedin
 
@@ -366,20 +362,17 @@ linker = (user, notifications, finalCB) ->
 
 		liProcess = (item, contact, cb, counter=-1) ->
 			if item.id is 'private' then return cb()	# don't even bother trying for contacts who block API access
-			getDeets item.id, contact, oauth, (err, deets) ->
+			getDeets item.id, profileIdFrom(item), contact, oauth, (err, deets) ->
 				notifications?.completedContact?()
-				if err or not deets
-					if err and err.statusCode is 403
-						if counter < 0					# was this during the second parse?
-							return fn null, changed		# if so, don't report throttle
-						else
-							console.log "linkedin process throttled"
-							console.dir err
-							return fn err, changed, counter
-					else if err
-						console.log "error in linkedin process"
+				if err
+					if err.statusCode is 403
+						if counter < 0 then return fn null, changed	# don't report throttle if counter not passed
+						console.log "linkedin process throttled"
 						console.dir err
-				else
+						return fn err, changed, counter
+					console.log "error in linkedin process"
+					console.dir err
+				else if deets
 					for key, val of deets		# copy profile, splitting past and present positions
 						if key is 'positions'
 							item[key] = _.select val.values, (p) -> p.isCurrent
@@ -394,6 +387,8 @@ linker = (user, notifications, finalCB) ->
 				cb()
 
 		maybeMore = []
+		if (user.linkedInThrottle < network.values.length)		# recall where we were up to when we got throttled
+			network.values = network.values[user.linkedInThrottle..]
 		syncForEach network.values, (item, counter, cb) ->
 			item.profileid = profileIdFrom item
 			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
@@ -407,7 +402,7 @@ linker = (user, notifications, finalCB) ->
 			if not maybeMore.length				# if there's no connections that didn't match a contact
 				return fn null, changed			# then just exit with a list of changed contacts
 			syncForEach maybeMore, (item, counter, cb) ->	# 2nd parse, through list of other connections
-				liProcess item, null, cb		# without a 4th (counter) param, so we won't report throttle
+				liProcess item, null, cb, counter		# let's experiment with remembering the counter ...
 			, ->
 				return fn null, changed			# at the end of the 2nd parse, return list of changed contacts
 
