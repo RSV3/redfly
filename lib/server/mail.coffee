@@ -62,13 +62,17 @@ mail.sendNewNewsletter = (user, cb) ->
 			some2Class = some2Class[0..10]
 		else if some2Class?.length > 1 then classStr = "#{some2Class.length} new contacts"
 		else classStr = null
-
+		mySubj = "Get connected to cool people"
+		if recentOrgs?.length
+			mySubj += " at #{recentOrgs[0].company}"
+			if recentOrgs?.length > 1 then mySubj += ", #{recentOrgs[1].company}"
+			if recentOrgs?.length > 2 then mySubj += ", #{recentOrgs[2].company}"
 		templateObj = 
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
 			from: from
-			subject: 'This week on Redfly'
+			subject: mySubj
 			numContacts: numContacts
 			numMyContacts: numMyContacts
 			recentContacts: recentContacts[0..12]
