@@ -89,7 +89,11 @@
 			| {{/if}}
 			p
 				| You and {{nickname}} first talked {{firstTalked}}. The email subject was
+				| {{#if spokenTwice}}
 				em "{{firstHistory.subject}}"
+				| {{else}}
+				| <a {{bindAttr href="gmailSearch"}} target="_blank">{{firstHistory.subject}}</a>
+				| {{/if}}
 				| .
 		| {{else}}	
 		| {{#if lastMail}}
