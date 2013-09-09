@@ -2,7 +2,7 @@ module.exports =
 	all:
 		ORGANISATION_NAME: 'redstar'
 		ORGANISATION_TITLE: 'Redstar'
-		ORGANISATION_CONTACT: 'His Serene Highness of Redfly'
+		ORGANISATION_CONTACT: 'Come Classify to Fly High'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 		RANK_DAY: 'Monday'
