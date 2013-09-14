@@ -8,9 +8,14 @@ module.exports = (app, route) ->
 	mailer = require './mail'
 	mboxer = require './mboxer'
 
+	Elastic = require './elastic'
+
+
 	searchPagePageSize = 10
 
 	route 'db', (data, io, session, fn)->
+		es_types = ['Tag', 'Note']
+
 		feed = (doc) ->
 			o =
 				type: data.type
@@ -26,6 +31,7 @@ module.exports = (app, route) ->
 			fn hash
 
 		model = models[data.type]
+
 		switch data.op
 			when 'find'
 				# TODO
@@ -129,12 +135,25 @@ module.exports = (app, route) ->
 									if err
 										console.log "error incrementing data count for #{session.user}"
 										console.dir err
+						if data.type is 'Contact' and doc.addedBy or _.contains es_types, data.type
+							Elastic.create data.type, doc, (err)->
+								if not err then return
+								console.log "ERR: ES saving #{type}"
+								console.dir doc
+								console.dir err
 
 			when 'remove'
 				if id = data.id
 					model.findByIdAndRemove id, (err) ->
 						throw err if err
 						cb()
+						if _.contains es_types, data.type
+							Elastic.delete data.type, id, (err)->
+								if not err then return
+								console.log "ERR: ES saving #{type}"
+								console.dir doc
+								console.dir err
+
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
 				else
@@ -359,7 +378,7 @@ module.exports = (app, route) ->
 		if compound.length > 1 then terms = _.uniq _.compact compound[1].split(' ')			# type specified, eg tag:slacker
 		else terms = _.uniq _.compact query.split(' ')			# multiple search terms, eg john doe
 		search = {}
-		availableTypes = ['name', 'email', 'tag', 'company', 'note']
+		availableTypes = ['name', 'email', 'company', 'tag', 'note']
 		utilisedTypes = []	# this array maps the array of results to their type
 		perfectMatch = []	# array of flags: a perfectmatch is a result set for the full query string,
 							# other than merely one of multiple terms.
@@ -384,6 +403,8 @@ module.exports = (app, route) ->
 				utilisedTypes.push type
 				perfectMatch.push false
 
+		console.log "search"
+		console.dir search
 		step = require 'step'
 		step ->
 			for type of search
@@ -485,7 +506,27 @@ module.exports = (app, route) ->
 									if data.page then skip = data.page*searchPagePageSize
 					else if model is 'Tag'
 						conditions.contact = $exists: true
-					models[model].find(conditions).sort(sort).limit(limit).skip(skip).exec @parallel()
+
+					console.log "field: #{field}"
+					if model is 'Contact'
+						console.log 'searching contacts for:'
+						console.dir conditions
+						esquery = {}
+						if field is 'names' then field='names.name_autocomplete'
+						esquery[field] = _.last compound
+						Elastic.find model, esquery, sort, limit, skip, @parallel()
+						###
+						if field is 'company'
+							esquery = {company:_.last(compound)}
+							console.dir esquery
+							console.log "doing elastic find on #{model}"
+							Elastic.find model, esquery, sort, limit, skip, @parallel()
+						else
+							console.log "doing mongo find on #{model}"
+							models[model].find(conditions).sort(sort).limit(limit).skip(skip).exec @parallel()
+						###
+					else
+						Elastic.find model, {body:_.last(compound)}, sort, limit, skip, @parallel()
 					return undefined	# Step library is insane.
 				, @parallel()
 			return undefined	# Still insane? Yes?? Fine.
@@ -501,7 +542,11 @@ module.exports = (app, route) ->
 					if not results then results = {query:query, response:null}
 					else if _.isArray results
 						resultsObj = query:query
-						resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
+						if results?.length
+							if results[0].id
+								resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
+							else
+								resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.score), '_id'
 						if not terms?.length then return models.Contact.count {added:$exists:true}, (e, c)->
 							resultsObj.totalCount = resultsObj.filteredCount = c
 							if not data.filter
@@ -509,12 +554,12 @@ module.exports = (app, route) ->
 								fn resultsObj	# ... first page
 							else if limit then fn resultsObj
 							else filterSearch session, data, resultsObj, fn
-						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response.length
+						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response?.length
 						if data.filter then return filterSearch session, data, resultsObj, fn
 						else return buildFilters resultsObj, fn
 					else
 						for type of results
-							if not results[type].length then delete results[type]
+							if not results[type]?.length then delete results[type]
 							else results[type] = _.pluck results[type], 'id'
 						results.query = query
 					return fn results		# we need this to be async
@@ -524,15 +569,16 @@ module.exports = (app, route) ->
 					searchMap utilisedTypes[index], perfectMatch[index], docs[index], results, (res)->
 						results = res
 						mapSearches index+1
+
 				# if the results are of type other than contact, we need to check that $exists:added
-				if docs[index][0].contact
+				if docs[index][0]?.contact
 					cids = _.uniq _.pluck(docs[index], 'contact'), (u)-> String(u)
 					models.Contact.find({added: {$exists: true}, _id: {$in: cids}}).distinct '_id', (err, valids)->
-						valids = _.map valids, (d)-> String(d)
 						docs[index] = _.filter docs[index], (d)->
 							_.contains(valids, String(d.contact)) and (valids = _.without valids, String(d.contact))
 						done()
 				else done()
+
 			mapSearches 0
 
 	route 'fullSearch', (data, io, session, fn) ->

@@ -18,6 +18,7 @@
     "fullcontact.js": "~0.1.1",
     "contextio": "~0.3.0",
     "source-map-support": "~0.1.2",
+    "elasticsearchclient": ">0.5.1",
     "icalendar": "0.6.x"
   },
   "devDependencies": {

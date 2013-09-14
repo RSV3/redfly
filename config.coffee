@@ -11,7 +11,7 @@ module.exports =
 	development:
 		HOST: '127.0.0.1:5000'
 		#HOST:	'10.0.0.2:5000'
-		#AUTO_AUTH: '50f7716ac458e60200000007'
+		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
@@ -38,6 +38,9 @@ module.exports =
 
 		#REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
+
+		BONSAI_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
+
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
