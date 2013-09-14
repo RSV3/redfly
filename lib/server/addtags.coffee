@@ -2,6 +2,7 @@ _ = require 'underscore'
 util = require './util'
 models = require './models'
 
+Elastic = require './elastic'
 
 _addTags = (user, contact, category, existing, alist) ->
 	if not alist.length then return
@@ -15,7 +16,12 @@ _addTags = (user, contact, category, existing, alist) ->
 			category: category
 			body: tag
 		newt.save (err) ->
-			_addTags user, contact, category, existing, alist
+			Elastic.create 'tag', newt, (err)->
+				if err
+					console.log "ERR: ES saving tag"
+					console.dir newt
+					console.dir err
+				_addTags user, contact, category, existing, alist
 	else
 		_addTags user, contact, category, existing, alist
 
