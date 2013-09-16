@@ -273,380 +273,88 @@ module.exports = (app, route) ->
 				considerTags tags, cb
 
 
-	# adds filter lists on results object before returning first page
-	#
-	# results ;		results object (so far) including query, response and total
-	# fn ;			callback function to send the data back to the client
-	buildFilters = (results, fn, step=0)->
-		ids = results.response or null
-		switch step
-			when 0
-				query = added:$exists:true
-				if ids then query._id = $in:ids
-				else query.knows = $not:$size:1
-				models.Contact.find(query).select('knows').exec (err, contacts)->
-					knows = _.countBy _.flatten(_.pluck contacts, 'knows'), (k)->k
-					results.f_knows = _.sortBy(_.keys(knows), (k)->-knows[k])[0..5]
-					buildFilters results, fn, 1
-			when 1
-				loadSomeTagNames ids, 'industry', (tags)->
-					results.f_industry = tags
-					buildFilters results, fn, 2
-			when 2
-				loadSomeTagNames ids, $not: $in: [ 'industry', 'organisation' ], (tags)->
-					results.f_organisation = tags
-					if results.response
-						results.response = results.response[0..searchPagePageSize]		# ... first page
-					fn results
-		
-
-	# filters and paginates search results using the parameters specified on the data object
-	filterSearch = (session, data, results, fn, page=0)->
-		if data.page
-			page = data.page
-			delete data.page
-		if data.knows?.length
-			query = {_id:{$in:results.response}, knows:{$in:data.knows}}
-			delete data.knows
-			return models.Contact.find(query).select('_id').exec (err, contactids)->
-				contactids = _.map contactids, (t)-> String(t.get('_id'))
-				if not err then results.response = _.intersection results.response, contactids
-				filterSearch session, data, results, fn, page
-		if data.industry?.length
-			query = contact:{$in:results.response}, category:'industry'
-			if data.industryAND
-				query.body = data.industry.shift()
-			else 
-				query.body = $in:data.industry
-				delete data.industry
-			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
-				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
-				if not err then results.response = _.intersection results.response, tagcontacts
-				filterSearch session, data, results, fn, page
-		if data.organisation?.length
-			query = contact:{$in:results.response}, category:{$ne:'industry'}
-			if data.orgAND
-				query.body = data.organisation.shift()
-			else
-				query.body = $in:data.organisation
-				delete data.organisation
-			return models.Tag.find(query).select('contact').exec (err, tagcontacts)->
-				tagcontacts = _.map tagcontacts, (t)-> String(t.get('contact'))
-				if not err then results.response = _.intersection results.response, tagcontacts
-				filterSearch session, data, results, fn, page
-		if data.sort # sort filtered objects
-			query = _id:$in:results.response		# query the subset we're sorting
-			dir = -1								# sort ascending
-			key = data.sort							# sort term
-			delete data.sort
-			if key[0] is '-' then key = key.substr 1
-			else dir = 1
-			if key is 'names' then key = 'sortname'	# if sorting by names, only look at first instance
-			sort = {}
-			sort[key] = dir
-			switch key
-				when 'influence'
-					return models.Contact.find(query).exec (err, contacts)->
-						if not err
-							contacts = _.sortBy contacts, (c)->c.knows.length * dir
-							results.response = _.map contacts, (t)-> String(t.get('_id'))
-						filterSearch session, data, results, fn, page
-				when 'proximity'
-					return models.Contact.find(query).exec (err, contacts)->
-						if not err
-							contacts = _.sortBy contacts, (c)->
-								_.some c.knows, (k)-> String(k) is String(session.user)
-							results.response = _.map contacts, (t)-> String(t.get('_id'))
-						filterSearch session, data, results, fn, page
-				else
-					return models.Contact.find(query).select('_id').sort(sort).exec (err, contactids)->
-						if not err then results.response = _.map contactids, (t)-> String(t.get('_id'))
-						filterSearch session, data, results, fn, page
-
-		# fall thru to pagination
-		results.filteredCount = results.response.length
-		results.response = results.response[page*searchPagePageSize...(page+1)*searchPagePageSize]		# finally, paginate
-		fn results
-
-
 	# refactored search:
 	# optional limit for the dynamic searchbox,
 	# and a final callback where we can decide what attributes to package for returning
-	doSearch = (fn, data, session, searchMap, limit=0) ->
-		if not (query = data.filter or data.query) then return []
+	doSearch = (fn, data, session, limit=0) ->
+		query = data.filter or data.query or ''
 		compound = _.compact query.split ':'
-		if compound.length > 1 then terms = _.uniq _.compact compound[1].split(' ')			# type specified, eg tag:slacker
-		else terms = _.uniq _.compact query.split(' ')			# multiple search terms, eg john doe
+		if not compound.length then terms=''
+		else terms = compound[compound.length-1]
 		search = {}
 		availableTypes = ['name', 'email', 'company', 'tag', 'note']
-		utilisedTypes = []	# this array maps the array of results to their type
+		fields = []	# this array maps the array of results to their type
 		perfectMatch = []	# array of flags: a perfectmatch is a result set for the full query string,
 							# other than merely one of multiple terms.
 							# perfectmatches appear earlier in the results
-		for type in availableTypes
-			search[type] = []
-			for term in terms
-				if terms.length is 1 or not _.contains ['and', 'to', 'with', 'a'], term
-					if compound.length > 1						# type specified, eg tag:slacker
-						if compound[0] is type then search[type].push term
-						if compound[0] is 'contact'
-							if type is 'name' then search[type].push term
-							if parseInt(term).toString() isnt term
-								if type is 'email' then search[type].push term
-					else										# not specified, try this term in each type
-						search[type].push term
-			if not search[type].length then delete search[type]
+		if compound.length is 1						# type specified, eg tag:slacker
+			for type in availableTypes
+				fields.push type
+		else if compound[0] is 'contact'
+			fields = ['name', 'email']
+		else fields = [compound[0]]
+
+		filters = []
+		if data.knows?.length then filters.push terms:knows:data.knows
+		if data.industry?.length 
+			thisf = []
+			for tag in data.industry
+				thisf.push term:"indtags.body.raw":tag,
+			if data.indAND then filters.push "and":thisf
+			else filters.push "or":thisf
+		if data.organisation?.length 
+			thisf = []
+			for tag in data.organisation
+				thisf.push term:"orgtags.body.raw":tag
+			if data.orgAND then filters.push "and":thisf
+			else filters.push "or":thisf
+
+		sort = {}
+		if data.sort
+			key = data.sort
+			if key[0] is '-'
+				key=key.substr 1
+				dir = 'desc'
+			else dir = 'asc'
+			if key is "names"
+				key = "sortname"
+				sort[key]=dir
+				delete data.sort
+			else if key is 'added'
+				sort[key]=dir
+				delete data.sort
 			else
-				if terms.length > 1			# eg. search on "firstname lastname"
-					utilisedTypes.push type
-					perfectMatch.push true
-				utilisedTypes.push type
-				perfectMatch.push false
+				key="#{key}.value"
+				sort[key]=dir
 
-		console.log "search"
-		console.dir search
-		step = require 'step'
-		step ->
-			for type of search
-				sort = {}
-				skip = 0
-				terms = search[type]
-				if type is 'tag' or type is 'note'
-					model = _s.capitalize type
-					field = 'body'
-				else
-					model = 'Contact'
-					field = type
-					if type isnt 'company' then field = "#{field}s"
-				conditions = {}
-				if compound.length > 1 and compound[0] is 'contact'
-					if parseInt(compound[1], 10).toString() is compound[1]
-						limit = parseInt(compound[1], 10)
-						terms = []
-				if terms.length > 1			# eg. search on "firstname lastname"
-					try
-						conditions[field] = new RegExp _.last(compound), 'i'
-					catch err
-						console.log err	# probably User typed an invlid regular expression, just ignore it.
-					if conditions[field]
-						if model is 'Contact'
-							conditions.added = $exists: true	# unclassified contacts might not be added
-						else if model is 'Tag'
-							conditions.contact = $exists: true	# priority tags have no contact: ignore em.
-						models[model].find(conditions).exec @parallel()
-
-				step ->
-					conditions = {}
-					for term in terms
-						try
-							reTerm = new RegExp term, 'i'	# Case-insensitive regex is inefficient and won't use a mongo index.
-							if not conditions['$or'] and not conditions[field]
-								conditions[field] = reTerm
-							else
-								nextC = {}
-								if conditions[field]
-									nextC[field] = conditions[field]
-									conditions['$or'] = [ nextC ]
-									delete conditions[field]
-								nextC = {}
-								nextC[field] = reTerm
-								conditions['$or'].push nextC
-						catch err
-							continue	# User typed an invlid regular expression, just ignore it.
-
-					if model is 'Contact'
-						conditions.added = $exists: true
-						_.extend conditions, data.moreConditions
-						if not terms?.length		# special case: no terms means we're looking at all contacts
-							hazFilter = true
-							if data.knows?.length
-								_.extend conditions, knows:$in:data.knows
-								delete data.knows
-							else if data.industry?.length and not data.industryAND
-								conditions = category:'industry'
-								conditions.body = $in:data.industry
-								conditions.contact = $exists:true
-								model = 'Tag'
-								delete data.industry
-							else if data.organisation?.length and not data.orgAND
-								conditions = category:$ne:'industry'
-								conditions.body = $in:data.organisation
-								conditions.contact = $exists:true
-								model = 'Tag'
-								delete data.organisation
-							else if data.industry?.length # AND flag, so just get first one
-								conditions = category:'industry'
-								conditions.body = data.industry.shift()
-								conditions.contact = $exists:true
-								model = 'Tag'
-							else if data.organisation?.length # AND flag, so just get first one
-								conditions = category:$ne:'industry'
-								conditions.body = data.organisation.shift()
-								conditions.contact = $exists:true
-								model = 'Tag'
-							else hazFilter = false
-							if model is 'Contact'
-								dir = -1
-								if not data.sort
-									key = "added"
-									sort[key]=dir
-								else
-									key = data.sort
-									if key[0] is '-' then key=key.substr 1
-									else dir = 1
-									if key is "names"
-										key = "sortname"
-										sort[key]=dir
-										delete data.sort
-									else if key is 'added'
-										sort[key]=dir
-										delete data.sort
-								if not hazFilter
-									limit = searchPagePageSize
-									if data.page then skip = data.page*searchPagePageSize
-					else if model is 'Tag'
-						conditions.contact = $exists: true
-
-					console.log "field: #{field}"
-					if model is 'Contact'
-						console.log 'searching contacts for:'
-						console.dir conditions
-						esquery = {}
-						if field is 'names' then field='names.name_autocomplete'
-						esquery[field] = _.last compound
-						Elastic.find model, esquery, sort, limit, skip, @parallel()
-						###
-						if field is 'company'
-							esquery = {company:_.last(compound)}
-							console.dir esquery
-							console.log "doing elastic find on #{model}"
-							Elastic.find model, esquery, sort, limit, skip, @parallel()
-						else
-							console.log "doing mongo find on #{model}"
-							models[model].find(conditions).sort(sort).limit(limit).skip(skip).exec @parallel()
-						###
-					else
-						Elastic.find model, {body:_.last(compound)}, sort, limit, skip, @parallel()
-					return undefined	# Step library is insane.
-				, @parallel()
-			return undefined	# Still insane? Yes?? Fine.
-
-		, (err, docs...) ->
+		if not limit
+			options = {limit:searchPagePageSize, facets: not data.filter, highlights: false}
+			if data.page then options.skip = data.page*searchPagePageSize
+		else options = {limit:limit, skip:0, facets: false, highlights: true}
+		Elastic.find fields, terms, filters, sort, options, (err, totes, docs, facets) ->
 			throw err if err
-			results = null
-			mapSearches = (index)->											# in order to check $exists:added
-				if index is utilisedTypes.length
-					# note the query parameter is returned in the results
-					# to ensure that stale old results don't overwrite more recent search requests
-					# that happened to respond earlier
-					if not results then results = {query:query, response:null}
-					else if _.isArray results
-						resultsObj = query:query
-						if results?.length
-							if results[0].id
-								resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.count), 'id'
-							else
-								resultsObj.response = _.pluck _.sortBy(results, (r)-> -r.score), '_id'
-						if not terms?.length then return models.Contact.count {added:$exists:true}, (e, c)->
-							resultsObj.totalCount = resultsObj.filteredCount = c
-							if not data.filter
-								resultsObj.response = resultsObj.response[0..searchPagePageSize]
-								fn resultsObj	# ... first page
-							else if limit then fn resultsObj
-							else filterSearch session, data, resultsObj, fn
-						resultsObj.totalCount = resultsObj.filteredCount = resultsObj.response?.length
-						if data.filter then return filterSearch session, data, resultsObj, fn
-						else return buildFilters resultsObj, fn
-					else
-						for type of results
-							if not results[type]?.length then delete results[type]
-							else results[type] = _.pluck results[type], 'id'
-						results.query = query
-					return fn results		# we need this to be async
-				if _.isEmpty docs[index] then return mapSearches index+1
+			resultsObj = query:query
+			if docs?.length
+				if facets then resultsObj.facets = facets
+				if docs[0].field
+					resultsObj.response = {}
+					for d in docs
+						if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
+						else thefield = d.field
+						if not resultsObj[thefield] then resultsObj[thefield] = []
+						resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
+				else
+					resultsObj.response = _.pluck docs, '_id'
+					resultsObj.totalCount = resultsObj.filteredCount = totes
+			return fn resultsObj
 
-				done = ->
-					searchMap utilisedTypes[index], perfectMatch[index], docs[index], results, (res)->
-						results = res
-						mapSearches index+1
-
-				# if the results are of type other than contact, we need to check that $exists:added
-				if docs[index][0]?.contact
-					cids = _.uniq _.pluck(docs[index], 'contact'), (u)-> String(u)
-					models.Contact.find({added: {$exists: true}, _id: {$in: cids}}).distinct '_id', (err, valids)->
-						docs[index] = _.filter docs[index], (d)->
-							_.contains(valids, String(d.contact)) and (valids = _.without valids, String(d.contact))
-						done()
-				else done()
-
-			mapSearches 0
 
 	route 'fullSearch', (data, io, session, fn) ->
-		# passes a results array to accumulate a list of contact ids
-		doSearch fn, data, session, (type, perfect, typeDocs, results=[], cb)->
-			if not typeDocs or not typeDocs.length then return cb results
-			if perfect
-				matches = _.uniq _.map(typeDocs, (d)->
-					count: 999											# perfect matches take priority
-					id: String(d.contact or d.id)
-				), (u)-> u.id
-				# perfect matches replace anything already in the results list
-				return cb _.union _.reject(results, (r)->_.contains _.pluck(matches, 'id'), r.id), matches
-			matches = _.uniq _.map typeDocs, (d)->
-				count: 0											# default
-				id: String(d.contact or d.id)
-			, (u)-> u.id
-
-			# if we have too many results, or we're searching all contacts, thatsit.
-			if results.length > 999 or (data.query or data.filter) is 'contact:0'
-				return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
-
-			###
-			# this clause is used to prioritise results with more tags
-			###
-			ids = _.map typeDocs, (d) -> if d.contact then d.contact else d.id
-			ids = _.reject ids, (r)-> _.contains _.pluck(results, 'id'), r.id
-			if ids.length then models.Tag.aggregate {$match: {contact:{$in:ids}}},
-				{$group:  _id: '$contact', count: $sum: 1},
-				{$sort: count: -1},
-				(err, aggresults) ->
-					if not err and aggresults.length
-						aggresults = _.map aggresults, (d)->
-							return {
-								id: String(d._id)
-								count:d.count
-							}
-						results = _.union results, _.filter aggresults, (r)-> not _.contains _.pluck(results, 'id'), r.id
-					# defaults won't replace anything already in the results list
-					return cb _.union results, _.reject matches, (r)-> _.contains _.pluck(results, 'id'), r.id
-			return results
-
+		doSearch fn, data, session
 
 	route 'search', (data, io, session, fn)->
+		doSearch fn, data, session, 19
 
-		# passes an object, which accumulates arrays for each time, of the form:
-		# { tag:[{contact, id}], notes:[{contact, id}], names:[{contact, id}], emails:[{contact, id}] }
-		doSearch fn, data, session, (type, perfect, typeDocs, results={}, cb) ->
-			if not results[type] then results[type] = []
-			typeDocs = _.map typeDocs, (d)-> {id:String(d.id), contact:String(d.contact or d.id)}
-			if perfect
-				for t of results		# if this is a perfect match, remove duplicates from other results
-					results[t] = _.filter results[t], (doc)->
-						not _.some typeDocs, ((d)-> doc.contact is d.contact)
-				results[type] = _.union typeDocs, results[type]
-			else
-				typeDocs = _.filter typeDocs, (doc)->
-					for t of results		# if this is not a perfect match, remove duplicates from this result
-						if results[t] and _.some results[t], ((d)-> d.contact is doc.contact)
-							return false
-					true
-				results[type] = _.union results[type], typeDocs
-			cb results
-		, 10
-
-
-	route 'recentFilters', (data, fn) ->
-		buildFilters {}, fn		# an empty object means we find filters for the whole set
 
 	route 'verifyUniqueness', (data, fn) ->
 		field = data.field + 's'
