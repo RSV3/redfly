@@ -3,7 +3,7 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 	util = require './util'
 
-	recent_query_string = 'contact:0'	# this is the query that returns the list of all contacts
+	recent_query_string = ''	# this is the query that returns the list of all contacts
 
 	App.Router.reopen
 		location: 'history'
@@ -167,7 +167,12 @@ module.exports = (Ember, App, socket) ->
 						if model.text isnt recent_query_string then return @transitionTo 'recent'
 						else return @transitionTo 'userProfile'
 					for own key, val of results
-						if key isnt 'response'
+						if key is 'facets'
+							for own k, v of results.facets
+								controller.set "f_#{k}", v
+							for zeroit in ['industryOp', 'orgOp']
+								controller.set zeroit, 0
+						else if key isnt 'response'
 							console.log "in router Setting #{key}"
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string

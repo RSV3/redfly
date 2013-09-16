@@ -6,15 +6,15 @@
 			+view ('App.SortView class="names" sortTitle = "sort name alphabetically" sortName = "Alphabetical"')
 		.span2
 			{{#if othersorts}}
-			+view ('App.SortView class="influence" sortTitle = "how many users know each contact" sortName = "Influence"')
+			+view ('App.SortView class="familiarity" sortTitle = "how many users know each contact" sortName = "Influence"')
 			{{else}}
-			+view ('App.SortView dontclick=true class="influence" sortName = "Influence"')
+			+view ('App.SortView dontclick=true class="familiarity" sortName = "Influence"')
 			{{/if}}
 		.span3
 			{{#if othersorts}}
-			+view ('App.SortView class="proximity" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
+			+view ('App.SortView class="reachability" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
 			{{else}}
-			+view ('App.SortView dontclick=true class="proximity" sortName = "Relationship Strength"')
+			+view ('App.SortView dontclick=true class="reachability" sortName = "Relationship Strength"')
 			{{/if}}
 		.span2
 			+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')
