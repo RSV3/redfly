@@ -14,7 +14,29 @@ module.exports = (app, route) ->
 	searchPagePageSize = 10
 
 	route 'db', (data, io, session, fn)->
-		es_types = ['Tag', 'Note']
+
+		# this little routine updates the relevant elasticsearch document when we add or remove tags or notes
+		# if incflag is set, this is an add, so increment the datacount
+		runScriptOnOp = (doc, field, script, incflag)->
+			user = doc.creator or doc.author
+			if not doc.contact or not user then return
+			if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
+				if err
+					console.log "error incrementing data count for #{user}"
+					console.dir err
+				feed doc
+			esup_doc =
+				params: val: {user:String(user), body:doc.body}
+				script: script
+			Elastic.update String(doc.contact), esup_doc, (err)->
+				if not err then return
+				console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
+				console.dir doc
+				console.dir err
+		updateOnCreate = (doc, field)->
+			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) { ctx._source.#{field}=[val] } else if (ctx._source.#{field}.contains(val)) { ctx.op = \"none\" } else { ctx._source.#{field} += val }", true
+		updateOnDelete = (doc, field)->
+			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) {ctx.op=\"none\"} else if (ctx._source.#{field} == val) { ctx._source.#{field} = null} else if (ctx._source.#{field}.contains(val)) { ctx._source.#{field}.remove(val) } else { ctx.op = \"none\" }"
 
 		feed = (doc) ->
 			o =
@@ -88,21 +110,19 @@ module.exports = (app, route) ->
 				model.create record, (err, doc) ->
 					throw err if err
 					cb doc
-					if model is models.Note and doc.contact
-						models.User.update {_id:doc.author}, $inc: 'dataCount': 1, (err)->
-							if err
-								console.log "error incrementing data count for #{doc.author}"
-								console.dir err
-						feed doc
-					if model is models.Tag and doc.contact
-						console.dir "#{doc.creator}"
-						models.User.update {_id:doc.creator}, $inc: 'dataCount': 1, (err)->
-							if err
-								console.log "error incrementing data count for #{doc.creator}"
-								console.dir err
-						feed doc
-					else if model is models.Contact and doc.addedBy
-						feed doc
+					switch model
+						when models.Note
+							updateOnCreate doc, "notes"
+						when models.Tag
+							updateOnCreate doc, if doc.category is 'industry' then 'indtags' else 'orgtags'
+						when models.Contact
+							if doc.addedBy
+								feed doc
+								Elastic.create doc, (err)->
+									if not err then return
+									console.log "ERR: ES creating new contact"
+									console.dir doc
+									console.dir err
 
 			when 'save'
 				record = data.record
@@ -123,36 +143,50 @@ module.exports = (app, route) ->
 					doc.save (err) ->
 						throw err if err
 						cb doc
-						if model is models.Contact 
-							if 'added' in modified and doc.added then feed doc
-							if 'classified' in modified
-								models.User.update {_id:doc.updatedBy}, $inc: {'contactCount':1, 'fullCount':1}, (err)->
-									if err
-										console.log "error incrementing data count for #{doc.updatedBy}"
-										console.dir err
-							else if 'updated' in modified
-								models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
-									if err
-										console.log "error incrementing data count for #{session.user}"
-										console.dir err
-						if data.type is 'Contact' and doc.addedBy or _.contains es_types, data.type
-							Elastic.create data.type, doc, (err)->
-								if not err then return
-								console.log "ERR: ES saving #{type}"
-								console.dir doc
-								console.dir err
+						switch model
+							when models.Contact
+								if doc.added
+									if 'added' in modified
+										feed doc
+										Elastic.create doc, (err)->
+											if not err then return
+											console.log "ERR: ES updating #{type}"
+											console.dir doc
+											console.dir err
+									else
+										Elastic.update String(doc._id), doc:doc, (err)->
+											if not err then return
+											console.log "ERR: ES updating #{type}"
+											console.dir doc
+											console.dir err
+								if 'classified' in modified
+									models.User.update {_id:session.user}, $inc: {'contactCount':1, 'fullCount':1}, (err)->
+										if err
+											console.log "error incrementing data count for #{session.user}"
+											console.dir err
+								else if 'updated' in modified
+									models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
+										if err
+											console.log "error incrementing data count for #{session.user}"
+											console.dir err
 
 			when 'remove'
 				if id = data.id
-					model.findByIdAndRemove id, (err) ->
+					model.findByIdAndRemove id, (err, doc) ->
 						throw err if err
 						cb()
-						if _.contains es_types, data.type
-							Elastic.delete data.type, id, (err)->
-								if not err then return
-								console.log "ERR: ES saving #{type}"
-								console.dir doc
-								console.dir err
+						if doc
+							switch data.type
+								when 'Contact'
+									Elastic.delete id, (err)->
+										if not err then return
+										console.log "ERR: ES saving #{type}"
+										console.dir id
+										console.dir err
+								when 'Note'
+									updateOnDelete doc, "notes"
+								when 'Tag'
+									updateOnDelete doc, if doc.category is 'industry' then 'indtags' else 'orgtags'
 
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
