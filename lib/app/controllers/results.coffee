@@ -24,10 +24,6 @@ module.exports = (Ember, App, socket) ->
 			newResults = App.Results.create {text: ''}
 			App.Router.router.transitionTo "results", newResults
 
-		othersorts: (->
-			return @get('totalCount')<99
-		).property 'totalCount'
-
 		orgTagsToSelect: (->
 			toptags = []
 			if tags = @get 'f_orgtags'
