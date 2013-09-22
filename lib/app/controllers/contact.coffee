@@ -311,25 +311,23 @@ module.exports = (Ember, App, socket) ->
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'
-					type: 'info'
-					hide: false
-					closer: false
-					sticker: false
-					icon: 'icon-signin'
+					type: 'info', icon: 'icon-signin'
+					hide: false, closer: false, sticker: false
 					before_open: (pnotify) =>
 						pnotify.css top: '60px'
 
 				selections = @get 'selections'
-				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), =>
+				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
+					# Refresh the store with the stuff that could have changed.
+					@set 'controller', mergedcontact
+					App.Tag.find contact: @get('controller.id')
+					App.Note.find contact: @get('controller.id')
+					App.Mail.find recipient: @get('controller.id')
+
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
 					selections.forEach (selection) -> selection.deleteRecord()
 					App.store.commit()
-					# Refresh the store with the stuff that could have changed.
-					App.refresh @get('controller.content')
-					App.Tag.find contact: @get('controller.id')
-					App.Note.find contact: @get('controller.id')
-					App.Mail.find recipient: @get('controller.id')
 
 					notification.effect 'bounce'
 					notification.pnotify
@@ -337,7 +335,6 @@ module.exports = (Ember, App, socket) ->
 						type: 'success'
 						hide: true
 						closer: true
-
 				@get('selections').clear()
 
 
@@ -351,7 +348,7 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').toArray().concat @get('controller.content')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
-					@get('parentView.selections').pushObject context
+					@get('parentView.selections').pushObject App.Contact.find context.id
 
 		measureBarView: Ember.View.extend
 			tagName: 'div'

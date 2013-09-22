@@ -105,9 +105,16 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			notifications?.considerContact?()
 			# Find an existing contact with one of the same emails 
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
-			models.Contact.findOne {emails: mail.recipientEmail}, (err, contact) ->
+			models.Contact.find {emails: mail.recipientEmail}, (err, contacts) ->
 
 				throw err if err
+				if not contacts?.length then contact = null
+				else
+					contact = contacts[0]
+					if contacts.length isnt 1
+						console.log "ERROR: got #{contacts.length} results for #{mail.recipientEmail}"
+						console.dir contacts
+
 				splitted = mail.recipientEmail.split '@'
 				domain = _.first _.last(splitted).split '.'
 				mockname =  _.first(splitted) + " [#{domain}]"
@@ -137,7 +144,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				if not (name = mail.recipientName)
 					if mail.recipientEmail[0] >= '0' and mail.recipientEmail[0] <= '9'
 						return sift index	# skip emails that start with digit
-					name =  mockname
+					name = mockname
 				contact.names.addToSet name
 				contact.sortname = name.toLowerCase()
 				contact.knows.addToSet user

@@ -11,39 +11,22 @@ module.exports = (app, route) ->
 	Elastic = require './elastic'
 
 
+	# when we first add a contact to ES:
+	# A recently added contact may already have notes and tags,
+	# so we should look for em and add em to the doc we send to ES
+	primeContactForES = (doc, cb)->
+		models.Note.find {contact:doc._id}, (nerr, notes)->
+			models.Tag.find {contact:doc._id}, (terr, tags)->
+				if not nerr and notes?.length
+					doc._doc.notes = _.map notes, (n)-> {body:n.body, user:n.author}
+				if not terr and tags?.length
+					doc._doc.indtags = _.map _.filter(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
+					doc._doc.orgtags = _.map _.reject(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
+				cb doc
+
 	searchPagePageSize = 10
 
 	route 'db', (data, io, session, fn)->
-
-		# this little routine updates the relevant elasticsearch document when we add or remove tags or notes
-		# if incflag is set, this is an add, so increment the datacount
-		runScriptOnOp = (doc, field, script, incflag)->
-			user = doc.creator or doc.author
-			if not doc.contact or not user then return
-			if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
-				if err
-					console.log "error incrementing data count for #{user}"
-					console.dir err
-				feed doc
-			esup_doc =
-				params: val: {user:String(user), body:doc.body}
-				script: script
-			Elastic.update String(doc.contact), esup_doc, (err)->
-				if not err then return
-				console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
-				console.dir doc
-				console.dir err
-		updateOnCreate = (doc, field)->
-			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) { ctx._source.#{field}=[val] } else if (ctx._source.#{field}.contains(val)) { ctx.op = \"none\" } else { ctx._source.#{field} += val }", true
-		updateOnDelete = (doc, field)->
-			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) {ctx.op=\"none\"} else if (ctx._source.#{field} == val) { ctx._source.#{field} = null} else if (ctx._source.#{field}.contains(val)) { ctx._source.#{field}.remove(val) } else { ctx.op = \"none\" }"
-
-		feed = (doc) ->
-			o =
-				type: data.type
-				id: doc.id
-			if doc.addedBy then o.addedBy = doc.addedBy
-			app.io.broadcast 'feed', o
 
 		cb = (payload) ->
 			root = _s.underscored data.type
@@ -53,6 +36,38 @@ module.exports = (app, route) ->
 			fn hash
 
 		model = models[data.type]
+
+		# add details about doc into feed
+		feed = (doc, type) ->
+			o = {type: type, id: doc.id}
+			if doc.addedBy then o.addedBy = doc.addedBy
+			app.io.broadcast 'feed', o
+
+		# this little routine updates the relevant elasticsearch document when we add or remove tags or notes
+		# if incflag is set, this is an add, so increment the datacount
+		runScriptOnOp = (doc, type, field, script, incflag)->
+			user = doc.creator or doc.author
+			if not doc.contact or not user then return
+			if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
+				if err
+					console.log "error incrementing data count for #{user}"
+					console.dir err
+				feed doc, type
+			esup_doc =
+				params: val: {user:String(user), body:doc.body}
+				script: script
+			Elastic.update String(doc.contact), esup_doc, (err)->
+				if not err then return
+				console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
+				console.dir doc
+				console.dir err
+
+		updateOnCreate = (doc, type, field)->
+			runScriptOnOp doc, type, field, "if (ctx._source.?#{field} == empty) { ctx._source.#{field}=[val] } else if (ctx._source.#{field}.contains(val)) { ctx.op = \"none\" } else { ctx._source.#{field} += val }", true
+
+		updateOnDelete = (doc, type, field)->
+			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) {ctx.op=\"none\"} else if (ctx._source.#{field} == val) { ctx._source.#{field} = null} else if (ctx._source.#{field}.contains(val)) { ctx._source.#{field}.remove(val) } else { ctx.op = \"none\" }"
+
 
 		switch data.op
 			when 'find'
@@ -112,12 +127,12 @@ module.exports = (app, route) ->
 					cb doc
 					switch model
 						when models.Note
-							updateOnCreate doc, "notes"
+							updateOnCreate doc, 'Note', "notes"
 						when models.Tag
-							updateOnCreate doc, if doc.category is 'industry' then 'indtags' else 'orgtags'
+							updateOnCreate doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
 						when models.Contact
 							if doc.addedBy
-								feed doc
+								feed doc, data.type
 								Elastic.create doc, (err)->
 									if not err then return
 									console.log "ERR: ES creating new contact"
@@ -147,12 +162,14 @@ module.exports = (app, route) ->
 							when models.Contact
 								if doc.added
 									if 'added' in modified
-										feed doc
-										Elastic.create doc, (err)->
-											if not err then return
-											console.log "ERR: ES updating #{type}"
-											console.dir doc
-											console.dir err
+										feed doc, data.type
+										console.log "priming contact from save"
+										primeContactForES doc, (doc)->
+											Elastic.create doc, (err)->
+												if not err then return
+												console.log "ERR: ES updating #{type}"
+												console.dir doc
+												console.dir err
 									else
 										Elastic.update String(doc._id), doc:doc, (err)->
 											if not err then return
@@ -180,13 +197,12 @@ module.exports = (app, route) ->
 								when 'Contact'
 									Elastic.delete id, (err)->
 										if not err then return
-										console.log "ERR: ES saving #{type}"
-										console.dir id
+										console.log "ERR: ES deleting #{id} on db remove"
 										console.dir err
 								when 'Note'
-									updateOnDelete doc, "notes"
+									updateOnDelete doc, 'Note', "notes"
 								when 'Tag'
-									updateOnDelete doc, if doc.category is 'industry' then 'indtags' else 'orgtags'
+									updateOnDelete doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
 
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
@@ -315,12 +331,9 @@ module.exports = (app, route) ->
 		compound = _.compact query.split ':'
 		if not compound.length then terms=''
 		else terms = compound[compound.length-1]
-		search = {}
+
 		availableTypes = ['name', 'email', 'company', 'tag', 'note']
-		fields = []	# this array maps the array of results to their type
-		perfectMatch = []	# array of flags: a perfectmatch is a result set for the full query string,
-							# other than merely one of multiple terms.
-							# perfectmatches appear earlier in the results
+		fields = []		# this array maps the array of results to their type
 		if compound.length is 1						# type specified, eg tag:slacker
 			for type in availableTypes
 				fields.push type
@@ -523,12 +536,23 @@ module.exports = (app, route) ->
 								cb err
 					, (err) ->
 						throw err if err
+						Elastic.delete merge._id, (err)->
+							if not err then return
+							console.log "ERR: ES deleting #{merge._id} on merge"
+							console.dir err
 						merge.remove cb
 				, (err) ->
 					throw err if err
-					contact?.save (err) ->		# we had a crash here once ...
+					contact?.save (err) ->
 						throw err if err
-						return fn()
+						console.log "priming contact from merge"
+						primeContactForES contact, (doc)->
+							fn contact
+							Elastic.create doc, (err)->
+								if not err then return
+								console.log "ERR: ES updating #{type}"
+								console.dir doc
+								console.dir err
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	route 'parse', (id, io, fn) ->
