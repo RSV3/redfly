@@ -52,9 +52,17 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.using') and not @get('parentView.hasResults')
 				).property 'parentView.using', 'parentView.hasResults'
 
-			resultsBinding: 'parentView.results'
-			allResultsBinding: 'parentView.allResults'
 			valueBinding: 'parentView.query'
+			theresults: {}
+			fragments: {}
+			writeResults: (->
+				results = {}
+				theresults = @get 'theresults'
+				for own key,val of @fragments
+					if not val?.length or not theresults[key] then results[key]=null
+					else results[key] = theresults[key].map (item, index)-> {contact: item, fragment: val[index]}
+				@set 'parentView.results', results
+			).observes 'theresults.@each.@each.isLoaded'
 			valueChanged: (->
 					query = util.trim @get('value')
 					if not query
@@ -62,18 +70,17 @@ module.exports = (Ember, App, socket) ->
 					else
 						prefix = @get('parentView.prefix')
 						if prefix then query = util.trim(prefix)+query
-						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results) =>
+						socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
 							query = util.trim @get('value')
 							if results.query is query or results.query is "contact:#{query}"
-								@set 'results', {}
-								allResults = []
+								@set 'theresults', {}
+								@fragments = {}
+								tmpres = {}
 								delete results.query
 								for type, ids of results
 									if ids and ids.length
-										if type is 'tag' or type is 'note' then model = _s.capitalize type
-										else model = 'Contact'
-										@set 'results.' + type, App.store.findMany(App[model], ids)
-										allResults.push model
-								@set 'allResults', allResults
+										tmpres[type] = App.store.findMany(App.Contact, _.pluck ids, '_id')
+										@fragments[type] = _.pluck ids, 'fragment'
+								@set "theresults", tmpres
 				).observes 'value', 'parentView.excludes'
 

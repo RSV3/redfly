@@ -81,25 +81,6 @@ mail.sendNewNewsletter = (user, cb) ->
 
 mail.sendNewsletter = (user, cb) ->
 	return mail.sendNewNewsletter user, cb
-	###
-	logic = require './logic'
-	require('step') ->
-		logic.summaryContacts @parallel()
-		logic.summaryTags @parallel()
-		logic.summaryNotes @parallel()
-		return undefined
-	, (err, numContacts, numTags, numNotes) ->
-		throw err if err
-		mail.sendTemplate 'newsletter',
-			to: user.email
-			from: from
-			subject: 'On the Health and Well-Being of Redfly'
-			title: 'It\'s been a big week!'
-			contactsQueued: numContacts
-			tagsCreated: numTags
-			notesAuthored: numNotes
-		, cb
-	###
 
 
 mail.requestIntro = (userfrom, userto, contact, url, cb) ->

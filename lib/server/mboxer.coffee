@@ -48,7 +48,9 @@ imapConnect = (user, blacklist, cb)->
 
 imapSearch = (session, user, cb)->
 	criteria = [['FROM', user.email]]
-	if previous = user.lastParsed then criteria.unshift ['SINCE', previous]
+	if previous = user.lastParsed then criteria.unshift ['SENTSINCE', previous]
+	console.log '' # DEBUG
+	console.dir criteria # DEBUG
 	session.IMAP.search criteria, cb
 
 contextSearch = (session, user, cb)->
@@ -98,7 +100,7 @@ eachContextMsg = (session, user, results, finish, cb) ->
 			if _acceptableContact user, name, email, session.excludes, session.blacklist
 				newmails.push
 					subject: msg.subject
-					sent: new Date 1000*msg.date
+					sent: new Date(1000*msg.date)
 					recipientEmail: email
 					recipientName: name
 		cb newmails
@@ -118,6 +120,8 @@ eachImapMsg = (session, user, results, finish, cb) ->
 							email = name
 							name = null
 						if _acceptableContact user, name, email, session.excludes, session.blacklist
+							console.log '' # DEBUG
+							console.dir headers # DEBUG
 							newmails.push
 								subject: headers.subject?[0]
 								sent: new Date headers.date?[0]
@@ -180,7 +184,6 @@ module.exports =
 		models.Admin.findById 1, (err, admin) ->
 			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
 			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
-			console.log "connecting to #{user.email}"
 			googOrCio user, ->
 				imapConnect user, blacklist, cb
 			, ->

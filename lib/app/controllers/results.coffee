@@ -5,7 +5,7 @@ module.exports = (Ember, App, socket) ->
 	moment = require 'moment'
 
 	searchPagePageSize = 10
-	sortFieldNames = ['influence', 'proximity', 'names', 'added']
+	sortFieldNames = ['familiarity', 'reachability', 'names', 'added']
 
 	App.ResultsController = Ember.ObjectController.extend
 		hiding: 0			# this is just for templating, whether or not results are filtered out
@@ -16,33 +16,29 @@ module.exports = (Ember, App, socket) ->
 		orgOp: 0
 
 		f_knows: []
-		f_industry: []
-		f_organisation: []
+		f_indtags: []
+		f_orgtags: []
 
 		loseTag: ->
 			@set 'searchtag', null
-			newResults = App.Results.create {text: 'contact:0'}
+			newResults = App.Results.create {text: ''}
 			App.Router.router.transitionTo "results", newResults
-
-		othersorts: (->
-			return @get('totalCount')<99
-		).property 'totalCount'
 
 		orgTagsToSelect: (->
 			toptags = []
-			if tags = @get 'f_organisation'
+			if tags = @get 'f_orgtags'
 				for t in tags
 					toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
 			toptags
-		).property 'f_organisation'
+		).property 'f_orgtags'
 
 		indTagsToSelect: (->
 			toptags = []
-			if tags = @get 'f_industry'
+			if tags = @get 'f_indtags'
 				for t in tags
 					toptags.push { id:t, checked:false, label:_.prune _.capitalize(t), 20 }
 			toptags
-		).property 'f_industry'
+		).property 'f_indtags'
 
 		noseToPick: (->
 			topnose = []
@@ -121,7 +117,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'filteredCount', results?.filteredCount
 
 		filterAgain:(->
-			if @get('noseToPick')?.length and @get('indTagsToSelect')?.length and @get('orgTagsToSelect')?.length then @runFilter()
+			if @get('noseToPick')?.length then @runFilter()
 		).observes 'noseToPick.@each.checked', 'indTagsToSelect.@each.checked', 'orgTagsToSelect.@each.checked'
 
 		maybeRun: (prefix)->
@@ -147,7 +143,6 @@ module.exports = (Ember, App, socket) ->
 				if results?.response?.length
 					@set 'all', App.store.findMany(App.Contact, results.response)
 				else @set 'empty', true
-				#).observes 'sortDir', 'sortType'
 
 		query:null				# query string
 		page:0					# pagination
@@ -176,14 +171,6 @@ module.exports = (Ember, App, socket) ->
 		theResults: (->		# paginated content
 			a = @get 'all'
 			if not a?.get('length') then return null
-			Ember.run.next this, =>
-				if not f = @get('f_knows')?.length
-					socket.emit 'recentFilters', (filters) =>
-						for own key, val of filters
-							@set key, val
-						for zeroit in ['industryOp', 'orgOp']
-							@set zeroit, 0
-						null
 			a
 		).property 'all'
 
@@ -270,26 +257,17 @@ module.exports = (Ember, App, socket) ->
 					@set 'controller.sortDir', ascdesc
 			false
 		sorttoggle: () ->
-			nudir = 0
-			if thistype = @get 'controller.sortType'
-				if _.contains this.classNames, thistype
-					nudir = -1*@get('dir')
-			if not nudir
+			nowdir = @get('dir')
+			if not nowdir
 				for i in sortFieldNames
 					if _.contains this.classNames, i
 						@set 'controller.sortType', i
-				nudir = 1
-			@set 'controller.sortDir', nudir
+						@set 'controller.sortDir', -1
+			else if thistype = @get 'controller.sortType'
+				if _.contains this.classNames, thistype
+					if nowdir<0 then @set 'controller.sortDir', 1
+					else @set 'controller.sortDir', 0
 			@get('controller').sortAgain()
-
-		###
-		sortdesc: () ->
-			if @get('dir') is 0 then @sort -1
-			else if @get('dir') is 1 then @sort 0
-		sortasc: () ->
-			if @get('dir') is 0 then @sort 1
-			else if @get('dir') is -1 then @sort 0
-		###
 
 		didInsertElement: ()->
 			@$().parent().tooltip

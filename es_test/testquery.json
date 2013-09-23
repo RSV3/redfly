@@ -1,0 +1,10 @@
+{"query":
+	{"bool": {
+		"should": {
+			"term": {"tags.body.full": "music"}
+		},
+		"must": {
+			"terms": {"tags.body.autocomplete":["music"]}
+		}
+	}}
+}
