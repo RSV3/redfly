@@ -1,0 +1,148 @@
+
+"mappings":{
+	"contact":{
+		"properties":{
+			"__v":{"type":"long"},
+			"added":{"type":"date","format":"dateOptionalTime"},
+			"addedBy":{"type":"string", "index":"not_analyzed"},
+			"classified":{"type":"date","format":"dateOptionalTime"},
+			"company":{
+				"type":"multi_field",
+				"fields":{
+					"full":{
+						"term_vector" : "with_positions_offsets",
+						"type":"string"
+					},
+					"autocomplete":{
+						"type":"string",
+						"term_vector" : "with_positions_offsets",
+						"index_analyzer":"name_autocomplete",
+						"search_analyzer":"standard"
+					}
+				}
+			},
+			"date":{"type":"date","format":"dateOptionalTime"},
+			"emails":{
+				"type":"multi_field",
+				"term_vector" : "with_positions_offsets",
+				"fields":{
+					"full":{
+						"type":"string",
+						"term_vector" : "with_positions_offsets",
+						"analyzer":"name"
+					},
+					"autocomplete":{
+						"type":"string",
+						"term_vector" : "with_positions_offsets",
+						"index_analyzer":"name_autocomplete",
+						"search_analyzer":"name"
+					}
+				}
+			},
+			"id":{"type":"string", "index":"not_analyzed"},
+			"knows":{"type":"string", "index":"not_analyzed"},
+			"linkedin":{"type":"string", "index":"not_analyzed"},
+			"names":{
+				"type":"multi_field",
+				"term_vector" : "with_positions_offsets",
+				"fields":{
+					"full":{
+						"type":"string",
+						"term_vector" : "with_positions_offsets",
+						"analyzer":"name"
+					},
+					"autocomplete":{
+						"type":"string",
+						"term_vector" : "with_positions_offsets",
+						"index_analyzer":"name_autocomplete",
+						"search_analyzer":"name"
+					}
+				}
+			},
+			"picture":{"type":"string", "index":"not_analyzed"},
+			"position":{"type":"string"},
+			"sortname":{"type":"string", "index":"not_analyzed"},
+			"yearsExperience":{"type":"long"},
+			"indtags":{
+				"properties":{
+					"user":{"type":"string"},
+					"body":{
+						"type":"multi_field",
+						"fields":{
+							"raw":{
+								"index":"not_analyzed",
+								"type":"string"
+						 	},
+							"full":{
+								"term_vector" : "with_positions_offsets",
+								"type":"string"
+						 	},
+							"autocomplete":{
+								"type":"string",
+								"term_vector" : "with_positions_offsets",
+								"index_analyzer":"name_autocomplete",
+								"search_analyzer":"standard"
+							}
+						}
+					}
+				}
+			},
+			"orgtags":{
+				"properties":{
+					"user":{"type":"string"},
+					"body":{
+						"type":"multi_field",
+						"fields":{
+							"raw":{
+								"index":"not_analyzed",
+								"type":"string"
+						 	},
+							"full":{
+								"term_vector" : "with_positions_offsets",
+								"type":"string"
+						 	},
+							"autocomplete":{
+								"type":"string",
+								"term_vector" : "with_positions_offsets",
+								"index_analyzer":"name_autocomplete",
+								"search_analyzer":"standard"
+							}
+						}
+					}
+				}
+			},
+			"notes":{
+				"properties":{
+					"user":{"type":"string"},
+					"body":{
+						"type":"multi_field",
+						"fields":{
+							"full":{
+								"term_vector" : "with_positions_offsets",
+								"type":"string"
+							},
+							"autocomplete":{
+								"type":"string",
+								"term_vector" : "with_positions_offsets",
+								"index_analyzer":"name_autocomplete",
+								"search_analyzer":"standard"
+							}
+						}
+					}
+				}
+			},
+			"familiarity":{
+				"properties":{
+					"count":{"type":"integer"},
+					"value":{"type":"float"}
+				}
+			},
+			"reachability":{
+				"properties":{
+					"count":{"type":"integer"},
+					"value":{"type":"float"}
+				}
+			}
+		}
+	}
+}

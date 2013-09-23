@@ -5,27 +5,19 @@ form.navbar-search.pull-left(autocomplete='off')
 	| {{/if}}
 | {{#if view.showResults}}
 ul.dropdown-menu.search-results
-	| {{#if view.results.name}}
+	| {{#if view.results.names}}
 	.nav-header Names
-	| {{#each view.results.name}}
+	| {{#each view.results.names}}
 	li.no-resultsz
-		| <a href="#" {{action select this target="view"}}>{{canonicalName}}</a>
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}}</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}
-	| {{#if view.results.email}}
+	| {{#if view.results.emails}}
 	.nav-header Emails
-	| {{#each view.results.email}}
+	| {{#each view.results.emails}}
 	li
-		| <a href="#" {{action select this target="view"}}>{{canonicalName}} &mdash; {{email}}</a>
-	| {{/each}}
-	li.divider
-	| {{/if}}
-	| {{#if view.results.tag}}
-	.nav-header Matches in tags
-	| {{#each view.results.tag}}
-	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; {{body}}</a>
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; {{contact.email}}</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}
@@ -33,14 +25,23 @@ ul.dropdown-menu.search-results
 	.nav-header Company name matches
 	| {{#each view.results.company}}
 	li
-		| <a href="#" {{action select this target="view"}}>{{canonicalName}} &mdash; "{{email}}"</a>
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
 	| {{/each}}
+	li.divider
 	| {{/if}}
-	| {{#if view.results.note}}
-	.nav-header Matches in notes
-	| {{#each view.results.note}}
+	| {{#if view.results.tags}}
+	.nav-header Matches in tags
+	| {{#each view.results.tags}}
 	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; "{{preview}}"</a>
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
+	| {{/each}}
+	li.divider
+	| {{/if}}
+	| {{#if view.results.notes}}
+	.nav-header Matches in notes
+	| {{#each view.results.notes}}
+	li
+		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
 	| {{/each}}
 	| {{/if}}
 | {{/if}}

@@ -1,0 +1,29 @@
+{"query":
+	{"filtered":{
+		"query":{
+			"bool": {
+				"should": {
+					"term": {"names.name": "steve"}
+				},
+				"must": {
+					"terms": {"names.autocomplete": ["steve"]}
+				}
+			}
+		}
+		,"filter": {
+			"and": [
+				{ "terms": {"knows": ["509806a27c61f8020000029e"]} },
+				{ "or": [
+					{ "terms": {"orgtags.body.raw": ["entrepreneur"]} },
+					{ "terms": {"orgtags.body.raw": ["underemployment"]} }
+				] }
+			]
+		}
+	} }  
+	,"highlight":{
+		"fields": {
+			"names.autocomplete":{}
+			, "orgtags.body":{}
+		}
+	}
+}
