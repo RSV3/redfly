@@ -83,6 +83,8 @@ module.exports =
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
+		BONSAI_URL: 'http://sp6uy757:aqshyifojk9n87zp@apple-4375096.us-east-1.bonsai.io'
+
 		NUDGE_DAYS: 'Monday Thursday'
 
 		NODETIME_ACCOUNTKEY: '9ed3b83d70427d402822795e80426b7ec5343e2f'
@@ -102,6 +104,8 @@ module.exports =
 		S3_BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
+
+		BONSAI_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
