@@ -555,10 +555,13 @@ module.exports = (app, route) ->
 								console.dir err
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
+	routing_flag_hash = {}
 	route 'parse', (id, io, fn) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
+			if routing_flag_hash[id] then return fn()	# in case this gets called twice in a row ...
+			routing_flag_hash[id] = true
 			notifications =
 				foundTotal: (total) ->
 					io.emit 'parse.total', total
@@ -571,6 +574,7 @@ module.exports = (app, route) ->
 				foundNewContact: ->
 					io.emit 'parse.enqueued'
 			require('./parser') user, notifications, (err, contacts) ->
+				delete routing_flag_hash[id]	# good job well done.
 				fn err
 
 	route 'linkin', (id, io, session, fn) ->
