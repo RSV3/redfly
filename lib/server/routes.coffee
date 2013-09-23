@@ -560,7 +560,7 @@ module.exports = (app, route) ->
 		models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
-			if routing_flag_hash[id] then return fn()	# in case this gets called twice in a row ...
+			if routing_flag_hash[id] then return	# in case this gets called twice in a row ...
 			routing_flag_hash[id] = true
 			notifications =
 				foundTotal: (total) ->
