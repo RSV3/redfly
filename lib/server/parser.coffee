@@ -11,26 +11,30 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 	mboxer = require './mboxer'
 
 	_saveMail = (user, contact, mail, done) ->
-		mail.sender = user
-		mail.recipient = contact
-		models.Mail.create mail, (err) ->
-			if err
-				console.log "Error saving Mail record"
-				console.dir err
-				console.dir mail
+		newm = {sender:user, recipient:contact, subject:mail.subject, sent:mail.sent}
+		models.Mail.findOne newm, (err, rec) ->
+			if not err and rec
+				console.log "not going to store duplicate mail"
+				console.dir rec
 				return done()
-			models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
+			models.Mail.create newm, (err) ->
 				if err
-					console.log "Error finding classify for #{user}, #{contact}"
+					console.log "Error saving Mail record"
 					console.dir err
+					console.dir newm
 					return done()
-				if not classify then return done()
-				classify.saved = require('moment')().toDate()		# update the saved stamp
-				classify.save (err)->
+				models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
 					if err
-						console.log "updating classify for #{user}, #{contact}"
+						console.log "Error finding classify for #{user}, #{contact}"
 						console.dir err
-					return done()
+						return done()
+					if not classify then return done()
+					classify.saved = require('moment')().toDate()		# update the saved stamp
+					classify.save (err)->
+						if err
+							console.log "updating classify for #{user}, #{contact}"
+							console.dir err
+						return done()
 
 	_saveFullContact = (contact, fullDeets) ->
 		fullDeets.contact = contact
@@ -74,7 +78,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 		newContacts = []
 		finish = ->
 			if mails and mails.length
-				user.lastParsed = _.max(mails, (m)-> m.sent).sent
+				retrydate = require('moment')(_.max(mails, (m)-> m.sent).sent).subtract(1, 'days').toDate()		# update the saved stamp
+				user.lastParsed = retrydate
 			user.save (err) ->
 				if err
 					console.log "Error saving lastParsed on #{user.name}"

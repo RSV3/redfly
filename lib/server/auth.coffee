@@ -26,9 +26,6 @@ everyauth.google.configure
 		res.redirect '/unauthorized'
 
 	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
-		console.dir googleUserMetadata
-		console.dir accessToken
-		console.dir accessTokenExtra
 		email = googleUserMetadata.email.toLowerCase()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
