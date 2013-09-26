@@ -18,8 +18,7 @@
     "fullcontact.js": "~0.1.1",
     "contextio": "~0.3.0",
     "source-map-support": "~0.1.2",
-    "nodetime": "0.8.13",
-	"strong-agent": "latest",
+    "elasticsearchclient": "git://github.com/justinTNT/node-elasticsearch-client.git",
     "icalendar": "0.6.x"
   },
   "devDependencies": {
