@@ -1,0 +1,10 @@
+{"query":
+	{"bool": {
+		"must": {
+			"term": {"body.autocomplete": "kath"}
+		},
+		"should": {
+			"term": {"body.full":"kath"}
+		}
+	}}
+}
