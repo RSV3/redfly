@@ -265,8 +265,13 @@ module.exports = (Ember, App, socket) ->
 						@set 'controller.sortDir', -1
 			else if thistype = @get 'controller.sortType'
 				if _.contains this.classNames, thistype
-					if nowdir<0 then @set 'controller.sortDir', 1
-					else @set 'controller.sortDir', 0
+					if nowdir<0 then newdir = 1
+					else newdir = 0
+					@set 'controller.sortDir', newdir
+					if newdir is 0 and not @get('controller.query')
+						@set 'controller.sortType', 'added'
+						@set 'controller.sortDir', -1
+
 			@get('controller').sortAgain()
 
 		didInsertElement: ()->
