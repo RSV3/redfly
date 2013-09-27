@@ -73,8 +73,6 @@ module.exports = (Ember, App, socket) ->
 			@_next()
 
 		skip: ->
-			knows = @get('thisContact').get('knows.content').filter (u)-> u.id isnt App.user.get('id')
-			@set 'thisContact.knows.content', knows
 			App.Classify.createRecord
 				user: App.User.find App.user.get 'id'
 				contact: App.Contact.find @get 'thisContact.id'

@@ -373,6 +373,8 @@ module.exports = (app, route) ->
 			else
 				key="#{key}.value"
 				sort[key]=dir
+		else if not query.length
+			sort.added = 'desc'
 
 		if not limit
 			options = {limit:searchPagePageSize, facets: not data.filter, highlights: false}
