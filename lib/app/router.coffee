@@ -43,7 +43,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'leaderboard'
 		@resource 'results', path: '/results/:query_text'
 		@route 'noresults', path: '/results'
-		@route 'noresults', path: '/results/'
+		@route 'allresults', path: '/results/'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -121,6 +121,11 @@ module.exports = (Ember, App, socket) ->
 			}
 		renderTemplate: ->
 			@router.connectem @, 'contacts'
+
+	App.AllresultsRoute = Ember.Route.extend
+		redirect: ->
+			newResults = App.Results.create {text: recent_query_string}
+			@transitionTo 'results', newResults
 
 	App.NoresultsRoute = Ember.Route.extend
 		redirect: ->
