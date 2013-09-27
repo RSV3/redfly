@@ -42,7 +42,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'contacts'
 		@route 'leaderboard'
 		@resource 'results', path: '/results/:query_text'
-		@route 'noresults', path: '/results'
+		@route 'noresult', path: '/results'
 		@route 'allresults', path: '/results/'
 		@route 'tags'
 		# @route 'report'
@@ -127,7 +127,7 @@ module.exports = (Ember, App, socket) ->
 			newResults = App.Results.create {text: recent_query_string}
 			@transitionTo 'results', newResults
 
-	App.NoresultsRoute = Ember.Route.extend
+	App.NoresultRoute = Ember.Route.extend
 		redirect: ->
 			util.notify
 				title: 'No results found'
@@ -169,7 +169,7 @@ module.exports = (Ember, App, socket) ->
 			socket.emit 'fullSearch', query: model.text, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
-						if model.text isnt recent_query_string then return @transitionTo 'recent'
+						if model.text isnt recent_query_string then return @transitionTo 'noresult'
 						else return @transitionTo 'userProfile'
 					for own key, val of results
 						if key is 'facets'
