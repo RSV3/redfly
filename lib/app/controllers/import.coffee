@@ -191,12 +191,10 @@ module.exports = (Ember, App, socket) ->
 									body: note
 							App.store.commit()
 					console.log 'set didcreate callback'
-					console.log 'not calling commit'
+					console.log 'calling commit'
 					console.dir contact
-					###
 					App.store.commit()
 					console.log 'called commit'
-					###
 				console.log 'transitioning to start'
 				@get('controller.stateMachine').transitionTo 'start'
 				console.log 'transitioned to start'
