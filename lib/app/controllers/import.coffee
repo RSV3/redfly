@@ -161,32 +161,32 @@ module.exports = (Ember, App, socket) ->
 				@get('controller.stateMachine').transitionTo 'start'
 			import: ->
 				@get('controller.processed.results').forEach (result) ->
-					if not result.status.new
-						return
+					if not result.status.new then return
 					contact = App.Contact.createRecord
 						emails: result.emails
 						names: result.names
 						knows: Ember.ArrayProxy.create {content: [App.user.get('content')]}
 						added: new Date
 						addedBy: App.User.find App.user.get 'id'
+					contact.one 'didCreate', =>
+						console.log 'got didCreate event'
+						console.dir contact.get('id')
+						Ember.run.next ->
+							console.log 'next run loop:'
+							console.dir contact.get('id')
+							result.tags.forEach (tag) ->
+								App.Tag.createRecord
+									creator: App.user
+									contact: contact
+									category: 'industry'
+									body: tag
+							result.notes.forEach (note) ->
+								App.Note.createRecord
+									author: App.user
+									contact: contact
+									body: note
+							App.store.commit()
 					App.store.commit()
-					# UPDATE: new version ember-data might let you batch commits with inter-foreign-key depenencies, making waiting for the
-					# contact to get created unncessary
-					contact.addObserver 'id', =>
-					# TO-DO bring this back when ember-data is fixed
-					# contact.one 'didCreate', =>
-						result.tags.forEach (tag) ->
-							App.Tag.createRecord
-								creator: App.user
-								contact: contact
-								category: 'industry'
-								body: tag
-						result.notes.forEach (note) ->
-							App.Note.createRecord
-								author: App.user
-								contact: contact
-								body: note
-						App.store.commit()
 				@get('controller.stateMachine').transitionTo 'start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
