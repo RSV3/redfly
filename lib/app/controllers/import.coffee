@@ -162,13 +162,15 @@ module.exports = (Ember, App, socket) ->
 			import: ->
 				@get('controller.processed.results').forEach (result) ->
 					if not result.status.new then return
-					###
+					console.log 'creating record'
 					contact = App.Contact.createRecord
 						emails: result.emails
 						names: result.names
 						knows: Ember.ArrayProxy.create {content: [App.user.get('content')]}
 						added: new Date
 						addedBy: App.User.find App.user.get 'id'
+					console.log 'created record'
+					console.log 'setting didcreate callback'
 					contact.one 'didCreate', =>
 						console.log 'got didCreate event'
 						console.dir contact.get('id')
@@ -187,9 +189,13 @@ module.exports = (Ember, App, socket) ->
 									contact: contact
 									body: note
 							App.store.commit()
+					console.log 'set didcreate callback'
+					console.log 'calling commit'
 					App.store.commit()
-					###
+					console.log 'called commit'
+				console.log 'transitioning to start'
 				@get('controller.stateMachine').transitionTo 'start'
+				console.log 'transitioned to start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
 
