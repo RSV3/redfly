@@ -162,6 +162,7 @@ module.exports = (Ember, App, socket) ->
 			import: ->
 				@get('controller.processed.results').forEach (result) ->
 					if not result.status.new then return
+					###
 					contact = App.Contact.createRecord
 						emails: result.emails
 						names: result.names
@@ -187,6 +188,7 @@ module.exports = (Ember, App, socket) ->
 									body: note
 							App.store.commit()
 					App.store.commit()
+					###
 				@get('controller.stateMachine').transitionTo 'start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
