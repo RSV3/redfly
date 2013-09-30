@@ -170,6 +170,7 @@ module.exports = (Ember, App, socket) ->
 						added: new Date
 						addedBy: App.User.find App.user.get 'id'
 					console.log 'created record'
+					console.dir contact
 					console.log 'setting didcreate callback'
 					contact.one 'didCreate', =>
 						console.log 'got didCreate event'
