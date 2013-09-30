@@ -50,7 +50,7 @@ module.exports =
 		# for testing fresh new onboarding of users
 
 		HOST: 'redfly-test.herokuapp.com'	# 'staging.redfly.com'
-		NODE_ENV: 'production'
+		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'kwan+redfly_test@redstar.com, justin+redfly_test@redstar.com'
 
 		GOOGLE_API_ID: '614207063627-g9m7b7c23cmtpueqhqlr6k3pghv18jsp.apps.googleusercontent.com'
