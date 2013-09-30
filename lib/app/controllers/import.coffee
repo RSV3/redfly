@@ -163,12 +163,12 @@ module.exports = (Ember, App, socket) ->
 				@get('controller.processed.results').forEach (result) ->
 					if not result.status.new then return
 					console.log 'creating record'
-					contact = App.Contact.createRecord
+					contact = App['Contact'].createRecord
 						emails: result.emails
 						names: result.names
-						knows: Ember.ArrayProxy.create {content: [App.user.get('content')]}
+						knows: Ember.ArrayProxy.create {content: [App.user]}
 						added: new Date
-						addedBy: App.User.find App.user.get 'id'
+						addedBy: App.user
 					console.log 'created record'
 					console.dir contact
 					console.log 'setting didcreate callback'
