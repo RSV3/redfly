@@ -190,15 +190,15 @@ module.exports = (Ember, App, socket) ->
 									body: note
 							App.store.commit()
 					console.log 'set didcreate callback'
-					console.log 'calling commit'
+					console.log 'not calling commit'
 					console.dir contact
+					###
 					App.store.commit()
 					console.log 'called commit'
-				console.log 'not transitioning to start'
-				###
+					###
+				console.log 'transitioning to start'
 				@get('controller.stateMachine').transitionTo 'start'
 				console.log 'transitioned to start'
-				###
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
 
