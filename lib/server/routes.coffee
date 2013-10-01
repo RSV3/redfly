@@ -339,6 +339,8 @@ module.exports = (app, route) ->
 				fields.push type
 		else if compound[0] is 'contact'
 			fields = ['name', 'email']
+			if not data.knows then data.knows = []
+			data.knows.push session.user				# limit 'contact' search to contacts we know.
 		else fields = [compound[0]]
 
 		filters = []
@@ -501,60 +503,66 @@ module.exports = (app, route) ->
 		# ]
 
 	route 'merge', (data, fn) ->
+		console.log ''
+		console.log 'merge'
+		console.dir data
+		console.log ''
+		updatedObject = {}
 		models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
 			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
 				throw err if err
-
 				history = new models.Merge
 				history.contacts = [contact].concat merges...
 				history.save (err) ->
 					throw err if err
 
-				async = require 'async'
-				async.forEach merges, (merge, cb) ->
-					for field in ['names', 'emails', 'knows']
-						contact[field].addToSet merge[field]...
-					for field in ['picture', 'added', 'addedBy', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook']
-						if (value = merge[field]) and not contact[field]
-							contact[field] = value
-					updateModels = ['Tag', 'Note', {Mail: 'recipient'}, 'Measurement', 'Classify', 'Exclude']
-					async.forEach updateModels, (update, cb) ->
-						conditions = {}
-						if not _.isObject update then update = {type:update, field:'contact'}
-						else for own key, value of update
-							update.type = key
-							update.field = value
-						conditions[update.field] = merge.id
-						models[update.type].find conditions, (err, docs) ->
+					async = require 'async'
+					async.forEach merges, (merge, cb) ->
+						for field in ['names', 'emails', 'knows']
+							contact[field].addToSet merge[field]...
+							updatedObject[field] = contact[field]
+						for field in ['picture', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook']
+							if (value = merge[field]) and not contact[field]
+								contact[field] = value
+								updatedObject[field] = value
+						updateModels = ['Tag', 'Note', {Mail: 'recipient'}, 'Measurement', 'Classify', 'Exclude']
+						async.forEach updateModels, (update, cb) ->
+							conditions = {}
+							if not _.isObject update then update = {type:update, field:'contact'}
+							else for own key, value of update
+								update.type = key
+								update.field = value
+							conditions[update.field] = merge.id
+							models[update.type].find conditions, (err, docs) ->
+								throw err if err
+								async.forEach docs, (doc, cb) ->
+									doc[update.field] = contact
+									doc.save (err) ->
+										# If there's a duplicate key error that means the same tag is on two contacts, just delete the other one.
+										if err?.code is 11001 then doc.remove cb
+										else cb err
+								, (err) ->
+									cb err
+						, (err) ->
 							throw err if err
-							async.forEach docs, (doc, cb) ->
-								doc[update.field] = contact
-								doc.save (err) ->
-									# If there's a duplicate key error that means the same tag is on two contacts, just delete the other one.
-									if err?.code is 11001 then doc.remove cb
-									else cb err
-							, (err) ->
-								cb err
+							Elastic.delete merge._id, (err)->
+								if not err then return
+								console.log "ERR: ES deleting #{merge._id} on merge"
+								console.dir err
+							merge.remove cb
 					, (err) ->
 						throw err if err
-						Elastic.delete merge._id, (err)->
-							if not err then return
-							console.log "ERR: ES deleting #{merge._id} on merge"
-							console.dir err
-						merge.remove cb
-				, (err) ->
-					throw err if err
-					contact?.save (err) ->
-						throw err if err
-						console.log "priming contact from merge"
-						primeContactForES contact, (doc)->
-							fn contact
-							Elastic.create doc, (err)->
-								if not err then return
-								console.log "ERR: ES updating #{type}"
-								console.dir doc
-								console.dir err
+						contact?.save (err) ->
+							throw err if err
+							console.log "priming contact from merge"
+							primeContactForES contact, (doc)->
+								Elastic.create doc, (err)->
+									fn updatedObject
+									if not err then return
+									console.log "ERR: ES updating #{type}"
+									console.dir doc
+									console.dir err
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	routing_flag_hash = {}
