@@ -304,6 +304,7 @@ module.exports = (Ember, App, socket) ->
 				Ember.ArrayProxy.create content: []
 			).property 'controller.content'
 			_launch: ->
+				@get('selections').clear()
 				@set 'modal', $(@$('.modal')).modal()
 			merge: ->
 				@get('modal').modal 'hide'
@@ -319,14 +320,21 @@ module.exports = (Ember, App, socket) ->
 				selections = @get 'selections'
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
 					# Refresh the store with the stuff that could have changed.
-					@set 'controller', mergedcontact
+					for own key,val of mergedcontact
+						@set "controller.#{key}", val
 					App.Tag.find contact: @get('controller.id')
 					App.Note.find contact: @get('controller.id')
 					App.Mail.find recipient: @get('controller.id')
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
-					selections.forEach (selection) -> selection.deleteRecord()
+					selections.forEach (selection)->
+						try
+							selection.deleteRecord()
+						catch err
+							return
+					@get('selections').clear()
+
 					App.store.commit()
 
 					notification.effect 'bounce'
@@ -335,7 +343,6 @@ module.exports = (Ember, App, socket) ->
 						type: 'success'
 						hide: true
 						closer: true
-				@get('selections').clear()
 
 
 			mergeSearchView: App.SearchView.extend

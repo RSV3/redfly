@@ -1,6 +1,5 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	#maxQueueLength = 20
 
 	App.ClassifyController = Ember.Controller.extend
 		needs: ['contact']
@@ -19,17 +18,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'controllers.contact.forceShowEmail', true
 		).observes 'thisContact'
 
-		###
-		total: (->
-				Math.min App.user.get('queue.length'), maxQueueLength - @get('classifyCount')
-			).property 'App.user.queue.length', 'classifyCount'
-		complete: (->
-				return @get('noMore') or (@get('classifyCount') is maxQueueLength)
-			).property 'noMore', 'classifyCount'
-		noMore: (->
-				not @get('model')
-			).property 'model'
-		###
 		total: (->
 			total = @get('dynamicQ.length') - @get('classifyCount')
 			App.admin.set 'classifyCount', total
