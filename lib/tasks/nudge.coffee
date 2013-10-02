@@ -105,7 +105,7 @@ dailyRoutines = (doneDailies)->
 			console.dir err
 
 		# skips (not saved) are removed after two weeks
-		suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
+		suffix = "0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
 		prefix = Math.floor(moment().subtract('days', 14).valueOf()/1000).toString(16)
 		models.Classify.remove {saved: {$exists: false}, _id: {$lt: new models.ObjectId "#{prefix}#{suffix}"}}, (err)->
 			if err
@@ -119,10 +119,10 @@ resetEachRank = (cb, users)->
 	if not l = users.length then return cb()
 	user = users.shift()
 	models.Contact.count {addedBy:user.id}, (err, f)->
-		if not err then user.fullCount=f
-		user.dataCount=0
-		user.contactCount=0
-		user.lastRank=l
+		if not err then user.fullCount = f
+		user.dataCount = 0
+		user.contactCount = 0
+		user.lastRank = l
 		user.save (err)->
 			if err then console.log "Error resetting rank .. #{user._id}"
 			resetEachRank cb, users
