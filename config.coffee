@@ -70,7 +70,7 @@ module.exports =
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
-		NODE_ENV: 'production'
+		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'

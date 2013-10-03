@@ -89,8 +89,13 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 				for f in _.keys(facets)
 					tmpfacets[f] = _.pluck facets[f].terms, 'term'
 				facets = tmpfacets
-		data = JSON.parse(data)?.hits
-		dox = _.map data.hits, (i)->
+		if data then data = JSON.parse(data)?.hits
+		if not data?.hits
+			console.log "ERROR:"
+			console.dir data
+			console.log require('util').inspect newq, depth:null
+			dox = null
+		else dox = _.map data.hits, (i)->
 			hit = _id:i._id
 			if i.highlight
 				hit.field = _.keys(i.highlight)?[0] or ''
