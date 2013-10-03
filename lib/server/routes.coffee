@@ -339,11 +339,11 @@ module.exports = (app, route) ->
 				fields.push type
 		else if compound[0] is 'contact'
 			fields = ['name', 'email']
-			if not data.knows then data.knows = []
-			data.knows.push session.user				# limit 'contact' search to contacts we know.
+			data.addedBy = session.user				# limit 'contact' search to contacts we know.
 		else fields = [compound[0]]
 
 		filters = []
+		if data.addedBy then filters.push terms:addedBy:[data.addedBy]
 		if data.knows?.length then filters.push terms:knows:data.knows
 		if data.industry?.length 
 			thisf = []
