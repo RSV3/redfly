@@ -522,7 +522,7 @@ module.exports = (app, route) ->
 						for field in ['names', 'emails', 'knows']
 							contact[field].addToSet merge[field]...
 							updatedObject[field] = contact[field]
-						for field in ['picture', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook']
+						for field in ['picture', 'position', 'company', 'yearsExperience', 'isVip', 'linkedin', 'twitter', 'facebook', 'added', 'addedBy']
 							if (value = merge[field]) and not contact[field]
 								contact[field] = value
 								updatedObject[field] = value
