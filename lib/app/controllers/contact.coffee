@@ -321,7 +321,12 @@ module.exports = (Ember, App, socket) ->
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
 					# Refresh the store with the stuff that could have changed.
 					for own key,val of mergedcontact
-						@set "controller.#{key}", val
+						try
+							if key is 'addedBy' then @set "controller.#{key}", ObjectId(val)
+							else @set "controller.#{key}", val
+						catch err
+							console.log 'just a WARNING in merged contact'
+							console.dir err
 					App.Tag.find contact: @get('controller.id')
 					App.Note.find contact: @get('controller.id')
 					App.Mail.find recipient: @get('controller.id')
