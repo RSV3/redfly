@@ -15,12 +15,14 @@ module.exports = (Ember, App, socket) ->
 			k = @get('knows')?.getEach 'id'
 			@get('addedBy.id') is u or k and _.contains k, u
 		).property 'addedBy', 'knows.@each.id'
-		iAdded: (->
-			App.user.get('id') is @get('addedBy.id')
+
+		noneButIAdded: (->
+			not @get('addedBy') or App.user.get('id') is @get('addedBy.id')				# no-one added, or I added
 		).property 'addedBy'
+
 		hasIntro: (->
 			@get('addedBy') and not @get('isKnown')
-		).property 'addedBy', 'isKnown'
+		).property 'addedBy', 'isKnown'	# someone added, and I don't know
 
 		gmailSearch: (->
 				encodeURI "//gmail.com#search/to:#{@get('email')}"
@@ -75,16 +77,6 @@ module.exports = (Ember, App, socket) ->
 			if not (@get('position') or @get('company') or @get('yearsExperience'))
 				"Edit details about #{@get('nickname')}'s professional experience"
 		).property 'position', 'company', 'yearsExperience'
-		###
-		histories: (->
-			# TODO Hack. If clause only here to make sure that all the mails don't get pulled down on "all done" classify page where the
-			# fake contact is below the page break and has no ID set
-			if not @get('id') then return []
-			query = sender: App.user.get('id'), recipient: @get('id')
-			App.filter App.Mail, {field: 'sent'}, query, (data) =>
-				(data.get('sender.id') is App.user.get('id')) and (data.get('recipient.id') is @get('id'))
-		).property 'id'
-		###
 		firstHistory: null
 		lastHistory: null
 		lastNote: null
@@ -112,16 +104,6 @@ module.exports = (Ember, App, socket) ->
 		disableAdd: (->
 			not util.trim @get('currentNote')
 		).property 'currentNote'
-
-		# emptyNotesText: (->
-		# 		if _.random(1, 10) < 9
-		# 			# return 'No notes about ' + @get('nickname') + ' yet.'	# TO-DO doesn't work? Something to do with volatile?
-		# 			return 'No notes about this contact yet.'
-		# 		('...and that\'s why you ' +
-		# 			' <a href="http://www.dailymotion.com/video/xrjyfz_that-s-why-you-always-leave-a-note_shortfilms" target="_blank">' +
-		# 			 'always leave a note!</a>'
-		# 		).htmlSafe()
-		# 	).property().volatile()
 
 		add: ->
 			if note = util.trim @get('currentNote')
@@ -320,8 +302,12 @@ module.exports = (Ember, App, socket) ->
 				selections = @get 'selections'
 				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
 					# Refresh the store with the stuff that could have changed.
+
+					if not @get('parentView.parentView.classifying') then window.location.reload()
+
 					for own key,val of mergedcontact
-						@set "controller.#{key}", val
+						if key is 'addedBy' then @set "controller.#{key}", App.user
+						else @set "controller.#{key}", val
 					App.Tag.find contact: @get('controller.id')
 					App.Note.find contact: @get('controller.id')
 					App.Mail.find recipient: @get('controller.id')
@@ -332,6 +318,9 @@ module.exports = (Ember, App, socket) ->
 						try
 							selection.deleteRecord()
 						catch err
+							if err
+								console.log 'just a WARNING in merged contact'
+								console.dir err
 							return
 					@get('selections').clear()
 

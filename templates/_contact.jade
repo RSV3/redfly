@@ -5,7 +5,7 @@
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
 
-		| {{#if iAdded}}
+		| {{#if noneButIAdded}}
 		.row-fluid.actions
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
@@ -15,13 +15,6 @@
 				a(href='#', action='ignore')
 					i.icon-trash.icon-2x
 			| {{/if}}
-		| {{else}}
-		| {{#if view.parentView.classifying}}
-		.row-fluid.actions
-			span.contact-actions
-				a(href='#', role="button", action='showMerge target="view"')
-					i.icon-resize-small.icon-2x
-		| {{/if}}
 		| {{/if}}
 	.span6
 		.row-fluid
