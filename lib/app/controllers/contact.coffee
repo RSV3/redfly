@@ -306,22 +306,21 @@ module.exports = (Ember, App, socket) ->
 					if not @get('parentView.parentView.classifying') then window.location.reload()
 
 					for own key,val of mergedcontact
-						try
-							if key is 'addedBy' then @set "controller.#{key}", App.user
-							else @set "controller.#{key}", val
-						catch err
-							console.dir err if err
+						if key is 'addedBy' then @set "controller.#{key}", App.user
+						else @set "controller.#{key}", val
 					App.Tag.find contact: @get('controller.id')
 					App.Note.find contact: @get('controller.id')
 					App.Mail.find recipient: @get('controller.id')
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
-					console.log 'just a WARNING in merged contact'
 					selections.forEach (selection)->
 						try
 							selection.deleteRecord()
 						catch err
+							if err
+								console.log 'just a WARNING in merged contact'
+								console.dir err
 							return
 					@get('selections').clear()
 
