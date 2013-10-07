@@ -1,6 +1,6 @@
 .row-fluid
 	.partheading
-		h1 Weekly Leaders
+		h1 Monthly Leaders
 	.partheading
 		h3
 			i {{view.formattedfromdate}} ~ {{view.formattedtodate}}
@@ -40,7 +40,7 @@
 					span {{canonicalName}}
 			td {{contactCount}}
 			td {{dataCount}}
-			td {{fullCount}}
+			td {{fullCount}} {{#if unclassifiedCount}}&nbsp;[{{unclassifiedCount}}]{{/if}}
 			| {{/each}}
 
 	h1 Weekly Laggards

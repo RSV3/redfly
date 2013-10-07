@@ -16,12 +16,8 @@ _addTags = (user, contact, category, existing, alist) ->
 			category: category
 			body: tag
 		newt.save (err) ->
-			Elastic.create 'tag', newt, (err)->
-				if err
-					console.log "ERR: ES saving tag"
-					console.dir newt
-					console.dir err
-				_addTags user, contact, category, existing, alist
+			if not err and contact.added then Elastic.onCreate newt, 'Tag', if category is 'industry' then 'indtags' else 'orgtags'
+			_addTags user, contact, category, existing, alist
 	else
 		_addTags user, contact, category, existing, alist
 
