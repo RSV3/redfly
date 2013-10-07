@@ -322,6 +322,9 @@ module.exports = (Ember, App, socket) ->
 						try
 							selection.deleteRecord()
 						catch err
+							if err
+								console.log 'just a WARNING in merged contact'
+								console.dir err
 							return
 					@get('selections').clear()
 

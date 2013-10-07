@@ -178,7 +178,6 @@ module.exports = (Ember, App, socket) ->
 							for zeroit in ['industryOp', 'orgOp']
 								controller.set zeroit, 0
 						else if key isnt 'response'
-							console.log "in router Setting #{key}"
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string
 						controller.set 'searchtag', results.query

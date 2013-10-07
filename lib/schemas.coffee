@@ -51,9 +51,16 @@ schemas.push Schema 'User',
 		ssl: type: Boolean		# TODO: store if default override
 		expired: type: Boolean		# TODO: if the password fails in nudge, set this and ask user to provide a new one
 	lastRank: type: Number
+	oldRanks: [type: Number]
 	contactCount: type: Number
 	dataCount: type: Number
+	oldDcounts: [type: Number]
 	fullCount: type: Number
+	unclassifiedCount: type: Number
+	oldCcounts: [type: Number]
+	lastLink:
+		date: type: Date
+		count: type: Number
 
 
 schemas.push Schema 'Measurement',

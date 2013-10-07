@@ -5,6 +5,7 @@ _ = require 'underscore'
 services = require 'phrenetic/lib/server/services'
 
 models = require '../server/models'
+Elastic = require '../server/elastic'
 
 
 
@@ -62,9 +63,20 @@ eachUpAdd = (contact, cb)->
 
 # trawl through a user's linkedin network
 eachLink = (user, cb)->
-	try require('../server/linker') user, null, cb
+	email = user?.email
+	try require('../server/linker') user, null, (err, changes)->
+		if err
+			console.log "error in nudge link for #{email}"
+			console.dir err
+			cb()
+		else
+			user.lastLink.date = new Date()
+			user.lastLink.count = changes?.length
+			user.save (err)->
+				if err then console.log "Error saving linkedin count in nudge for #{email}"
+				cb()
 	catch err
-		console.log "error in nudge link for #{user.email}"
+		console.log "error in nudge link for #{email}"
 		console.dir err
 		cb()
 
@@ -111,28 +123,80 @@ dailyRoutines = (doneDailies)->
 			if err
 				console.log "Error removing old classifies (skips): IDs less than #{prefix}#{suffix}"
 				console.dir err
-			doneDailies();
-			console.log "fullydone"
+
+			if _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
+				console.log "dailydone"
+				return doneDailies()
+
+			# if we're not nudging today, let's take the time to make sure every added contact is searchable
+			models.Contact.find {added: $exists: true}, (err, contacts)->
+				console.dir "got #{contacts.length} contacts from mongo"	# jTNT debug remove
+				if not err and contacts?.length
+					_.each contacts, (c)->
+						Elastic.get c._id, (err, data)->
+							if err or not data
+								console.log "SANITY CHECK: creating ES index for missing contact #{c._id}"
+								Elastic.create c
+				Elastic.scan (err, id)->
+					if err or not id
+						console.log "SANITY CHECK: ES.scan err:"
+						console.dir err
+						console.dir id
+						return doneDailies()
+					hitAtATime = (hits)->
+						if not hits?.length then return scrollAtATime()
+						hit = hits.pop()
+						models.Contact.findById hit._id, (err, c)->
+							if err or not c then Elastic.delete hit._id
+							hitAtATime hits
+					scrollAtATime = ()->
+						Elastic.scroll id, (err, data)->
+							if err
+								console.log "SANITY CHECK: ES.scroll err:"
+								console.dir err
+								return doneDailies()
+							if not data?.hits?.hits?.length then return doneDailies()
+							id = data._scroll_id
+							hitAtATime data.hits?.hits
+					scrollAtATime()
 
 
 resetEachRank = (cb, users)->
-	if not l = users.length then return cb()
+	if not l = users?.length then return cb()
 	user = users.shift()
-	models.Contact.count {addedBy:user.id}, (err, f)->
-		if not err then user.fullCount = f
-		user.dataCount = 0
-		user.contactCount = 0
-		user.lastRank = l
-		user.save (err)->
-			if err then console.log "Error resetting rank .. #{user._id}"
-			resetEachRank cb, users
+	models.Contact.count {addedBy:user.id}, (err, fc)->
+		if not err then user.fullCount = fc
+		models.Contact.count {addedBy:user.id, classified:$exists:false}, (err, ucc)->
+			if not err then user.unclassifiedCount = ucc
+
+			DAYS_PER_MONTH = 30
+
+			if not user.oldDcounts then user.oldDcounts = []
+			user.oldDcounts.unshift() while user.oldDcounts?.length > DAYS_PER_MONTH
+			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.unshift()
+			if not user.oldDcounts?.length then user.oldDcounts = [user.dataCount]
+			else user.oldDcounts.push user.dataCount - _.reduce(user.oldDcounts, (t, s)-> t + s)
+
+			if not user.oldCcounts then user.oldCcounts = []
+			user.oldCcounts.unshift() while user.oldCcounts?.length > DAYS_PER_MONTH
+			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.unshift()
+			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
+			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
+
+			if not user.oldDcounts then user.oldDcounts = []
+			user.oldRanks.push l
+			user.oldRanks.unshift() until user.oldRanks?.length < DAYS_PER_MONTH
+			user.lastRank = user.oldRanks[0]
+
+			user.save (err)->
+				if err then console.log "Error resetting rank .. #{user._id}"
+				resetEachRank cb, users
 
 
-maybeResetRank = (doit, userlistcopy, cb)->
-	if not doit then return cb()
-	if process.env.RANK_DAY isnt moment().format('dddd') then return cb()
-	if not l = userlistcopy.length then return cb()
-	resetEachRank cb, _.sortBy userlistcopy, (u)->
+maybeResetRank = (doit, users, cb)->
+	if not doit then users = null
+	if not l = users?.length then return cb()
+	resetEachRank cb, _.sortBy users, (u)->
 		((u.contactCount or 0) + (u.dataCount or 0))*l + l - (u.lastRank or 0)
 
 
@@ -161,7 +225,7 @@ dailyRoutines ->
 					if only_daily
 						console.log "nudge: just manually ran the daily routines."
 						return services.close()
-					if not succinct_manual 
+					if not succinct_manual
 						console.log "not running manual nudge."
 						if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
 							console.log "Today = #{moment().format('dddd')} isnt in the list :"

@@ -43,31 +43,6 @@ module.exports = (app, route) ->
 			if doc.addedBy then o.addedBy = doc.addedBy
 			app.io.broadcast 'feed', o
 
-		# this little routine updates the relevant elasticsearch document when we add or remove tags or notes
-		# if incflag is set, this is an add, so increment the datacount
-		runScriptOnOp = (doc, type, field, script, incflag)->
-			user = doc.creator or doc.author
-			if not doc.contact or not user then return
-			if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
-				if err
-					console.log "error incrementing data count for #{user}"
-					console.dir err
-				feed doc, type
-			esup_doc =
-				params: val: {user:String(user), body:doc.body}
-				script: script
-			Elastic.update String(doc.contact), esup_doc, (err)->
-				if not err then return
-				console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
-				console.dir doc
-				console.dir err
-
-		updateOnCreate = (doc, type, field)->
-			runScriptOnOp doc, type, field, "if (ctx._source.?#{field} == empty) { ctx._source.#{field}=[val] } else if (ctx._source.#{field}.contains(val)) { ctx.op = \"none\" } else { ctx._source.#{field} += val }", true
-
-		updateOnDelete = (doc, type, field)->
-			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) {ctx.op=\"none\"} else if (ctx._source.#{field} == val) { ctx._source.#{field} = null} else if (ctx._source.#{field}.contains(val)) { ctx._source.#{field}.remove(val) } else { ctx.op = \"none\" }"
-
 
 		switch data.op
 			when 'find'
@@ -127,9 +102,9 @@ module.exports = (app, route) ->
 					cb doc
 					switch model
 						when models.Note
-							updateOnCreate doc, 'Note', "notes"
+							Elastic.onCreate doc, 'Note', "notes"
 						when models.Tag
-							updateOnCreate doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+							Elastic.onCreate doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
 						when models.Contact
 							if doc.addedBy
 								feed doc, data.type
@@ -200,9 +175,9 @@ module.exports = (app, route) ->
 										console.log "ERR: ES deleting #{id} on db remove"
 										console.dir err
 								when 'Note'
-									updateOnDelete doc, 'Note', "notes"
+									Elastic.onDelete doc, 'Note', "notes"
 								when 'Tag'
-									updateOnDelete doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+									Elastic.onDelete doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
 
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
