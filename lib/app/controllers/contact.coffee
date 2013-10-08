@@ -289,8 +289,6 @@ module.exports = (Ember, App, socket) ->
 				@get('selections').clear()
 				@set 'modal', $(@$('.modal')).modal()
 			merge: ->
-				@get('modal').modal 'hide'
-
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'
@@ -300,32 +298,26 @@ module.exports = (Ember, App, socket) ->
 						pnotify.css top: '60px'
 
 				selections = @get 'selections'
-				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
+				id = @get 'controller.id'
+				socket.emit 'merge', contactId:id, mergeIds: selections.getEach('id'), (mergedcontact)=>
 					# Refresh the store with the stuff that could have changed.
-
 					if not @get('parentView.parentView.classifying') then window.location.reload()
 
 					for own key,val of mergedcontact
-						try
-							if key is 'addedBy' then @set "controller.#{key}", App.user
-							else @set "controller.#{key}", val
-						catch err
-							console.dir err if err
-					App.Tag.find contact: @get('controller.id')
-					App.Note.find contact: @get('controller.id')
-					App.Mail.find recipient: @get('controller.id')
+						if key isnt 'addedBy' then @set "controller.#{key}", val
+					@set 'controller.addedBy', App.user
+					App.Tag.find contact: id
+					App.Note.find contact: id
+					App.Mail.find recipient: id
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
-					console.log 'just a WARNING in merged contact'
-					selections.forEach (selection)->
+					while selections.length
 						try
-							selection.deleteRecord()
+							selections.pop()?.deleteRecord()
 						catch err
-							if err
-								console.log 'just a WARNING in merged contact'
-								console.dir err
-							return
+							console.log "deleting record after merge..."
+							console.dir err
 					@get('selections').clear()
 
 					App.store.commit()
@@ -336,13 +328,14 @@ module.exports = (Ember, App, socket) ->
 						type: 'success'
 						hide: true
 						closer: true
+					@get('modal').modal 'hide'
 
 
 			mergeSearchView: App.SearchView.extend
 				prefix: 'contact:'
 				conditions: (->
 					addedBy: App.user.get 'id'
-					_id: {$ne: @get 'controller.id'}
+					_id: $ne: @get('controller.id')
 				).property()
 				excludes: (->
 					@get('parentView.selections').toArray().concat @get('controller.content')

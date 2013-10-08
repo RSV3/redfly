@@ -314,11 +314,10 @@ module.exports = (app, route) ->
 				fields.push type
 		else if compound[0] is 'contact'
 			fields = ['name', 'email']
-			data.addedBy = session.user				# limit 'contact' search to contacts we know.
 		else fields = [compound[0]]
 
 		filters = []
-		if data.addedBy then filters.push terms:addedBy:[data.addedBy]
+		if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
 		if data.knows?.length then filters.push terms:knows:data.knows
 		if data.industry?.length 
 			thisf = []
@@ -365,10 +364,11 @@ module.exports = (app, route) ->
 				if docs[0].field
 					resultsObj.response = {}
 					for d in docs
-						if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
-						else thefield = d.field
-						if not resultsObj[thefield] then resultsObj[thefield] = []
-						resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
+						if String(d._id) isnt data.moreConditions?._id?.$ne
+							if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
+							else thefield = d.field
+							if not resultsObj[thefield] then resultsObj[thefield] = []
+							resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
 				else
 					resultsObj.response = _.pluck docs, '_id'
 					resultsObj.totalCount = resultsObj.filteredCount = totes
