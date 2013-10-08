@@ -45,6 +45,9 @@ module.exports = (Ember, App, socket) ->
 
 	App.LeadLagView = Ember.View.extend
 		tagName: 'tr'
+		idsme: (->
+			App.user.get('id') is @get('content.id')
+		).property('content.id')
 		change: (->
 			@get('pos') - (@get('content.lastRank') or @get('parentView.controller.lowest'))
 		).property 'pos', 'content.lastRank'
@@ -69,7 +72,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.LaggardView = App.LeadLagView.extend
 		pos: (->
-			#@get('parentView.controller.lowest') - @get('contentIndex') 
+			#@get('parentView.controller.lowest') - @get('contentIndex')
 			# TODO: little hack, might need better way to make it correct
 			if @get('parentView.controller.lowest') > 4
 				@get('parentView.controller.lowest') - (4 - @get('contentIndex'))

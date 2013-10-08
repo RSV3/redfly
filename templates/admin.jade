@@ -1,7 +1,14 @@
 {{#if App.user.admin}}
 .row-fluid
-	.span12
+	.span8
 		h1 Configure Redfly
+	.span1 Stats
+	.span3
+		{{totalThisMonth}} contacts added this month
+		br
+		{{autoThisMonth}} of them yet to be enriched with data
+.row-fluid
+	.span12
 		hr
 		br
 

@@ -63,6 +63,7 @@ module.exports = (Ember, App, socket) ->
 
 		buildFilter: ->
 			emission = filter:@get('query')
+			if @get 'datapoor' then emission.moreConditions = poor:true
 			if (n2p = @get('noseToPick')) then for n in n2p
 				if n.checked
 					if not emission.knows then emission.knows = [n.id]
@@ -223,8 +224,10 @@ module.exports = (Ember, App, socket) ->
 	App.ResultView = App.ContactView.extend
 
 		clicktag: (ev)->
+			if @get('parentView').controller.get('datapoor') then return
 			@get('parentView').controller.tagToggle ev.get('category'), ev.get('body')
 		clickname: (ev)->
+			if @get('parentView').controller.get('datapoor') then return
 			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
 
 		didInsertElement: ()->
