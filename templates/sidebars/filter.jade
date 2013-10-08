@@ -1,9 +1,19 @@
+{{#if datapoor}}
+strong.total-results {{totalCount}} contacts need more data
+{{else}}
 {{#if all.length}}
 i.total-results {{#if hiding}}{{filteredCount}}{{else}}{{totalCount}}{{/if}} results
 {{else}}
 i &nbsp;
 {{/if}}
+{{/if}}
 
+{{#if datapoor}}
+p
+br
+
+span Contacts from your emails are automatically added if you don't classify them promptly. These contacts are then in the system without useful data like tags and notes. This page allows you to go through those automatically added contacts and enrich them with data.
+{{else}}
 h3
 	| Filters
 {{#if searchtag}}
@@ -83,5 +93,6 @@ h4
 |	valueBinding="years"
 |	prompt="Select a minimum ..."
 }}
+{{/if}}
 {{/if}}
 

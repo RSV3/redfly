@@ -318,6 +318,10 @@ module.exports = (app, route) ->
 
 		filters = []
 		if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
+		if data.moreConditions?.poor
+			filters.push terms:addedBy:[session.user]
+			filters.push missing:field:"indtags"
+			filters.push missing:field:"orgtags"
 		if data.knows?.length then filters.push terms:knows:data.knows
 		if data.industry?.length 
 			thisf = []
@@ -353,7 +357,7 @@ module.exports = (app, route) ->
 			sort.added = 'desc'
 
 		if not limit
-			options = {limit:searchPagePageSize, facets: not data.filter, highlights: false}
+			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
 			if data.page then options.skip = data.page*searchPagePageSize
 		else options = {limit:limit, skip:0, facets: false, highlights: true}
 		Elastic.find fields, terms, filters, sort, options, (err, totes, docs, facets) ->
@@ -467,8 +471,8 @@ module.exports = (app, route) ->
 				count: 1
 				mostRecent: 1
 		models.Tag.aggregate group, project, (err, results) ->
-				throw err if err
-				fn results
+			throw err if err
+			fn results
 		# fn [
 		# 	{body: 'capitalism', count: 56, mostRecent: new Date()}
 		# 	{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
