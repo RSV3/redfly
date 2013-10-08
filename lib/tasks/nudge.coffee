@@ -14,15 +14,15 @@ eachSave = (user, done)->
 
 	id = user._id
 	fiveDays = moment().subtract('days', 5)
-	models.Mail.find({
-		sender: id
+	models.Contact.find({
+		knows: id
 		added: $exists: false
-		sent: $lt: fiveDays
-	}).select('recipient added sent').exec (err, msgs) ->
+		date: $lt: fiveDays
+	}).select('_id').exec (err, unadded) ->
 		throw err if err
 
 		# get the list of likely queue entries
-		neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
+		neocons = _.uniq _.map unadded, (u)->u._id.toString()
 
 		# first strip out those who are permanently excluded
 		models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
@@ -35,19 +35,23 @@ eachSave = (user, done)->
 			models.Classify.find(class_match).select('contact').exec (err, skips) ->
 				throw err if err
 				skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
-					not _.some msgs, (msg)->
-						msg.recipient.toString() is skip.contact.toString() and models.tmStmp(msg._id) > models.tmStmp(skip._id)
+					not _.some unadded, (u)->
+						u._id.toString() is skip.contact.toString() and models.tmStmp(u._id) > models.tmStmp(skip._id)
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
-				if neocons.length
-					updates = { added: new Date(), addedBy: id }
-					matches = id: $in: neocons
-					models.Contact.update matches, updates, (err)->
-						if err
-							console.log "Error updating contacts:"
-							console.dir neocons
-							console.log "for user #{id}"
-							console.dir err
-				done()
+				if not neocons.length then return done()
+				updates = { added: new Date(), addedBy: id }
+				matches = id: $in: neocons
+				models.Contact.update matches, updates, (err)->
+					if err
+						console.log "Error updating contacts:"
+						console.dir neocons
+						console.log "for user #{id}"
+						console.dir err
+						return done()
+					else models.Contact.find matches, (err, contacts)->
+						if not err then while contacts?.length
+							Elastic.create contacts.pop()
+						done()
 
 
 
@@ -130,7 +134,6 @@ dailyRoutines = (doneDailies)->
 
 			# if we're not nudging today, let's take the time to make sure every added contact is searchable
 			models.Contact.find {added: $exists: true}, (err, contacts)->
-				console.dir "got #{contacts.length} contacts from mongo"	# jTNT debug remove
 				if not err and contacts?.length
 					_.each contacts, (c)->
 						Elastic.get c._id, (err, data)->

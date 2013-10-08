@@ -21,7 +21,7 @@ module.exports = (Ember, App, socket) ->
 					into: 'application'
 					outlet: 'sidebar'
 					controller: 'results'
-			else if name is 'classify'
+			else if name is 'classify' or name is 'enrich'
 				route.render 'leaders',
 					into: 'application'
 					outlet: 'sidebar'
@@ -31,6 +31,7 @@ module.exports = (Ember, App, socket) ->
 					into: 'application'
 					outlet: 'sidebar'
 					controller: 'feed'
+			if name is 'enrich' then name = 'results'
 			route.render name,
 				into: 'application'
 				outlet: 'main'
@@ -44,6 +45,7 @@ module.exports = (Ember, App, socket) ->
 		@resource 'results', path: '/results/:query_text'
 		@route 'noresult', path: '/results'
 		@route 'allresults', path: '/results/'
+		@route 'enrich', path: '/enrich'
 		@route 'tags'
 		# @route 'report'
 		@route 'userProfile', path: '/profile'
@@ -154,7 +156,9 @@ module.exports = (Ember, App, socket) ->
 		model: (params) ->
 			{ text: params.query_text }
 		serialize: (model, param) ->
-			{ query_text: model.text}
+			o = query_text: model.text
+			if model.poor then o.poor = true
+			o
 		deserialize: (param) ->
 			qt = decodeURIComponent param.query_text
 			if not qt?.length then qt = recent_query_string
@@ -166,7 +170,12 @@ module.exports = (Ember, App, socket) ->
 			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
 				controller.set zeroit, 0
 			controller.set 'empty', false
-			socket.emit 'fullSearch', query: model.text, (results) =>
+
+			query = query:model.text
+			if model.poor
+				controller.set 'datapoor', true
+				query.moreConditions = poor:true
+			socket.emit 'fullSearch', query, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
 						if model.text isnt recent_query_string then return @transitionTo 'noresult'
@@ -184,6 +193,29 @@ module.exports = (Ember, App, socket) ->
 					controller.set 'all', App.store.findMany(App.Contact, results.response)
 		renderTemplate: ->
 			@router.connectem @, 'results'
+
+	App.EnrichRoute = Ember.Route.extend
+		redirect: ->
+			poorResults = App.Results.create {text: '', poor:true}
+			@transitionTo 'results', poorResults
+			###
+			setupController: (cuntroller, model) ->
+				controller = @controllerFor 'results'
+				this._super controller, model
+				for nullit in ['all', 'f_knows', 'f_industry', 'f_organisation', 'sortType']
+					controller.set nullit, null
+				for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
+					controller.set zeroit, 0
+				controller.set 'datapoor', true
+				controller.set 'empty', false
+				socket.emit 'fullSearch', moreConditions:poor:true, (results) =>
+					console.log 'enrich got:'
+					console.dir results
+					if not results?.response?.length then return @transitionTo 'classify'
+					controller.set 'all', App.store.findMany(App.Contact, results.response)
+			renderTemplate: ->
+				@router.connectem @, 'enrich'
+			###
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
