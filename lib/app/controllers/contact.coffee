@@ -300,24 +300,32 @@ module.exports = (Ember, App, socket) ->
 				selections = @get 'selections'
 				id = @get 'controller.id'
 				socket.emit 'merge', contactId:id, mergeIds: selections.getEach('id'), (mergedcontact)=>
-					# Refresh the store with the stuff that could have changed.
+					# doing this for now because the deleterec (below) doesn't work. maybe remove this line after EPF upgrade?
 					if not @get('parentView.parentView.classifying') then window.location.reload()
 
+					# Refresh the store with the stuff that could have changed.
 					for own key,val of mergedcontact
-						if key isnt 'addedBy' then @set "controller.#{key}", val
-					@set 'controller.addedBy', App.user
+						if key is 'addedBy' then @set 'controller.addedBy', App.user
+						else if key is 'knows' then @set 'controller.knows', _.map val, (v)->App.User.find v
+						else @set "controller.#{key}", val
 					App.Tag.find contact: id
 					App.Note.find contact: id
 					App.Mail.find recipient: id
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
-					while selections.length
+					###
+					# I think this error will be fixed by EPF upgrade??
+					while selections.get 'length'
+						sel = selections.popObject()
+						console.log "deleting"
+						console.dir sel
 						try
-							selections.pop()?.deleteRecord()
+							sel?.deleteRecord()
 						catch err
 							console.log "deleting record after merge..."
 							console.dir err
+					###
 					@get('selections').clear()
 
 					App.store.commit()
