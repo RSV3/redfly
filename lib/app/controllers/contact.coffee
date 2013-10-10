@@ -346,10 +346,10 @@ module.exports = (Ember, App, socket) ->
 					_id: $ne: @get('controller.id')
 				).property()
 				excludes: (->
-					@get('parentView.selections').toArray().concat @get('controller.content')
+					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
-					@get('parentView.selections').pushObject App.Contact.find context.id
+					@get('parentView.selections').addObject App.Contact.find context.id
 				# override form submission
 				keyUp: (event) -> false
 				focusOut: -> false
