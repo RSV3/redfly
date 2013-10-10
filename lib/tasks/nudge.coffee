@@ -23,11 +23,13 @@ eachSave = (user, done)->
 
 		# get the list of likely queue entries
 		neocons = _.uniq _.map unadded, (u)->u._id.toString()
+		if not neocons.length then return done()
 
 		# first strip out those who are permanently excluded
 		models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
 			throw err if err
 			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
+			if not neocons.length then return done()
 
 			# then strip out the temporary skips:
 			# recent classify records that dont have the 'saved' flag set.
@@ -40,17 +42,27 @@ eachSave = (user, done)->
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if not neocons.length then return done()
 				updates = { added: new Date(), addedBy: id }
-				matches = id: $in: neocons
-				models.Contact.update matches, updates, (err)->
+				matches = _id: $in: neocons
+				options = { safe:true, multi:true }
+				models.Contact.update matches, updates, options, (err)->
 					if err
-						console.log "Error updating contacts:"
+						console.log "Error updating user #{id}'s contacts:"
 						console.dir neocons
-						console.log "for user #{id}"
 						console.dir err
 						return done()
 					else models.Contact.find matches, (err, contacts)->
 						if not err then while contacts?.length
-							Elastic.create contacts.pop()
+							
+							((c)->
+								Elastic.create c, (err)->
+									if err then return
+									# industry tags may have been pre-populated, so:
+									models.Tag.find {contact:c._id, category:'industry'}, (err, tags)->
+										if err then return
+										while tags?.length
+											t = tags.pop()
+											Elastic.onCreate t, 'Tag', 'indtags'
+							)(contacts.pop())
 						done()
 
 
