@@ -201,6 +201,20 @@ module.exports = (app, route) ->
 				{name: 'test2.org', count: 2}
 			]}
 
+	route 'stats', (fn)->
+		stats = {}
+		last30days = $gt:moment().subtract('days', 30).toDate()
+		query = added:last30days
+		models.Contact.count query, (err, totes)->
+			if not err then stats.totalThisMonth = totes
+			query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
+			models.Contact.count query, (err, totes)->
+				console.dir query
+				console.dir err
+				console.log totes
+				if not err then stats.autoThisMonth = totes
+				fn stats
+
 	route 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
 
