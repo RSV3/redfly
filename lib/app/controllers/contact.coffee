@@ -350,6 +350,10 @@ module.exports = (Ember, App, socket) ->
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
 					@get('parentView.selections').pushObject App.Contact.find context.id
+				# override form submission
+				keyUp: (event) -> false
+				focusOut: -> false
+				submit: -> false
 
 		measureBarView: Ember.View.extend
 			tagName: 'div'
