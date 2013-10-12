@@ -88,6 +88,23 @@ module.exports =
 		NUDGE_DAYS: 'Monday Thursday'
 
 
+
+	project11staging:
+		HOST: 'project11-staging.herokuapp.com'
+		NODE_ENV: 'production'
+		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
+
+		GOOGLE_API_ID: '614207063627-ukni5v8eln764hhllnqa4tg8dcslbhh5.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'Xhp-YRSc2xxOH_3c3KVjZRBQ'
+		LINKEDIN_API_KEY: '5cbdonom6b77'
+		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
+
+		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988.mongolab.com:39147/heroku_app18594187'
+		BONSAI_URL: 'http://rhry8sf1:acagfxs17hcyklm0@myrtle-745926.us-east-1.bonsai.io'
+
+		NUDGE_DAYS: 'Tuesday Friday'
+
 	production:
 		HOST: 'redfly.redstar.com'
 		NODE_ENV: 'production'
