@@ -100,7 +100,7 @@ module.exports =
 		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988.mongolab.com:49988/heroku_app18594187'
+		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988-a0.mongolab.com:49988/heroku_app18594187'
 		BONSAI_URL: 'http://rhry8sf1:acagfxs17hcyklm0@myrtle-745926.us-east-1.bonsai.io'
 
 		NUDGE_DAYS: 'Tuesday Friday'
