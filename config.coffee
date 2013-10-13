@@ -94,7 +94,7 @@ module.exports =
 		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
-		GOOGLE_API_ID: '614207063627-ukni5v8eln764hhllnqa4tg8dcslbhh5.apps.googleusercontent.com'
+		GOOGLE_API_ID: '614207063627-ukni5v8eln764hh11nqa4tg8dcs1bhh5.apps.googleusercontent.com'
 		GOOGLE_API_SECRET: 'Xhp-YRSc2xxOH_3c3KVjZRBQ'
 		LINKEDIN_API_KEY: '5cbdonom6b77'
 		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
