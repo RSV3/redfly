@@ -209,9 +209,6 @@ module.exports = (app, route) ->
 			if not err then stats.totalThisMonth = totes
 			query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
 			models.Contact.count query, (err, totes)->
-				console.dir query
-				console.dir err
-				console.log totes
 				if not err then stats.autoThisMonth = totes
 				fn stats
 
