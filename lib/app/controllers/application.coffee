@@ -3,7 +3,6 @@ module.exports = (Ember, App, socket) ->
 	_s = require 'underscore.string'
 
 
-
 	App.ApplicationView = Ember.View.extend
 		template: require '../../../templates/application'
 		loggingOn: false

@@ -21,7 +21,7 @@ ES_client = ->
 
 
 ES_index = ->
-	if not myESindex then myESindex = process.env.ES_NAME or 'redstar'
+	if not myESindex then myESindex = process.env.ES_NAME or 'redfly'
 	myESindex
 
 
@@ -106,7 +106,7 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 			console.dir query
 			console.dir err
 			data = null
-		if options.facets
+		else if options.facets
 			facets = JSON.parse(data)?.facets
 			if facets
 				tmpfacets ={}
@@ -126,7 +126,7 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 				hit.fragment = i.highlight[hit.field][0] or ''
 				hit.field = hit.field.split('.')?[0] or ''
 			hit
-		cb? err, data.total, dox, facets
+		cb? err, data?.total, dox, facets
 
 
 ES_update = (id, update, cb)->
