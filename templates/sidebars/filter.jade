@@ -48,7 +48,7 @@ div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
-	{{view Ember.TextField class="newtag org" changeBinding="view.newTag" placeholder="new organisation tag"}}
+	{{view App.AutoCompleteView class="newtag org" category="org" placeholder="add another tag"}}
 {{/if}}
 
 {{#if indTagsToSelect.length}}
@@ -66,7 +66,7 @@ div(bindAttr='class=":filters :toggleind theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
-	{{view Ember.TextField class="newtag industry" changeBinding="view.newTag" placeholder="new industry tag"}}
+	{{view App.AutoCompleteView class="newtag industry" category="industry" placeholder="new industry tag"}}
 {{/if}}
 
 {{#if noseToPick.length}}
@@ -81,6 +81,7 @@ div(bindAttr='class=":filters theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{view App.AutoCompleteView class="newnose" placeholder="another user"}}
 {{/if}}
 
 {{#if yearsToSelect.length}}

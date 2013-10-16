@@ -5,7 +5,7 @@ module.exports =
 		ORGANISATION_CONTACT: 'Come Classify to Fly High'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
-		RANK_DAY: 'Monday'
+		ES_NAME: 'redstar'
 
 
 	development:
@@ -40,7 +40,6 @@ module.exports =
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
 
 		BONSAI_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
-
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
@@ -90,6 +89,9 @@ module.exports =
 
 
 	project11staging:
+		ORGANISATION_TITLE: 'Project11'
+		ORGANISATION_DOMAIN: 'gmail.com'
+
 		HOST: 'project11-staging.herokuapp.com'
 		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
@@ -103,7 +105,6 @@ module.exports =
 		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988-a0.mongolab.com:49988/heroku_app18594187'
 		BONSAI_URL: 'http://7racz2hd:mt4cxafb34rirjy7@elm-539783.us-east-1.bonsai.io'
 		ES_NAME: 'project11'
-		ORGANISATION_DOMAIN: 'gmail.com'
 		NUDGE_DAYS: 'Tuesday Friday'
 
 	production:
