@@ -21,7 +21,7 @@ ES_client = ->
 
 
 ES_index = ->
-	if not myESindex then myESindex = process.env.ES_NAME or 'redstar'
+	if not myESindex then myESindex = process.env.ES_NAME or 'redfly'
 	myESindex
 
 

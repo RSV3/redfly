@@ -75,7 +75,7 @@ module.exports = (Ember, App, socket) ->
 			if (d = @get 'sortDir')
 				if d < 0 then emission.sort = "-#{@get('sortType')}"
 				else emission.sort = @get('sortType')
-			if @get('industryOp') then emission.industryAND=true
+			if @get('industryOp') then emission.indAND=true
 			if @get('orgOp') then emission.orgAND=true
 			emission
 
@@ -205,7 +205,6 @@ module.exports = (Ember, App, socket) ->
 				chckbxs.push { id:t.id, checked:false, label:t.label }
 			chckbxs.push { id:bod, checked:true, label:_.prune _.capitalize(bod), 20 }
 			@set "#{prefix}TagsToSelect", chckbxs
-
 
 
 	App.ResultsView = Ember.View.extend

@@ -281,7 +281,7 @@ module.exports = (Ember, App, socket) ->
 		activate: ->
 			util.notify
 				title: 'Invalid Account'
-				text: 'You must use your Redstar account.'
+				text: "You must use your organisational account."
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 		redirect: ->
