@@ -14,19 +14,16 @@ module.exports = (Ember, App, socket) ->
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 
-		autoTags:{}
-		autocompleteTags: (->
-			if not autoTags = @get("autoTags.#{@get('category')}")
-				socket.emit 'tags.all', category: @get('category'), (allTags) =>
-					allTags = @_filterTags allTags
-					result.pushObjects allTags
-				result = []
-				@set "autoTags.#{@get('category')}", result
-		).property 'category', 'tags.@each', '_popularTags.@each'
+		autoTags: (->
+			socket.emit 'tags.all', category: @get('category'), (allTags) =>
+				allTags = @_filterTags allTags
+				result.pushObjects allTags
+			result = []
+		).property 'tags.@each'
 
 		cloudTags: (->
 			@_filterTags @get('_popularTags')
-		).property 'category', 'tags.@each', '_popularTags.@each'
+		).property '_popularTags.@each'
 
 		_filterTags: (tags) ->
 			if not @get('tags')	# Not really sure why this ever comes up blank.
@@ -35,38 +32,30 @@ module.exports = (Ember, App, socket) ->
 				@get('tags').find (tag)-> tag.get('body') is candidate.body
 			tags.sort()
 
-		savePriorTags: {}		# hash priority tags on category
-		prioritytags: (->
-			if not priorTags = @get("savePriorTags.#{@get('category')}")
-				query = category: @get('category'), contact: $exists: false
-				result = App.Tag.filter query, (data) =>
-					if (category = @get('category')) and (category isnt data.get('category'))
-						return false
-					not data.get('contact')
-				options =
-					sortProperties: ['date']
-					sortAscending: false
-					content: result
-					limit: 20
-				priorTags = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
-				@set "savePriorTags.#{@get('category')}", priorTags
-			priorTags
-		).property 'category'
+		_priorityTags: (->
+			query = category: @get('category'), contact: null
+			result = App.Tag.filter query, (data) =>
+				@get('category') is data.get('category') and not data.get('contact')
+			options =
+				sortProperties: ['date']
+				sortAscending: false
+				content: result
+				limit: 20
+			Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
+		).property 'tags.@each'
 
-		savePopTags: {}		# hash popular tags on category
+		savePopTags: null		# hash popular tags on category
 		_popularTags: (->
-			if not @get("savePriorTags.#{@get('category')}") then return null
-			if not popTags = @get("savePopTags.#{@get('category')}")
+			if not (priorTags = @get('_priorityTags'))?.get('length') then return null
+			if not popTags = @get('savePopTags')
 				popTags = []
+				popTags.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
 				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					if p = @get("prioritytags.#{@get('category')}")
-						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
+					popularTags = _.reject popularTags, (t)-> _.contains priorTags.getEach('body'), t.body
 					popTags.pushObjects popularTags
-				if (p = @get 'prioritytags') and p.get 'length'
-					popTags.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
-				@set "savePopTags.#{@get('category')}", popTags
+				@set 'savePopTags', popTags
 			popTags
-		).property 'prioritytags.@each'
+		).property '_priorityTags.@each'
 
 
 		click: ->

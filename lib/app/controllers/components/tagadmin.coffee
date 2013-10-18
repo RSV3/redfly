@@ -6,8 +6,9 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../templates/components/tagadmin'
 		classNames: ['tagadmin']
 		category: 'project'
+
 		prioritytags: (->
-			query = category: @get('category'), contact: $exists: false
+			query = category: @get('category'), contact: null
 			result = App.Tag.filter query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
 					return false
@@ -15,16 +16,22 @@ module.exports = (Ember, App, socket) ->
 			options = sortProperties: ['date'], sortAscending: false, content: result, limit: 20
 			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 		).property 'category'
+
+		saveAllTags: (->
+			result = Ember.ArrayController.create()
+			socket.emit 'tags.all', category: @get('category'), (allTags) =>
+				result.pushObjects allTags.map (b)->b
+			result
+		).property 'category'
 		alltags: (->
 			result = Ember.ArrayController.create()
-			if c = @get('category')
-				socket.emit 'tags.all', category: c, (allTags) =>
-					if p = @get 'prioritytags'
-						allTags = _.difference allTags, p.getEach 'body'
-					if not allTags.length then result.set 'content', null
-					else result.set 'content', _.map allTags, (t)->{body:t}
+			if allTags = @get 'saveAllTags.content'
+				if p = @get('prioritytags').getEach 'body'
+					allTags = _.difference allTags, p
+				if allTags.length then result.pushObjects _.map allTags, (b)->body:b
 			result
-		).property 'prioritytags.@each'
+		).property 'prioritytags.@each', 'saveAllTags.@each'
+
 		hastags: (->
 			a = @get('alltags')
 			not a.get('content') or a.get('length')
@@ -69,7 +76,9 @@ module.exports = (Ember, App, socket) ->
 								that.set('context.body', newtxt)
 								App.store.filter(App.Tag, (t)->
 									t.get('category') is renameObj.category and t.get('body') is renameObj.body
-								).forEach (t)-> t.set 'body', newtxt
+								).forEach (t)->
+									t.set 'body', newtxt
+									t.transitionTo 'updated.uncommitted'
 						$(this).replaceWith(oldhtml).find('a.body').text newtxt
 						$('input').prop('disabled', false)
 					$that.replaceWith $newone
@@ -89,10 +98,10 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
 				if tag then setTimeout =>
-					if tag.deleteRecord 		# priority tags are real tags
+					if tag.deleteRecord 		# priority tags are real tags ..
 						tag.deleteRecord()
 						App.store.commit()
-					else						# the 'alltags' list are just {body:} objs.
+					else						# .. but the 'alltags' list are just {body:} objs.
 												# we need to tell the server to remove any tags with the same name
 						if tag.body isnt @get('notag') and c = @get('parentView.controller.category')
 							socket.emit 'tags.remove', {category: c, body: tag.body}, (removedTags) =>

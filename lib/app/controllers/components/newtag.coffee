@@ -31,10 +31,8 @@ module.exports = (Ember, App, socket) ->
 					@set 'currentTag', null
 					return null
 		updateTypeahead: (->
-			if @get('typeahead')
-				t = @get('parentView.autoTags')[@get('parentView.category')]
-			@get('typeahead')?.data('typeahead').source = t
-		).observes 'parentView.autocompleteTags.@each'
+			@get('typeahead')?.data('typeahead').source = @get 'parentView.autoTags'
+		).observes 'parentView.autoTags.@each'
 		attributeBindings: ['size', 'autocomplete', 'tabindex']
 		size: (->
 			2 + (@get('currentTag.length') or 0)
