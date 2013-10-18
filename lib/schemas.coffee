@@ -89,8 +89,8 @@ schemas.push Schema 'Contact',
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 schemas.push Schema 'Tag',
-	creator: type: Types.ObjectId, ref: 'User'#, required: true
-	contact: type: Types.ObjectId, ref: 'Contact'#, required: true
+	creator: type: Types.ObjectId, ref: 'User', sparse: true#, required: true
+	contact: type: Types.ObjectId, ref: 'Contact', sparse: true#, required: true
 	category: type:String, required:true, enum:['role', 'theme', 'project', 'organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 

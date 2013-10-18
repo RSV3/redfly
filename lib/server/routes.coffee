@@ -98,7 +98,12 @@ module.exports = (app, route) ->
 					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
 					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
 				model.create record, (err, doc) ->
-					throw err if err
+					if err
+						console.log "ERROR: creating record"
+						console.dir err
+						console.dir record
+						throw err unless err.code is 11000		# duplicate key
+						doc = record
 					cb doc
 					switch model
 						when models.Note
@@ -439,23 +444,32 @@ module.exports = (app, route) ->
 			throw err if err
 			fn bodies.sort()
 
-	route 'tags.move', (conditions, fn) ->
-		if (newcat = conditions.newcat)
-			delete conditions.newcat
-			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
-				if err and err.code is 11001 then return models.Tag.remove conditions, fn
+	_updateTags = (updates, conditions, fn)->
+		models.Tag.find conditions, (err, tags)->
+			if err or not tags?.length then return fn()
+			newcat = updates.category or conditions.category
+			newbod = updates.body or conditions.body
+			_.each tags, (doc)->
+				if conditions.category is newcat or conditions.category is 'industry' or newcat is 'industry'
+					Elastic.onDelete doc, 'Tag', if conditions.category is 'industry' then 'indtags' else 'orgtags'
+					doc.body = newbod
+					Elastic.onCreate doc, 'Tag', if newcat is 'industry' then 'indtags' else 'orgtags'
+			models.Tag.update conditions, updates, {multi:true}, (err) ->
+				if err and err.code is 11001 then return models.Tag.remove conditions, fn	# error: duplicate
 				console.dir err if err
 				return fn()
-		fn()
+
+	route 'tags.move', (conditions, fn) ->
+		if not conditions.newcat then return fn()
+		updates = category:conditions.newcat
+		delete conditions.newcat
+		_updateTags updates, conditions, fn
 
 	route 'tags.rename', (conditions, fn) ->
-		if (newtag = conditions.new)
-			delete conditions.new
-			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
-				if err and err.code is 11001 then return models.Tag.remove conditions, fn
-				console.dir err if err
-				return fn()
-		fn()
+		if not conditions.new then return fn()
+		updates = body:conditions.new
+		delete conditions.new
+		_updateTags updates, conditions, fn
 
 	route 'tags.popular', (conditions, fn) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
