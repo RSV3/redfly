@@ -107,17 +107,26 @@ module.exports = (app, route) ->
 					cb doc
 					switch model
 						when models.Note
-							Elastic.onCreate doc, 'Note', "notes"
+							Elastic.onCreate doc, 'Note', "notes", (err)->
+								cb doc
 						when models.Tag
-							Elastic.onCreate doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+							Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
+								if not err then models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
+									if err
+										console.log "error incrementing data count for #{user}"
+										console.dir err
+									feed doc, data.type
+								cb doc
 						when models.Contact
 							if doc.addedBy
 								feed doc, data.type
 								Elastic.create doc, (err)->
-									if not err then return
-									console.log "ERR: ES creating new contact"
-									console.dir doc
-									console.dir err
+									if err
+										console.log "ERR: ES creating new contact"
+										console.dir doc
+										console.dir err
+									cb doc
+						else cb doc
 
 			when 'save'
 				record = data.record
@@ -171,18 +180,19 @@ module.exports = (app, route) ->
 				if id = data.id
 					model.findByIdAndRemove id, (err, doc) ->
 						throw err if err
-						cb()
-						if doc
-							switch data.type
-								when 'Contact'
-									Elastic.delete id, (err)->
-										if not err then return
+						if not doc then return cb()
+						switch data.type
+							when 'Contact'
+								Elastic.delete id, (err)->
+									if err
 										console.log "ERR: ES deleting #{id} on db remove"
 										console.dir err
-								when 'Note'
-									Elastic.onDelete doc, 'Note', "notes"
-								when 'Tag'
-									Elastic.onDelete doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+									cb()
+							when 'Note'
+								Elastic.onDelete doc, 'Note', "notes", (err)-> cb()
+							when 'Tag'
+								Elastic.onDelete doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), cb
+							else cb()
 
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
@@ -451,9 +461,9 @@ module.exports = (app, route) ->
 			newbod = updates.body or conditions.body
 			_.each tags, (doc)->
 				if conditions.category is newcat or conditions.category is 'industry' or newcat is 'industry'
-					Elastic.onDelete doc, 'Tag', if conditions.category is 'industry' then 'indtags' else 'orgtags'
-					doc.body = newbod
-					Elastic.onCreate doc, 'Tag', if newcat is 'industry' then 'indtags' else 'orgtags'
+					Elastic.onDelete doc, 'Tag', (if conditions.category is 'industry' then 'indtags' else 'orgtags'), (err)->
+						doc.body = newbod
+						Elastic.onCreate doc, 'Tag', (if newcat is 'industry' then 'indtags' else 'orgtags')
 			models.Tag.update conditions, updates, {multi:true}, (err) ->
 				if err and err.code is 11001 then return models.Tag.remove conditions, fn	# error: duplicate
 				console.dir err if err
