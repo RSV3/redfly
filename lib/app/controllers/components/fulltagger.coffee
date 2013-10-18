@@ -15,46 +15,30 @@ module.exports = (Ember, App, socket) ->
 		).property 'contact.id', 'category'
 
 		autoTags: (->
-			socket.emit 'tags.all', category: @get('category'), (allTags) =>
-				allTags = @_filterTags allTags
-				result.pushObjects allTags
+			if (bodies = @get('tags')?.getEach('body'))
+				socket.emit 'tags.all', category: @get('category'), (allTags) =>
+					result.pushObjects _.difference allTags, bodies
 			result = []
 		).property 'tags.@each'
 
 		cloudTags: (->
-			@_filterTags @get('_popularTags')
-		).property '_popularTags.@each'
-
-		_filterTags: (tags) ->
-			if not @get('tags')	# Not really sure why this ever comes up blank.
-				return []
-			tags = _.reject tags, (candidate) =>
-				@get('tags').find (tag)-> tag.get('body') is candidate.body
-			tags.sort()
+			if (bodies = @get('tags')?.getEach('body')) and (popular = @get('_popularTags'))
+				popular.reject (i)-> _.contains bodies, i.body
+		).property '_popularTags.@each', 'tags.@each'
 
 		_priorityTags: (->
-			query = category: @get('category'), contact: null
-			result = App.Tag.filter query, (data) =>
-				@get('category') is data.get('category') and not data.get('contact')
-			options =
-				sortProperties: ['date']
-				sortAscending: false
-				content: result
-				limit: 20
-			Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
+			App.Tag.find category: @get('category'), contact: null
 		).property 'category'
 
-		savePopTags: null		# hash popular tags on category
 		_popularTags: (->
-			if not (priorTags = @get('_priorityTags'))?.get('length') then return null
-			if not popTags = @get('savePopTags')
-				popTags = []
-				popTags.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) ->
-					console.dir popularTags
-					popTags.pushObjects _.reject popularTags, (t)-> _.contains priorTags.getEach('body'), t.body
-				@set 'savePopTags', popTags
-			popTags
+			if (priorTags = @get('_priorityTags')) then priorTags = priorTags.get('length')
+			if not priorTags then return null
+			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+				priorTags = @get('_priorityTags')
+				result.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
+				priorTags = priorTags.getEach 'body'
+				result.pushObjects _.reject popularTags, (t)-> _.contains priorTags, t.body
+			result = []
 		).property '_priorityTags.@each'
 
 
