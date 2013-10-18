@@ -146,27 +146,22 @@ ES_delete = (id, cb)->
 
 
 # this little routine updates the relevant elasticsearch document when we add or remove tags or notes
-# if incflag is set, this is an add, so increment the datacount
-runScriptOnOp = (doc, type, field, script, incflag)->
+runScriptOnOp = (doc, type, field, script, cb)->
 	user = doc.creator or doc.author
 	if not doc.contact or not user then return
-	if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
-		if err
-			console.log "error incrementing data count for #{user}"
-			console.dir err
-		feed doc, type
 	esup_doc =
 		params: val: {user:String(user), body:doc.body}
 		script: script
 	ES_update String(doc.contact), esup_doc, (err)->
-		if not err then return
-		console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
-		console.dir doc
-		console.dir err
+		if err
+			console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
+			console.dir doc
+			console.dir err
+		return cb? err
 
 # for a given doc of type 'type', add the corresponding object to field on the ES index
 # (used for tags and notes)
-ES_updateOnCreate = (doc, type, field, incFlag)->
+ES_updateOnCreate = (doc, type, field, cb)->
 	runScriptOnOp doc, type, field, """
 		if (ctx._source.?#{field} == empty) {
 			ctx._source.#{field}=[val]
@@ -174,12 +169,12 @@ ES_updateOnCreate = (doc, type, field, incFlag)->
 			ctx.op = "none"
 		} else {
 			ctx._source.#{field} += val
-		} """, incFlag
+		} """, cb
 
 # for a given doc of type 'type', remove the corresponding object from field on the ES index
 # (useful for tags and notes)
-ES_updateOnDelete = (doc, type, field)->
-	runScriptOnOp doc, field, """
+ES_updateOnDelete = (doc, type, field, cb)->
+	runScriptOnOp doc, type, field, """
 		if (ctx._source.?#{field} == empty) {
 			ctx.op="none"
 		} else if (ctx._source.#{field} == val) {
@@ -188,7 +183,7 @@ ES_updateOnDelete = (doc, type, field)->
 			ctx._source.#{field}.remove(val)
 		} else {
 			ctx.op = "none"
-		} """
+		} """, cb
 
 
 ES_get = (id, cb)->

@@ -8,5 +8,28 @@ html
 		link(href='http://fonts.googleapis.com/css?family=Lato:300,400,700', rel='stylesheet', type='text/css')
 		link#styles(rel='stylesheet', href='/site.css')
 	body
-		h1 Error
-		p Please login to your corporate email account for access to Redfly 
+		.navbar.navbar-inverse.navbar-fixed-top
+			.navbar-inner
+				.container
+					a(href='/')
+						| Redfly
+						img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
+
+		.container
+			.row-fluid
+				.span3
+					| {{outlet sidebar}}
+				.span9
+					| {{outlet main}}
+
+
+			hr
+			footer
+				p ©{{App.orgTitle}} 2013
+		.container
+			.row-fluid
+				h1 Error
+				p Please login to your corporate email account for access to Redfly 
+			hr
+			footer
+				p ©{{App.orgTitle}} 2013
