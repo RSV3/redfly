@@ -42,7 +42,7 @@ module.exports = (Ember, App, socket) ->
 				content: result
 				limit: 20
 			Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
-		).property 'tags.@each'
+		).property 'category'
 
 		savePopTags: null		# hash popular tags on category
 		_popularTags: (->
@@ -50,9 +50,9 @@ module.exports = (Ember, App, socket) ->
 			if not popTags = @get('savePopTags')
 				popTags = []
 				popTags.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					popularTags = _.reject popularTags, (t)-> _.contains priorTags.getEach('body'), t.body
-					popTags.pushObjects popularTags
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) ->
+					console.dir popularTags
+					popTags.pushObjects _.reject popularTags, (t)-> _.contains priorTags.getEach('body'), t.body
 				@set 'savePopTags', popTags
 			popTags
 		).property '_priorityTags.@each'

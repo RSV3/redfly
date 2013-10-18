@@ -78,7 +78,8 @@ module.exports = (Ember, App, socket) ->
 									t.get('category') is renameObj.category and t.get('body') is renameObj.body
 								).forEach (t)->
 									t.set 'body', newtxt
-									t.transitionTo 'updated.uncommitted'
+									#t.transitionTo 'loaded.updated'
+									t.get('stateManager').send 'becameClean'
 						$(this).replaceWith(oldhtml).find('a.body').text newtxt
 						$('input').prop('disabled', false)
 					$that.replaceWith $newone
