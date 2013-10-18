@@ -11,25 +11,13 @@ html
 		.navbar.navbar-inverse.navbar-fixed-top
 			.navbar-inner
 				.container
-					a(href='/')
+					a(href='/', class='brand')
 						| Redfly
 						img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
-
-		.container
-			.row-fluid
-				.span3
-					| {{outlet sidebar}}
-				.span9
-					| {{outlet main}}
-
-
-			hr
-			footer
-				p ©{{App.orgTitle}} 2013
 		.container
 			.row-fluid
 				h1 Error
 				p Please login to your corporate email account for access to Redfly 
 			hr
 			footer
-				p ©{{App.orgTitle}} 2013
+				p © 2013
