@@ -234,6 +234,11 @@ module.exports = (app, route) ->
 	route 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
 
+	route 'total.contacts', (fn) ->
+		logic.countConts (err, count) ->
+			throw err if err
+			fn count
+
 	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
 			throw err if err
