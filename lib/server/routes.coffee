@@ -2,6 +2,7 @@ module.exports = (app, route) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	moment = require 'moment'
+	marked = require 'marked'
 	crypto = require './crypto'
 	logic = require './logic'
 	models = require './models'
@@ -94,9 +95,12 @@ module.exports = (app, route) ->
 			when 'create'
 				record = data.record
 				if _.isArray record then throw new Error 'unimplemented'
-				if model is models.Contact
-					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
-					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+				switch model
+					when models.Contact
+						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
+						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+					when models.Note
+						record.body = marked record.body
 				model.create record, (err, doc) ->
 					if err
 						console.log "ERROR: creating record"
