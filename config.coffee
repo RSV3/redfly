@@ -103,7 +103,7 @@ module.exports =
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988-a0.mongolab.com:49988/heroku_app18594187'
-		BONSAI_URL: 'http://7racz2hd:mt4cxafb34rirjy7@elm-539783.us-east-1.bonsai.io'
+		BONSAI_URL: 'http://paas:041e4f042e1234537da0385d8305787b@api.searchbox.io'
 		ES_NAME: 'project11'
 		NUDGE_DAYS: 'Tuesday Friday'
 
