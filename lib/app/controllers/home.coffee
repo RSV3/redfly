@@ -9,13 +9,13 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['home']
 		didInsertElement: ()->
 			socket.emit 'total.contacts', (results) =>
-				if not results then return
-				@set 'controller.andCounting', results
 				formatthis = results
 				format = ''
 				while formatthis > 1
 					format += '9'
 					formatthis /= 10
+				if not format.length then return
+				@set 'controller.andCounting', results
 				Ember.run.next this, ->
 					@$('.counter').counter(
 						initial: "0"
