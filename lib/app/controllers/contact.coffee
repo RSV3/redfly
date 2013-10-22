@@ -159,21 +159,23 @@ module.exports = (Ember, App, socket) ->
 		).property 'controller.id'
 
 		introMailto: (->
-			CR = '%0D%0A'		# carriage return / line feed
-			port = if window.location.port then ":#{window.location.port}" else ""
-			url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
-			$('p.bullhorn>a').css('color','grey').bind('click', false)
-			socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
-				util.notify
-					title: 'Introduction requested'
-					text: '<div id="requestintro"></div>'
-					type: 'success'
-					closer: true
-					sticker: false
-					hide: false
-					effect: 'bounce'
-					before_open: (pnotify) =>
-						pnotify.css top: '60px'
+			bootbox.confirm "Request an introduction from #{@get 'controller.addedBy.name'}?", (yorn)=>
+				if not yorn then return
+				CR = '%0D%0A'		# carriage return / line feed
+				port = if window.location.port then ":#{window.location.port}" else ""
+				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
+				$('p.bullhorn>a').css('color','grey').bind('click', false)
+				socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
+					util.notify
+						title: 'Introduction requested'
+						text: '<div id="requestintro"></div>'
+						type: 'success'
+						closer: true
+						sticker: false
+						hide: false
+						effect: 'bounce'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
 
 		)
 
