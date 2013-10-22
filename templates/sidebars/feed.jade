@@ -46,8 +46,8 @@
 			| {{view App.TaggerView contactBinding="this"}}
 			| {{/if}}
 			| {{#if typeLinkedin}}
-			+linkTo('profile updater')
-				| {{updater.canonicalName}}
+			+linkTo('profile updatedBy')
+				| {{updatedBy.canonicalName}}
 			|  augmented 
 			+linkTo('contact this')
 				| {{canonicalName}}

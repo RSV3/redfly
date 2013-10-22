@@ -19,7 +19,8 @@
     "contextio": "~0.3.0",
     "source-map-support": "~0.1.2",
     "elasticsearchclient": "git://github.com/justinTNT/node-elasticsearch-client.git",
-    "icalendar": "0.6.x"
+    "icalendar": "0.6.x",
+    "marked": "~0.2.9"
   },
   "devDependencies": {
     "chai": "1.4.2"

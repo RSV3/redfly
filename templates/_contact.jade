@@ -206,7 +206,7 @@
 				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			// TO-DO do nl2br with bindings
 			.media-body
-				p {{view.content.body}}
+				p {{{view.content.body}}}
 				small.muted
 					+linkTo('profile view.content.author') {{view.content.author.canonicalName}}
 					span  | {{view.naturaldate}}

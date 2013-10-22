@@ -63,5 +63,5 @@ module.exports = (DS, App) ->
 	App.Note.reopen
 		preview: (->
 				_s = require 'underscore.string'
-				_s.prune @get('body'), 80
+				_s.prune _s.stripTags(@get 'body'), 80
 			).property 'body'
