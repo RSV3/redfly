@@ -622,7 +622,7 @@ module.exports = (app, route) ->
 				completedContact: ->
 					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					io.emit 'feed',
+					io.broadcast 'feed',
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
