@@ -18,7 +18,7 @@ module.exports = (Ember, App, socket) ->
 		setACs: (->
 			a = @get 'allautos'
 			if a?.get('length') and not @get('category')?.length
-				@set 'autocompletes', _.reject a.getEach('name'), (n)-> not n?.length
+				@set 'autocompletes', a.getEach('name')
 		).observes 'allautos.@each'
 		didInsertElement: ->
 			category = @get('category')
@@ -34,7 +34,7 @@ module.exports = (Ember, App, socket) ->
 				else conditions = category:$ne:'industry'
 				socket.emit 'tags.all', conditions, (allTags) =>
                     @set 'autocompletes', allTags
-			else @set 'allautos', App.User.filter {}, (i)->true
+			else @set 'allautos', App.User.filter {name:$exists:true}, (u)->u?.get('name')?.length
 		updateTypeahead: (->
 			if t=@get('typeahead') then t.data('typeahead').source = @get('autocompletes')
 		).observes 'autocompletes.@each'
