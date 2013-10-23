@@ -52,8 +52,7 @@ module.exports = (Ember, App, socket) ->
 		known: (->
 			ids = @get('f_knows')
 			if not ids?.length then return null
-			App.User.find {_id:$in:ids}
-			App.User.filter (data) =>
+			App.User.filter {_id:$in:ids}, (data) =>
 				_.contains ids, data.get('id')
 		).property 'f_knows'
 
@@ -229,17 +228,9 @@ module.exports = (Ember, App, socket) ->
 			if @get('parentView').controller.get('datapoor') then return
 			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
 
-		didInsertElement: ()->
-			@get('controller').set 'showitall', false
-		hideItAll: (r)->
-			if (old = @get 'parentView.controller.showWhich')
-				old.set 'showitall', false
-		setShowItAll: (r)->
-			@hideItAll()
-			@get('parentView.controller.showWhich')?.set 'showitall', false
-			@set 'parentView.controller.showWhich', r
-			r.set 'showitall', true
-			that = this
+		didInsertElement: ()-> @get('controller').set 'showitall', false
+		hideItAll: (r)-> r.set 'showitall', false
+		setShowItAll: (r)-> r.set 'showitall', true
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'
