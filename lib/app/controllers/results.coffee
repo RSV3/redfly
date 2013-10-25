@@ -208,6 +208,8 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
+		storePriorTags: {}
+		storePopTags: {}
 
 
 	App.ResultController = App.ContactController.extend
