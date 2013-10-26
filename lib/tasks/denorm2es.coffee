@@ -68,7 +68,7 @@ saveAll = (name, alldone)->
 console.log "starting migrateES with flag: #{process.argv[3]}"
 
 
-bonsai = process.env.BONSAI_URL
+bonsai = process.env.ES_URL
 bits = bonsai.split '@'
 auth = bits[0].split ':'
 
