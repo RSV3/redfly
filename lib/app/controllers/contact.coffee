@@ -354,7 +354,6 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').addObject App.Contact.find context.id
 				# override form submission
 				keyUp: (event) -> false
-				focusOut: -> false
 				submit: -> false
 
 		measureBarView: Ember.View.extend
