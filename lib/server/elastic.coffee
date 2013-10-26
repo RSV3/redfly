@@ -8,8 +8,8 @@ myESindex = null
 
 ES_client = ->
 	if not myESclient
-		bonsai = process.env.BONSAI_URL
-		bits = bonsai.split '@'
+		server = process.env.ES_URL
+		bits = server.split '@'
 		auth = bits[0].split ':'
 		serverOptions =
 			host: bits[1]
