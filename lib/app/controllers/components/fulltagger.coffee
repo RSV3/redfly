@@ -5,6 +5,11 @@ module.exports = (Ember, App, socket) ->
 	App.FullTaggerView = App.TaggerView.extend
 		template: require '../../../../templates/components/tagger'
 		classNames: ['tagger']
+		gpView: (->
+			gpV = this.get('parentView')?.get('parentView')
+			if gpV and _.contains(gpV.classNames, 'results') then return gpV
+			null
+		)
 		tags: (->
 			sort = field: 'date'
 			query = contact: @get('contact.id'), category: @get('category')
@@ -14,59 +19,54 @@ module.exports = (Ember, App, socket) ->
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 
-		autoTags:{}
-		autocompleteTags: (->
-			if not autoTags = @get("autoTags.#{@get('category')}")
+		storeAutoTags: null
+		autoTags: (->
+			if (aTags = @get('storeAutoTags')) then return aTags
+			if (tags = @get('tags'))
+				bodies = tags.getEach 'body'
 				socket.emit 'tags.all', category: @get('category'), (allTags) =>
-					allTags = @_filterTags allTags
-					result.pushObjects allTags
-				result = []
-				@set "autoTags.#{@get('category')}", result
-		).property 'category', 'tags.@each', '_popularTags.@each'
+					aTags = @get 'storeAutoTags'
+					aTags.pushObjects _.difference allTags, bodies
+			@set 'storeAutoTags', []
+			@get 'storeAutoTags'
+		).property 'cloudTags.@each'	# depends on tags.@each, but let's wait until cloudTags are done.
 
 		cloudTags: (->
-			@_filterTags @get('_popularTags')
-		).property 'category', 'tags.@each', '_popularTags.@each'
+			if (bodies = @get('tags')?.getEach('body')) and (popular = @get('_popularTags'))
+				popular.reject (i)-> _.contains bodies, i.body
+		).property '_popularTags.@each'
 
-		_filterTags: (tags) ->
-			if not @get('tags')	# Not really sure why this ever comes up blank.
-				return []
-			tags = _.reject tags, (candidate) =>
-				@get('tags').find (tag)-> tag.get('body') is candidate.body
-			tags.sort()
+		storePriorTags: null
+		_priorityTags: (->
+			if (pTags = @get('storePriorTags')) then return pTags
+			cat = @get 'category'
+			if grandparent = @gpView()?.get('storePriorTags')
+				if not grandparent[cat] then grandparent[cat] = App.Tag.find category: cat, contact: null
+				@set 'storePriorTags', grandparent[cat]
+			else @set 'storePriorTags', App.Tag.find category: cat, contact: null
+			@get 'storePriorTags'
+		).property 'tags.@each'
 
-		savePriorTags: {}		# hash priority tags on category
-		prioritytags: (->
-			if not priorTags = @get("savePriorTags.#{@get('category')}")
-				query = category: @get('category'), contact: $exists: false
-				result = App.Tag.filter query, (data) =>
-					if (category = @get('category')) and (category isnt data.get('category'))
-						return false
-					not data.get('contact')
-				options =
-					sortProperties: ['date']
-					sortAscending: false
-					content: result
-					limit: 20
-				priorTags = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, options)
-				@set "savePriorTags.#{@get('category')}", priorTags
-			priorTags
-		).property 'category'
-
-		savePopTags: {}		# hash popular tags on category
+		storePopTags: null
 		_popularTags: (->
-			if not @get("savePriorTags.#{@get('category')}") then return null
-			if not popTags = @get("savePopTags.#{@get('category')}")
-				popTags = []
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-					if p = @get("prioritytags.#{@get('category')}")
-						popularTags = _.reject popularTags, (t)-> _.contains p.getEach('body'), t.body
-					popTags.pushObjects popularTags
-				if (p = @get 'prioritytags') and p.get 'length'
-					popTags.pushObjects p.map (p)-> {body:p.get('body'), category:p.get('category')}
-				@set "savePopTags.#{@get('category')}", popTags
-			popTags
-		).property 'prioritytags.@each'
+			if (pTags = @get('storePopTags')) then return pTags
+			cat = @get 'category'
+			unless (priorTags = @get('storePriorTags')) and priorTags.get('length')
+				return null
+			if grandparent = @gpView()?.get('storePopTags')
+				if grandparent[cat]
+					@set 'storePopTags', grandparent[cat]
+					return @get 'storePopTags'
+			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+				pTags = @get 'storePopTags'
+				priorTags = @get 'storePriorTags'
+				pTags.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
+				priorBodies = priorTags.getEach 'body'
+				pTags.pushObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length]
+				if grandparent then grandparent[cat] = @get 'storePopTags'
+			@set 'storePopTags', []
+			@get 'storePopTags'
+		).property '_priorityTags.@each'
 
 
 		click: ->

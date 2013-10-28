@@ -2,6 +2,7 @@ module.exports = (app, route) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	moment = require 'moment'
+	marked = require 'marked'
 	crypto = require './crypto'
 	logic = require './logic'
 	models = require './models'
@@ -42,31 +43,6 @@ module.exports = (app, route) ->
 			o = {type: type, id: doc.id}
 			if doc.addedBy then o.addedBy = doc.addedBy
 			app.io.broadcast 'feed', o
-
-		# this little routine updates the relevant elasticsearch document when we add or remove tags or notes
-		# if incflag is set, this is an add, so increment the datacount
-		runScriptOnOp = (doc, type, field, script, incflag)->
-			user = doc.creator or doc.author
-			if not doc.contact or not user then return
-			if incflag then models.User.update {_id:user}, $inc: 'dataCount': 1, (err)->
-				if err
-					console.log "error incrementing data count for #{user}"
-					console.dir err
-				feed doc, type
-			esup_doc =
-				params: val: {user:String(user), body:doc.body}
-				script: script
-			Elastic.update String(doc.contact), esup_doc, (err)->
-				if not err then return
-				console.log "ERR: ES adding new #{field} #{doc.body} to #{doc.contact} from #{user}"
-				console.dir doc
-				console.dir err
-
-		updateOnCreate = (doc, type, field)->
-			runScriptOnOp doc, type, field, "if (ctx._source.?#{field} == empty) { ctx._source.#{field}=[val] } else if (ctx._source.#{field}.contains(val)) { ctx.op = \"none\" } else { ctx._source.#{field} += val }", true
-
-		updateOnDelete = (doc, type, field)->
-			runScriptOnOp doc, field, "if (ctx._source.?#{field} == empty) {ctx.op=\"none\"} else if (ctx._source.#{field} == val) { ctx._source.#{field} = null} else if (ctx._source.#{field}.contains(val)) { ctx._source.#{field}.remove(val) } else { ctx.op = \"none\" }"
 
 
 		switch data.op
@@ -119,25 +95,42 @@ module.exports = (app, route) ->
 			when 'create'
 				record = data.record
 				if _.isArray record then throw new Error 'unimplemented'
-				if model is models.Contact
-					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
-					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+				switch model
+					when models.Contact
+						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
+						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+					when models.Note
+						record.body = marked record.body
 				model.create record, (err, doc) ->
-					throw err if err
+					if err
+						console.log "ERROR: creating record"
+						console.dir err
+						console.dir record
+						throw err unless err.code is 11000		# duplicate key
+						doc = record
 					cb doc
 					switch model
 						when models.Note
-							updateOnCreate doc, 'Note', "notes"
+							Elastic.onCreate doc, 'Note', "notes", (err)->
+								cb doc
 						when models.Tag
-							updateOnCreate doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+							Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
+								if not err then models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
+									if err
+										console.log "error incrementing data count for #{user}"
+										console.dir err
+									feed doc, data.type
+								cb doc
 						when models.Contact
 							if doc.addedBy
 								feed doc, data.type
 								Elastic.create doc, (err)->
-									if not err then return
-									console.log "ERR: ES creating new contact"
-									console.dir doc
-									console.dir err
+									if err
+										console.log "ERR: ES creating new contact"
+										console.dir doc
+										console.dir err
+									cb doc
+						else cb doc
 
 			when 'save'
 				record = data.record
@@ -191,18 +184,19 @@ module.exports = (app, route) ->
 				if id = data.id
 					model.findByIdAndRemove id, (err, doc) ->
 						throw err if err
-						cb()
-						if doc
-							switch data.type
-								when 'Contact'
-									Elastic.delete id, (err)->
-										if not err then return
+						if not doc then return cb()
+						switch data.type
+							when 'Contact'
+								Elastic.delete id, (err)->
+									if err
 										console.log "ERR: ES deleting #{id} on db remove"
 										console.dir err
-								when 'Note'
-									updateOnDelete doc, 'Note', "notes"
-								when 'Tag'
-									updateOnDelete doc, 'Tag', if doc.category is 'industry' then 'indtags' else 'orgtags'
+									cb()
+							when 'Note'
+								Elastic.onDelete doc, 'Note', "notes", (err)-> cb()
+							when 'Tag'
+								Elastic.onDelete doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), cb
+							else cb()
 
 				else if ids = data.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
@@ -226,8 +220,24 @@ module.exports = (app, route) ->
 				{name: 'test2.org', count: 2}
 			]}
 
+	route 'stats', (fn)->
+		stats = {}
+		last30days = $gt:moment().subtract('days', 30).toDate()
+		query = added:last30days
+		models.Contact.count query, (err, totes)->
+			if not err then stats.totalThisMonth = totes
+			query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
+			models.Contact.count query, (err, totes)->
+				if not err then stats.autoThisMonth = totes
+				fn stats
+
 	route 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
+
+	route 'total.contacts', (fn) ->
+		logic.countConts (err, count) ->
+			throw err if err
+			fn count
 
 	route 'summary.contacts', (fn) ->
 		logic.summaryContacts (err, count) ->
@@ -339,11 +349,14 @@ module.exports = (app, route) ->
 				fields.push type
 		else if compound[0] is 'contact'
 			fields = ['name', 'email']
-			data.addedBy = session.user				# limit 'contact' search to contacts we know.
 		else fields = [compound[0]]
 
 		filters = []
-		if data.addedBy then filters.push terms:addedBy:[data.addedBy]
+		if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
+		if data.moreConditions?.poor
+			filters.push terms:addedBy:[session.user]
+			filters.push missing:field:"indtags"
+			filters.push missing:field:"orgtags"
 		if data.knows?.length then filters.push terms:knows:data.knows
 		if data.industry?.length 
 			thisf = []
@@ -379,7 +392,7 @@ module.exports = (app, route) ->
 			sort.added = 'desc'
 
 		if not limit
-			options = {limit:searchPagePageSize, facets: not data.filter, highlights: false}
+			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
 			if data.page then options.skip = data.page*searchPagePageSize
 		else options = {limit:limit, skip:0, facets: false, highlights: true}
 		Elastic.find fields, terms, filters, sort, options, (err, totes, docs, facets) ->
@@ -390,10 +403,11 @@ module.exports = (app, route) ->
 				if docs[0].field
 					resultsObj.response = {}
 					for d in docs
-						if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
-						else thefield = d.field
-						if not resultsObj[thefield] then resultsObj[thefield] = []
-						resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
+						if String(d._id) isnt data.moreConditions?._id?.$ne
+							if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
+							else thefield = d.field
+							if not resultsObj[thefield] then resultsObj[thefield] = []
+							resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
 				else
 					resultsObj.response = _.pluck docs, '_id'
 					resultsObj.totalCount = resultsObj.filteredCount = totes
@@ -449,23 +463,32 @@ module.exports = (app, route) ->
 			throw err if err
 			fn bodies.sort()
 
-	route 'tags.move', (conditions, fn) ->
-		if (newcat = conditions.newcat)
-			delete conditions.newcat
-			models.Tag.update conditions, {category:newcat}, {multi:true}, (err) ->
-				if err and err.code is 11001 then return models.Tag.remove conditions, fn
+	_updateTags = (updates, conditions, fn)->
+		models.Tag.find conditions, (err, tags)->
+			if err or not tags?.length then return fn()
+			newcat = updates.category or conditions.category
+			newbod = updates.body or conditions.body
+			_.each tags, (doc)->
+				if conditions.category is newcat or conditions.category is 'industry' or newcat is 'industry'
+					Elastic.onDelete doc, 'Tag', (if conditions.category is 'industry' then 'indtags' else 'orgtags'), (err)->
+						doc.body = newbod
+						Elastic.onCreate doc, 'Tag', (if newcat is 'industry' then 'indtags' else 'orgtags')
+			models.Tag.update conditions, updates, {multi:true}, (err) ->
+				if err and err.code is 11001 then return models.Tag.remove conditions, fn	# error: duplicate
 				console.dir err if err
 				return fn()
-		fn()
+
+	route 'tags.move', (conditions, fn) ->
+		if not conditions.newcat then return fn()
+		updates = category:conditions.newcat
+		delete conditions.newcat
+		_updateTags updates, conditions, fn
 
 	route 'tags.rename', (conditions, fn) ->
-		if (newtag = conditions.new)
-			delete conditions.new
-			models.Tag.update conditions, {body:newtag}, {multi:true}, (err)->
-				if err and err.code is 11001 then return models.Tag.remove conditions, fn
-				console.dir err if err
-				return fn()
-		fn()
+		if not conditions.new then return fn()
+		updates = body:conditions.new
+		delete conditions.new
+		_updateTags updates, conditions, fn
 
 	route 'tags.popular', (conditions, fn) ->
 		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
@@ -492,8 +515,8 @@ module.exports = (app, route) ->
 				count: 1
 				mostRecent: 1
 		models.Tag.aggregate group, project, (err, results) ->
-				throw err if err
-				fn results
+			throw err if err
+			fn results
 		# fn [
 		# 	{body: 'capitalism', count: 56, mostRecent: new Date()}
 		# 	{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
@@ -599,7 +622,7 @@ module.exports = (app, route) ->
 				completedContact: ->
 					io.emit 'link.contact'
 				updateFeeds: (contact) ->
-					io.emit 'feed',
+					io.broadcast 'feed',
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id

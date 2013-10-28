@@ -51,9 +51,16 @@ schemas.push Schema 'User',
 		ssl: type: Boolean		# TODO: store if default override
 		expired: type: Boolean		# TODO: if the password fails in nudge, set this and ask user to provide a new one
 	lastRank: type: Number
+	oldRanks: [type: Number]
 	contactCount: type: Number
 	dataCount: type: Number
+	oldDcounts: [type: Number]
 	fullCount: type: Number
+	unclassifiedCount: type: Number
+	oldCcounts: [type: Number]
+	lastLink:
+		date: type: Date
+		count: type: Number
 
 
 schemas.push Schema 'Measurement',
@@ -82,8 +89,8 @@ schemas.push Schema 'Contact',
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 schemas.push Schema 'Tag',
-	creator: type: Types.ObjectId, ref: 'User'#, required: true
-	contact: type: Types.ObjectId, ref: 'Contact'#, required: true
+	creator: type: Types.ObjectId, ref: 'User', sparse: true#, required: true
+	contact: type: Types.ObjectId, ref: 'Contact', sparse: true#, required: true
 	category: type:String, required:true, enum:['role', 'theme', 'project', 'organisation', 'industry']
 	body: type: String, required: true, trim: true, lowercase: true
 
@@ -100,6 +107,7 @@ schemas.push Schema 'Mail',
 
 schemas.push Schema 'LinkedIn',
 	user: type: Types.ObjectId, ref: 'User'
+	# TODO: fix schema design error: change user (ref) to users (array of refs)
 	contact: type: Types.ObjectId, ref: 'Contact'
 	linkedinId: type: String, required: true, unique: true
 	name:

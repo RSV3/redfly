@@ -129,7 +129,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						dirty = contact.emails.addToSet mail.recipientEmail
 					if name = mail.recipientName
 						if contact.names?.length and contact.names[0] is mockname
-							contact.names[0] = name
+							contact.names.shift()
+							contact.names.unshift name
 							dirty = contact.sortname = name.toLowerCase()
 						else if not _.contains contact.names, name
 							dirty = contact.names.addToSet name
