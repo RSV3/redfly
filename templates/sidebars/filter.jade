@@ -1,9 +1,19 @@
+{{#if datapoor}}
+strong.total-results {{totalCount}} contacts need more data
+{{else}}
 {{#if all.length}}
 i.total-results {{#if hiding}}{{filteredCount}}{{else}}{{totalCount}}{{/if}} results
 {{else}}
 i &nbsp;
 {{/if}}
+{{/if}}
 
+{{#if datapoor}}
+p
+br
+
+span Contacts from your emails are automatically added if you don't classify them promptly. These contacts are then in the system without useful data like tags and notes. This page allows you to go through those automatically added contacts and enrich them with data.
+{{else}}
 h3
 	| Filters
 {{#if searchtag}}
@@ -38,7 +48,7 @@ div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
-	{{view Ember.TextField class="newtag org" changeBinding="view.newTag" placeholder="new organisation tag"}}
+	{{view App.AutoCompleteView class="newtag org" category="org" placeholder="add another tag"}}
 {{/if}}
 
 {{#if indTagsToSelect.length}}
@@ -56,7 +66,7 @@ div(bindAttr='class=":filters :toggleind theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
-	{{view Ember.TextField class="newtag industry" changeBinding="view.newTag" placeholder="new industry tag"}}
+	{{view App.AutoCompleteView class="newtag industry" category="industry" placeholder="new industry tag"}}
 {{/if}}
 
 {{#if noseToPick.length}}
@@ -71,6 +81,7 @@ div(bindAttr='class=":filters theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{view App.AutoCompleteView class="newnose" placeholder="another user"}}
 {{/if}}
 
 {{#if yearsToSelect.length}}
@@ -83,5 +94,6 @@ h4
 |	valueBinding="years"
 |	prompt="Select a minimum ..."
 }}
+{{/if}}
 {{/if}}
 

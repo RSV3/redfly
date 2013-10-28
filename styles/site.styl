@@ -1,5 +1,6 @@
 @import '../node_modules/phrenetic/styles'
 @import 'vendor/jquery-ui-1.10.2.custom.css'
+@import 'vendor/jquery.counter-analog.css'
 
 
 
@@ -109,7 +110,7 @@ tagger(fontSize)
 			.background
 				position absolute
 				color #eee
-				font-size baseFontSize * 6
+				font-size baseFontSize * 3
 				z-index -1
 				text-align center
 				width 100%
@@ -224,8 +225,10 @@ body
 	h2
 		display inline
 		margin-left 15px
+	h3.contactcounter
+		margin-left	10em
 	.version
-		margin-top -10px
+		float	left
 	.title
 		// margin-top 1px
 		margin-bottom 30px
@@ -336,7 +339,7 @@ body
 		i:hover
 			color	#c66
 
-	input.newtag
+	input.newtag,input.newnose
 		width	66%
 		margin-top	9px
 		margin-left	3em
@@ -547,7 +550,7 @@ body
 		margin-bottom baseLineHeight
 		tagger(baseFontSize)
 		.tagger .main
-			min-height 82px
+			min-height 42px
 			border 1px dashed lightBorder
 			border-radius baseBorderRadius
 		.span4
@@ -777,6 +780,9 @@ tag(baseFontSize)
 .navbar ul.nav li .badge
 	margin-top 11px
 	margin-left -10px
+
+ul.nav .popover
+	width 20em
 
 
 .leaderboard

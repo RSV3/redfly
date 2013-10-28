@@ -10,6 +10,8 @@ module.exports = (Ember, App, socket) ->
 				@get('controller')._onTextArea()
 
 	App.AdminController = Ember.ObjectController.extend
+		totalThisMonth: 0
+		autoThisMonth: 0
 		flushsavechk: (->
 			@get 'flushsave'
 		).property 'flushsave'

@@ -159,21 +159,23 @@ module.exports = (Ember, App, socket) ->
 		).property 'controller.id'
 
 		introMailto: (->
-			CR = '%0D%0A'		# carriage return / line feed
-			port = if window.location.port then ":#{window.location.port}" else ""
-			url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
-			$('p.bullhorn>a').css('color','grey').bind('click', false)
-			socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
-				util.notify
-					title: 'Introduction requested'
-					text: '<div id="requestintro"></div>'
-					type: 'success'
-					closer: true
-					sticker: false
-					hide: false
-					effect: 'bounce'
-					before_open: (pnotify) =>
-						pnotify.css top: '60px'
+			bootbox.confirm "Request an introduction from #{@get 'controller.addedBy.name'}?", (yorn)=>
+				if not yorn then return
+				CR = '%0D%0A'		# carriage return / line feed
+				port = if window.location.port then ":#{window.location.port}" else ""
+				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
+				$('p.bullhorn>a').css('color','grey').bind('click', false)
+				socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
+					util.notify
+						title: 'Introduction requested'
+						text: '<div id="requestintro"></div>'
+						type: 'success'
+						closer: true
+						sticker: false
+						hide: false
+						effect: 'bounce'
+						before_open: (pnotify) =>
+							pnotify.css top: '60px'
 
 		)
 
@@ -289,8 +291,6 @@ module.exports = (Ember, App, socket) ->
 				@get('selections').clear()
 				@set 'modal', $(@$('.modal')).modal()
 			merge: ->
-				@get('modal').modal 'hide'
-
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'
@@ -300,28 +300,34 @@ module.exports = (Ember, App, socket) ->
 						pnotify.css top: '60px'
 
 				selections = @get 'selections'
-				socket.emit 'merge', contactId: @get('controller.id'), mergeIds: selections.getEach('id'), (mergedcontact)=>
-					# Refresh the store with the stuff that could have changed.
-
+				id = @get 'controller.id'
+				socket.emit 'merge', contactId:id, mergeIds: selections.getEach('id'), (mergedcontact)=>
+					# doing this for now because the deleterec (below) doesn't work. maybe remove this line after EPF upgrade?
 					if not @get('parentView.parentView.classifying') then window.location.reload()
 
+					# Refresh the store with the stuff that could have changed.
 					for own key,val of mergedcontact
-						if key is 'addedBy' then @set "controller.#{key}", App.user
+						if key is 'addedBy' then @set 'controller.addedBy', App.user
+						else if key is 'knows' then @set 'controller.knows', _.map val, (v)->App.User.find v
 						else @set "controller.#{key}", val
-					App.Tag.find contact: @get('controller.id')
-					App.Note.find contact: @get('controller.id')
-					App.Mail.find recipient: @get('controller.id')
+					App.Tag.find contact: id
+					App.Note.find contact: id
+					App.Mail.find recipient: id
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
-					selections.forEach (selection)->
+					###
+					# I think this error will be fixed by EPF upgrade??
+					while selections.get 'length'
+						sel = selections.popObject()
+						console.log "deleting"
+						console.dir sel
 						try
-							selection.deleteRecord()
+							sel?.deleteRecord()
 						catch err
-							if err
-								console.log 'just a WARNING in merged contact'
-								console.dir err
-							return
+							console.log "deleting record after merge..."
+							console.dir err
+					###
 					@get('selections').clear()
 
 					App.store.commit()
@@ -332,19 +338,23 @@ module.exports = (Ember, App, socket) ->
 						type: 'success'
 						hide: true
 						closer: true
+					@get('modal').modal 'hide'
 
 
 			mergeSearchView: App.SearchView.extend
 				prefix: 'contact:'
 				conditions: (->
 					addedBy: App.user.get 'id'
-					_id: {$ne: @get 'controller.id'}
+					_id: $ne: @get('controller.id')
 				).property()
 				excludes: (->
-					@get('parentView.selections').toArray().concat @get('controller.content')
+					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
-					@get('parentView.selections').pushObject App.Contact.find context.id
+					@get('parentView.selections').addObject App.Contact.find context.id
+				# override form submission
+				keyUp: (event) -> false
+				submit: -> false
 
 		measureBarView: Ember.View.extend
 			tagName: 'div'

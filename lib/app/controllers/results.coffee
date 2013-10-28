@@ -52,8 +52,7 @@ module.exports = (Ember, App, socket) ->
 		known: (->
 			ids = @get('f_knows')
 			if not ids?.length then return null
-			App.User.find {_id:$in:ids}
-			App.User.filter (data) =>
+			App.User.filter {_id:$in:ids}, (data) =>
 				_.contains ids, data.get('id')
 		).property 'f_knows'
 
@@ -63,6 +62,7 @@ module.exports = (Ember, App, socket) ->
 
 		buildFilter: ->
 			emission = filter:@get('query')
+			if @get 'datapoor' then emission.moreConditions = poor:true
 			if (n2p = @get('noseToPick')) then for n in n2p
 				if n.checked
 					if not emission.knows then emission.knows = [n.id]
@@ -74,7 +74,7 @@ module.exports = (Ember, App, socket) ->
 			if (d = @get 'sortDir')
 				if d < 0 then emission.sort = "-#{@get('sortType')}"
 				else emission.sort = @get('sortType')
-			if @get('industryOp') then emission.industryAND=true
+			if @get('industryOp') then emission.indAND=true
 			if @get('orgOp') then emission.orgAND=true
 			emission
 
@@ -206,9 +206,10 @@ module.exports = (Ember, App, socket) ->
 			@set "#{prefix}TagsToSelect", chckbxs
 
 
-
 	App.ResultsView = Ember.View.extend
 		classNames: ['results']
+		storePriorTags: {}
+		storePopTags: {}
 
 
 	App.ResultController = App.ContactController.extend
@@ -223,21 +224,15 @@ module.exports = (Ember, App, socket) ->
 	App.ResultView = App.ContactView.extend
 
 		clicktag: (ev)->
+			if @get('parentView').controller.get('datapoor') then return
 			@get('parentView').controller.tagToggle ev.get('category'), ev.get('body')
 		clickname: (ev)->
+			if @get('parentView').controller.get('datapoor') then return
 			@get('parentView').controller.userToggle ev.get('id'), ev.get('name')
 
-		didInsertElement: ()->
-			@get('controller').set 'showitall', false
-		hideItAll: (r)->
-			if (old = @get 'parentView.controller.showWhich')
-				old.set 'showitall', false
-		setShowItAll: (r)->
-			@hideItAll()
-			@get('parentView.controller.showWhich')?.set 'showitall', false
-			@set 'parentView.controller.showWhich', r
-			r.set 'showitall', true
-			that = this
+		didInsertElement: ()-> @get('controller').set 'showitall', false
+		hideItAll: (r)-> r.set 'showitall', false
+		setShowItAll: (r)-> r.set 'showitall', true
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort'

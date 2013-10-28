@@ -5,7 +5,7 @@ module.exports =
 		ORGANISATION_CONTACT: 'Come Classify to Fly High'
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
-		RANK_DAY: 'Monday'
+		ES_NAME: 'redstar'
 
 
 	development:
@@ -39,8 +39,7 @@ module.exports =
 		#REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
 
-		BONSAI_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
-
+		ES_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
@@ -70,7 +69,7 @@ module.exports =
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
-		NODE_ENV: 'development'
+		NODE_ENV: 'production'
 		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
 
 		GOOGLE_API_ID: '614207063627.apps.googleusercontent.com'
@@ -83,10 +82,30 @@ module.exports =
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		BONSAI_URL: 'http://sp6uy757:aqshyifojk9n87zp@apple-4375096.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:4766d4887993f5018fa1132ea5012002@api.searchbox.io'
 
 		NUDGE_DAYS: 'Monday Thursday'
 
+
+
+	project11staging:
+		ORGANISATION_TITLE: 'Project11'
+		ORGANISATION_DOMAIN: 'gmail.com'
+
+		HOST: 'project11-staging.herokuapp.com'
+		NODE_ENV: 'production'
+		INTERCEPT_EMAIL: 'kwan+redfly_staging@redstar.com, justin+redfly_staging@redstar.com'
+
+		GOOGLE_API_ID: '614207063627-ukni5v8eln764hh11nqa4tg8dcs1bhh5.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: 'Xhp-YRSc2xxOH_3c3KVjZRBQ'
+		LINKEDIN_API_KEY: '5cbdonom6b77'
+		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
+
+		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988-a0.mongolab.com:49988/heroku_app18594187'
+		ES_URL: 'http://paas:041e4f042e1234537da0385d8305787b@api.searchbox.io'
+		ES_NAME: 'project11'
+		NUDGE_DAYS: 'Tuesday Friday'
 
 	production:
 		HOST: 'redfly.redstar.com'
@@ -104,7 +123,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
-		BONSAI_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
+		ES_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
