@@ -79,9 +79,22 @@ copyLI2contact = (u, c, l) ->
 		yearsExperience: l.yearsExperience
 		positions: [{ title: l.positions[0], company: name: l.companies[0]}]
 	addDeets2Contact null, u, c, details, l.specialties, l.industries
+	###
+	# schema design issue:
+	# need to change linkedin.user to list of linkedin.users
+
+	for eachContact in l.users
+		c.knows.addToSet eachContact
+
+	###
 	l.contact = c
 	l.lastLink = new Date()
 	l.save (err) ->
+		if err
+			console.log "ERROR copying LI2contact"
+			console.dir err
+			console.dir l
+			console.dir c
 
 
 # for all linkedin records in the system that have not yet matched contacts,
