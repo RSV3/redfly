@@ -10,9 +10,17 @@
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
 					i.icon-resize-small.icon-2x
+			| {{#if view.parentView.classifying}}
 			span.contact-actions
 				a(href='#', action='ignore')
 					i.icon-trash.icon-2x
+			| {{else}}
+			| {{#if view.parentView.enriching}}
+			span.contact-actions
+				a(href='#', action='remove')
+					i.icon-trash.icon-2x
+			| {{/if}}
+			| {{/if}}
 		| {{/if}}
 	.span6
 		.row-fluid
