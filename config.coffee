@@ -123,7 +123,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
-		ES_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:d39effca815a6a4d7a310d0c7974ea1a@api.searchbox.io'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
