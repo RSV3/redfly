@@ -390,6 +390,7 @@ module.exports = (app, route) ->
 				sort[key]=dir
 		else if not query.length
 			sort.added = 'desc'
+			filters.push exists:field:"classified"
 
 		if not limit
 			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
