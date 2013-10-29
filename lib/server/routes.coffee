@@ -390,6 +390,7 @@ module.exports = (app, route) ->
 				sort[key]=dir
 		else if not query.length
 			sort.added = 'desc'
+			filters.push exists:field:"classified"
 
 		if not limit
 			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
@@ -683,4 +684,10 @@ module.exports = (app, route) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
 			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+
+	route 'requests', (fn) ->
+		currentReqs = null
+		models.Request.find({expiry: {$gte:moment().toDate()}}).sort({created:-1}).limit(5).execFind (err, reqs)->
+			if not err and reqs?.length then currentReqs = _.map reqs, (r)->r._id.toString()
+			fn currentReqs
 

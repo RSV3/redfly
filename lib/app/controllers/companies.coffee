@@ -13,5 +13,5 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/companies'
 		classNames: ['companies']
 		search: (v) ->
-			newResults = App.Results.create {text: util.trim v}
+			newResults = App.Results.create {text: "company:#{util.trim v}"}
 			@get('controller').transitionToRoute "results", newResults

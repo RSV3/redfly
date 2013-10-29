@@ -2,6 +2,8 @@ module.exports = (Ember) ->
 	templates = Ember.TEMPLATES
 
 	templates.application = require '../../templates/application'
+	templates.app1 = require '../../templates/app1'
+	templates.app2 = require '../../templates/app2'
 
 	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'
@@ -18,7 +20,9 @@ module.exports = (Ember) ->
 	templates.dashboard = require '../../templates/dashboard'
 	templates.admin = require '../../templates/admin'
 	templates.companies = require '../../templates/companies'
+	templates.requests = require '../../templates/requests'
 
+	templates.pastreqs = require '../../templates/sidebars/pastreqs'
 	templates.leaders = require '../../templates/sidebars/leaders'
 	templates.filter = require '../../templates/sidebars/filter'
 	templates.feed = require '../../templates/sidebars/feed'
