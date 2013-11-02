@@ -11,7 +11,7 @@
 				i.icon-flag
 			| {{/if}}
 			br
-			{{view view.newDateView valueBinding="controller.newdate" elementId="datepicker"}}
+			{{view view.newDateView elementId="datepicker"}}
 			br
 			button.btn.span11(type="submit", tabindex="4", bindAttr='disabled="disableAdd"') Submit
 			br
@@ -20,7 +20,7 @@
 	hr
 | {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
 .row-fluid.request
-	.span7
+	.span7(action='toggle target="view"')
 		div.badgecount
 			| {{#if count}}
 			span.badge.badge-success {{count}}
@@ -35,14 +35,52 @@
 			.span4.request
 				| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest}}>Suggest</a>
 			.span4.request
-				| <a class="label span12" href="#" {{action note}}>Message</a>
+				| <a class="label span12" href="#" {{action note target="view"}}>Message</a>
 		.row-fluid
 			| {{#if urgent}}
 			span.urgent.label.span4 Urgent
-			| {{else}}
+			span &nbsp; &nbsp;
+			| {{/if}}
 			| {{#if expires}}
-			span.expiry Expires {{expires}}
+			i.expiry Expires {{expires}}
 			| {{/if}}
-			| {{/if}}
+
+| {{#if view.addingnote}}
+.row-fluid
+	br
+	form(action='addNewNote on="submit" target="view"')
+		.span10
+			| {{view view.newNoteView valueBinding="controller.newnote"}}
+		.span2
+			button.btn.span11(type="submit", bindAttr='disabled="disableAddNote"') Save
+			br
+			br
+			button.btn.span11(type="cancel", action='closenote target="view"') Cancel
+| {{/if}}
+
+| {{#if view.expanded}}
+.row-fluid.expandedcontent
+	| {{#each notes itemViewClass="App.ReqnoteView" itemController="reqnote"}}
+	.span1
+		| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
+	.span11
+		strong {{user.canonicalName}}: &nbsp;
+		span {{body}}
+	| {{/each}}
+	| {{#each suggestions itemViewClass="App.ResponseView" itemController="response"}}
+	| {{/each}}
+| {{/if}}
+
 hr
 | {{/each}}
+
+.row-fluid
+	.span7
+		ul.pager
+			li.previous
+				| {{#if hasPrev}}<a href="#" {{action prevPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+			| {{plusOne rangeStart}}-{{rangeStop}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+

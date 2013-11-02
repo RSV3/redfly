@@ -184,16 +184,18 @@ schemas.push Schema 'FullContact',
 	]
 
 
+schemas.push Schema 'Reqnote',
+	user: type: Types.ObjectId, ref: 'User'
+	body: type: String
+
+schemas.push Schema 'Response',
+	contact: type: Types.ObjectId, ref: 'Contact'
+	user: type: Types.ObjectId, ref: 'User'
+
 schemas.push Schema 'Request',
 	user: type: Types.ObjectId, ref: 'User'
-	notes: [
-		user: type: Types.ObjectId, ref: 'User'
-		body: type: String
-	]
-	suggestions: [
-		contact: type: Types.ObjectId, ref: 'Contact'
-		user: type: Types.ObjectId, ref: 'User'
-	]
+	notes: [ type: Types.ObjectId, ref: 'Reqnote' ]
+	suggestions: [ type: Types.ObjectId, ref: 'Response' ]
 	text: type: String, required: true
 	urgent: type: Boolean
 	created: type: Date

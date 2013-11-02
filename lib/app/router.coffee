@@ -234,8 +234,12 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestsRoute = Ember.Route.extend
 		setupController: (controller, model)->
-			socket.emit 'requests', (reqs)->
-				controller.set 'reqs', App.store.findMany(App.Request, reqs)
+			socket.emit 'requests', (reqs, theresmore)->
+				if reqs
+					controller.set 'hasNext', theresmore
+					if theresmore then controller.set 'pageSize', reqs.length
+					reqs = App.store.findMany App.Request, reqs
+					controller.set 'reqs', reqs
 		renderTemplate: ->
 			@router.connectem @, 'requests'
 
