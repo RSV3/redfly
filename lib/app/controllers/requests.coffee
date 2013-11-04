@@ -1,5 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	util = require '../../util'
+	_ = require 'underscore'
 	moment = require 'moment'
 
 	App.DatePicker = Ember.View.extend
@@ -65,7 +66,7 @@ module.exports = (Ember, App, socket) ->
 					user: App.user
 					urgent: @get 'urgent'
 					text: note
-					suggestions: []
+					response: []
 				nuReqRec = App.Request.createRecord nuReq
 				App.store.commit()
 				@set 'newreq', null
@@ -97,8 +98,8 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestController = Ember.ObjectController.extend
 		count: (->
-			@get('suggestions.length') or 0
-		).property 'suggestions'
+			@get('response.length') or 0
+		).property 'response'
 		expires: (->
 			if expireswhen = @get('expiry') then moment(expireswhen).fromNow()
 		).property 'expiry'
@@ -110,20 +111,41 @@ module.exports = (Ember, App, socket) ->
 			not @get('newnote')?.length
 		).property 'newnote'
 		addNote: (->
-			newnote = App.Reqnote.createRecord
+			newnote = App.Response.createRecord
 				user: App.user
 				body: @get 'newnote'
 			App.store.commit()
 			self = @
 			newnote.addObserver 'id', ->
-				self.get('notes').pushObject newnote
+				self.get('response').pushObject newnote
 				App.store.commit()
 		)
+		addSuggestions: (suggestions)->
+			suggestion = App.Response.createRecord
+				user: App.user
+				contact: []
+			_.each suggestions, (r)-> suggestion.get('contact').pushObject r
+			console.dir suggestion.get 'contact.length'
+			console.dir suggestion.get 'contact.content'
+			App.store.commit()
+			self = @
+			suggestion.addObserver 'id', ->
+				self.get('response').pushObject suggestion
+				App.store.commit()
+
 
 	App.RequestView = Ember.View.extend
 		expanded: false
 		toggle: (->
 			@set 'expanded', not @get 'expanded'
+		)
+		closecontacts: (->
+			@set 'addingcontacts', false
+		)
+		selections:[]
+		suggest: (->
+			@set 'selections', []
+			if not @get('controller.disabled') then @set 'addingcontacts', true
 		)
 		closenote: (->
 			@set 'addingnote', false
@@ -136,21 +158,30 @@ module.exports = (Ember, App, socket) ->
 			@closenote()
 			@set 'expanded', true
 		)
+		addNewContacts: (->
+			@get('controller').addSuggestions @get 'selections'
+			@closecontacts()
+			@set 'expanded', true
+		)
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
 			placeholder: 'Leave a message'
 			rows: 4
+		responseSearchView: App.SearchView.extend
+			prefix: 'contact:'
+			conditions: (->
+				addedBy: App.user.get 'id'
+			).property()
+			excludes: (->
+				@get('parentView.selections').getEach('id').concat @get('controller.id')
+			).property 'controller.content', 'parentView.selections.@each'
+			select: (context) ->
+				@get('parentView.selections').addObject App.Contact.find context.id
+			# override form submission
+			keyUp: (event) -> false
+			submit: -> false
 
 
-	App.ReqnoteController = Ember.ObjectController.extend
-		mine: (->
-			@get('user') is App.user.id
-		).property 'user'
-
-	App.ReqnoteView = Ember.View.extend
-		select: (->
-			console.log 'selected'
-		)
 
 	App.ResponseController = Ember.ObjectController.extend
 		mine: (->

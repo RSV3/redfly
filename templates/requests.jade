@@ -20,56 +20,108 @@
 	hr
 | {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
 .row-fluid.request
-	.span7(action='toggle target="view"')
-		div.badgecount
-			| {{#if count}}
-			span.badge.badge-success {{count}}
+	.row-fluid
+		.span7(action='toggle target="view"')
+			div.badgecount
+				| {{#if count}}
+				span.badge.badge-success {{count}}
+				| {{else}}
+				span.badge.badge-important {{count}}
+				| {{/if}}
+			{{text}}
+		.span5
+			.row-fluid
+				.span4.request
+					+linkTo('profile user class="label knows span12"') {{user.canonicalName}}
+				.span4.request
+					| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest target="view"}}>Suggest</a>
+				.span4.request
+					| <a class="label span12" href="#" {{action note target="view"}}>Message</a>
+			.row-fluid
+				| {{#if urgent}}
+				span.urgent.label.span4 Urgent
+				span &nbsp; &nbsp;
+				| {{/if}}
+				| {{#if expires}}
+				i.expiry Expires {{expires}}
+				| {{/if}}
+
+	| {{#if view.expanded}}
+	.row-fluid.expandedcontent
+		| {{#each response itemViewClass="App.ResponseView" itemController="response"}}
+		.row-fluid.response
+			.span1
+				+linkTo('profile user')
+					| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
+			| {{#if body}}
+			.span11
+				strong {{user.canonicalName}}: &nbsp;
+				span {{body}}
 			| {{else}}
-			span.badge.badge-important {{count}}
+			.span2.suggesttext
+				+linkTo('profile user') {{user.canonicalName}}
+				br
+				span suggests:
+			.span9.suggestions
+				| {{#each contact}}
+				+linkTo('contact this')
+					.span6
+						.span3
+							<img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
+						.span9
+							span {{canonicalName}}
+							br
+							span {{position}}
+							br
+							span {{company}}
+				| {{/each}}
 			| {{/if}}
-		{{text}}
-	.span5
-		.row-fluid
-			.span4.request
-				+linkTo('profile user class="label knows span12"') {{user.canonicalName}}
-			.span4.request
-				| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest}}>Suggest</a>
-			.span4.request
-				| <a class="label span12" href="#" {{action note target="view"}}>Message</a>
-		.row-fluid
-			| {{#if urgent}}
-			span.urgent.label.span4 Urgent
-			span &nbsp; &nbsp;
-			| {{/if}}
-			| {{#if expires}}
-			i.expiry Expires {{expires}}
-			| {{/if}}
+		| {{/each}}
+	| {{/if}}
 
-| {{#if view.addingnote}}
-.row-fluid
-	br
-	form(action='addNewNote on="submit" target="view"')
-		.span10
-			| {{view view.newNoteView valueBinding="controller.newnote"}}
-		.span2
-			button.btn.span11(type="submit", bindAttr='disabled="disableAddNote"') Save
-			br
-			br
-			button.btn.span11(type="cancel", action='closenote target="view"') Cancel
-| {{/if}}
+	| {{#if view.addingnote}}
+	.row-fluid
+		br
+		form(action='addNewNote on="submit" target="view"')
+			.span10
+				| {{view view.newNoteView valueBinding="controller.newnote"}}
+			.span2
+				button.btn.span11(type="submit", bindAttr='disabled="disableAddNote"') Save
+				br
+				br
+				button.btn.span11(type="cancel", action='closenote target="view"') Cancel
+	| {{/if}}
 
-| {{#if view.expanded}}
-.row-fluid.expandedcontent
-	| {{#each notes itemViewClass="App.ReqnoteView" itemController="reqnote"}}
-	.span1
-		| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
-	.span11
-		strong {{user.canonicalName}}: &nbsp;
-		span {{body}}
-	| {{/each}}
-	| {{#each suggestions itemViewClass="App.ResponseView" itemController="response"}}
-	| {{/each}}
-| {{/if}}
+	| {{#if view.addingcontacts}}
+	.row-fluid
+		br
+		form(action='addNewContacts on="submit" target="view"')
+			.row-fluid
+				.span8
+					| {{view view.responseSearchView}}
+				.span4
+					button.btn.span5(type="submit", bindAttr='disabled="disableAddContacts"') Done
+					span.1 &nbsp;
+					button.btn.span5(type="cancel", action='closecontacts target="view"') Cancel
+
+	| {{#if view.selections.length}}
+	.row-fluid
+		| {{#each view.selections}}
+		+linkTo('contact this')
+			.span6
+				.span3
+					| <img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
+				.span9
+					span {{canonicalName}}
+					br
+					span {{position}}
+					br
+					span {{company}}
+		| {{/each}}
+	| {{/if}}
+
+	| {{/if}}
+
 
 hr
 | {{/each}}
