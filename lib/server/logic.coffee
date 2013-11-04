@@ -132,4 +132,4 @@ module.exports =
 
 # jTNT : TODO requestCount should probably check for current requests where
 # $not notes.user:u, $not suggestions.user:u
-
+# ie. requests which are not mine which I have not made a response to
