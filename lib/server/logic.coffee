@@ -122,10 +122,14 @@ module.exports =
 	recentOrgs:recentOrgs
 	classifySome:classifySome
 	classifyList:classifyList
-	classifyCount: (u, cb)-> classifyList u, (neocons)-> cb neocons?.length
 	summaryContacts: (cb)-> summaryQuery 'Contact', 'added', cb
 	summaryTags: (cb)-> summaryQuery 'Tag', 'date', cb
 	summaryNotes: (cb)-> summaryQuery 'Note', 'date', cb
 	countConts: (cb)-> models.Contact.find(added:{$exists:true}).count cb
 	myConts: (u, cb)-> models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
+	classifyCount: (u, cb)-> classifyList u, (neocons)-> cb neocons?.length
+	requestCount: (u, cb)-> models.Request.find(expiry:$gte:moment().toDate()).count cb
 
+# jTNT : TODO requestCount should probably check for current requests where
+# $not notes.user:u, $not suggestions.user:u
+# ie. requests which are not mine which I have not made a response to

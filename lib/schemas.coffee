@@ -184,6 +184,19 @@ schemas.push Schema 'FullContact',
 	]
 
 
+schemas.push Schema 'Response',
+	contact: [ type: Types.ObjectId, ref: 'Contact' ]
+	body: type: String
+	user: type: Types.ObjectId, ref: 'User'
+
+schemas.push Schema 'Request',
+	user: type: Types.ObjectId, ref: 'User'
+	response: [ type: Types.ObjectId, ref: 'Response' ]
+	text: type: String, required: true
+	urgent: type: Boolean
+	created: type: Date
+	expiry: type: Date
+
 
 exports.all = ->
 	schemas

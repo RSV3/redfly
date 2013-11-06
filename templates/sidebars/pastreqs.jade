@@ -1,0 +1,17 @@
+ul.nav.nav-tabs
+	h4 Past requests
+	li.minerex
+		<a {{action selectTab "minerex" target="view"}}>Mine</a>
+	li.othersrex.active
+		<a {{action selectTab "othersrex" target="view"}}>Others</a>
+.tab-content
+	.tab-pane.minerex
+		| {{#each my_reqs itemViewClass="App.RequestView" itemController="request"}}
+		span {{text}}
+		hr
+		| {{/each}}
+	.tab-pane.active.othersrex
+		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
+		span {{text}}
+		hr
+		| {{/each}}

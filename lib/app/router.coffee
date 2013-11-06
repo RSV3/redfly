@@ -16,24 +16,35 @@ module.exports = (Ember, App, socket) ->
 						before_open: (pnotify) =>
 							pnotify.css top: '60px'
 				name = 'index'
+
+			appname = if name is 'requests' then 'app2' else 'app1'
+			route.render appname,
+				into: 'application'
+				outlet: 'panel'
+
 			if name is 'results'
 				route.render 'filter',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'results'
 			else if name is 'classify' or name is 'enrich'
 				route.render 'leaders',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'leaders'
+			else if name is 'requests'
+				route.render 'pastreqs',
+					into: appname
+					outlet: 'sidebar'
+					controller: 'pastreqs'
 			else
 				route.render 'feed',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'feed'
 			if name is 'enrich' then name = 'results'
 			route.render name,
-				into: 'application'
+				into: appname
 				outlet: 'main'
 				controller: name
 
@@ -42,6 +53,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'contact', path: '/contact/:contact_id'
 		@route 'contacts'
 		@route 'leaderboard'
+		@route 'requests'
 		@resource 'results', path: '/results/:query_text'
 		@route 'noresult', path: '/results'
 		@route 'allresults', path: '/results/'
@@ -219,6 +231,18 @@ module.exports = (Ember, App, socket) ->
 			renderTemplate: ->
 				@router.connectem @, 'enrich'
 			###
+
+	App.RequestsRoute = Ember.Route.extend
+		setupController: (controller, model)->
+			socket.emit 'requests', (reqs, theresmore)->
+				if reqs
+					controller.set 'hasNext', theresmore
+					if theresmore then controller.set 'pageSize', reqs.length
+					reqs = App.store.findMany App.Request, reqs
+					controller.set 'reqs', reqs
+		renderTemplate: ->
+			@router.connectem @, 'requests'
+
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
