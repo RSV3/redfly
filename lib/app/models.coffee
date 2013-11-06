@@ -21,8 +21,8 @@ module.exports = (DS, App) ->
 		canonicalPicture: (->
 				@get('picture') or 'http://i.imgur.com/t1Svb.jpg'
 			).property 'picture'
-		classifyCount: DS.attr 'number'		# this is calculated on the server, transmitted on session user
-											# and then, just to make it interesting, stored on App.admin
+		classifyCount: DS.attr 'number'		# these are calculated on the server, transmitted on session user
+		requestCount: DS.attr 'number'		# and then, just to make it interesting, stored on App.admin
 											# (because session user data may get batch loaded)
 
 	App.Contact.reopen

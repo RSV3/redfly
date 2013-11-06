@@ -25,6 +25,12 @@
 						+linkTo('companies') Companies
 					li
 						+linkTo('leaderboard') Leaderboard
+					li
+						+linkTo('requests') Recommend
+					| {{#if App.admin.requestCount}}
+					li
+						span.badge.badge-important {{App.admin.requestCount}}
+					| {{/if}}
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
@@ -118,12 +124,7 @@
 										i.icon-spinner.icon-spin
 
 .container
-	.row-fluid
-		.span3
-			| {{outlet sidebar}}
-		.span9
-			| {{outlet main}}
-
+	{{outlet panel}}
 
 	hr
 	footer

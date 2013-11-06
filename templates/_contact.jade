@@ -5,15 +5,25 @@
 		| {{view App.EditPictureView pictureBinding="picture"}}
 		| {{/if}}
 
-		| {{#if noneButIAdded}}
 		.row-fluid.actions
+			| {{#if noneButIAdded}}
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
 					i.icon-resize-small.icon-2x
+			| {{/if}}
+
+			| {{#if view.parentView.classifying}}
 			span.contact-actions
 				a(href='#', action='ignore')
 					i.icon-trash.icon-2x
-		| {{/if}}
+			| {{else}}
+			| {{#if view.parentView.enriching}}
+			span.contact-actions
+				a(href='#', action='remove')
+					i.icon-trash.icon-2x
+			| {{/if}}
+			| {{/if}}
+
 	.span6
 		.row-fluid
 			| {{#if hasIntro}}

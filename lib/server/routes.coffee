@@ -29,6 +29,9 @@ module.exports = (app, route) ->
 
 	route 'db', (data, io, session, fn)->
 
+		console.log "db"
+		console.dir data
+
 		cb = (payload) ->
 			root = _s.underscored data.type
 			if _.isArray payload then root += 's'
@@ -636,6 +639,7 @@ module.exports = (app, route) ->
 			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
+	route 'requestCount', logic.requestCount		# ditto
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
@@ -683,4 +687,50 @@ module.exports = (app, route) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
 			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+
+
+	route 'requests', (data, io, session, fn) ->
+		currentReqs = null
+		skip = data?.skip or 0
+		pageSize = 10
+		period = $gte:moment().toDate()
+		models.Request.find(expiry:period).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+			theresMore = reqs?.length > pageSize
+			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+			fn currentReqs, theresMore
+
+	route 'pastreqs', (data, io, session, fn)->
+		otherReqs = myReqs = null
+		pageSize = 10
+		me = session.user
+		period = $lt:moment().toDate()
+		models.Request.find({user:me, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
+			if not err and reqs?.length then myReqs = _.map reqs[0..pageSize], (r)->r._id.toString()
+			models.Request.find({user:{$ne:me}, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
+				if not err and reqs?.length then otherReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+				otherMore = otherReqs?.length > pageSize
+				myMore = myReqs?.length > pageSize
+				fn otherReqs, myReqs, otherMore, myMore
+
+	route 'moremyreqs', (data, io, session, fn)->
+		myReqs = null
+		pageSize = 10
+		skip = data?.skip or 0
+		me = session.user
+		period = $lt:moment().toDate()
+		models.Request.find({user:me, expiry: period}).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+			theresMore = reqs?.length > pageSize
+			if not err and reqs?.length then myReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+			fn myReqs, theresMore
+
+	route 'moreotherreqs', (data, io, session, fn)->
+		otherReqs = null
+		pageSize = 10
+		skip = data?.skip or 0
+		me = session.user
+		period = $lt:moment().toDate()
+		models.Request.find({user:{$ne:me}, expiry: period}).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+			theresMore = reqs?.length > pageSize
+			if not err and reqs?.length then otherReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+			fn otherReqs, theresMore
 
