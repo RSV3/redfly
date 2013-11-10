@@ -8,7 +8,7 @@
 			| {{else}}
 			button.btn.span11(type='button', tabindex="2", action='toggleUrgency target="view"')
 				i Flag Urgent &nbsp;
-				i.icon-flag
+				i.text-error.icon-flag
 			| {{/if}}
 			br
 			{{view view.newDateView elementId="datepicker"}}
@@ -39,7 +39,7 @@
 					| <a class="label span12" href="#" {{action note target="view"}}>Message</a>
 			.row-fluid
 				| {{#if urgent}}
-				span.urgent.label.span4 Urgent
+				i.text-error.icon-flag
 				span &nbsp; &nbsp;
 				| {{/if}}
 				| {{#if expires}}
@@ -66,7 +66,7 @@
 				| {{#each contact}}
 				+linkTo('contact this')
 					.span6
-						.span3
+						.span3.imgpad
 							<img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
 						.span9
 							span {{canonicalName}}

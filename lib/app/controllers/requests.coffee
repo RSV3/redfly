@@ -99,7 +99,11 @@ module.exports = (Ember, App, socket) ->
 	App.RequestController = Ember.ObjectController.extend
 		count: (->
 			@get('response.length') or 0
-		).property 'response'
+		).property 'response.@each'
+		hoverable: (->
+			console.log @get('count')
+			if @get('count') then 'hoverable' else 'nothoverable'
+		).property 'count'
 		expires: (->
 			if expireswhen = @get('expiry') then moment(expireswhen).fromNow()
 		).property 'expiry'
@@ -136,6 +140,11 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestView = Ember.View.extend
 		expanded: false
+		expand: (->
+			if @get('controller.count') then it = @get('controller.content')
+			else it = null
+			@set 'parentView.controller.showthisreq', it
+		)
 		toggle: (->
 			@set 'expanded', not @get 'expanded'
 		)
@@ -151,6 +160,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'addingnote', false
 		)
 		note: (->
+			@set 'controller.newnote', ''
 			@set 'addingnote', true
 		)
 		addNewNote: (->
