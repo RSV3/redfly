@@ -705,11 +705,11 @@ module.exports = (app, route) ->
 		me = session.user
 		period = $lt:moment().toDate()
 		models.Request.find({user:me, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
-			if not err and reqs?.length then myReqs = _.map reqs[0..pageSize], (r)->r._id.toString()
+			myMore = reqs?.length > pageSize
+			if not err and reqs?.length then myReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			models.Request.find({user:{$ne:me}, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
+				otherMore = reqs?.length > pageSize
 				if not err and reqs?.length then otherReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
-				otherMore = otherReqs?.length > pageSize
-				myMore = myReqs?.length > pageSize
 				fn otherReqs, myReqs, otherMore, myMore
 
 	route 'moremyreqs', (data, io, session, fn)->
