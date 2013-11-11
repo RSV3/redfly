@@ -73,8 +73,12 @@ module.exports = (Ember, App, socket) ->
 				@set 'newdate', null
 				@set 'urgent', null
 				nuReqRec.addObserver 'id', =>
-					socket.emit 'requests', (reqs)=>
-						@set 'reqs', App.store.findMany(App.Request, reqs)
+					@reloadFirstPage()
+		)
+		reloadFirstPage: (->
+			socket.emit 'requests', (reqs, theresmore)=>
+				@set 'reqs', App.store.findMany App.Request, reqs
+				@set 'hasNext', theresmore
 		)
 		disableAdd: (->
 			not @get('newreq')?.length
@@ -94,14 +98,28 @@ module.exports = (Ember, App, socket) ->
 		newDateView: App.DatePicker.extend
 			placeholder: 'Expiration'
 			classNames: ['span11']
-
+		didInsertElement: ->
+			socket.on 'feed', (data) =>
+				if not data or data.type isnt 'Request' or not data.id then return
+				Ember.run.next this, ->
+					if data.response?.length	# update
+						isLoaded = App.store.recordIsLoaded App.Request, data.id
+						if isLoaded
+							request = App.Request.find data.id
+							responses = request.get 'response'
+							new_resp = _.without data.response, responses.getEach('id')
+							_.each new_resp, (r)-> responses.addObject App.Response.find r
+							request.get('stateManager').send 'becameClean'
+					else
+						if @get 'controller.rangeStart' then return		# dont try to show new request if we're on another page
+						if not @get 'controller.rangeStop' then return	# and dont bother if there's no shown
+						@get('controller').reloadFirstPage()
 
 	App.RequestController = Ember.ObjectController.extend
 		count: (->
 			@get('response.length') or 0
 		).property 'response.@each'
 		hoverable: (->
-			console.log @get('count')
 			if @get('count') then 'hoverable' else 'nothoverable'
 		).property 'count'
 		expires: (->
@@ -129,8 +147,6 @@ module.exports = (Ember, App, socket) ->
 				user: App.user
 				contact: []
 			_.each suggestions, (r)-> suggestion.get('contact').pushObject r
-			console.dir suggestion.get 'contact.length'
-			console.dir suggestion.get 'contact.content'
 			App.store.commit()
 			self = @
 			suggestion.addObserver 'id', ->
@@ -186,6 +202,8 @@ module.exports = (Ember, App, socket) ->
 				@get('parentView.selections').getEach('id').concat @get('controller.id')
 			).property 'controller.content', 'parentView.selections.@each'
 			select: (context) ->
+				$searchDropDown = $('.search.dropdown')
+				Ember.View.views[$searchDropDown.attr('id')].set 'using', false
 				@get('parentView.selections').addObject App.Contact.find context.id
 			# override form submission
 			keyUp: (event) -> false
@@ -200,6 +218,5 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResponseView = Ember.View.extend
 		select: (->
-			console.log 'selected'
 		)
 
