@@ -61,7 +61,6 @@ module.exports = (Ember, App, socket) ->
 		add: (->
 			if note = util.trim @get('newreq')
 				nuReq = 
-					created: new Date
 					expiry: new Date @get('newdate') or moment().add(7, 'days')
 					user: App.user
 					urgent: @get 'urgent'
@@ -128,20 +127,15 @@ module.exports = (Ember, App, socket) ->
 		disabled: (->
 			if @get('user')?.get('id') is App.user.id then "disabled"
 		).property 'user'
-		newnote: null
-		disableAddNote: (->
-			not @get('newnote')?.length
-		).property 'newnote'
-		addNote: (->
+		addNote: (note) ->
 			newnote = App.Response.createRecord
 				user: App.user
-				body: @get 'newnote'
+				body: note
 			App.store.commit()
 			self = @
 			newnote.addObserver 'id', ->
 				self.get('response').pushObject newnote
 				App.store.commit()
-		)
 		addSuggestions: (suggestions)->
 			suggestion = App.Response.createRecord
 				user: App.user
@@ -156,6 +150,14 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestView = Ember.View.extend
 		expanded: false
+		selections:[]
+		newnote:''
+		saveNote: (->
+			not @get('newnote').length
+		).property 'newnote'
+		saveSuggestions: (->
+			not @get('selections').length
+		).property 'selections.@each'
 		expand: (->
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
@@ -167,7 +169,6 @@ module.exports = (Ember, App, socket) ->
 		closecontacts: (->
 			@set 'addingcontacts', false
 		)
-		selections:[]
 		suggest: (->
 			@set 'selections', []
 			if not @get('controller.disabled') then @set 'addingcontacts', true
@@ -176,11 +177,11 @@ module.exports = (Ember, App, socket) ->
 			@set 'addingnote', false
 		)
 		note: (->
-			@set 'controller.newnote', ''
+			@set 'newnote', ''
 			@set 'addingnote', true
 		)
 		addNewNote: (->
-			@get('controller').addNote()
+			@get('controller').addNote @get 'newnote'
 			@closenote()
 			@set 'expanded', true
 		)
@@ -191,7 +192,7 @@ module.exports = (Ember, App, socket) ->
 		)
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
-			placeholder: 'Leave a message'
+			placeholder: 'Leave a comment'
 			rows: 4
 		responseSearchView: App.SearchView.extend
 			prefix: 'contact:'
@@ -202,10 +203,8 @@ module.exports = (Ember, App, socket) ->
 				@get('parentView.selections').getEach('id').concat @get('controller.id')
 			).property 'controller.content', 'parentView.selections.@each'
 			select: (context) ->
-				$searchDropDown = $('.search.dropdown')
-				Ember.View.views[$searchDropDown.attr('id')].set 'using', false
+				$('div.search.dropdown').blur()
 				@get('parentView.selections').addObject App.Contact.find context.id
-			# override form submission
 			keyUp: (event) -> false
 			submit: -> false
 

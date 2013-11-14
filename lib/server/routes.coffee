@@ -145,11 +145,16 @@ module.exports = (app, route) ->
 						console.dir data
 						return cb null
 					_.extend doc, record
-					if model is models.Contact 
-						if record.added is null
-							doc.set 'added', undefined
-							doc.set 'classified', undefined
 					modified = doc.modifiedPaths()
+					switch model
+						when models.Contact 
+							if record.added is null
+								doc.set 'added', undefined
+								doc.set 'classified', undefined
+						when models.Request
+							if 'response' in modified		# keeping track of new response for req/res mail task
+								doc.set 'updated', new Date()
+
 					# Important to do updates through the 'save' call so middleware and validators happen.
 					doc.save (err) ->
 						throw err if err
@@ -701,7 +706,7 @@ module.exports = (app, route) ->
 			if data.me then query.user = session.user
 			else query.user = $ne:session.user
 		else query = expiry:$gte:moment().toDate()
-		models.Request.find(query).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+		models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
 			theresMore = reqs?.length > pageSize
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore

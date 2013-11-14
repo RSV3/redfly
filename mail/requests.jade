@@ -1,0 +1,34 @@
+extends newlayout
+
+
+block content
+	br
+	p
+		span Recent requests for contact suggestions:
+	p
+		br
+
+	each request,i in requests
+		div(style='clear:both;')
+			p
+				if request.user.picture
+					a(href='#{path('/profile/' + request.user._id)}')
+						img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+				a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+				br
+				span #{request.text}
+				br
+		div(style='clear:both;')
+
+	div(style='clear:both;')
+		br
+
+		div(style='float:left')
+			h2 Come to Redfly and share your connections,
+			h2(style='font-size:100%') or Browse our #{numContacts} contacts
+				i &nbsp;and counting
+		div(style='float:right')
+			div(style='border:2px solid black; padding-left:0.5em; padding-right:0.5em; background-color:#468; box-shadow: 0 5px 25px #123;')
+				a(href='#{path("/requests")}', style='text-decoration:none')
+					h1(style='color:white') Take me there!
+

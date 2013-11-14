@@ -194,8 +194,10 @@ schemas.push Schema 'Request',
 	response: [ type: Types.ObjectId, ref: 'Response' ]
 	text: type: String, required: true
 	urgent: type: Boolean
-	created: type: Date
 	expiry: type: Date
+	sent: type: Date
+	updated: type: Boolean
+	updatesent: type: Date
 
 
 exports.all = ->
