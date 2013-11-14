@@ -19,11 +19,14 @@ module.exports = (Ember, App, socket) ->
 		showResults: (->
 				@get('using') and @get('hasResults')
 			).property 'using', 'hasResults'
+		click: (event)->
+			@set 'using', true
 		keyUp: (event) ->
 			if event.which is 13	# Enter.
 				@set 'using', false
-			if event.which is 27	# Escape.
+			else if event.which is 27	# Escape.
 				@$(':focus').blur()
+			else @set 'using', true
 		submit: ->
 			@$(':focus').blur()
 			@doSearch()
@@ -38,6 +41,7 @@ module.exports = (Ember, App, socket) ->
 		focusIn: ->
 			@set 'using', true
 		focusOut: (ev)->
+			@set 'using', false
 			# Determine the newly focused element and see if it's anywhere inside the search view. 
 			# If not, hide the results (after a small delay in case of mousedown).
 			setTimeout =>

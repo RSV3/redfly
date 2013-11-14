@@ -351,8 +351,7 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
-					$searchDropDown = $('.search.dropdown')
-					Ember.View.views[$searchDropDown.attr('id')].set 'using', false
+					$('div.search.dropdown').blur()
 					@get('parentView.selections').addObject App.Contact.find context.id
 				# override form submission
 				keyUp: (event) -> false
