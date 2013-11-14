@@ -21,22 +21,23 @@
 | {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
 .row-fluid.request
 	.row-fluid
-		.span7(action='toggle target="view"')
+		.span9(action='toggle target="view"')
 			div.badgecount
 				| {{#if count}}
 				span.badge.badge-success {{count}}
 				| {{else}}
 				span.badge.badge-important {{count}}
 				| {{/if}}
+			span
+				+linkTo('profile user') {{user.canonicalName}}
+				strong :&nbsp; &nbsp;
 			{{text}}
-		.span5
+		.span3
 			.row-fluid
-				.span4.request
-					+linkTo('profile user class="label knows span12"') {{user.canonicalName}}
-				.span4.request
+				.span6.request
 					| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest target="view"}}>Suggest</a>
-				.span4.request
-					| <a class="label span12" href="#" {{action note target="view"}}>Message</a>
+				.span6.request
+					| <a class="label span12" href="#" {{action note target="view"}}>Comment</a>
 			.row-fluid
 				| {{#if urgent}}
 				i.text-error.icon-flag
@@ -58,9 +59,9 @@
 		br
 		form(action='addNewNote on="submit" target="view"')
 			.span10
-				| {{view view.newNoteView valueBinding="controller.newnote"}}
+				| {{view view.newNoteView valueBinding="view.newnote"}}
 			.span2
-				button.btn.span11(type="submit", bindAttr='disabled="disableAddNote"') Save
+				button.btn.span11(type="submit", bindAttr='disabled="view.saveNote"') Save
 				br
 				br
 				button.btn.span11(type="cancel", action='closenote target="view"') Cancel
@@ -74,7 +75,7 @@
 				.span8
 					| {{view view.responseSearchView}}
 				.span4
-					button.btn.span5(type="submit", bindAttr='disabled="disableAddContacts"') Done
+					button.btn.span5(type="submit", bindAttr='disabled="view.saveSuggestions"') Done
 					span.1 &nbsp;
 					button.btn.span5(type="cancel", action='closecontacts target="view"') Cancel
 
