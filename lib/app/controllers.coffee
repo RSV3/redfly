@@ -28,6 +28,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/sidebars/leaders') Ember, App, socket
 	require('./controllers/sidebars/filter') Ember, App, socket
 	require('./controllers/sidebars/feed') Ember, App, socket
+	require('./controllers/sidebars/pastreqs') Ember, App, socket
 
 	require('./controllers/application') Ember, App, socket
 	require('./controllers/home') Ember, App, socket
@@ -43,4 +44,5 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/import') Ember, App, socket
 	require('./controllers/admin') Ember, App, socket
 	require('./controllers/companies') Ember, App, socket
+	require('./controllers/requests') Ember, App, socket
 

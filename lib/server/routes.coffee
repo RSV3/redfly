@@ -29,6 +29,9 @@ module.exports = (app, route) ->
 
 	route 'db', (data, io, session, fn)->
 
+		console.log "db"
+		console.dir data
+
 		cb = (payload) ->
 			root = _s.underscored data.type
 			if _.isArray payload then root += 's'
@@ -42,6 +45,7 @@ module.exports = (app, route) ->
 		feed = (doc, type) ->
 			o = {type: type, id: doc.id}
 			if doc.addedBy then o.addedBy = doc.addedBy
+			if doc.response?.length then o.response = doc.response
 			app.io.broadcast 'feed', o
 
 
@@ -112,7 +116,7 @@ module.exports = (app, route) ->
 					switch model
 						when models.Note
 							Elastic.onCreate doc, 'Note', "notes", (err)->
-								cb doc
+								if err then console.dir err
 						when models.Tag
 							Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
 								if not err then models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
@@ -120,7 +124,6 @@ module.exports = (app, route) ->
 										console.log "error incrementing data count for #{user}"
 										console.dir err
 									feed doc, data.type
-								cb doc
 						when models.Contact
 							if doc.addedBy
 								feed doc, data.type
@@ -129,8 +132,8 @@ module.exports = (app, route) ->
 										console.log "ERR: ES creating new contact"
 										console.dir doc
 										console.dir err
-									cb doc
-						else cb doc
+						when models.Request
+							feed doc, data.type
 
 			when 'save'
 				record = data.record
@@ -142,16 +145,24 @@ module.exports = (app, route) ->
 						console.dir data
 						return cb null
 					_.extend doc, record
-					if model is models.Contact 
-						if record.added is null
-							doc.set 'added', undefined
-							doc.set 'classified', undefined
 					modified = doc.modifiedPaths()
+					switch model
+						when models.Contact 
+							if record.added is null
+								doc.set 'added', undefined
+								doc.set 'classified', undefined
+						when models.Request
+							if 'response' in modified		# keeping track of new response for req/res mail task
+								doc.set 'updated', new Date()
+
 					# Important to do updates through the 'save' call so middleware and validators happen.
 					doc.save (err) ->
 						throw err if err
 						cb doc
 						switch model
+							when models.Request
+								if 'response' in modified		# want to make sure new responses get updated on the page
+									feed doc, data.type
 							when models.Contact
 								if doc.added
 									if 'added' in modified
@@ -389,7 +400,7 @@ module.exports = (app, route) ->
 				key="#{key}.value"
 				sort[key]=dir
 		else if not query.length
-			sort.added = 'desc'
+			sort = classified: 'desc'
 
 		if not limit
 			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
@@ -636,6 +647,7 @@ module.exports = (app, route) ->
 			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
 
 	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
+	route 'requestCount', logic.requestCount		# ditto
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
@@ -683,4 +695,19 @@ module.exports = (app, route) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
 			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+
+
+	route 'requests', (data, io, session, fn) ->
+		currentReqs = null
+		skip = data?.skip or 0
+		pageSize = 10
+		if data?.old
+			query = expiry:$lt:moment().toDate()
+			if data.me then query.user = session.user
+			else query.user = $ne:session.user
+		else query = expiry:$gte:moment().toDate()
+		models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+			theresMore = reqs?.length > pageSize
+			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+			fn currentReqs, theresMore
 

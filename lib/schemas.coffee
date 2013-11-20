@@ -107,6 +107,7 @@ schemas.push Schema 'Mail',
 
 schemas.push Schema 'LinkedIn',
 	user: type: Types.ObjectId, ref: 'User'
+	# TODO: fix schema design error: change user (ref) to users (array of refs)
 	contact: type: Types.ObjectId, ref: 'Contact'
 	linkedinId: type: String, required: true, unique: true
 	name:
@@ -182,6 +183,21 @@ schemas.push Schema 'FullContact',
 		url: type: String
 	]
 
+
+schemas.push Schema 'Response',
+	contact: [ type: Types.ObjectId, ref: 'Contact' ]
+	body: type: String
+	user: type: Types.ObjectId, ref: 'User'
+
+schemas.push Schema 'Request',
+	user: type: Types.ObjectId, ref: 'User'
+	response: [ type: Types.ObjectId, ref: 'Response' ]
+	text: type: String, required: true
+	urgent: type: Boolean
+	expiry: type: Date
+	sent: type: Date
+	updated: type: Boolean
+	updatesent: type: Date
 
 
 exports.all = ->
