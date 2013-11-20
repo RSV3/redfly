@@ -161,7 +161,7 @@ module.exports = (Ember, App, socket) ->
 		introMailto: (->
 			bootbox.confirm "Request an introduction from #{@get 'controller.addedBy.name'}?", (yorn)=>
 				if not yorn then return
-				CR = '%0D%0A'		# carriage return / line feed
+				CR = '%0D%0A'		# carriage return / linefeed
 				port = if window.location.port then ":#{window.location.port}" else ""
 				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 				$('p.bullhorn>a').css('color','grey').bind('click', false)
@@ -351,6 +351,7 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
+					$('div.search.dropdown').blur()
 					@get('parentView.selections').addObject App.Contact.find context.id
 				# override form submission
 				keyUp: (event) -> false

@@ -1,0 +1,27 @@
+.row-fluid.response
+	.span1
+		+linkTo('profile user')
+			| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
+	| {{#if body}}
+	.span11
+		strong {{user.canonicalName}}: &nbsp;
+		span {{body}}
+	| {{else}}
+	.span2.suggesttext
+		+linkTo('profile user') {{user.canonicalName}}
+		br
+		span suggests:
+	.span9.suggestions
+		| {{#each contact}}
+		+linkTo('contact this')
+			.span6
+				.span3.imgpad
+					<img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
+				.span9
+					span {{canonicalName}}
+					br
+					span {{position}}
+					br
+					span {{company}}
+		| {{/each}}
+	| {{/if}}

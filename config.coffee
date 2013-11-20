@@ -9,9 +9,9 @@ module.exports =
 
 
 	development:
-		HOST: '127.0.0.1:5000'
-		#HOST:	'10.0.0.2:5000'
-		#AUTO_AUTH: '50f7716ac458e60200000007'
+		#HOST: '127.0.0.1:5000'
+		HOST:	'10.0.0.2:5000'
+		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
@@ -39,7 +39,7 @@ module.exports =
 		#REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
 
-		ES_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:fee2bc06df50ed0f4ddc123686ffbcc5@api.searchbox.io'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
@@ -123,7 +123,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
-		ES_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:d39effca815a6a4d7a310d0c7974ea1a@api.searchbox.io'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 

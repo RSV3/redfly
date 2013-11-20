@@ -1,0 +1,113 @@
+.row-fluid
+	form(action='add on="submit" target="controller"')
+		.span9
+			| {{view view.newReqView valueBinding="controller.newreq"}}
+		.span3
+			| {{#if urgent}}
+			button.btn-danger.span11(type='button', tabindex="2", action='toggleUrgency target="view"') Urgent
+			| {{else}}
+			button.btn.span11(type='button', tabindex="2", action='toggleUrgency target="view"')
+				i Flag Urgent &nbsp;
+				i.text-error.icon-flag
+			| {{/if}}
+			br
+			{{view view.newDateView elementId="datepicker"}}
+			br
+			button.btn.span11(type="submit", tabindex="4", bindAttr='disabled="disableAdd"') Submit
+			br
+.row-fluid
+	h4 Pending Requests
+	hr
+| {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
+.row-fluid.request
+	.row-fluid
+		.span9(action='toggle target="view"')
+			div.badgecount
+				| {{#if count}}
+				span.badge.badge-success {{count}}
+				| {{else}}
+				span.badge.badge-important {{count}}
+				| {{/if}}
+			span
+				+linkTo('profile user') {{user.canonicalName}}
+				strong :&nbsp; &nbsp;
+			{{text}}
+		.span3
+			.row-fluid
+				.span6.request
+					| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest target="view"}}>Suggest</a>
+				.span6.request
+					| <a class="label span12" href="#" {{action note target="view"}}>Comment</a>
+			.row-fluid
+				| {{#if urgent}}
+				i.text-error.icon-flag
+				span &nbsp; &nbsp;
+				| {{/if}}
+				| {{#if expires}}
+				i.expiry Expires {{expires}}
+				| {{/if}}
+
+	| {{#if view.expanded}}
+	.row-fluid.expandedcontent
+		| {{#each response itemViewClass="App.ResponseView" itemController="response"}}
+		{{partial "response"}}
+		| {{/each}}
+	| {{/if}}
+
+	| {{#if view.addingnote}}
+	.row-fluid
+		br
+		form(action='addNewNote on="submit" target="view"')
+			.span10
+				| {{view view.newNoteView valueBinding="view.newnote"}}
+			.span2
+				button.btn.span11(type="submit", bindAttr='disabled="view.saveNote"') Save
+				br
+				br
+				button.btn.span11(type="cancel", action='closenote target="view"') Cancel
+	| {{/if}}
+
+	| {{#if view.addingcontacts}}
+	.row-fluid
+		br
+		form(action='addNewContacts on="submit" target="view"')
+			.row-fluid
+				.span8
+					| {{view view.responseSearchView}}
+				.span4
+					button.btn.span5(type="submit", bindAttr='disabled="view.saveSuggestions"') Done
+					span.1 &nbsp;
+					button.btn.span5(type="cancel", action='closecontacts target="view"') Cancel
+
+	| {{#if view.selections.length}}
+	.row-fluid
+		| {{#each view.selections}}
+		+linkTo('contact this')
+			.span6
+				.span3
+					| <img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
+				.span9
+					span {{canonicalName}}
+					br
+					span {{position}}
+					br
+					span {{company}}
+		| {{/each}}
+	| {{/if}}
+
+	| {{/if}}
+
+
+hr
+| {{/each}}
+
+.row-fluid
+	.span7
+		ul.pager
+			li.previous
+				| {{#if hasPrev}}<a href="#" {{action prevPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+			| {{plusOne rangeStart}}-{{rangeStop}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+

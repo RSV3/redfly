@@ -234,6 +234,8 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 			firstName: details.firstName
 			lastName: details.lastName
 			formattedName: details.formattedName
+	# schema design issue: need to initialise linkedin.users to [] and then:
+	# linkedin.users.addToSet user
 	updateLIrec details, linkedin, 'yearsExperience'
 	updateLIrec details, linkedin, 'pictureUrl'
 	updateLIrec details, linkedin, 'summary'
