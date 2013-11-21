@@ -45,6 +45,7 @@ module.exports = (app, route) ->
 		feed = (doc, type) ->
 			o = {type: type, id: doc.id}
 			if doc.addedBy then o.addedBy = doc.addedBy
+			if doc.response?.length then o.response = doc.response
 			app.io.broadcast 'feed', o
 
 
@@ -115,7 +116,7 @@ module.exports = (app, route) ->
 					switch model
 						when models.Note
 							Elastic.onCreate doc, 'Note', "notes", (err)->
-								cb doc
+								if err then console.dir err
 						when models.Tag
 							Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
 								if not err then models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
@@ -123,7 +124,6 @@ module.exports = (app, route) ->
 										console.log "error incrementing data count for #{user}"
 										console.dir err
 									feed doc, data.type
-								cb doc
 						when models.Contact
 							if doc.addedBy
 								feed doc, data.type
@@ -132,8 +132,8 @@ module.exports = (app, route) ->
 										console.log "ERR: ES creating new contact"
 										console.dir doc
 										console.dir err
-									cb doc
-						else cb doc
+						when models.Request
+							feed doc, data.type
 
 			when 'save'
 				record = data.record
@@ -145,16 +145,24 @@ module.exports = (app, route) ->
 						console.dir data
 						return cb null
 					_.extend doc, record
-					if model is models.Contact 
-						if record.added is null
-							doc.set 'added', undefined
-							doc.set 'classified', undefined
 					modified = doc.modifiedPaths()
+					switch model
+						when models.Contact 
+							if record.added is null
+								doc.set 'added', undefined
+								doc.set 'classified', undefined
+						when models.Request
+							if 'response' in modified		# keeping track of new response for req/res mail task
+								doc.set 'updated', new Date()
+
 					# Important to do updates through the 'save' call so middleware and validators happen.
 					doc.save (err) ->
 						throw err if err
 						cb doc
 						switch model
+							when models.Request
+								if 'response' in modified		# want to make sure new responses get updated on the page
+									feed doc, data.type
 							when models.Contact
 								if doc.added
 									if 'added' in modified
@@ -694,44 +702,13 @@ module.exports = (app, route) ->
 		currentReqs = null
 		skip = data?.skip or 0
 		pageSize = 10
-		period = $gte:moment().toDate()
-		models.Request.find(expiry:period).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+		if data?.old
+			query = expiry:$lt:moment().toDate()
+			if data.me then query.user = session.user
+			else query.user = $ne:session.user
+		else query = expiry:$gte:moment().toDate()
+		models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
 			theresMore = reqs?.length > pageSize
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore
-
-	route 'pastreqs', (data, io, session, fn)->
-		otherReqs = myReqs = null
-		pageSize = 10
-		me = session.user
-		period = $lt:moment().toDate()
-		models.Request.find({user:me, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
-			if not err and reqs?.length then myReqs = _.map reqs[0..pageSize], (r)->r._id.toString()
-			models.Request.find({user:{$ne:me}, expiry: period}).sort(created:-1).limit(pageSize+1).execFind (err, reqs)->
-				if not err and reqs?.length then otherReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
-				otherMore = otherReqs?.length > pageSize
-				myMore = myReqs?.length > pageSize
-				fn otherReqs, myReqs, otherMore, myMore
-
-	route 'moremyreqs', (data, io, session, fn)->
-		myReqs = null
-		pageSize = 10
-		skip = data?.skip or 0
-		me = session.user
-		period = $lt:moment().toDate()
-		models.Request.find({user:me, expiry: period}).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
-			theresMore = reqs?.length > pageSize
-			if not err and reqs?.length then myReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
-			fn myReqs, theresMore
-
-	route 'moreotherreqs', (data, io, session, fn)->
-		otherReqs = null
-		pageSize = 10
-		skip = data?.skip or 0
-		me = session.user
-		period = $lt:moment().toDate()
-		models.Request.find({user:{$ne:me}, expiry: period}).sort(created:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
-			theresMore = reqs?.length > pageSize
-			if not err and reqs?.length then otherReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
-			fn otherReqs, theresMore
 

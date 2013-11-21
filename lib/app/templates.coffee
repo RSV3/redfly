@@ -5,9 +5,11 @@ module.exports = (Ember) ->
 	templates.app1 = require '../../templates/app1'
 	templates.app2 = require '../../templates/app2'
 
+	templates._contact = require '../../templates/_contact'
+	templates._response = require '../../templates/_response'
+
 	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'
-	templates._contact = require '../../templates/_contact'
 	templates.contact = require '../../templates/contact'
 	templates.contacts = require '../../templates/contacts'
 	templates.create = require '../../templates/create'
