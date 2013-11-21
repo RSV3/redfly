@@ -1,19 +1,25 @@
 .row-fluid.top
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
-		| {{/if}}
 
 		| {{#if noneButIAdded}}
 		.row-fluid.actions
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
 					i.icon-resize-small.icon-2x
-			span.contact-actions
-				a(href='#', action='ignore')
-					i.icon-trash.icon-2x
 		| {{/if}}
+
+		| {{#unless view.parentView.classifying}}
+		span.contact-actions
+			a(href='#', action='remove')
+				i.icon-trash.icon-2x
+		| {{/unless}}
+
+		| {{/if}}
+
 	.span6
 		.row-fluid
 			| {{#if hasIntro}}
