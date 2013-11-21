@@ -1,9 +1,9 @@
 .row-fluid.top
 	.span3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
-		| {{/if}}
 
 		.row-fluid.actions
 			| {{#if noneButIAdded}}
@@ -12,17 +12,13 @@
 					i.icon-resize-small.icon-2x
 			| {{/if}}
 
-			| {{#if view.parentView.classifying}}
-			span.contact-actions
-				a(href='#', action='ignore')
-					i.icon-trash.icon-2x
-			| {{else}}
-			| {{#if view.parentView.enriching}}
+			| {{#unless view.parentView.classifying}}
 			span.contact-actions
 				a(href='#', action='remove')
 					i.icon-trash.icon-2x
-			| {{/if}}
-			| {{/if}}
+			| {{/unless}}
+
+		| {{/if}}
 
 	.span6
 		.row-fluid
