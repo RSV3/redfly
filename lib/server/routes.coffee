@@ -156,13 +156,24 @@ module.exports = (app, route) ->
 								if doc.added
 									if 'added' in modified
 										feed doc, data.type
-										console.log "priming contact from save"
 										primeContactForES doc, (doc)->
 											Elastic.create doc, (err)->
 												if not err then return
 												console.log "ERR: ES updating #{type}"
 												console.dir doc
 												console.dir err
+									else
+										Elastic.update String(doc._id), doc:doc, (err)->
+											if not err then return
+											console.log "ERR: ES updating #{type}"
+											console.dir doc
+											console.dir err
+								else if 'knows' in modified		# taken ourselves out of knows list?
+									if not doc.knows.length
+										Elastic.delete doc._id, (err)->
+											if not err then return
+											console.log "ERR: ES removing #{type}"
+											console.dir doc
 									else
 										Elastic.update String(doc._id), doc:doc, (err)->
 											if not err then return

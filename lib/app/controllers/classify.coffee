@@ -66,16 +66,7 @@ module.exports = (Ember, App, socket) ->
 				contact: App.Contact.find @get 'thisContact.id'
 			@_next()
 		ignore: ->
-			knows = @get('thisContact').get('knows.content').filter (u)-> u.id isnt App.user.get('id')
-			@set 'thisContact.knows.content', knows
-			ab = @get('thisContact.addedBy') 
-			if ab?.get('id') is App.user.get('id')
-				@set 'thisContact.addedBy', null
-				ab = null
-			if not ab then @set 'thisContact.added', null
-			App.Exclude.createRecord
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
+			@get('controllers.contact').remove()
 			@_next()
 		_next: ->
 			@incrementProperty 'classifyCount'
