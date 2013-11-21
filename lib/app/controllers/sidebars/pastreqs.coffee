@@ -60,6 +60,7 @@ module.exports = (Ember, App, socket) ->
 		closeModal: (->
 			@set 'controller.showthisreq', null
 		)
+		idsme: false
 		didInsertElement: ->
 			socket.emit 'requests', {old:true}, (reqs, theresmore) =>
 				if @get 'controller'	# in case we already switched out
