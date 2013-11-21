@@ -238,8 +238,7 @@ module.exports = (Ember, App, socket) ->
 				if reqs
 					controller.set 'hasNext', theresmore
 					if theresmore then controller.set 'pageSize', reqs.length
-					reqs = App.store.findMany App.Request, reqs
-					controller.set 'reqs', reqs
+					controller.set 'reqs', App.store.findMany App.Request, reqs
 		renderTemplate: ->
 			@router.connectem @, 'requests'
 

@@ -1,0 +1,52 @@
+extends newlayout
+
+
+block content
+	br
+	p
+		span There's been activity in response to your recent requests:
+		br
+
+	each request,i in requests
+		hr
+		p
+			span You asked: &nbsp;
+			span #{request.text}
+		each response,j in request.response
+			if (response.user._id+''  != id+'')
+				if (response.body)
+					p
+						a(href='#{path('/profile/' + response.user._id)}') #{response.user.name}
+						strong &nbsp;commented:&nbsp;
+						span #{response.body}
+				if (response.contact.length && response.user._id != id)
+					p
+						a(href='#{path('/profile/' + response.user._id)}') #{response.user.name}
+						strong &nbsp;suggested:&nbsp;
+					table
+						tbody
+						each contact,k in response.contact
+							if (contact)
+								if (k%4 === 0)
+									tr
+								td(style='valign:bottom; font-size:80%; width:25%')
+									if (contact.picture)
+										a(href='#{path('/contact/' + contact._id)}')
+											img(src='#{contact.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+									a(href='#{path('/contact/' + contact._id)}') #{contact.names[0]}
+
+	div(style='clear:both;')
+		br
+	
+	div(style='clear:both;')
+		br
+	br
+	div(style='float:left')
+		h2 Come to Redfly and see,
+		h2(style='font-size:100%') or Browse our #{numContacts} contacts
+			i &nbsp;and counting
+	div(style='float:right')
+		div(style='border:2px solid black; padding-left:0.5em; padding-right:0.5em; background-color:#468; box-shadow: 0 5px 25px #123;')
+			a(href='#{path("/requests")}', style='text-decoration:none')
+				h1(style='color:white') Take me there!
+

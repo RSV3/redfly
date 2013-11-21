@@ -40,6 +40,7 @@ module.exports = (Ember, App, socket) ->
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'
 			select: (context) ->
+				$('li.search.dropdown').blur()
 				@get('controller').transitionToRoute 'contact', context
 
 		loginView: Ember.View.extend

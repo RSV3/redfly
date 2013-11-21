@@ -1,3 +1,22 @@
+{{#if showthisreq}}
+#thisReq.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
+	.modal-header
+		.row-fluid
+			.span2
+				+linkTo('profile showthisreq.user')
+					| <img class=".span11 img-rounded" {{bindAttr src="showthisreq.user.canonicalPicture"}}>
+				br
+				i.fright {{showthisreq.user.canonicalName}}
+			.span9
+				h3#myModalLabel {{showthisreq.text}}
+			.span1
+				button.close(type='button', action='closeModal target="view"')
+					i.text-error.icon-remove-sign
+	.modal-body.expandedcontent
+		| {{#each showthisreq.response itemViewClass="App.ResponseView" itemController="response"}}
+		{{partial "response"}}
+		| {{/each}}
+{{/if}}
 ul.nav.nav-tabs
 	h4 Past requests
 	li.minerex
@@ -7,11 +26,47 @@ ul.nav.nav-tabs
 .tab-content
 	.tab-pane.minerex
 		| {{#each my_reqs itemViewClass="App.RequestView" itemController="request"}}
-		span {{text}}
-		hr
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='expand this target="view"')
+			| {{#if urgent}}
+			i.text-error.icon-flag
+			&nbsp;&nbsp;
+			| {{/if}}
+			| {{#if count}}
+			span.badge.badge-success {{count}}
+			&nbsp;&nbsp;
+			| {{/if}}
+			{{text}}
 		| {{/each}}
+		.row-fluid
+			.span2
+			.span8
+				hr
+				ul.pager
+					li.previous
+						| {{#if my_hasPrev}}<a href="#" {{action my_prevPage}}>&larr; Back</a>{{/if}}
+					li.next
+						| {{#if my_hasNext}}<a href="#" {{action my_nextPage}}>More &rarr;</a>{{/if}}
+
 	.tab-pane.active.othersrex
 		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
-		span {{text}}
-		hr
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='expand this target="view"')
+			| {{#if urgent}}
+			i.text-error.icon-flag
+			&nbsp;&nbsp;
+			| {{/if}}
+			| {{#if count}}
+			span.badge.badge-success {{count}}
+			&nbsp;&nbsp;
+			| {{/if}}
+			{{text}}
 		| {{/each}}
+		.row-fluid
+			.span2
+			.span8
+				hr
+				ul.pager
+					li.previous
+						| {{#if other_hasPrev}}<a href="#" {{action other_prevPage}}>&larr; Back</a>{{/if}}
+					li.next
+						| {{#if other_hasNext}}<a href="#" {{action other_nextPage}}>More &rarr;</a>{{/if}}
+
