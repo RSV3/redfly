@@ -42,14 +42,19 @@
 			td {{dataCount}}
 			td
 				span {{fullCount}}
+				{{#unless view.idsme}}
 				{{#if unclassifiedCount}}
 				span &nbsp; [
-				{{#if view.idsme}}
-				+linkTo('enrich') {{unclassifiedCount}}
-				{{else}}
 				span {{unclassifiedCount}}
-				{{/if}}
 				span ]
+				{{/if}}
+				{{/unless}}
+				{{#if view.idsme}}
+				{{#if view.parentView.controller.datapoor}}
+				span &nbsp; [
+				+linkTo('enrich') {{view.parentView.controller.datapoor}}
+				span ]
+				{{/if}}
 				{{/if}}
 			| {{/each}}
 
