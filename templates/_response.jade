@@ -4,20 +4,26 @@
 			| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
 	| {{#if body}}
 	.span11
-		strong {{user.canonicalName}}: &nbsp;
-		span {{body}}
+		strong
+			+linkTo('profile user') {{user.canonicalName}}
+		span :&nbsp; {{body}}
 	| {{else}}
 	.span2.suggesttext
-		+linkTo('profile user') {{user.canonicalName}}
-		br
-		span suggests:
+		strong
+			+linkTo('profile user') {{user.canonicalName}}
+		span &nbsp;suggested:
 	.span9.suggestions
-		| {{#each contact}}
+		| {{#each contact itemViewClass="App.ContactView" itemController="contact"}}
 		+linkTo('contact this')
 			.span6
 				.span3.imgpad
 					<img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
 				.span9
+					| {{#if view.parentView.parentView.idsme}}
+					span.bullhorn
+						a(href='#', action='introMailto target="view.parentView"')
+							{{view App.IntroView}}
+					| {{/if}}
 					span {{canonicalName}}
 					br
 					span {{position}}
