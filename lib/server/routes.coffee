@@ -658,6 +658,7 @@ module.exports = (app, route) ->
 	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
 	route 'requestCount', logic.requestCount		# ditto
 
+
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
 		# TODO: fix companies
@@ -696,14 +697,16 @@ module.exports = (app, route) ->
 			console.dir recent
 			fn recent
 
-	route 'leaderboard', (fn)->
+	route 'leaderboard', (data, io, session, fn)->
 		models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
 			l = users.length
 			users = _.map _.sortBy(users, (u) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
-			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+			doSearch (results)->
+				fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse(), results?.totalCount
+			, {moreConditions:poor:true}, session
 
 
 	route 'requests', (data, io, session, fn) ->

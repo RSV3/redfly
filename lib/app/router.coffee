@@ -213,24 +213,6 @@ module.exports = (Ember, App, socket) ->
 		redirect: ->
 			poorResults = App.Results.create {text: '', poor:true}
 			@transitionTo 'results', poorResults
-			###
-			setupController: (cuntroller, model) ->
-				controller = @controllerFor 'results'
-				this._super controller, model
-				for nullit in ['all', 'f_knows', 'f_industry', 'f_organisation', 'sortType']
-					controller.set nullit, null
-				for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
-					controller.set zeroit, 0
-				controller.set 'datapoor', true
-				controller.set 'empty', false
-				socket.emit 'fullSearch', moreConditions:poor:true, (results) =>
-					console.log 'enrich got:'
-					console.dir results
-					if not results?.response?.length then return @transitionTo 'classify'
-					controller.set 'all', App.store.findMany(App.Contact, results.response)
-			renderTemplate: ->
-				@router.connectem @, 'enrich'
-			###
 
 	App.RequestsRoute = Ember.Route.extend
 		setupController: (controller, model)->
@@ -245,11 +227,12 @@ module.exports = (Ember, App, socket) ->
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards) =>
+			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) =>
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', App.store.findMany(App.User, leaders)
 				controller.set 'laggard', App.store.findMany(App.User, laggards)
+				controller.set 'datapoor', datapoor
 		renderTemplate: ->
 			@router.connectem @, 'leaderboard'
 

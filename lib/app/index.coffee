@@ -8,9 +8,9 @@ preHook = (Ember, DS, App, socket) ->
 				App.advanceReadiness()
 				socket.emit 'classifyCount', App.user.get('id'), (count) ->
 					App.admin.set 'classifyCount', count
-				socket.emit 'requestCount', App.user.get('id'), (err, count)->
-					if err then count = 0
-					App.admin.set 'requestCount', count
+					socket.emit 'requestCount', App.user.get('id'), (err, count)->
+						if err then count = 0
+						App.admin.set 'requestCount', count
 		logout: ->
 			App.set 'user', null
 
