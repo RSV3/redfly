@@ -128,8 +128,17 @@ module.exports =
 	countConts: (cb)-> models.Contact.find(added:{$exists:true}).count cb
 	myConts: (u, cb)-> models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
 	classifyCount: (u, cb)-> classifyList u, (neocons)-> cb neocons?.length
-	requestCount: (u, cb)-> models.Request.find(expiry:$gte:moment().toDate()).count cb
+	requestCount: (u, cb)->
+		models.Request.find(
+			expiry:{$gte:moment().toDate()}
+			user:{$ne:u}
+		).execFind (err, reqs)->
+			filtaRex = (filtered_rex)->
+				if not reqs?.length
+					return cb filtered_rex.length
+				req = reqs.pop()
+				models.Response.find({user:u, _id:{$in:req.response}}).count (err, count)->
+					if not count then filtered_rex.push req._id
+					filtaRex filtered_rex
+			filtaRex []
 
-# jTNT : TODO requestCount should probably check for current requests where
-# $not notes.user:u, $not suggestions.user:u
-# ie. requests which are not mine which I have not made a response to
