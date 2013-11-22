@@ -152,6 +152,9 @@ module.exports = (Ember, App, socket) ->
 		expanded: false
 		selections:[]
 		newnote:''
+		idsme: (->
+			@get('controller.user.id') is App.user.get('id')
+		).property 'controller.user'
 		saveNote: (->
 			not @get('newnote').length
 		).property 'newnote'
@@ -162,6 +165,7 @@ module.exports = (Ember, App, socket) ->
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
 			@set 'parentView.controller.showthisreq', it
+			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
 		)
 		toggle: (->
 			@set 'expanded', not @get 'expanded'
@@ -200,14 +204,16 @@ module.exports = (Ember, App, socket) ->
 				addedBy: App.user.get 'id'
 			).property()
 			excludes: (->
-				@get('parentView.selections').getEach('id').concat @get('controller.id')
+				contacts = @get('parentView.controller.response').getEach('contact')
+				ids = @get('parentView.selections').getEach('id')
+				_.each contacts, (c)-> ids = ids.concat c.getEach 'id'
+				ids
 			).property 'controller.content', 'parentView.selections.@each'
 			select: (context) ->
 				$('div.search.dropdown').blur()
 				@get('parentView.selections').addObject App.Contact.find context.id
 			keyUp: (event) -> false
 			submit: -> false
-
 
 
 	App.ResponseController = Ember.ObjectController.extend

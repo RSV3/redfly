@@ -119,6 +119,21 @@ module.exports = (Ember, App, socket) ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
 				@commitNcount()
+
+		remove: ->
+			knows = @get('knows.content').filter (u)-> u.id isnt App.user.get('id')
+			ab = @get('addedBy') 
+			if ab?.get('id') is App.user.get('id')
+				if knows.length then ab = knows[0]
+				else ab = null
+				@set 'addedBy', ab
+			@set 'knows.content', knows
+			if not ab then @set 'added', null
+			App.Exclude.createRecord
+				user: App.User.find App.user.get 'id'
+				contact: App.Contact.find @get 'id'
+			@commitNcount()
+
 		commitNcount: ->
 			@set 'updated', new Date
 			@set 'updatedBy', App.User.find App.user.get 'id'
