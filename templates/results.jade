@@ -81,7 +81,7 @@
 						{{/each}}
 				.sometags
 					{{#each view.orgTags}}
-					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
+					a(href="#", bindAttr='class=":label category catid"', action='clicktag this target="view"')
 						span {{body}}
 					{{/each}}
 					{{#each view.indTags}}
