@@ -5,7 +5,7 @@
 	// TO-DO this would be more efficient with itemView
 	+each('view.tags')
 		+view('view.tagView')
-			i.icon-tag  
+			i.icon-tag
 			a.body(href='#', action='search target="view"') {{body}}
 			a.close(action='delete target="view"')
 				i.icon-remove
@@ -17,7 +17,7 @@
 		+each('view.cloudTags')
 			+view('view.cloudView')
 				a(href='#', action='use target="view"')
-					span(bindAttr='class=":label category"')
+					span(bindAttr='class=":label category catid"')
 						i.icon-plus
-						|  {{body}}
-				|  
+						|{{body}}
+				|&nbsp;

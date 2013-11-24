@@ -6,6 +6,7 @@ module.exports =
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 		ES_NAME: 'redstar'
+		ORG_TAG_CATEGORIES: 'Role, Theme, Project'
 
 
 	development:

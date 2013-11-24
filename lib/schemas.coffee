@@ -18,6 +18,7 @@ schemas.push Schema 'Admin',
 	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
 	hidemails: type: Boolean	# hide the email of unknown contacts
 	anyedit: type: Boolean		# allow any user to edit some contact fields
+	orgtagcats: type: String	# comma delimited category names
 
 schemas.push Schema 'Classify',
 	user: type: Types.ObjectId, ref: 'User'
@@ -89,9 +90,9 @@ schemas.push Schema 'Contact',
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 schemas.push Schema 'Tag',
-	creator: type: Types.ObjectId, ref: 'User', sparse: true#, required: true
-	contact: type: Types.ObjectId, ref: 'Contact', sparse: true#, required: true
-	category: type:String, required:true, enum:['role', 'theme', 'project', 'organisation', 'industry']
+	creator: type: Types.ObjectId, ref: 'User', sparse: true
+	contact: type: Types.ObjectId, ref: 'Contact', sparse: true
+	category: type:String, required:true
 	body: type: String, required: true, trim: true, lowercase: true
 
 schemas.push Schema 'Note',
