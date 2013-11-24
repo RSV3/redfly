@@ -155,11 +155,8 @@ module.exports = (Ember, App, socket) ->
 		).property 'catTags'
 		catTags: (->
 			tags = @get 'tags'
-			cattags =
-				industry:[]
-				project:[]
-				role:[]
-				theme:[]
+			cattags = industry:[]
+			_.each App.admin.get('orgtagcats'), (t)-> cattags[t] = []	# add empty list for each organisational tag category
 			if not tags or not tags.get('length') then return cattags
 			tags.forEach (t)->
 				if (c = t.get('category'))

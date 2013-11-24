@@ -18,11 +18,11 @@
 					p
 						br
 					li.active
-						| <a href=project data-toggle=tab> Project </a>
+						| <a href=orgtagcat1 data-toggle=tab> {{App.orgtagcat1}} </a>
 					li
-						| <a href=theme data-toggle=tab> Theme </a>
+						| <a href=orgtagcat2 data-toggle=tab> {{App.orgtagcat2}} </a>
 					li
-						| <a href=role data-toggle=tab> Role </a>
+						| <a href=orgtagcat3 data-toggle=tab> {{App.orgtagcat3}} </a>
 					li
 						| <a href=industry data-toggle=tab> Industry </a>
 					li
@@ -39,9 +39,9 @@
 					.tagboxes
 						.tab-pane.active#organisation
 						.tab-pane#industry
-						.tab-pane#project
-						.tab-pane#theme
-						.tab-pane#role
+						.tab-pane#orgtagcat1
+						.tab-pane#orgtagcat2
+						.tab-pane#orgtagcat3
 						{{view App.TagAdminView}}
 
 		h3 Organization Domains
