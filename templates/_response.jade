@@ -11,7 +11,8 @@
 	.span2.suggesttext
 		strong
 			+linkTo('profile user') {{user.canonicalName}}
-		span &nbsp;suggested:
+		br
+		span suggested:
 	.span9.suggestions
 		| {{#each contact itemViewClass="App.ContactView" itemController="contact"}}
 		+linkTo('contact this')
