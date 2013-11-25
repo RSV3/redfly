@@ -390,6 +390,7 @@ body
 	a:hover
 		text-decoration	none
 
+
 .admin
 	.checkadmin
 		input
@@ -399,7 +400,19 @@ body
 		label
 			display	inline
 			margin-left	1em
-
+	li.editable
+		a
+			i
+				display	none
+	li.editable.active
+		a
+			i
+				float	right
+				display	inline-block
+				color	#888
+		a:hover
+			i
+				color	#08c
 
 .tagadmin, .tagger .main
 	.tag

@@ -696,3 +696,7 @@ module.exports = (app, route) ->
 			), (u)-> String(u.get('_id'))
 			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
 
+	route 'renameTags', (data, io, session, fn)->
+		models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+			if err then console.dir err
+			fn err

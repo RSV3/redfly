@@ -5,7 +5,12 @@ module.exports = (Ember, App, socket) ->
 	App.TagAdminView = Ember.View.extend
 		template: require '../../../../templates/components/tagadmin'
 		classNames: ['tagadmin']
-		category: 'project'
+		catid: 'orgtagcat1'
+		category: (->
+			if (id = @get 'catid') is 'industry' then id
+			else if (id = App.admin.get id) then id.toLowerCase()
+			else 'organisation'
+		).property 'catid', 'App.admin.orgtagcats'
 
 		prioritytags: (->
 			query = category: @get('category'), contact: null
@@ -17,25 +22,37 @@ module.exports = (Ember, App, socket) ->
 			Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 		).property 'category'
 
-		saveAllTags: (->
-			result = Ember.ArrayController.create()
+		saveAllTags: null
+		saveTags: (->
+			@set 'saveAllTags', null
 			socket.emit 'tags.all', category: @get('category'), (allTags) =>
+				result = Ember.ArrayController.create()
 				result.pushObjects allTags.map (b)->b
-			result
-		).property 'category'
+				@set 'saveAllTags', result
+		).observes 'category'
+		didInsertElement: ->
+			@saveTags()
 		alltags: (->
-			result = Ember.ArrayController.create()
-			if allTags = @get 'saveAllTags.content'
-				if p = @get('prioritytags').getEach 'body'
-					allTags = _.difference allTags, p
-				if allTags.length then result.pushObjects _.map allTags, (b)->body:b
+			result = null
+			if (allTags = @get 'saveAllTags.content')
+				result = Ember.ArrayController.create()
+				if allTags.length
+					catid = @get 'catid'
+					if p = @get('prioritytags').getEach 'body'
+						allTags = _.difference allTags, p
+					doLongList = (res, tags)->
+						if not tags?.length then return
+						console.log tags.length
+						res.pushObjects _.map tags[0..99], (b)=> {body:b, catid:catid}
+						Ember.run.next this, ->
+							doLongList res, tags[100..]
+					if allTags.length then doLongList result, allTags
 			result
 		).property 'prioritytags.@each', 'saveAllTags.@each'
 
 		hastags: (->
-			a = @get('alltags')
-			not a.get('content') or a.get('length')
-		).property 'alltags.@each'
+			(a = @get 'alltags') isnt null
+		).property 'alltags'
 
 		click: ->
 			$(@get('newTagViewInstance.element')).focus()
@@ -129,10 +146,10 @@ module.exports = (Ember, App, socket) ->
 							App.store.filter(App.Tag, (t)->
 								t.get('category') is renameObj.category and t.get('body') is renameObj.body
 							).forEach (t)-> t.set 'body', renameObj.new
-				).addClass that.get 'category'
+				).addClass(that.get 'catid').addClass(that.get 'category')
 				$('ul.nav-tabs a').click (e)->
 					e.preventDefault()
-					that.set 'category', $(this).attr 'href'
+					that.set 'catid', $(this).attr 'href'
 					$(this).tab 'show'
 				$('ul.nav-tabs li').droppable({
 					drop: (e, ui)->
@@ -154,10 +171,4 @@ module.exports = (Ember, App, socket) ->
 					@$().addClass 'animated bounceIn'
 
 		newTagView: App.NewTagView.extend()
-
-		# TODO:
-		# the stuff above is quite different from the contact page cloud tag stuff,
-		# but this here below has been cutnpaste verbatim from tagger:
-		# it really should be its own component.
-
 

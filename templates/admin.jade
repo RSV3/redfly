@@ -17,12 +17,12 @@
 				ul.nav.nav-tabs
 					p
 						br
-					li.active
-						| <a href=orgtagcat1 data-toggle=tab> {{App.orgtagcat1}} </a>
-					li
-						| <a href=orgtagcat2 data-toggle=tab> {{App.orgtagcat2}} </a>
-					li
-						| <a href=orgtagcat3 data-toggle=tab> {{App.orgtagcat3}} </a>
+					li.cat1.editable.active.alreadyhere(action='editme "cat1" target="view"')
+						| <a href=orgtagcat1 data-toggle=tab> {{App.admin.orgtagcat1}}  <i class="icon-edit"></i></a>
+					li.cat2.editable(action='editme "cat2" target="view"')
+						| <a href=orgtagcat2 data-toggle=tab> {{App.admin.orgtagcat2}}  <i class="icon-edit"></i></a>
+					li.cat3.editable(action='editme "cat3" target="view"')
+						| <a href=orgtagcat3 data-toggle=tab> {{App.admin.orgtagcat3}}  <i class="icon-edit"></i></a>
 					li
 						| <a href=industry data-toggle=tab> Industry </a>
 					li
