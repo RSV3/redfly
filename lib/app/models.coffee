@@ -65,3 +65,13 @@ module.exports = (DS, App) ->
 				_s = require 'underscore.string'
 				_s.prune _s.stripTags(@get 'body'), 80
 			).property 'body'
+
+
+	App.Tag.reopen
+		catid: (->
+			switch (cat = @get 'category')
+				when App.admin.get('orgtagcat1').toLowerCase() then 'orgtagcat1'
+				when App.admin.get('orgtagcat2').toLowerCase() then 'orgtagcat2'
+				when App.admin.get('orgtagcat3').toLowerCase() then 'orgtagcat3'
+				else cat
+		).property 'category'

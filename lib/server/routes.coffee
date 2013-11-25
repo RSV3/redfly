@@ -59,8 +59,9 @@ module.exports = (app, route) ->
 										# mongoose is cool, but we need do this to get around its protection
 										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
+										if not doc.orgtagcats then doc._doc['orgtagcats'] = process.env.ORG_TAG_CATEGORIES
 									else
-										new_adm = {_id:1, domains:process.env.ORGANISATION_DOMAIN}
+										new_adm = {_id:1, orgtagcats:process.env.ORG_TAG_CATEGORIES, domains:process.env.ORGANISATION_DOMAIN}
 										return model.create new_adm, (err, doc) ->
 											throw err if err
 											if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
@@ -657,6 +658,7 @@ module.exports = (app, route) ->
 	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
 	route 'requestCount', logic.requestCount		# ditto
 
+
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
 		# TODO: fix companies
@@ -695,14 +697,16 @@ module.exports = (app, route) ->
 			console.dir recent
 			fn recent
 
-	route 'leaderboard', (fn)->
+	route 'leaderboard', (data, io, session, fn)->
 		models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
 			l = users.length
 			users = _.map _.sortBy(users, (u) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
-			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+			doSearch (results)->
+				fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse(), results?.totalCount
+			, {moreConditions:poor:true}, session
 
 
 	route 'requests', (data, io, session, fn) ->
@@ -719,3 +723,7 @@ module.exports = (app, route) ->
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore
 
+	route 'renameTags', (data, io, session, fn)->
+		models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+			if err then console.dir err
+			fn err
