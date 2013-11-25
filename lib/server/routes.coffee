@@ -724,3 +724,7 @@ module.exports = (app, route) ->
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore
 
+	route 'renameTags', (data, io, session, fn)->
+		models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+			if err then console.dir err
+			fn err
