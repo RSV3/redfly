@@ -8,6 +8,43 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			@$('textarea').blur ()=>
 				@get('controller')._onTextArea()
+		editme: (ev)->
+			$it = @$("li.editable.#{ev}")
+			if not $it.hasClass('alreadyhere')
+				@$('li.alreadyhere').removeClass 'alreadyhere'
+				$it.addClass 'alreadyhere'
+				return false
+			$it.replaceWith '<input class="changeCats">'
+			oldText = $it.text().trim()
+			@$('input.changeCats').val(oldText).focus().blur (ev)->
+				$newInput = $(this)
+				newText = $newInput.val()
+				renameTagCategory = ()=>
+					App.admin.set $it.find('a').attr('href'), newText		# fugly~!
+					App.admin.set 'orgtagcats', "#{App.admin.get 'orgtagcat1'}, #{App.admin.get 'orgtagcat2'}, #{App.admin.get 'orgtagcat3'}"
+					$newInput.replaceWith $it
+					$it.val newText
+					App.store.commit()
+				unless newText is oldText
+					bootbox.dialog "change #{oldText} to #{$newInput.val()}", [
+						"label" : "Rename old tags",
+						"class" : "btn-success",
+						"callback": ()=>
+							socket.emit 'renameTags', {old:oldText, new:newText}, ()->
+								renameTagCategory $it, $newInput
+					,
+						"label" : "Ignore old tags",
+						"class" : "btn-warning",
+						"callback": ()=>
+							renameTagCategory $it, $newInput
+					,
+						"label" : "Cancel",
+						"class" : "btn-danger",
+						"callback": ()=>
+							$newInput.replaceWith $it
+					]
+				else $newInput.replaceWith $it
+
 
 	App.AdminController = Ember.ObjectController.extend
 		totalThisMonth: 0
@@ -53,3 +90,4 @@ module.exports = (Ember, App, socket) ->
 				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				App.store.commit()
 		)
+

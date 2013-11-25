@@ -154,16 +154,19 @@ module.exports = (Ember, App, socket) ->
 			result
 		).property 'catTags'
 		catTags: (->
-			tags = @get 'tags'
 			cattags = industry:[]
-			_.each App.admin.get('orgtagcats'), (t)-> cattags[t] = []	# add empty list for each organisational tag category
+			if not (cats = App.admin.get 'orgtagcats')
+				return console.log "ERROR: no admin categories ..."
+			_.each _.map(cats.split(','), (t)-> t.trim()), (t)->
+				cattags[t] = []	# add empty list for each organisational tag category
+			tags = @get 'tags'
 			if not tags or not tags.get('length') then return cattags
 			tags.forEach (t)->
 				if (c = t.get('category'))
 					if not cattags[c] then cattags[c]=[]
 					cattags[c].push t
 			cattags
-		).property 'tags.@each'
+		).property 'tags.@each', 'App.admin.orgtagcats'
 		tags: (->
 			if (id = @get('controller.id'))
 				App.Tag.filter {contact: id}, (data) =>

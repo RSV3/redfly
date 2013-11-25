@@ -5,10 +5,8 @@ _ = require 'underscore'
 configureAdminOnLogin = (socket)->
 	if not (cats = App.admin.get 'orgtagcats') then return		# wait for object to load
 	if not (user = App.user.get 'id') then return				# need both admin and user loaded to be ready
-	if cats.split	# rewrite categories string as an array
-		App.admin.set 'orgtagcats', _.map cats.split(','), (t)-> t.trim()
-		_.each App.admin.get('orgtagcats'), (t, i)->
-			App.admin.set "orgtagcat#{i+1}", t
+	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
+		App.admin.set "orgtagcat#{i+1}", t
 	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
 		App.admin.set 'classifyCount', count
 		socket.emit 'requestCount', user, (count)->
