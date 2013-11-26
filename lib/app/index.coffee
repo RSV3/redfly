@@ -9,9 +9,9 @@ configureAdminOnLogin = (socket)->
 		App.admin.set "orgtagcat#{i+1}", t
 	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
 		App.admin.set 'classifyCount', count
-		socket.emit 'requestCount', user, (count)->
-			App.admin.set 'requestCount', count
-			App.advanceReadiness()
+		#socket.emit 'requestCount', user, (count)->
+		#	App.admin.set 'requestCount', count
+		App.advanceReadiness()
 
 preHook = (Ember, DS, App, socket) ->
 	App.user = Ember.ObjectProxy.create()
