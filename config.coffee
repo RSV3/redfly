@@ -12,7 +12,7 @@ module.exports =
 	development:
 		#HOST: '127.0.0.1:5000'
 		HOST:	'10.0.0.2:5000'
-		#AUTO_AUTH: '50f7716ac458e60200000007'
+		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
 
