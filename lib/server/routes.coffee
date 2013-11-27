@@ -468,15 +468,24 @@ module.exports = (app, route) ->
 				.value()
 
 	route 'tags.remove', (conditions, fn) ->
-		models.Tag.find conditions, '_id', (err, ids)->
+		models.Tag.find conditions, (err, tags)->
 			throw err if err
-			ids =  _.pluck ids, '_id'
+			ids = _.pluck tags, '_id'
 			models.Tag.remove {_id: $in: ids}, (err)->
 				if err
 					console.log "error removing tags:"
 					console.dir ids
 					console.dir err
-			fn ids
+					fn null
+				else
+					whichtags = if conditions.category is 'industry' then 'indtags' else 'orgtags'
+					bulkESupd = (tags)->
+						if not tags?.length then return
+						if not (tag = tags.pop()) then return bulkESupd tags
+						Elastic.onDelete tag, 'Tag', whichtags, (err)->
+							bulkESupd tags
+					bulkESupd tags
+					fn ids
 
 	route 'tags.all', (conditions, fn) ->
 		models.Tag.find(conditions).distinct 'body', (err, bodies)->

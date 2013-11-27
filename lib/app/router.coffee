@@ -107,6 +107,12 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'admin'
 
+	App.ImportRoute = Ember.Route.extend
+		renderTemplate: -> @router.connectem @, 'import'
+
+	App.CreateRoute = Ember.Route.extend
+		renderTemplate: -> @router.connectem @, 'create'
+
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
