@@ -101,7 +101,6 @@ batchNewReqs = (cb)->
 			updateReqs reqs, (reqs)->				# convert user, response ids to objects
 				models.User.find (err, users) ->	# send the list of new requests to ever user
 					throw err if err
-					users = [users[0]]		# jTNT testing with just one user
 					eachUserRequest users, reqs, Mail.sendRequests, ()->
 						models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
 							if err
