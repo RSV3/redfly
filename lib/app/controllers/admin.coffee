@@ -16,9 +16,17 @@ module.exports = (Ember, App, socket) ->
 				return false
 			$it.replaceWith '<input class="changeCats">'
 			oldText = $it.text().trim()
-			@$('input.changeCats').val(oldText).focus().blur (ev)->
+			handleUpkey = (event)=>
+				if event.which is 13	# Enter.
+					$(event.currentTarget).blur()
+					return false
+				else if event.which is 27	# Escape.
+					$(event.currentTarget).val(oldText).blur()
+				else return true
+			@$('input.changeCats').val(oldText).focus().keyup(handleUpkey).blur (ev)->
 				$newInput = $(this)
-				newText = $newInput.val()
+				newText = $newInput.val().trim()
+				if not newText.length then return $newInput.replaceWith $it
 				renameTagCategory = ()=>
 					App.admin.set $it.find('a').attr('href'), newText		# fugly~!
 					App.admin.set 'orgtagcats', "#{App.admin.get 'orgtagcat1'}, #{App.admin.get 'orgtagcat2'}, #{App.admin.get 'orgtagcat3'}"
@@ -26,7 +34,7 @@ module.exports = (Ember, App, socket) ->
 					$it.val newText
 					App.store.commit()
 				unless newText is oldText
-					bootbox.dialog "change #{oldText} to #{$newInput.val()}", [
+					bootbox.dialog "Change tag category name from \"<b>#{oldText}</b>\" to \"<b>#{$newInput.val()}</b>\"", [
 						"label" : "Rename old tags",
 						"class" : "btn-success",
 						"callback": ()=>
