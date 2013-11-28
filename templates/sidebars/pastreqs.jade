@@ -1,5 +1,5 @@
 {{#if showthisreq}}
-#thisReq.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
+.thisReq.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
 	.modal-header
 		.row-fluid
 			.span2
@@ -10,12 +10,14 @@
 			.span9
 				h3#myModalLabel {{showthisreq.text}}
 			.span1
-				button.close(type='button', action='closeModal target="view"')
+				a.close(action='closeModal target="view"')
 					i.text-error.icon-remove-sign
 	.modal-body.expandedcontent
 		| {{#each showthisreq.response itemViewClass="App.ResponseView" itemController="response"}}
 		{{partial "response"}}
 		| {{/each}}
+	p
+		br
 {{/if}}
 ul.nav.nav-tabs
 	h4 Past requests
