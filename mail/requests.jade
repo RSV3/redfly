@@ -1,4 +1,4 @@
-extends newlayout
+extends reqreslayout
 
 
 block content
@@ -8,17 +8,31 @@ block content
 	p
 		br
 
-	each request,i in requests
-		div(style='clear:both;')
-			p
-				if request.user.picture
-					a(href='#{path('/profile/' + request.user._id)}')
-						img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
-				a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
-				br
-				span #{request.text}
-				br
-		div(style='clear:both;')
+	div(style='padding:1em;')
+		each request,i in urgentRequests
+			div(style='background-color:#fee; clear:both;')
+				p
+					if request.user.picture
+						a(href='#{path('/profile/' + request.user._id)}')
+							img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+					a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+					br
+					span #{request.text}
+					br
+			div(style='clear:both;')
+
+	div(style='padding:1em;')
+		each request,i in otherRequests
+			div(style='background-color:#eee; clear:both;')
+				p
+					if request.user.picture
+						a(href='#{path('/profile/' + request.user._id)}')
+							img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+					a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+					br
+					span #{request.text}
+					br
+			div(style='clear:both;')
 
 	div(style='clear:both;')
 		br
