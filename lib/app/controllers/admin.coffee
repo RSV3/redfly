@@ -72,6 +72,9 @@ module.exports = (Ember, App, socket) ->
 		domainlist: (->
 			@get('domains')?.join '\n'
 		).property 'domains'
+		authdomainlist: (->
+			@get('authdomains')?.join '\n'
+		).property 'domains'
 		domainblacklist: (->
 			@get('blacklistdomains')?.join '\n'
 		).property 'blacklistdomains'
@@ -92,6 +95,7 @@ module.exports = (Ember, App, socket) ->
 			if @get('domainlist')?.length
 				regexp = /(?:,|\n)+/
 				@set 'domains',  _.filter _.map(@get('domainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				@set 'authdomains',  _.filter _.map(@get('authdomainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				
 				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
