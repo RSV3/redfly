@@ -87,8 +87,8 @@ Mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 	, cb
 
 
-Mail.sendRequests = (user, requests, cb) ->
-	if not requests.length then return cb()
+Mail.sendRequests = (user, uRequests, oRequests, cb) ->
+	if not uRequests.length and not oRequests.length then return cb()
 	require('step') ->
 		Logic.countConts @parallel()					# total in the system
 		return undefined
@@ -100,7 +100,8 @@ Mail.sendRequests = (user, requests, cb) ->
 			from: From
 			subject: "Recent requests for contacts"
 			headstrip: "help colleagues make useful connections"
-			requests: requests
+			urgentRequests: uRequests
+			otherRequests: oRequests
 			numContacts: numContacts
 		Mail.sendTemplate 'requests', templateObj, cb
 

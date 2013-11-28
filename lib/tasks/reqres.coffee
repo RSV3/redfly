@@ -9,6 +9,7 @@ Mail = require '../server/mail'
 
 
 today = moment().toDate()		# get the stamp immediately. all data after this date will be picked up next time.
+twelveAgo = moment().subtract(12, 'hours').toDate()
 console.dir today
 
 # replace the resp ID with a response object
@@ -62,13 +63,15 @@ updateResps = (reqs, cb, newrex=[])->
 # recursively operate on a list of documents
 # ignoring those that match the current user
 # Note: this is called after response objects are loaded, so user id is response[n].user
-eachUserRequest = (users, reqs, operate, fcb) ->
+eachUserRequest = (users, uReqs, oReqs, operate, fcb) ->
 	if not users.length then return fcb()
 	u = users.pop()
-	operate u, _.filter(reqs, (r)->
-		r.user._id isnt u._id and not _.some r.response, (r)-> r.user is u._id
-	), ()->
-		eachUserRequest users, reqs, operate, fcb
+	filterRequests = (reqs)->
+		_.filter(reqs, (r)->
+			r.user._id isnt u._id and not _.some r.response, (r)-> r.user is u._id
+		)
+	operate u, filterRequests(uReqs), filterRequests(oReqs), ()->
+		eachUserRequest users, uReqs, oReqs, operate, fcb
 
 
 # recursively operate on a list of documents
@@ -92,21 +95,31 @@ batchNewReqs = (cb)->
 		if not err and reqs?.length
 			if reqs[0].sent > moment().subtract('hours', 1).toDate()		# already sent requests within the last hour?
 				return cb()										# don't send requests too often
-		models.Request.find(expiry:{$gt:today}, $or:[{urgent:true}, {sent: $exists: false}]).sort({urgent:1, date:1}).execFind (err, reqs)->
+		models.Request.find(urgent:true, expiry:{$gt:today}, sent: {$not: $gt: twelveAgo}).sort({urgent:1, date:1}).execFind (err, uReqs)->
 			if err
-				console.log "ERROR: finding unsent requests"
+				console.log "ERROR: finding urgent unsent requests"
 				console.dir err
 				return services.close()
-			if not reqs?.length then return cb()		# no new requests
-			updateReqs reqs, (reqs)->				# convert user, response ids to objects
-				models.User.find (err, users) ->	# send the list of new requests to ever user
-					throw err if err
-					eachUserRequest users, reqs, Mail.sendRequests, ()->
-						models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
-							if err
-								console.log "ERROR: updating requests as sent"
-								console.dir err
-							return cb()
+			models.Request.find(urgent:false, expiry:{$gt:today}, sent:{$exists: false}).sort({urgent:1, date:1}).execFind (err, oReqs)->
+				if err
+					console.log "ERROR: finding unsent requests"
+					console.dir err
+					return services.close()
+				if not uReqs?.length and not oReqs.length then return cb()		# no new requests
+				updateReqs uReqs, (uReqs)->				# convert user, response ids to objects
+					updateReqs oReqs, (oReqs)->				# convert user, response ids to objects
+						models.User.find (err, users) ->	# send the list of new requests to ever user
+							throw err if err
+							eachUserRequest users, uReqs, oReqs, Mail.sendRequests, ()->
+								models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
+									if err
+										console.log "ERROR: updating requests as sent"
+										console.dir err
+									models.Request.update {urgent:true, expiry:{$gt:today}, sent:{$lt:twelveAgo}}, {sent:today}, {multi:true}, (err) ->
+										if err
+											console.log "ERROR: updating requests as sent"
+											console.dir err
+										return cb()
 
 
 sendNewResps = (cb)->
