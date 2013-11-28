@@ -28,6 +28,17 @@
 				| {{else}}
 				span.badge.badge-important {{count}}
 				| {{/if}}
+				br
+				| {{#if count}}
+				a.nodeco(href='#')
+					| {{#if view.expanded}}
+					span &nbsp; &nbsp;
+					i.icon-caret-up.icon-large
+					| {{else}}
+					span &nbsp; &nbsp;
+					i.icon-caret-down.icon-large
+					| {{/if}}
+				| {{/if}}
 			span
 				+linkTo('profile user') {{user.canonicalName}}
 				strong :&nbsp; &nbsp;
@@ -46,13 +57,6 @@
 				| {{#if expires}}
 				i.expiry Expires {{expires}}
 				| {{/if}}
-
-	| {{#if view.expanded}}
-	.row-fluid.expandedcontent
-		| {{#each response itemViewClass="App.ResponseView" itemController="response"}}
-		{{partial "response"}}
-		| {{/each}}
-	| {{/if}}
 
 	| {{#if view.addingnote}}
 	.row-fluid
@@ -95,6 +99,13 @@
 		| {{/each}}
 	| {{/if}}
 
+	| {{/if}}
+
+	| {{#if view.expanded}}
+	.row-fluid.expandedcontent
+		| {{#each response itemViewClass="App.ResponseView" itemController="response"}}
+		{{partial "response"}}
+		| {{/each}}
 	| {{/if}}
 
 

@@ -162,12 +162,14 @@ module.exports = (Ember, App, socket) ->
 			not @get('selections').length
 		).property 'selections.@each'
 		expand: (->
+			if @get('addingcontacts') or @get('addingnote') then return
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
 			@set 'parentView.controller.showthisreq', it
 			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
 		)
 		toggle: (->
+			if @get('addingcontacts') or @get('addingnote') then return
 			@set 'expanded', not @get 'expanded'
 		)
 		closecontacts: (->

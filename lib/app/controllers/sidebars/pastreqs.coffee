@@ -14,6 +14,7 @@ module.exports = (Ember, App, socket) ->
 		my_prevPage: (->
 			socket.emit 'requests', {old:true, me:true, skip:@get('my_rangeStart')-@get('my_pageSize')}, (reqs, theresmore)=>
 				if reqs
+					@set 'showthisreq', null
 					@set 'my_reqs', App.store.findMany(App.Request, reqs)
 					@set 'my_hasNext', true
 					@set 'my_rangeStart', @get('my_rangeStart') - @get('my_pageSize')
@@ -21,6 +22,7 @@ module.exports = (Ember, App, socket) ->
 		my_nextPage: (->
 			socket.emit 'requests', {old:true, me:true, skip:@get('my_rangeStart')+@get('my_pageSize')}, (reqs, theresmore)=>
 				if reqs
+					@set 'showthisreq', null
 					@set 'my_reqs', App.store.findMany(App.Request, reqs)
 					@set 'my_hasNext', theresmore
 					@set 'my_rangeStart', @get('my_rangeStart') + @get('my_pageSize')
@@ -37,6 +39,7 @@ module.exports = (Ember, App, socket) ->
 		other_prevPage: (->
 			socket.emit 'requests', {old:true, skip:@get('other_rangeStart')-@get('other_pageSize')}, (reqs, theresmore)=>
 				if reqs
+					@set 'showthisreq', null
 					@set 'other_reqs', App.store.findMany(App.Request, reqs)
 					@set 'other_hasNext', true
 					@set 'other_rangeStart', @get('other_rangeStart') - @get('other_pageSize')
@@ -44,6 +47,7 @@ module.exports = (Ember, App, socket) ->
 		other_nextPage: (->
 			socket.emit 'requests', {old:true, skip:@get('other_rangeStart')+@get('other_pageSize')}, (reqs, theresmore)=>
 				if reqs
+					@set 'showthisreq', null
 					@set 'other_reqs', App.store.findMany(App.Request, reqs)
 					@set 'other_hasNext', theresmore
 					@set 'other_rangeStart', @get('other_rangeStart') + @get('other_pageSize')
@@ -53,6 +57,7 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../templates/sidebars/pastreqs'
 		classNames: ['pastreqs']
 		selectTab: (ev)->
+			@closeModal()
 			@$().find(".nav-tabs .active").removeClass 'active'
 			@$().find(".nav-tabs .#{ev}").addClass 'active'
 			@$().find(".tab-content .tab-pane.active").removeClass 'active'
@@ -64,6 +69,7 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			socket.emit 'requests', {old:true}, (reqs, theresmore) =>
 				if @get 'controller'	# in case we already switched out
+					@closeModal()
 					@set 'controller.other_hasNext', theresmore
 					if theresmore then @set 'controller.other_pageSize', reqs.length
 					if reqs then reqs = App.store.findMany App.Request, reqs
