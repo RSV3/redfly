@@ -52,6 +52,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'thisContact.classified', new Date
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
+			if not @get 'thisContact.addedBy'
 				@set 'thisContact.addedBy', App.user
 				App.user.incrementProperty 'contactCount'
 			App.Classify.createRecord
@@ -69,8 +70,8 @@ module.exports = (Ember, App, socket) ->
 			@get('controllers.contact').remove()
 			@_next()
 		_next: ->
-			@incrementProperty 'classifyCount'
 			App.store.commit()
+			@incrementProperty 'classifyCount'
 
 		unflush: -> @set 'flushing', false
 		flush: ->

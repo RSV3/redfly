@@ -31,7 +31,7 @@ module.exports = (Ember, App, socket) ->
 				Ember.run.next this, ->
 					if item = App[model].find data.id
 						item['type' + _s.capitalize(type)] = true
-						item.set 'updatedBy', App.User.find data.updater
+						if (id = data.updater or data.addedBy) then item.set 'updatedBy', App.User.find id
 						if f = @get('controller.feed') then f.unshiftObject item
 
 		feedItemView: Ember.View.extend
