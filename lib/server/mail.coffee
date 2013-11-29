@@ -10,7 +10,7 @@ From = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
 
 
 Mail.sendNudge = (user, contacts, cb) ->		# note we're now ignoring the 'contacts' list,
-	return mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
+	return Mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
 
 
 Mail.sendNewNewsletter = (user, cb) ->
