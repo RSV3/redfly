@@ -22,6 +22,10 @@ preHook = (Ember, DS, App, socket) ->
 				configureAdminOnLogin socket		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
+			console.dir App.admin.get('stateManager.currentPath')
+			# sometimes we logout after editing admin cfg, which loses the cio / goog flags
+			# since the only purpose of these flags is to show the login correctly, let's reload.
+			if App.admin.get('stateManager.currentPath') isnt 'rootState.loading' then App.admin.reload()
 
 
 
