@@ -10,8 +10,8 @@ module.exports =
 
 
 	development:
-		#HOST: '127.0.0.1:5000'
-		HOST:	'10.0.0.2:5000'
+		HOST: '127.0.0.1:5000'
+		#HOST:	'10.0.0.2:5000'
 		#AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'
 		INTERCEPT_EMAIL: 'justin@justat.in'
@@ -45,6 +45,11 @@ module.exports =
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
 		NUDGE_DAYS: 'Monday Thursday'
+
+		ADMIN_EMAIL:	['kwan@redstar.com', 'justin@redstar.com']
+		ORGANISATION_DOMAINS: ['redstar.com', 'vinely.com', 'justat.at']
+		AUTH_DOMAINS: ['redstar.com', 'gmail.com', 'r-w.in']
+
 
 	onboarding:
 		# for testing fresh new onboarding of users

@@ -147,10 +147,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				# only gets here if we didn't find contact
 				contact = new models.Contact
 				contact.emails.addToSet mail.recipientEmail
-				if not (name = mail.recipientName)
-					if mail.recipientEmail[0] >= '0' and mail.recipientEmail[0] <= '9'
-						return sift index	# skip emails that start with digit
-					name = mockname
+				if not (name = mail.recipientName) then name = mockname
 				contact.names.addToSet name
 				contact.sortname = name.toLowerCase()
 				contact.knows.addToSet user

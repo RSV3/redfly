@@ -47,6 +47,11 @@
 		h3 Organization Domains
 		.row-fluid
 			.span4
+				h4 allow registration from these domains
+				{{view Ember.TextArea valueBinding="authdomainlist"}}
+			.span1
+			.span4
+				h4 parse emails from these domains:
 				{{view Ember.TextArea valueBinding="domainlist"}}
 
 		h3 Classify Queue Configuration
