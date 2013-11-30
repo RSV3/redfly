@@ -1,0 +1,12 @@
+span
+	| <a {{bindAttr class=":nodeco"}} href="#" {{action hoverpro on="mouseEnter" target="view" bubbles=false}}>{{user.canonicalName}}</a>
+br
+{{#if body}}
+span commented:
+{{else}}
+span suggested:
+{{/if}}
+
+{{#with user}}
+{{partial "hoveruser"}}
+{{/with}}

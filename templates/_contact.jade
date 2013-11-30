@@ -179,9 +179,7 @@
 			h5.knows-header People who know {{nickname}}
 			ul.knows-list
 				| {{#each knowsSome}}
-				li
-					+linkTo('profile this')
-						| {{canonicalName}}
+				{{view App.ContactuserView}}
 				| {{/each}}
 
 

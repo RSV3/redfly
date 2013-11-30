@@ -1,17 +1,8 @@
 .row-fluid.response
-	.span1
-		+linkTo('profile user')
-			| <img class=".span11 img-rounded" {{bindAttr src="user.canonicalPicture"}}>
-	.span2.suggesttext
-		strong
-			+linkTo('profile user') {{user.canonicalName}}
+	.span2
+		{{view view.respUserView}}
+	.span10.suggestions
 		br
-		| {{#if body}}
-		span commented:
-		| {{else}}
-		span suggested:
-		| {{/if}}
-	.span9.suggestions
 		| {{#if body}}
 		{{body}}
 		| {{else}}
