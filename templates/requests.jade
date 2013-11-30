@@ -22,26 +22,7 @@
 .row-fluid.request
 	.row-fluid
 		.span9(action='toggle target="view"')
-			div.badgecount
-				| {{#if count}}
-				span.badge.badge-success {{count}}
-				| {{else}}
-				span.badge.badge-important {{count}}
-				| {{/if}}
-				br
-				| {{#if count}}
-				a.nodeco(href='#')
-					| {{#if view.expanded}}
-					span &nbsp; &nbsp;
-					i.icon-caret-up.icon-large
-					| {{else}}
-					span &nbsp; &nbsp;
-					i.icon-caret-down.icon-large
-					| {{/if}}
-				| {{/if}}
-			span
-				+linkTo('profile user') {{user.canonicalName}}
-				strong :&nbsp; &nbsp;
+			{{view view.reqUserView}}
 			{{text}}
 		.span3
 			.row-fluid

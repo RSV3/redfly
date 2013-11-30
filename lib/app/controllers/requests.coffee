@@ -147,6 +147,11 @@ module.exports = (Ember, App, socket) ->
 				self.get('response').pushObject suggestion
 				App.store.commit()
 
+	App.RequserView = App.HoveruserView.extend
+		template: require '../../../templates/components/requser'
+
+	App.RespuserView = App.HoveruserView.extend
+		template: require '../../../templates/components/respuser'
 
 	App.RequestView = Ember.View.extend
 		expanded: false
@@ -161,7 +166,7 @@ module.exports = (Ember, App, socket) ->
 		saveSuggestions: (->
 			not @get('selections').length
 		).property 'selections.@each'
-		expand: (->
+		showold: (->
 			if @get('addingcontacts') or @get('addingnote') then return
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
@@ -196,6 +201,7 @@ module.exports = (Ember, App, socket) ->
 			@closecontacts()
 			@set 'expanded', true
 		)
+		reqUserView: App.RequserView.extend()
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
 			placeholder: 'Leave a comment'
@@ -224,6 +230,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'user'
 
 	App.ResponseView = Ember.View.extend
+		respUserView: App.RespuserView.extend()
 		select: (->
 		)
 

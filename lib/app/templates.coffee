@@ -7,6 +7,7 @@ module.exports = (Ember) ->
 
 	templates._contact = require '../../templates/_contact'
 	templates._response = require '../../templates/_response'
+	templates._hoveruser = require '../../templates/components/_hoveruser'
 
 	templates.index = require '../../templates/home'
 	templates.classify = require '../../templates/classify'

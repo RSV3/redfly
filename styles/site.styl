@@ -265,6 +265,22 @@ body
 			a
 				border	none
 
+.hoveruser
+	display	inline
+	.expandthis
+		width	25%
+		position	absolute
+		z-index	99
+		.expanded
+			padding	1em
+			background-color	#eee
+			border-radius baseBorderRadius
+			box-shadow	5px 5px 3px #555
+			img.img-polaroid
+				margin-bottom	0.5em
+			.insetalittle
+				margin	1em
+
 .requests
 	hr
 		margin	0.5em 0
@@ -284,7 +300,14 @@ body
 			color	#069
 			margin-top	0.5em
 			display	inline-block
+
 .request
+	.hoveruser
+		.expandthis
+			margin-left	0
+			margin-top	-3em
+	.requser.expanded
+		display	inline-block
 	i.fright
 		float right
 	.btn.span11
@@ -322,6 +345,10 @@ body
 				.imgpad
 					padding-bottom	1em
 
+.request.thisReq
+	.hoveruser
+		.expandthis
+			width	33%
 
 .results
 	.sort
@@ -688,6 +715,11 @@ body
 .knows-header
 	margin-bottom 0px
 
+.contact
+	.hoveruser
+		.expandthis
+			right	0
+			margin-top	-3em
 
 .contacts
 	.waitingformorecontacts
