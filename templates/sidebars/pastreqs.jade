@@ -28,7 +28,7 @@ ul.nav.nav-tabs
 .tab-content
 	.tab-pane.minerex
 		| {{#each my_reqs itemViewClass="App.RequestView" itemController="request"}}
-		div(bindAttr='class=":span12 :oldrequests hoverable"', action='expand this target="view"')
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
 			| {{#if urgent}}
 			i.text-error.icon-flag
 			&nbsp;&nbsp;
@@ -51,7 +51,7 @@ ul.nav.nav-tabs
 
 	.tab-pane.active.othersrex
 		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
-		div(bindAttr='class=":span12 :oldrequests hoverable"', action='expand this target="view"')
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
 			| {{#if urgent}}
 			i.text-error.icon-flag
 			&nbsp;&nbsp;
