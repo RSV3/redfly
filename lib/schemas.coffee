@@ -11,7 +11,8 @@ schemas = []
 schemas.push Schema 'Admin',
 	_id: type: Number			# special case: there is only one admin record, so let's call it _id:1
 	domains: [ type: String ]	# list of domains served by this instance
-	authdomains: [ type: String ]	# list of domains users can log in with (auth) in addition to domains
+	authdomains: [ type: String ]	# list of domains users can auth with, in addition to domains
+	whitelistemails: [ type: String ]	# list of emails that can log auth in addition to domains, authdomains
 	blacklistdomains: [ type: String ]	# list of domains blacklisted from the service
 	blacklistemails: [ type: String ]	# list of emails blacklisted from the service
 	blacklistnames: [ type: String ]	# list of names blacklisted from the service
