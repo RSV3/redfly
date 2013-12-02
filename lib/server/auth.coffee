@@ -30,7 +30,7 @@ everyauth.google.configure
 		promise = @Promise()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)-> _s.endsWith email, "@#{domain}")
+			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)-> _s.endsWith email, "@#{domain}") and not _.contains(admin.whitelistemails, email)
 				return promise.fulfill null
 			models.User.findOne email: email, (err, user) ->
 				throw err if err

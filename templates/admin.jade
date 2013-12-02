@@ -47,12 +47,14 @@
 		h3 Organization Domains
 		.row-fluid
 			.span4
-				h4 allow registration from these domains
-				{{view Ember.TextArea valueBinding="authdomainlist"}}
-			.span1
-			.span4
-				h4 parse emails from these domains:
+				h5 parse emails sent from these domains:
 				{{view Ember.TextArea valueBinding="domainlist"}}
+			.span4
+				h5 authorise any user from these domains:
+				{{view Ember.TextArea valueBinding="authdomainlist"}}
+			.span4
+				h5 authorise these specific email addresses:
+				{{view Ember.TextArea valueBinding="emailwhitelist"}}
 
 		h3 Classify Queue Configuration
 			.row-fluid.checkadmin
@@ -78,13 +80,13 @@
 		h3 Blacklists
 		.row-fluid
 			.span4
-				.h4 Domains
+				h5 Domains
 				{{view Ember.TextArea valueBinding="domainblacklist"}}
 			.span4
-				.h4 Names
+				h5 Names
 				{{view Ember.TextArea valueBinding="nameblacklist"}}
 			.span4
-				.h4 Emails
+				h5 Emails
 				{{view Ember.TextArea valueBinding="emailblacklist"}}
 
 
