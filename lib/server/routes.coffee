@@ -8,7 +8,7 @@ module.exports = (app, route) ->
 	Models = require './models'
 	Mailer = require './mail'
 	Mboxer = require './mboxer'
-
+	Search = require './search'
 	Elastic = require './elastic'
 
 
@@ -24,8 +24,6 @@ module.exports = (app, route) ->
 					doc._doc.indtags = _.map _.filter(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
 					doc._doc.orgtags = _.map _.reject(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
 				cb doc
-
-	searchPagePageSize = 10
 
 	route 'db', (data, io, session, fn)->
 
@@ -241,7 +239,6 @@ module.exports = (app, route) ->
 			requests: 0
 			responses: 0
 			org: []
-		lastWeek = moment().subtract('days', 7).toDate()
 		Logic.recentOrgs (err, orgs)->
 			if not err then dash.org = orgs
 			Logic.summaryTags (err, c)->
@@ -265,8 +262,7 @@ module.exports = (app, route) ->
 		last30days = $gt:moment().subtract('days', 30).toDate()
 		query = added:last30days
 		Models.Contact.count query, (err, totes)->
-			if not err then stats.totalThisMonth = totes
-			query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
+			if not err then stats.totalThisMonth = totes query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
 			Models.Contact.count query, (err, totes)->
 				if not err then stats.autoThisMonth = totes
 				fn stats
@@ -372,98 +368,11 @@ module.exports = (app, route) ->
 				if ids?.length then return cb _.pluck(tags, '_id')[0..5]
 				considerTags tags, cb
 
-
-	# refactored search:
-	# optional limit for the dynamic searchbox,
-	# and a final callback where we can decide what attributes to package for returning
-	doSearch = (fn, data, session, limit=0) ->
-		query = data.filter or data.query or ''
-		compound = _.compact query.split ':'
-		if not compound.length then terms=''
-		else terms = compound[compound.length-1]
-
-		if not limit and (query.length or data.moreConditions)
-			Models.Admin.update {_id:1}, $inc: 'searchCnt': 1, (err)->
-				if err then console.dir err
-
-		availableTypes = ['name', 'email', 'company', 'tag', 'note']
-		fields = []		# this array maps the array of results to their type
-		if compound.length is 1						# type specified, eg tag:slacker
-			for type in availableTypes
-				fields.push type
-		else if compound[0] is 'contact'
-			fields = ['name', 'email']
-		else fields = [compound[0]]
-
-		filters = []
-		if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
-		if data.moreConditions?.poor
-			filters.push terms:addedBy:[session.user]
-			filters.push missing:field:"indtags"
-			filters.push missing:field:"orgtags"
-		if data.knows?.length then filters.push terms:knows:data.knows
-		if data.industry?.length 
-			thisf = []
-			for tag in data.industry
-				thisf.push term:"indtags.body.raw":tag,
-			if data.indAND then filters.push "and":thisf
-			else filters.push "or":thisf
-		if data.organisation?.length 
-			thisf = []
-			for tag in data.organisation
-				thisf.push term:"orgtags.body.raw":tag
-			if data.orgAND then filters.push "and":thisf
-			else filters.push "or":thisf
-
-		sort = {}
-		if data.sort
-			key = data.sort
-			if key[0] is '-'
-				key=key.substr 1
-				dir = 'desc'
-			else dir = 'asc'
-			if key is "names"
-				key = "sortname"
-				sort[key]=dir
-				delete data.sort
-			else if key is 'added'
-				sort[key]=dir
-				delete data.sort
-			else
-				key="#{key}.value"
-				sort[key]=dir
-		else if not query.length
-			sort.added = 'desc'
-			filters.push exists:field:"classified"
-
-		if not limit
-			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
-			if data.page then options.skip = data.page*searchPagePageSize
-		else options = {limit:limit, skip:0, facets: false, highlights: true}
-		Elastic.find fields, terms, filters, sort, options, (err, totes, docs, facets) ->
-			throw err if err
-			resultsObj = query:query
-			if docs?.length
-				if facets then resultsObj.facets = facets
-				if docs[0].field
-					resultsObj.response = {}
-					for d in docs
-						if String(d._id) isnt data.moreConditions?._id?.$ne
-							if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
-							else thefield = d.field
-							if not resultsObj[thefield] then resultsObj[thefield] = []
-							resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
-				else
-					resultsObj.response = _.pluck docs, '_id'
-					resultsObj.totalCount = resultsObj.filteredCount = totes
-			return fn resultsObj
-
-
 	route 'fullSearch', (data, io, session, fn) ->
-		doSearch fn, data, session
+		Search fn, data, session
 
 	route 'search', (data, io, session, fn)->
-		doSearch fn, data, session, 19
+		Search fn, data, session, 19
 
 
 	route 'verifyUniqueness', (data, fn) ->
@@ -726,6 +635,7 @@ module.exports = (app, route) ->
 					console.dir mod
 		fn()
 
+	###
 	route 'recent', (fn)->
 		Models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
 			throw err if err
@@ -733,6 +643,7 @@ module.exports = (app, route) ->
 			console.log "recent"
 			console.dir recent
 			fn recent
+	###
 
 	route 'leaderboard', (data, io, session, fn)->
 		Models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
@@ -741,7 +652,7 @@ module.exports = (app, route) ->
 			users = _.map _.sortBy(users, (u) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
-			doSearch (results)->
+			Search (results)->
 				fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse(), results?.totalCount
 			, {moreConditions:poor:true}, session
 
