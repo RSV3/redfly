@@ -241,12 +241,15 @@ dailyRoutines ->
 	only_daily = (process.argv[3] is 'daily')
 	dont_do_parse = false
 
-	Models.User.find (err, users) ->
+	query = {}
+	if process.argv.length is 5 then query.email = process.argv[4]
+
+	Models.User.find query, (err, users) ->
 		throw err if err
 
 		maybeResetRank not succinct_manual, users, ->
 
-			Models.User.find (err, users) ->
+			Models.User.find query, (err, users) ->
 				throw err if err
 				console.log "nudge: auto saving old queue items"
 				eachDoc users, eachSave, ()->
@@ -262,14 +265,15 @@ dailyRoutines ->
 							# return services.close()
 							dont_do_parse = true
 
-					Models.User.find (err, users)->
+					Models.User.find query, (err, users)->
 						throw err if err
 						console.log "nudge: scanning linkedin"
 						eachDoc users, eachLink, ()->
 							if dont_do_parse then return services.close()
-							Models.User.find (err, users) ->
+							Models.User.find query, (err, users) ->
 								throw err if err
 								console.log "nudge: parsing emails"
+								if query.email then succinct_manual = false		# always send newsletter if just one user
 								eachDoc users, eachParse, ()->
 									console.log "nudge: DONE parsed emails"
 									return services.close()

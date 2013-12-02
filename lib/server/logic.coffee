@@ -2,32 +2,34 @@ moment = require 'moment'
 _ = require 'underscore'
 
 Models = require './models'
+Search = require './search'
 
-lastWeek = moment().subtract('days', 107).toDate()
+lastWeek = moment().subtract('days', 7).toDate()
 lastMonth = moment().subtract('months', 1)
 
 
 recentConts = (cb)->
-	Models.Contact.find({added:{$exists:true}}).sort(added:-1).limit(12).execFind (err, contacts)->
-		if err then return cb err, contacts
+	Search (results)->
 		rcs = []
-		_.each contacts, (contact)->
-			pos = ""
-			if contact.position
-				pos += "#{contact.position} "
-			if contact.company
-				pos += "at #{contact.company}"
-			if not (name = _.first(contact.names))
-				email = _.first(contact.emails)
-				splitted = email.split '@'
-				domain = _.first _.last(splitted).split('.')
-				name = _.first(splitted) + ' [' + domain + ']'
-			rcs.push
-				name: name
-				picture: contact.picture or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
-				position: pos
-				link: '/contact/'+contact._id
-		cb null, rcs
+		Models.Contact.find(_id: $in: results.response).execFind (err, contacts)->
+			_.each contacts, (contact)->
+				pos = ""
+				if contact.position
+					pos += "#{contact.position} "
+				if contact.company
+					pos += "at #{contact.company}"
+				if not (name = _.first(contact.names))
+					email = _.first(contact.emails)
+					splitted = email.split '@'
+					domain = _.first _.last(splitted).split('.')
+					name = _.first(splitted) + ' [' + domain + ']'
+				rcs.push
+					name: name
+					picture: contact.picture or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
+					position: pos
+					link: '/contact/'+contact._id
+			cb null, rcs
+	, {}
 
 
 recentOrgs = (cb)->
