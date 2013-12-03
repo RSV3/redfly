@@ -2,9 +2,14 @@
 _ = require 'underscore'
 
 
-configureAdminOnLogin = (socket)->
+configureAdminOnLogin = (App, socket)->
 	if not (cats = App.get 'admin.orgtagcats') then return		# wait for object to load
 	if not (user = App.get 'user.id') then return				# need both admin and user loaded to be ready
+	if App.user.get('stateManager.currentPath') is 'rootState.loading'
+		return App.user.on 'didLoad', ->
+			configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
+	App.user.set 'lastLogin', new Date()
+	App.store.commit()
 	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
 		App.admin.set "orgtagcat#{i+1}", t
 	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
@@ -19,7 +24,7 @@ preHook = (Ember, DS, App, socket) ->
 		login: (id) ->
 			App.set 'user', App.User.find id
 			App.user.on 'didLoad', ->
-				configureAdminOnLogin socket		# this needs to run after admin is loaded AND user logged in
+				configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
 			console.dir App.admin.get('stateManager.currentPath')
@@ -44,7 +49,7 @@ postHook = (Ember, DS, App, socket) ->
 	App.admin = Ember.ObjectProxy.create()
 	App.set 'admin', App.Admin.find 1
 	App.admin.on 'didLoad', ->
-		configureAdminOnLogin socket		# this needs to run after admin is loaded AND user logged in
+		configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
 	socket.emit 'session', (session) ->
 		if id = session.user
 			App.auth.login id

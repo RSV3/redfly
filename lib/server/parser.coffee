@@ -3,27 +3,27 @@
 #
 module.exports = (user, notifications, cb, succinct_manual) ->
 	_ = require 'underscore'
-	mailer = require './mail'
-	models = require './models'
-	linkLater = require('./linklater').linkLater;
-	addTags = require './addtags'
-	getFC = require './fullcontact'
-	mboxer = require './mboxer'
+	Mailer = require './mail'
+	Models = require './models'
+	LinkLater = require('./linklater').linkLater;
+	AddTags = require './addtags'
+	GetFC = require './fullcontact'
+	Mboxer = require './mboxer'
 
 	_saveMail = (user, contact, mail, done) ->
 		newm = {sender:user, recipient:contact, subject:mail.subject, sent:mail.sent}
-		models.Mail.findOne newm, (err, rec) ->
+		Models.Mail.findOne newm, (err, rec) ->
 			if not err and rec
 				console.log "not going to store duplicate mail"
 				console.dir rec
 				return done()
-			models.Mail.create newm, (err) ->
+			Models.Mail.create newm, (err) ->
 				if err
 					console.log "Error saving Mail record"
 					console.dir err
 					console.dir newm
 					return done()
-				models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
+				Models.Classify.findOne {user:user, contact:contact, saved:$exists:true}, (err, classify)->
 					if err
 						console.log "Error finding classify for #{user}, #{contact}"
 						console.dir err
@@ -38,20 +38,20 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 
 	_saveFullContact = (contact, fullDeets) ->
 		fullDeets.contact = contact
-		models.FullContact.create fullDeets, (err)->
+		Models.FullContact.create fullDeets, (err)->
 			if err
 				console.log "Error saving FullContact record"
 				console.dir err
 				console.dir fullDeets
 
 	parse = (user, notifications, cb) ->
-		mboxer.connect user, (err, server)->
+		Mboxer.connect user, (err, server)->
 			if err		# Just log an error, send the newsletter and quit if the user can't be parsed.
 				console.dir err
 				if succinct_manual then return cb null
-				return mailer.sendNewsletter user, cb
+				return Mailer.sendNewsletter user, cb
 
-			mboxer.search server, user, (err, results) ->
+			Mboxer.search server, user, (err, results) ->
 				throw err if err
 				mails = []
 				notifications?.foundTotal? results.length
@@ -61,7 +61,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				if results.length is 0
 					# Return statement is important, simply invoking the callback doesn't stop code from excuting in the current scope.
 					return finish()
-				mboxer.eachMsg server, user, results, finish, (newmails)->
+				Mboxer.eachMsg server, user, results, finish, (newmails)->
 					notifications?.completedEmail?()
 					mails = mails.concat newmails
 
@@ -85,9 +85,9 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 					console.log "Error saving lastParsed on #{user.name}"
 					console.dir err
 				if newContacts.length isnt 0
-					mailer.sendNudge user, newContacts[...10], (err)-> cb err
+					Mailer.sendNudge user, newContacts[...10], (err)-> cb err
 				else if not succinct_manual
-					mailer.sendNewsletter user, (err)-> cb err
+					Mailer.sendNewsletter user, (err)-> cb err
 				else cb null
 
 		sift = (index = 0) ->
@@ -110,7 +110,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			notifications?.considerContact?()
 			# Find an existing contact with one of the same emails 
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
-			models.Contact.find {emails: mail.recipientEmail}, (err, contacts) ->
+			Models.Contact.find {emails: mail.recipientEmail}, (err, contacts) ->
 
 				throw err if err
 				if not contacts?.length then contact = null
@@ -145,7 +145,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						sift index
 
 				# only gets here if we didn't find contact
-				contact = new models.Contact
+				contact = new Models.Contact
 				contact.emails.addToSet mail.recipientEmail
 				if not (name = mail.recipientName) then name = mockname
 				contact.names.addToSet name
@@ -168,7 +168,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				# or atleast we used to. but that makes it take too long, so ...
 				#if notifications then
 
-				return linkLater user, contact, ()->
+				return LinkLater user, contact, ()->
 					contact.save (err) ->		# new contact has been populated with any old data from LI
 						if err
 							console.log "Error saving Contact data for new user"
@@ -178,7 +178,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						_saveMail user, contact, mail, ->
 							sift index
 							# then, sometime in the not too distant future, go and slowly get the FC data
-							getFC contact, (fullDeets) ->
+							GetFC contact, (fullDeets) ->
 								if fullDeets then contact.save (err) ->		# if we get data, save it
 									if err
 										console.log "Error saving Contact with FC data in initial parse"
@@ -186,13 +186,13 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 										console.dir contact
 									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
-										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
+										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 
 				# only gets here iff no notifications (ie. this is part of an out of session batch task)
 				###
 
-				getFC contact, (fullDeets) ->
-					linkLater user, contact, ()->
+				GetFC contact, (fullDeets) ->
+					LinkLater user, contact, ()->
 						contact.save (err) ->		# new contact, populated with any data from FC and LI
 							if err
 								console.log "Error saving Contact with FullContact data"
@@ -203,7 +203,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 								if fullDeets
 									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
-										addTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
+										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
 							sift index
 				###
 

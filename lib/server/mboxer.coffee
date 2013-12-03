@@ -26,6 +26,7 @@ contextConnect = (user, blacklist, domains, cb)->
 			blacklist:blacklist
 			domains:domains			# return CIO server as attribute on mbox session
 
+
 imapConnect = (user, blacklist, domains, cb)->
 	generator = require('xoauth2').createXOAuth2Generator
 		user: user.email
@@ -185,7 +186,7 @@ cIOcreate = (data, cb)->
 			throw err if err
 			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)->
 				return _s.endsWith data.email, "@#{domain}"
-			)
+			) and not _.contains(admin.whitelistemails, data.email)
 				console.log "ERR: login email #{data.email} doesn't match domains"
 				console.dir admin.authdomains
 				return cb err:'email'
