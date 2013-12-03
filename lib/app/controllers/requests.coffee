@@ -115,6 +115,7 @@ module.exports = (Ember, App, socket) ->
 						@get('controller').reloadFirstPage()
 
 	App.RequestController = Ember.ObjectController.extend
+		hovering: null
 		count: (->
 			@get('response.length') or 0
 		).property 'response.@each'
@@ -175,6 +176,7 @@ module.exports = (Ember, App, socket) ->
 		)
 		toggle: (->
 			if @get('addingcontacts') or @get('addingnote') then return
+			if not @get('controller.response.length') then return
 			@set 'expanded', not @get 'expanded'
 		)
 		closecontacts: (->

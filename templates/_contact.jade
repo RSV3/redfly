@@ -178,9 +178,9 @@
 		.row-fluid
 			h5.knows-header People who know {{nickname}}
 			ul.knows-list
-				| {{#each knowsSome}}
+				{{#each knowsSome}}
 				{{view App.ContactuserView}}
-				| {{/each}}
+				{{/each}}
 
 
 .row-fluid
@@ -207,11 +207,13 @@
 			+linkTo('profile view.content.author class="pull-left"')
 				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			// TO-DO do nl2br with bindings
-			.media-body
+			.media-body.note
 				p {{{view.content.body}}}
 				small.muted
-					+linkTo('profile view.content.author') {{view.content.author.canonicalName}}
+					{{#with view.content.author}}
+					{{view App.ContactuserView}}
 					span  | {{view.naturaldate}}
+					{{/with}}
 				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
 			//- | {{else}}
 			//- span {{emptyNotesText}}

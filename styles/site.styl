@@ -258,8 +258,22 @@ body
 	.oldrequests.hoverable:hover
 		background-color	#eee
 	.modal
-		width	800px
+		top	2em
+		width	66%
+		height	600px
 		margin-left	-400px
+		.modal-header
+			height	150px
+		.modal-body
+			overflow-x	visible
+			height	400px
+		.hoveruser
+			.expandthis
+				position	fixed
+				left	1em
+				width	25%
+				margin-top 0
+				top	3em
 	.pager
 		li
 			a
@@ -305,7 +319,7 @@ body
 	.hoveruser
 		.expandthis
 			margin-left	0
-			margin-top	-3em
+			margin-top	-13em
 	.requser.expanded
 		display	inline-block
 	i.fright
@@ -345,10 +359,6 @@ body
 				.imgpad
 					padding-bottom	1em
 
-.request.thisReq
-	.hoveruser
-		.expandthis
-			width	33%
 
 .results
 	.sort
@@ -707,6 +717,18 @@ body
 		.search .dropdown-menu
 			max-width 528px
 			margin-top 40px // TO-DO hackily hackface mchackerson
+	.note
+		.hoveruser
+			.expandthis
+				margin-top	-8em
+				margin-left	-16em
+			li
+				display	inline
+	.hoveruser
+		.expandthis
+			margin-left	-23em
+			margin-top	-3em
+
 
 // For _contact partial
 //ul.knows-list
@@ -715,11 +737,6 @@ body
 .knows-header
 	margin-bottom 0px
 
-.contact
-	.hoveruser
-		.expandthis
-			right	0
-			margin-top	-3em
 
 .contacts
 	.waitingformorecontacts
