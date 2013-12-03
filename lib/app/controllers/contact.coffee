@@ -5,6 +5,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 
+		hovering: null
 		allowEdits: (->
 			if @get('isKnown') then return true
 			a = App.Admin.find 1
