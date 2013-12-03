@@ -12,11 +12,11 @@ div.badgecount
 		i.icon-caret-up.icon-large
 		{{else}}
 		span &nbsp; &nbsp;
-		i.icon-caret-down.icon-large
+		i.icon-caret-right.icon-large
 		{{/if}}
 	{{/if}}
 span
-	| <a {{bindAttr class=":nodeco"}} href="#" {{action hoverpro on="mouseEnter" target="view" bubbles=false}}>{{user.canonicalName}}</a>
+	a.hoverme.nodeco(href="#") {{user.canonicalName}}
 	strong :&nbsp; &nbsp;
 
 {{#with user}}
