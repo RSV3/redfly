@@ -81,6 +81,9 @@ module.exports = (Ember, App, socket) ->
 		nameblacklist: (->
 			@get('blacklistnames')?.join '\n'
 		).property 'blacklistnames'
+		emailwhitelist: (->
+			@get('whitelistemails')?.join '\n'
+		).property 'whitelistemails'
 		emailblacklist: (->
 			@get('blacklistemails')?.join '\n'
 		).property 'blacklistemails'
@@ -99,6 +102,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				
 				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				@set 'whitelistemails', _.filter _.map(@get('emailwhitelist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				App.store.commit()
 		)
