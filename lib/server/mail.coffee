@@ -6,9 +6,6 @@ Mail = module.exports = require('phrenetic/lib/server/mail') projectRoot
 Logic = require './logic'
 
 
-From = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
-
-
 Mail.sendNudge = (user, contacts, cb) ->		# note we're now ignoring the 'contacts' list,
 	return Mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
 
@@ -45,7 +42,7 @@ Mail.sendNewNewsletter = (user, cb) ->
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
-			from: From
+			from: "Come Classify to Fly High with RedFly <#{process.env.ORGANISATION_EMAIL}>"
 			subject: mySubj
 			numContacts: numContacts
 			numMyContacts: numMyContacts
@@ -97,7 +94,7 @@ Mail.sendRequests = (user, uRequests, oRequests, cb) ->
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
-			from: From
+			from: "RedFly Request <#{process.env.ORGANISATION_EMAIL}>"
 			subject: "Recent requests for contacts"
 			headstrip: "help colleagues make useful connections"
 			urgentRequests: uRequests
@@ -116,7 +113,7 @@ Mail.sendResponses = (user, requests, cb) ->
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
-			from: From
+			from: "RedFly Response <#{process.env.ORGANISATION_EMAIL}>"
 			subject: "Recent responses to your request for contacts"
 			headstrip: "your colleagues suggest these useful connections"
 			id: user._id

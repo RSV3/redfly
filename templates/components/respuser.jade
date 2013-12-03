@@ -1,5 +1,5 @@
 span
-	| <a {{bindAttr class=":nodeco"}} href="#" {{action hoverpro on="mouseEnter" target="view" bubbles=false}}>{{user.canonicalName}}</a>
+	a.hoverme.nodeco(href="#") {{user.canonicalName}}
 br
 {{#if body}}
 span commented:

@@ -30,9 +30,11 @@ block content
 								if (k%4 === 0)
 									tr
 								td(style='valign:bottom; font-size:80%; width:25%')
-									if (contact.picture)
-										a(href='#{path('/contact/' + contact._id)}')
+									a(href='#{path('/contact/' + contact._id)}')
+										if (contact.picture)
 											img(src='#{contact.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+										else
+											img(src='http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
 									a(href='#{path('/contact/' + contact._id)}') #{contact.names[0]}
 
 	div(style='clear:both;')

@@ -1,22 +1,38 @@
 {{#if view.expanded}}
 .span3.expandthis
-	.expanded.span10(action='hoverpro on="mouseLeave" target="view" bubbles=false')
+	.expanded.span10
 		| <img class="span12 img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
 		.insetalittle
 			+linkTo('profile this class="nodeco"') {{canonicalName}}
 			br
 			span {{email}}
 			br
+			{{#if fullCount}}
 			strong {{fullCount}} contacts added
+			{{/if}}
 		hr
 		i
 			{{#if lastRank}}
 			span Ranked &#x23;{{lastRank}}&nbsp;
 			{{/if}}
-			span with {{contactCount}} contacts
+			{{#if contactCount}}
+			span with {{contactCount}} contacts&nbsp;
 			{{#if dataCount}}
-			br
-			span and {{dataCount}} data points
+			span and&nbsp;
 			{{/if}}
-			span &nbsp;this month
+			{{else}}
+			{{#if dataCount}}
+			span with&nbsp;
+			{{/if}}
+			{{/if}}
+			{{#if dataCount}}
+			span {{dataCount}} data points&nbsp;
+			{{/if}}
+			{{#if dataCount}}
+			span this month
+			{{else}}
+			{{#if contactCount}}
+			span this month
+			{{/if}}
+			{{/if}}
 {{/if}}
