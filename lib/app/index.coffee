@@ -3,8 +3,8 @@ _ = require 'underscore'
 
 
 configureAdminOnLogin = (socket)->
-	if not (cats = App.admin.get 'orgtagcats') then return		# wait for object to load
-	if not (user = App.user.get 'id') then return				# need both admin and user loaded to be ready
+	if not (cats = App.get 'admin.orgtagcats') then return		# wait for object to load
+	if not (user = App.get 'user.id') then return				# need both admin and user loaded to be ready
 	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
 		App.admin.set "orgtagcat#{i+1}", t
 	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
@@ -22,6 +22,7 @@ preHook = (Ember, DS, App, socket) ->
 				configureAdminOnLogin socket		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
+			if App.admin.get('stateManager.currentPath') isnt 'rootState.loading' then App.admin.reload()
 
 
 
