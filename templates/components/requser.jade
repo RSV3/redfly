@@ -6,12 +6,10 @@ div.badgecount
 	{{/if}}
 	br
 	{{#if count}}
-	a.nodeco(href='#')
+	a.expandicon.nodeco(href='#')
 		{{#if view.parentView.expanded}}
-		span &nbsp; &nbsp;
 		i.icon-caret-up.icon-large
 		{{else}}
-		span &nbsp; &nbsp;
 		i.icon-caret-right.icon-large
 		{{/if}}
 	{{/if}}
