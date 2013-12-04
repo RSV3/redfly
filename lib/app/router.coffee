@@ -80,7 +80,7 @@ module.exports = (Ember, App, socket) ->
 		events:
 			logout: (context) ->
 				socket.emit 'logout', =>
-					App.auth.logout()
+					App.auth.logOnOut()
 					@transitionTo 'index'
 
 	App.ProfileRoute = Ember.Route.extend

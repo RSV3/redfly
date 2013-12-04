@@ -84,41 +84,33 @@ Mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 	, cb
 
 
-Mail.sendRequests = (user, uRequests, oRequests, cb) ->
+Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 	if not uRequests.length and not oRequests.length then return cb()
-	require('step') ->
-		Logic.countConts @parallel()					# total in the system
-		return undefined
-	, (err, numContacts)->
-		templateObj = 
-			org: process.env.ORGANISATION_TITLE
-			title: "Hi #{user.name}!"
-			to: user.email
-			from: "RedFly Request <#{process.env.ORGANISATION_EMAIL}>"
-			subject: "Recent requests for contacts"
-			headstrip: "help colleagues make useful connections"
-			urgentRequests: uRequests
-			otherRequests: oRequests
-			numContacts: numContacts
-		Mail.sendTemplate 'requests', templateObj, cb
+	templateObj = 
+		org: process.env.ORGANISATION_TITLE
+		title: "Hi #{user.name}!"
+		to: user.email
+		from: "RedFly Request <#{process.env.ORGANISATION_EMAIL}>"
+		subject: "Recent requests for contacts"
+		headstrip: "help colleagues make useful connections"
+		urgentRequests: uRequests
+		otherRequests: oRequests
+		numContacts: numContacts
+	Mail.sendTemplate 'requests', templateObj, cb
 
 
-Mail.sendResponses = (user, requests, cb) ->
+Mail.sendResponses = (numContacts, user, requests, cb) ->
 	if not requests.length then return cb()
-	require('step') ->
-		Logic.countConts @parallel()					# total in the system
-		return undefined
-	, (err, numContacts)->
-		templateObj = 
-			org: process.env.ORGANISATION_TITLE
-			title: "Hi #{user.name}!"
-			to: user.email
-			from: "RedFly Response <#{process.env.ORGANISATION_EMAIL}>"
-			subject: "Recent responses to your request for contacts"
-			headstrip: "your colleagues suggest these useful connections"
-			id: user._id
-			requests: requests
-			numContacts: numContacts
-		Mail.sendTemplate 'responses', templateObj, cb
+	templateObj = 
+		org: process.env.ORGANISATION_TITLE
+		title: "Hi #{user.name}!"
+		to: user.email
+		from: "RedFly Response <#{process.env.ORGANISATION_EMAIL}>"
+		subject: "Recent responses to your request for contacts"
+		headstrip: "your colleagues suggest these useful connections"
+		id: user._id
+		requests: requests
+		numContacts: numContacts
+	Mail.sendTemplate 'responses', templateObj, cb
 
 

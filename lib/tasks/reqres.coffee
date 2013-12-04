@@ -6,6 +6,7 @@ services = require 'phrenetic/lib/server/services'
 
 models = require '../server/models'
 Mail = require '../server/mail'
+Logic = require '../server/logic'
 
 
 today = moment().toDate()		# get the stamp immediately. all data after this date will be picked up next time.
@@ -86,8 +87,16 @@ eachUserResponse = (users, reqs, operate, fcb) ->
 	operate u, userex, ()->
 		eachUserResponse users, reqs, operate, fcb
 
+# returns a curried function that injects the count in front of the args list any time operate is called
+Inject = (contactCnt, operate)->
+	->
+		args = [contactCnt]
+		for arg in arguments
+			args.push arg
+		operate.apply this, args
 
-batchNewReqs = (cb)->
+
+batchNewReqs = (contCnt, cb)->
 	console.log "broadcasting requests..."
 	# grab the most recent request to be sent out by this routine,
 	# to make sure we don't bombard users with new requests every 5 mins
@@ -110,7 +119,7 @@ batchNewReqs = (cb)->
 					updateReqs oReqs, (oReqs)->				# convert user, response ids to objects
 						models.User.find (err, users) ->	# send the list of new requests to ever user
 							throw err if err
-							eachUserRequest users, uReqs, oReqs, Mail.sendRequests, ()->
+							eachUserRequest users, uReqs, oReqs, Inject(contCnt, Mail.sendRequests), ()->
 								models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
 									if err
 										console.log "ERROR: updating requests as sent"
@@ -122,7 +131,7 @@ batchNewReqs = (cb)->
 										return cb()
 
 
-sendNewResps = (cb)->
+sendNewResps = (contCnt, cb)->
 	console.log "sending responses..."
 	models.Request.find {expiry:{$gt:today}, updated:{$exists:true, $ne:null}}, (err, reqs)->
 		if err
@@ -134,7 +143,7 @@ sendNewResps = (cb)->
 		models.User.find {_id:$in:users}, (err, users) ->	# send lists of new responses to the user
 			updateReqs reqs, (reqs)->						# convert user, response ids to objects
 				updateResps reqs, (reqs)->					# and similarly populate contact, user on each resp.
-					eachUserResponse users, reqs, Mail.sendResponses, ()->
+					eachUserResponse users, reqs, (Inject contCnt, Mail.sendResponses), ()->
 						models.Request.update {expiry:{$gt:today}, updated:{$exists:true, $ne:null}}, {updated:null, updatesent:today}, {multi:true}, (err)->
 							if err
 								console.log "ERROR: updating requests as sent"
@@ -142,8 +151,11 @@ sendNewResps = (cb)->
 							return cb()
 
 
-batchNewReqs ->			# first send new requests to everyone, 
-	sendNewResps ->		# then send new responses to those who need them
-		services.close()
-		process.exit()
+# calculate contacts count once, because every email will need to display it
+Logic.countConts (err, contCnt)->
+	if err then contCnt=0
+	batchNewReqs contCnt, ->			# first send new requests to everyone, 
+		sendNewResps contCnt, ->		# then send new responses to those who need them
+			services.close()
+			process.exit()
 
