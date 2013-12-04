@@ -40,8 +40,7 @@ everyauth.google.configure
 					user.email = email
 					user.name = googleUserMetadata.name
 					if googleUserMetadata.picture then user.picture = googleUserMetadata.picture
-					if not _.isArray process.env.ADMIN_EMAIL then process.env.ADMIN_EMAIL = process.env.ADMIN_EMAIL.split(' ')
-					if _.contains process.env.ADMIN_EMAIL, user.email then user.admin = true
+					if process.env.ADMIN_EMAIL?.length and _.contains process.env.ADMIN_EMAIL.split(' '), user.email then user.admin = true
 
 				token = accessTokenExtra.refresh_token
 				if not user.oauth		# OA2 virgin?
