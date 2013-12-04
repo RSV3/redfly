@@ -8,6 +8,8 @@ module.exports =
 		ES_NAME: 'redstar'
 		ORG_TAG_CATEGORIES: 'Role, Theme, Project'
 
+		# one default admin
+		ADMIN_EMAIL:	'kwan@redstar.com'
 
 	development:
 		HOST: '127.0.0.1:5000'
@@ -70,8 +72,6 @@ module.exports =
 
 		NUDGE_DAYS: 'Monday Thursday'
 
-		# one default admin
-		ADMIN_EMAIL:	'kwan@redstar.com'
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
