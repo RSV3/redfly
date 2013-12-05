@@ -4,74 +4,86 @@
 	.summary
 		.breadcrumb
 			| Contacts queued
-			span.pull-right.badge.badge-info {{contactsQueued}}
+			span.pull-right.badge.badge-info {{view.parentView.controller.contactsQueued}}
 		.breadcrumb
 			| Tags created
-			span.pull-right.badge.badge-info {{tagsCreated}}
+			span.pull-right.badge.badge-info {{view.parentView.controller.tagsCreated}}
 		.breadcrumb
 			| Notes authored
-			span.pull-right.badge.badge-info {{notesAuthored}}
-		| {{#if mostVerboseTag}}
+			span.pull-right.badge.badge-info {{view.parentView.controller.notesAuthored}}
+		| {{#if view.parentView.controller.mostVerboseTag}}
 		.breadcrumb
 			| Most verbose tag
-			.own-line "{{mostVerboseTag}}"
+			.own-line "{{view.parentView.controller.mostVerboseTag}}"
 		| {{/if}}
 		.breadcrumb
 			| Most active user
 			.own-line
-				strong {{mostActiveUser}}
+				strong {{view.parentView.controller.mostActiveUser}}
 	| {{else}}
 	.nav-header Activity Feed
-	.feed
+	.feed.flipcardparent
 		+each('feed')
-			| {{#view view.feedItemView}}
-			| {{#if typeInitialContact}}
-			+linkTo('contact this')
-				h4 {{canonicalName}}
-			p
-				| Added by 
-				+linkTo('profile addedBy')
-					| {{addedBy.canonicalName}}
-				|  {{when}}
-			| {{view App.TaggerView contactBinding="this"}}
-			| {{/if}}
-			| {{#if typeContact}}
-			+linkTo('contact this')
-				h4 {{canonicalName}}
-			p
-				| Was just added by 
-				+linkTo('profile addedBy')
-					| {{addedBy.canonicalName}}
-				| !
-			| {{view App.TaggerView contactBinding="this"}}
-			| {{/if}}
-			| {{#if typeLinkedin}}
-			+linkTo('profile updatedBy')
-				| {{updatedBy.canonicalName}}
-			|  augmented 
-			+linkTo('contact this')
-				| {{canonicalName}}
-			|  with Linked
-			i.icon-linkedin-sign
-			|  data.
-			| {{/if}}
-			| {{#if typeTag}}
-			+linkTo('profile creator')
-				| {{creator.canonicalName}}
-			|  added the tag 
-			em "{{body}}"
-			|  to 
-			+linkTo('contact contact')
-				| {{contact.canonicalName}}
-			| .
-			| {{/if}}
-			| {{#if typeNote}}
-			+linkTo('profile author')
-				| {{author.canonicalName}}
-			|  wrote a note about 
-			+linkTo('contact contact')
-				| {{contact.canonicalName}}
-			| : "{{preview}}"
-			| {{/if}}
-			| {{/view}}
+			.feeditem
+				| {{#view view.feedItemView}}
+
+				| {{#if typeInitialContact}}
+				+linkTo('contact this')
+					h4 {{canonicalName}}
+				div
+					span.leftone Added by 
+					{{#with addedBy}}
+					{{view view.parentView.userview}}
+					{{/with}}
+					span {{when}}
+				| {{view App.TaggerView contactBinding="this"}}
+				| {{/if}}
+
+				| {{#if typeContact}}
+				+linkTo('contact this')
+					h4 {{canonicalName}}
+				div
+					span.leftone Was just added by 
+					{{#with addedBy}}
+					{{view view.parentView.userview}}
+					{{/with}}
+					span !
+				| {{view App.TaggerView contactBinding="this"}}
+				| {{/if}}
+
+				| {{#if typeLinkedin}}
+				{{#with updatedBy}}
+				{{view view.parentView.userview}}
+				{{/with}}
+				span  augmented 
+				+linkTo('contact this')
+					| {{canonicalName}}
+				span  with Linked
+				i.icon-linkedin-sign
+				span  data.
+				| {{/if}}
+
+				| {{#if typeTag}}
+				{{#with creator}}
+				{{view view.parentView.userview}}
+				{{/with}}
+				span.leftone added the tag
+				em &nbsp;"{{body}}"
+				span to 
+				+linkTo('contact contact')
+					| {{contact.canonicalName}}
+				span .
+				| {{/if}}
+
+				| {{#if typeNote}}
+				{{#with author}}
+				{{view view.parentView.userview}}
+				{{/with}}
+				span  wrote a note about 
+				+linkTo('contact contact')
+					| {{contact.canonicalName}}
+				span : "{{preview}}"
+				| {{/if}}
+
+				| {{/view}}
 	| {{/unless}}

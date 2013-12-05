@@ -3,23 +3,41 @@ module.exports = (Ember, App, socket) ->
 	App.HoveruserView = Ember.View.extend
 		expanded: false
 		classNames: ['hoveruser']
+		hoverOff: (old)->
+			unless old and old.get 'expanded' then return
+			$target = old.$().find('.expandthis')
+			$target.addClass('animated flipcardout')
+			if $target.hasClass('flipcardin') then return
+			Ember.run.later this, =>
+				$target.removeClass('flipcard flipcardout flipcardin animated')
+				old.set 'expanded', false
+			, 1001
 		hoverNo: ->
 			if old = @get 'parentView.hovering'
-				old.set 'expanded', false
 				@set 'parentView.hovering', null
+				@hoverOff old
 			false
-		hoverpro: (_this)=>
-			if old = @get 'parentView.hovering'
-				old.set 'expanded', false
-			if old is @ then @set 'parentView.hovering', null
-			else
-				@set 'parentView.hovering', @
-				Ember.run.later this, =>
-					if @ is @get 'parentView.hovering' then @set 'expanded', true
-				, 234
+		hoverGo: (_this)=>
+			if (old = @get 'parentView.hovering') is @ then return false
+			if old then @hoverOff old
+			@set 'parentView.hovering', @
+			Ember.run.later this, =>
+				if @ isnt @get 'parentView.hovering' then return false
+				@set 'expanded', true
+				Ember.run.next this, =>
+					if @ isnt @get 'parentView.hovering' then return false
+					$target = @$().find('.expandthis')
+					$target.addClass('flipcard')
+					$target.removeClass('flipcard').addClass('animated flipcardin')
+					Ember.run.later this, =>
+						$target.removeClass('flipcardin')
+						if $target.hasClass('flipcardout') then hoverOff this
+						else $target.removeClass('animated')
+					, 1001
+			, 234
 			false
 		mouseLeave: (ev)->
 			@hoverNo()
 		didInsertElement: ->
 			@$().find('a.hoverme').mouseenter =>
-				@hoverpro @
+				@hoverGo @
