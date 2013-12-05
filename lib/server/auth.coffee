@@ -50,8 +50,7 @@ everyauth.google.configure
 					if not user.name then user.name = googleUserMetadata.name			# if user was created by cIO
 					if not user.picture?.length and googleUserMetadata.picture?.length
 						user.picture = googleUserMetadata.picture	# but then logs in with gOA2
-					console.dir "new user oauth"
-					console.dir user
+					console.dir "new user oauth #{user.oauth} for #{user.email}/#{user._id}"
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user
