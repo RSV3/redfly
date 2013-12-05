@@ -1,5 +1,5 @@
 {{#if showthisreq}}
-.thisReq.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
+.thisReq.myLightSpeedIn.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
 	.modal-header
 		.row-fluid
 			.span2
@@ -45,9 +45,9 @@ ul.nav.nav-tabs
 				hr
 				ul.pager
 					li.previous
-						| {{#if my_hasPrev}}<a href="#" {{action my_prevPage}}>&larr; Back</a>{{/if}}
+						| {{#if my_hasPrev}}<a href="#" {{action prevPage "my" target="view"}}>&larr; Back</a>{{/if}}
 					li.next
-						| {{#if my_hasNext}}<a href="#" {{action my_nextPage}}>More &rarr;</a>{{/if}}
+						| {{#if my_hasNext}}<a href="#" {{action nextPage "my" target="view"}}>More &rarr;</a>{{/if}}
 
 	.tab-pane.active.othersrex
 		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
@@ -68,7 +68,7 @@ ul.nav.nav-tabs
 				hr
 				ul.pager
 					li.previous
-						| {{#if other_hasPrev}}<a href="#" {{action other_prevPage}}>&larr; Back</a>{{/if}}
+						| {{#if other_hasPrev}}<a href="#" {{action prevPage "other" target="view"}}>&larr; Back</a>{{/if}}
 					li.next
-						| {{#if other_hasNext}}<a href="#" {{action other_nextPage}}>More &rarr;</a>{{/if}}
+						| {{#if other_hasNext}}<a href="#" {{action nextPage "other" target="view"}}>More &rarr;</a>{{/if}}
 

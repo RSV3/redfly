@@ -11,22 +11,6 @@ module.exports = (Ember, App, socket) ->
 		my_hasPrev: (->
 			@get('my_rangeStart')
 		).property 'my_rangeStart'
-		my_prevPage: (->
-			socket.emit 'requests', {old:true, me:true, skip:@get('my_rangeStart')-@get('my_pageSize')}, (reqs, theresmore)=>
-				if reqs
-					@set 'showthisreq', null
-					@set 'my_reqs', App.store.findMany(App.Request, reqs)
-					@set 'my_hasNext', true
-					@set 'my_rangeStart', @get('my_rangeStart') - @get('my_pageSize')
-		)
-		my_nextPage: (->
-			socket.emit 'requests', {old:true, me:true, skip:@get('my_rangeStart')+@get('my_pageSize')}, (reqs, theresmore)=>
-				if reqs
-					@set 'showthisreq', null
-					@set 'my_reqs', App.store.findMany(App.Request, reqs)
-					@set 'my_hasNext', theresmore
-					@set 'my_rangeStart', @get('my_rangeStart') + @get('my_pageSize')
-		)
 
 		other_reqs:null
 		other_pageSize:0
@@ -36,22 +20,26 @@ module.exports = (Ember, App, socket) ->
 		other_hasPrev: (->
 			@get('other_rangeStart')
 		).property 'other_rangeStart'
-		other_prevPage: (->
-			socket.emit 'requests', {old:true, skip:@get('other_rangeStart')-@get('other_pageSize')}, (reqs, theresmore)=>
-				if reqs
-					@set 'showthisreq', null
-					@set 'other_reqs', App.store.findMany(App.Request, reqs)
-					@set 'other_hasNext', true
-					@set 'other_rangeStart', @get('other_rangeStart') - @get('other_pageSize')
-		)
-		other_nextPage: (->
-			socket.emit 'requests', {old:true, skip:@get('other_rangeStart')+@get('other_pageSize')}, (reqs, theresmore)=>
-				if reqs
-					@set 'showthisreq', null
-					@set 'other_reqs', App.store.findMany(App.Request, reqs)
-					@set 'other_hasNext', theresmore
-					@set 'other_rangeStart', @get('other_rangeStart') + @get('other_pageSize')
-		)
+
+		clear: (which)->
+			@set "#{which}_reqs", null
+			@set "#{which}_pageSize", 0
+			@set "#{which}_hasNext", false
+			@set "#{which}_rangeStart", 0
+
+		goNextPage: (which)->
+			socket.emit 'requests', {old:true, skip:@get("#{which}_rangeStart")+@get("#{which}_pageSize")}, (reqs, theresmore)=>
+				if not reqs then return
+				@set "#{which}_reqs", App.store.findMany(App.Request, reqs)
+				@set "#{which}_hasNext", theresmore
+				@set "#{which}_rangeStart", @get("#{which}_rangeStart") + @get("#{which}_pageSize")
+
+		goPrevPage: (which)->
+			socket.emit 'requests', {old:true, skip:@get("#{which}_rangeStart")-@get("#{which}_pageSize")}, (reqs, theresmore)=>
+				if not reqs then return
+				@set "#{which}_reqs", App.store.findMany(App.Request, reqs)
+				@set "#{which}_hasNext", true
+				@set "#{which}_rangeStart", @get("#{which}_rangeStart") - @get("#{which}_pageSize")
 
 	App.PastreqsView = Ember.View.extend
 		template: require '../../../../templates/sidebars/pastreqs'
@@ -63,13 +51,26 @@ module.exports = (Ember, App, socket) ->
 			@$().find(".tab-content .tab-pane.active").removeClass 'active'
 			@$().find(".tab-content .tab-pane.#{ev}").addClass 'active'
 		closeModal: (->
-			@set 'controller.showthisreq', null
+			$c = @get 'controller'
+			@$('.thisReq').removeClass('myLightSpeedIn').addClass('animated myLightSpeedOut')
+			Ember.run.later this, ->
+				$c.set 'showthisreq', null
+			, 500
 		)
 		idsme: false
+		prevPage: (which)->
+			@closeModal()
+			@get('controller').goPrevPage which
+		nextPage: (which)->
+			@closeModal()
+			@get('controller').goNextPage which
+		willDestroyElement: ->
+			@closeModal()
 		didInsertElement: ->
+			@get('controller').clear "other"
+			@get('controller').clear "my"
 			socket.emit 'requests', {old:true}, (reqs, theresmore) =>
 				if @get 'controller'	# in case we already switched out
-					@closeModal()
 					@set 'controller.other_hasNext', theresmore
 					if theresmore then @set 'controller.other_pageSize', reqs.length
 					if reqs then reqs = App.store.findMany App.Request, reqs

@@ -295,6 +295,11 @@ body
 				margin	1em
 
 .requests
+	.request
+		.span9
+			padding-left	3em
+			.hoveruser
+				margin-left	-3em
 	hr
 		margin	0.5em 0
 	#datepicker
@@ -303,9 +308,14 @@ body
 		width	3em
 		float	left
 		box-sizing	border-box
-		min-height	3em
-		a.expandicon
-			margin-left	1em
+		.expandiconspace
+			display	inline-block
+			width	1em
+			a.expandicon
+				margin-right	0.4em
+		.badge
+			padding-left	5px
+			padding-right	5px
 	.pager
 		position relative
 		width 70%
@@ -1058,3 +1068,105 @@ li
 .flipcardparent {
 	perspective	20cm
 }
+
+
+/* originally authored by Angelo Rohit - https://github.com/angelorohit */
+
+@-webkit-keyframes myLightSpeedIn {
+	0% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedIn {
+	0% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedIn {
+	0% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -o-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -o-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedIn {
+	0% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedIn {
+    -webkit-animation-name: myLightSpeedIn;
+    -moz-animation-name: myLightSpeedIn;
+    -o-animation-name: myLightSpeedIn;
+    animation-name: myLightSpeedIn;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+
+	opacity:	0;
+}
+
+.animated.myLightSpeedIn {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
+
+@-webkit-keyframes myLightSpeedOut {
+	100% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedOut {
+	100% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedOut {
+	100% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -o-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -o-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedOut {
+	100% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedOut {
+    -webkit-animation-name: myLightSpeedOut;
+    -moz-animation-name: myLightSpeedOut;
+    -o-animation-name: myLightSpeedOut;
+    animation-name: myLightSpeedOut;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+}
+
+.animated.myLightSpeedOut {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
+
