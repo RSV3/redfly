@@ -34,10 +34,6 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
-		showEmail: (->
-			a = App.Admin.find 1
-			@get('isKnown') or a and a.get('hidemails') is false or @get('forceShowEmail')
-		).property 'id'
 		allMeasures: (->
 			if (id=@get('id'))
 				App.Measurement.find contact:id
@@ -147,6 +143,10 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/contact'
 		classNames: ['contact']
 
+		showEmail: (->
+			a = App.Admin.find 1
+			@get('controller.isKnown') or a and a.get('hidemails') is false or @get('parentView.classifying')
+		).property 'id'
 		indTags: (->
 			@get('catTags')?['industry']
 		).property 'catTags'

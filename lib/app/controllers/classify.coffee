@@ -15,7 +15,6 @@ module.exports = (Ember, App, socket) ->
 		modelChanged: (->
 			if (c = @get 'thisContact')
 				@set 'controllers.contact.content', c
-				@set 'controllers.contact.forceShowEmail', true
 		).observes 'thisContact'
 
 		total: (->
