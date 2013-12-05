@@ -6,7 +6,7 @@ mimelib = require 'mimelib'
 moment = require 'moment'
 
 util = require './util'
-models = require './models'
+Models = require './models'
 
 
 contextConnect = (user, blacklist, domains, cb)->
@@ -26,6 +26,11 @@ contextConnect = (user, blacklist, domains, cb)->
 			blacklist:blacklist
 			domains:domains			# return CIO server as attribute on mbox session
 
+clearOauthOnErr = (user)->
+	Models.User.update {_id:user.id}, $set:oauth:null, (err)->
+		if not err then return
+		console.log "clearing oauth for #{user.id}"
+		console.dir err
 
 imapConnect = (user, blacklist, domains, cb)->
 	generator = require('xoauth2').createXOAuth2Generator
@@ -36,7 +41,8 @@ imapConnect = (user, blacklist, domains, cb)->
 	generator.getToken (err, token) ->
 		if err
 			console.log "generator.getToken #{token} for #{user.email}"
-			console.warn err
+			console.dir err
+			clearOauthOnErr user
 			return cb err, null
 		server = new require('imap').ImapConnection
 			host: 'imap.gmail.com'
@@ -46,6 +52,7 @@ imapConnect = (user, blacklist, domains, cb)->
 		server.connect (err) ->
 			if err
 				console.dir err
+				clearOauthOnErr user
 				return cb new Error 'Problem connecting to mail.'
 			server.getBoxes (err, boxen)->
 				if err
@@ -182,7 +189,7 @@ cIOcreate = (data, cb)->
 		if err or not account or account.body?.type is 'error' then return cb err:'email'
 		if not account.body?.success then cb err:'password'
 		account = account?.body
-		models.Admin.findById 1, (err, admin)->
+		Models.Admin.findById 1, (err, admin)->
 			throw err if err
 			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)->
 				return _s.endsWith data.email, "@#{domain}"
@@ -208,7 +215,7 @@ googOrCio = (user, goog, cio, cb, action)->
 
 module.exports =
 	connect: (user, cb) ->
-		models.Admin.findById 1, (err, admin) ->
+		Models.Admin.findById 1, (err, admin) ->
 			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
 			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
 			googOrCio user, ->
@@ -225,7 +232,7 @@ module.exports =
 	search: (mbSession, user, cb) ->
 		# if we got this far, it's really happening:
 		# so we'll need a list of excludes (contacts skipped forever)
-		models.Exclude.find(user: user._id).populate('contact').exec (err, excludes) ->
+		Models.Exclude.find(user: user._id).populate('contact').exec (err, excludes) ->
 			if err then console.dir err
 			else
 				excludes = _.map excludes, (x)->

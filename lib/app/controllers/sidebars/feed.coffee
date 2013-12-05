@@ -21,8 +21,12 @@ module.exports = (Ember, App, socket) ->
 						limit: 5
 			).property()
 
+	App.JustuserView = App.HoveruserView.extend
+		template: require '../../../templates/components/leaduser'
+
 	App.FeedView = Ember.View.extend
 		template: require '../../../../templates/sidebars/feed'
+		userview: App.JustuserView.extend()
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
 				if not data?.id then return
@@ -38,4 +42,9 @@ module.exports = (Ember, App, socket) ->
 			classNames: ['feed-item']
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
+				Ember.run.later this, ->
+					console.log @$()[0].className
+					@$().removeClass 'animated flipInX'
+					console.log @$()[0].className
+				, 1000
 

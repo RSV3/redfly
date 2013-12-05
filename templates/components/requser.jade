@@ -1,19 +1,17 @@
 div.badgecount
+	.expandiconspace
+		{{#if count}}
+		a.expandicon.nodeco(href='#')
+			{{#if view.parentView.expanded}}
+			i.icon-caret-up.icon-large
+			{{else}}
+			i.icon-caret-right.icon-large
+			{{/if}}
+		{{/if}}
 	{{#if count}}
 	span.badge.badge-success {{count}}
 	{{else}}
 	span.badge.badge-important {{count}}
-	{{/if}}
-	br
-	{{#if count}}
-	a.nodeco(href='#')
-		{{#if view.parentView.expanded}}
-		span &nbsp; &nbsp;
-		i.icon-caret-up.icon-large
-		{{else}}
-		span &nbsp; &nbsp;
-		i.icon-caret-right.icon-large
-		{{/if}}
 	{{/if}}
 span
 	a.hoverme.nodeco(href="#") {{user.canonicalName}}

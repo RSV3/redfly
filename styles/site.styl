@@ -139,6 +139,9 @@ tagger(fontSize)
 			margin-top 10px
 			a:hover
 				text-decoration none
+			span
+				i.icon-plus
+					margin-right	0.3em
 
 span.label.organisation, a.label.organisation
 	background-color	#ff6600
@@ -205,6 +208,13 @@ body
 	.summary .own-line
 		margin-top 10px
 	.feed
+		.hoveruser
+			.expandthis
+				margin-top	-10em
+				margin-left	-5em
+		.leftone
+			float	left
+			margin-right	0.5em
 		font-size smallFontSize
 		tagger(smallFontSize)
 		.feed-item
@@ -271,7 +281,6 @@ body
 			.expandthis
 				position	fixed
 				left	1em
-				width	25%
 				margin-top 0
 				top	3em
 	.pager
@@ -280,9 +289,9 @@ body
 				border	none
 
 .hoveruser
-	display	inline
+	display	inline-block
 	.expandthis
-		width	25%
+		width	280px
 		position	absolute
 		z-index	99
 		.expanded
@@ -296,6 +305,11 @@ body
 				margin	1em
 
 .requests
+	.request
+		.span9
+			padding-left	3em
+			.hoveruser
+				margin-left	-3em
 	hr
 		margin	0.5em 0
 	#datepicker
@@ -304,7 +318,14 @@ body
 		width	3em
 		float	left
 		box-sizing	border-box
-		min-height	3em
+		.expandiconspace
+			display	inline-block
+			width	1em
+			a.expandicon
+				margin-right	0.4em
+		.badge
+			padding-left	5px
+			padding-right	5px
 	.pager
 		position relative
 		width 70%
@@ -570,6 +591,10 @@ body
 		border-color		#bbb
 		i.icon-tag
 			color		#444
+	.tag
+		i.icon-tag
+			margin-left	-0.3em
+			margin-right	0.3em
 	.tag a.body
 		color	#036
 
@@ -721,12 +746,15 @@ body
 		.hoveruser
 			.expandthis
 				margin-top	-8em
-				margin-left	-16em
+				margin-left	-12em
 			li
 				display	inline
 	.hoveruser
+		display	block
+		float	left
+		margin-right	1em
 		.expandthis
-			margin-left	-23em
+			margin-left	-18em
 			margin-top	-3em
 
 
@@ -951,6 +979,10 @@ ul.nav .popover
 		margin-right	0.4em
 
 .leaders
+	.hoveruser
+		.expandthis
+			top	0
+			margin-left	-4em
 	table
 		td
 			padding	4px
@@ -972,4 +1004,187 @@ li
 	span.count
 		color	#006
 		margin-left	1em
+
+
+// animations / transitions / transforms / etc
+
+@-webkit-keyframes flipcardin {
+	100% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
+	0% { -webkit-transform: rotateX(80deg); opacity:0;  }
+}
+
+@-moz-keyframes flipcardin {
+	100% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }	
+	0% { -moz-transform: rotateX(80deg); opacity:0;  }
+}
+
+@-o-keyframes flipcardin {
+	100% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
+	0% { -o-transform: rotateX(80deg); opacity:0; }
+}
+
+@keyframes flipcardin {
+	100% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
+	0% { transform: rotateX(80deg);  opacity:0; }
+}
+
+
+@-webkit-keyframes flipcardout {
+	0% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -webkit-transform: rotateX(-80deg); opacity:0; }
+}
+
+@-moz-keyframes flipcardout {
+	0% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -moz-transform: rotateX(-80deg); opacity:0; }
+}
+
+@-o-keyframes flipcardout {
+	0% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -o-transform: rotateX(-80deg); opacity:0; }
+}
+
+@keyframes flipcardout {
+	0% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
+	100% { transform: rotateX(-80deg); opacity:0; }
+}
+
+.flipcardout {
+	-webkit-animation-name: flipcardout;
+	-moz-animation-name: flipcardout;
+	-o-animation-name: flipcardout;
+	animation-name: flipcardout;
+	-webkit-transform-origin: bottom center 10cm;
+	-moz-transform-origin: bottom center 10cm;
+	-o-transform-origin: bottom center 10cm;
+	transform-origin: bottom center 10cm;
+}
+
+.flipcardin {
+	-webkit-animation-name: flipcardin;
+	-moz-animation-name: flipcardin;
+	-o-animation-name: flipcardin;
+	animation-name: flipcardin;
+	-webkit-transform-origin: bottom center 10cm;
+	-moz-transform-origin: bottom center 10cm;
+	-o-transform-origin: bottom center 10cm;
+	transform-origin: bottom center 10cm;
+}
+
+.flipcard {
+	-webkit-transform-origin: bottom center 10cm;
+	-moz-transform-origin: bottom center 10cm;
+	-o-transform-origin: bottom center 10cm;
+	transform-origin: bottom center 10cm;
+	-webkit-transform: rotateX(80deg);
+	-moz-transform: rotateX(80deg);
+	-o-transform: rotateX(80deg);
+	transform: rotateX(80deg);
+	opacity: 0
+}
+
+.flipcardparent {
+	perspective	20cm
+}
+
+
+/* originally authored by Angelo Rohit - https://github.com/angelorohit */
+
+@-webkit-keyframes myLightSpeedIn {
+	0% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedIn {
+	0% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedIn {
+	0% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -o-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -o-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedIn {
+	0% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedIn {
+    -webkit-animation-name: myLightSpeedIn;
+    -moz-animation-name: myLightSpeedIn;
+    -o-animation-name: myLightSpeedIn;
+    animation-name: myLightSpeedIn;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+
+	opacity:	0;
+}
+
+.animated.myLightSpeedIn {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
+
+@-webkit-keyframes myLightSpeedOut {
+	100% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedOut {
+	100% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedOut {
+	100% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -o-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -o-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedOut {
+	100% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedOut {
+    -webkit-animation-name: myLightSpeedOut;
+    -moz-animation-name: myLightSpeedOut;
+    -o-animation-name: myLightSpeedOut;
+    animation-name: myLightSpeedOut;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+}
+
+.animated.myLightSpeedOut {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
 

@@ -11,20 +11,25 @@ module.exports = (Ember, App, socket) ->
 				when 'orgtagcat1' then App.admin.get('orgtagcat1').toLowerCase()
 				when 'orgtagcat2' then App.admin.get('orgtagcat2').toLowerCase()
 				when 'orgtagcat3' then App.admin.get('orgtagcat3').toLowerCase()
-				else 'organisation'
+				else null
 		).property 'catid'
 		tags: (->
 			sort = field: 'date'
-			query = contact: @get('contact.id'), category: @get('category')
+			query = contact: @get('contact.id')
+			if category = @get('category') then query.category = category
 			App.filter App.Tag, sort, query, (data) =>
-				if (category = @get('category')) and (category isnt data.get('category'))
+				if category and (category isnt data.get('category'))
 					return false
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 
 		tagView: App.TagView.extend
 			didInsertElement: ->
-				@$().addClass(@get('parentView.category') or @get('context.category'))
+				cat = @get('parentView.category') or @get('context.category')
+				@$().addClass cat
+				for i in [1..3]
+					id = "orgtagcat#{i}"
+					if cat is App.admin.get(id).toLowerCase() then @$().addClass id
 
 		newTagView: App.NewTagView.extend()
 

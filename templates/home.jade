@@ -2,7 +2,7 @@
 	h1
 		span.red Red
 		| fly
-	h2 Institutional Memory for {{App.orgTitle}}
+	h2 Institutional Memory {{#if App.orgTitle}} for {{App.orgTitle}} {{/if}}
 	br
 	.version v0.4
 	| {{#if andCounting}}

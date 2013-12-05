@@ -171,8 +171,10 @@ module.exports = (Ember, App, socket) ->
 			if @get('addingcontacts') or @get('addingnote') then return
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
-			@set 'parentView.controller.showthisreq', it
 			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
+			@set 'parentView.controller.showthisreq', it
+			Ember.run.next this, ->
+				@get('parentView').$('.thisReq').removeClass('myLightSpeedOut').addClass('animated myLightSpeedIn')
 		)
 		toggle: (->
 			if @get('addingcontacts') or @get('addingnote') then return
