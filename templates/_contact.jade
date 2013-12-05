@@ -79,7 +79,7 @@
 					br
 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
-			| {{#if showEmail}}
+			| {{#if view.showEmail}}
 			h4.email
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
