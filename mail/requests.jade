@@ -8,35 +8,37 @@ block content
 	p
 		br
 
-	div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#fee;')
-		each request,i in urgentRequests
-			div(style='clear:both;')
-				p
-					a(href='#{path('/profile/' + request.user._id)}')
-						if request.user.picture
-							img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
-						else
-							img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
-					a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
-					br
-					span #{request.text}
-					br
-			div(style='clear:both;')
+	if urgentRequests.length
+		div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#fee;')
+			each request,i in urgentRequests
+				div(style='clear:both;')
+					p
+						a(href='#{path('/profile/' + request.user._id)}')
+							if request.user.picture
+								img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+							else
+								img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+						a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+						br
+						span #{request.text}
+						br
+				div(style='clear:both;')
 
-	div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#eee; ')
-		each request,i in otherRequests
-			div(style='clear:both;')
-				p
-					a(href='#{path('/profile/' + request.user._id)}')
-						if request.user.picture
-							img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
-						else
-							img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
-					a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
-					br
-					span #{request.text}
-					br
-			div(style='clear:both;')
+	if otherRequests.length
+		div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#eee; ')
+			each request,i in otherRequests
+				div(style='clear:both;')
+					p
+						a(href='#{path('/profile/' + request.user._id)}')
+							if request.user.picture
+								img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+							else
+								img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+						a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+						br
+						span #{request.text}
+						br
+				div(style='clear:both;')
 
 	div(style='clear:both;')
 		br
