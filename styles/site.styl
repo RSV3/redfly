@@ -209,6 +209,7 @@ body
 		margin-top 10px
 	.feed
 		.hoveruser
+			float	left
 			.expandthis
 				margin-top	-10em
 				margin-left	-5em
@@ -751,11 +752,15 @@ body
 				display	inline
 	.hoveruser
 		display	block
-		float	left
 		margin-right	1em
+
+
+.contact
+	.hoveruser
 		.expandthis
-			margin-left	-18em
+			margin-left	-19em
 			margin-top	-3em
+
 
 
 // For _contact partial
@@ -1010,43 +1015,43 @@ li
 
 @-webkit-keyframes flipcardin {
 	100% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
-	0% { -webkit-transform: rotateX(20deg); opacity:0;  }
+	0% { -webkit-transform: rotateX(11deg); opacity:0;  }
 }
 
 @-moz-keyframes flipcardin {
 	100% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }	
-	0% { -moz-transform: rotateX(20deg); opacity:0;  }
+	0% { -moz-transform: rotateX(11deg); opacity:0;  }
 }
 
 @-o-keyframes flipcardin {
 	100% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
-	0% { -o-transform: rotateX(20deg); opacity:0; }
+	0% { -o-transform: rotateX(11deg); opacity:0; }
 }
 
 @keyframes flipcardin {
 	100% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
-	0% { transform: rotateX(20deg);  opacity:0; }
+	0% { transform: rotateX(11deg);  opacity:0; }
 }
 
 
 @-webkit-keyframes flipcardout {
 	0% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
-	100% { -webkit-transform: rotateX(-20deg); opacity:0; }
+	100% { -webkit-transform: rotateX(-11deg); opacity:0; }
 }
 
 @-moz-keyframes flipcardout {
 	0% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }
-	100% { -moz-transform: rotateX(-20deg); opacity:0; }
+	100% { -moz-transform: rotateX(-11deg); opacity:0; }
 }
 
 @-o-keyframes flipcardout {
 	0% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
-	100% { -o-transform: rotateX(-20deg); opacity:0; }
+	100% { -o-transform: rotateX(-11deg); opacity:0; }
 }
 
 @keyframes flipcardout {
 	0% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
-	100% { transform: rotateX(-20deg); opacity:0; }
+	100% { transform: rotateX(-11deg); opacity:0; }
 }
 
 .flipcardout {
@@ -1072,14 +1077,6 @@ li
 }
 
 .flipcard {
-	-webkit-transform-origin: bottom center 10cm;
-	-moz-transform-origin: bottom center 10cm;
-	-o-transform-origin: bottom center 10cm;
-	transform-origin: bottom center 10cm;
-	-webkit-transform: rotateX(20deg);
-	-moz-transform: rotateX(20deg);
-	-o-transform: rotateX(20deg);
-	transform: rotateX(20deg);
 	opacity: 0
 }
 
