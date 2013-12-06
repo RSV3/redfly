@@ -117,7 +117,7 @@ batchNewReqs = (contCnt, cb)->
 				if not uReqs?.length and not oReqs.length then return cb()		# no new requests
 				updateReqs uReqs, (uReqs)->				# convert user, response ids to objects
 					updateReqs oReqs, (oReqs)->				# convert user, response ids to objects
-						models.User.find (err, users) ->	# send the list of new requests to ever user
+						models.User.find query, (err, users) ->	# send the list of new requests to ever user
 							throw err if err
 							eachUserRequest users, uReqs, oReqs, Inject(contCnt, Mail.sendRequests), ()->
 								models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
@@ -140,7 +140,9 @@ sendNewResps = (contCnt, cb)->
 			return services.close()
 		if not reqs?.length then return cb()
 		users = _.uniq _.map reqs, (r)-> r.user.toString()
-		models.User.find {_id:$in:users}, (err, users) ->	# send lists of new responses to the user
+		respQuery = _id:$in:users
+		if query.email then respQuery.email = query.email
+		models.User.find respQuery, (err, users) ->	# send lists of new responses to the user
 			updateReqs reqs, (reqs)->						# convert user, response ids to objects
 				updateResps reqs, (reqs)->					# and similarly populate contact, user on each resp.
 					eachUserResponse users, reqs, (Inject contCnt, Mail.sendResponses), ()->
@@ -150,6 +152,9 @@ sendNewResps = (contCnt, cb)->
 								console.dir err
 							return cb()
 
+
+query = {}
+if process.argv.length is 4 then query.email = process.argv[3]
 
 # calculate contacts count once, because every email will need to display it
 Logic.countConts (err, contCnt)->
