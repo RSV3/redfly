@@ -99,7 +99,7 @@ contextSearch = (session, user, cb)->
 # exclude junk like "undisclosed recipients", and exclude yourself.
 _acceptableContact = (user, name, email, excludes, blacklist)->
 	return (validators.isEmail email) and (email isnt user.email) and
-		(_.last email.split '@' not in blacklist.domains) and
+		(_.last(email.split '@') not in blacklist.domains) and
 		(name not in blacklist.names) and
 		(not _.some blacklist.emails, (e)-> e is email or email.match(new RegExp(e))) and
 		(not excludes?.names or (name not in excludes.names)) and

@@ -46,7 +46,7 @@ module.exports =
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
-		NUDGE_DAYS: 'Monday Thursday'
+		NUDGE_DAYS: 'Monday Thursday Friday'
 
 		ADMIN_EMAIL:	['kwan@redstar.com', 'justin@redstar.com']
 		ORGANISATION_DOMAINS: ['redstar.com', 'vinely.com', 'justat.at']
