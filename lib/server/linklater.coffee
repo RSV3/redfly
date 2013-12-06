@@ -50,6 +50,10 @@ addDeets2Contact = (notifications, user, contact, details, specialties, industri
 	tagstoadd = []
 	if industries?.length then tagstoadd = tagstoadd.concat industries
 	if specialties?.length then tagstoadd = tagstoadd.concat specialties
+	for eachUser in l.users
+		unless _.contains c.knows, eachUser
+			c.knows.addToSet eachUser
+			dirtycontact = true
 	if tagstoadd.length then addTags user, contact, 'industry', _.uniq tagstoadd
 
 	if (_.indexOf contact.knows, user._id) < 0
@@ -79,14 +83,7 @@ copyLI2contact = (u, c, l) ->
 		yearsExperience: l.yearsExperience
 		positions: [{ title: l.positions[0], company: name: l.companies[0]}]
 	addDeets2Contact null, u, c, details, l.specialties, l.industries
-	###
-	# schema design issue:
-	# need to change linkedin.user to list of linkedin.users
 
-	for eachContact in l.users
-		c.knows.addToSet eachContact
-
-	###
 	l.contact = c
 	l.lastLink = new Date()
 	l.save (err) ->
