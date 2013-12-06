@@ -6,8 +6,7 @@ module.exports = (Ember, App, socket) ->
 		hoverOff: (old)->
 			unless old and old.get 'expanded' then return
 			$target = old.$().find('.expandthis')
-			$target.addClass('animated flipcardout')
-			if $target.hasClass('flipcardin') then return
+			$target.removeClass('flipcardin').addClass('animated flipcardout')
 			Ember.run.later this, =>
 				$target.removeClass('flipcard flipcardout flipcardin animated')
 				old.set 'expanded', false

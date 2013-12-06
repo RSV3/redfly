@@ -8,9 +8,9 @@ block content
 	p
 		br
 
-	div(style='padding:1em;')
+	div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#fee;')
 		each request,i in urgentRequests
-			div(style='background-color:#fee; clear:both;')
+			div(style='clear:both;')
 				p
 					a(href='#{path('/profile/' + request.user._id)}')
 						if request.user.picture
@@ -23,9 +23,9 @@ block content
 					br
 			div(style='clear:both;')
 
-	div(style='padding:1em;')
+	div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#eee; ')
 		each request,i in otherRequests
-			div(style='background-color:#eee; clear:both;')
+			div(style='clear:both;')
 				p
 					a(href='#{path('/profile/' + request.user._id)}')
 						if request.user.picture
@@ -48,5 +48,5 @@ block content
 		div(style='float:right')
 			div(style='border:2px solid black; padding-left:0.5em; padding-right:0.5em; background-color:#468; box-shadow: 0 5px 25px #123;')
 				a(href='#{path("/requests")}', style='text-decoration:none')
-					h1(style='color:white') Take me there!
+					h1(style='color:white') Let me help!
 
