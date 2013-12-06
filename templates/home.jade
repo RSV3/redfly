@@ -1,25 +1,59 @@
-.row-fluid.title
-	h1
-		span.red Red
-		| fly
-	h2 Institutional Memory {{#if App.orgTitle}} for {{App.orgTitle}} {{/if}}
-	br
-	.version v0.4
-	| {{#if andCounting}}
-	h3.contactcounter
-		span.counter.counter-analog 0
-		span &nbsp; contacts
-			em &nbsp; and counting!
-	br
-	| {{/if}}
-.row-fluid
-	p.lead Redfly provides collaborative people tracking for teams.
-	p.lead By connecting to your email it can find people that you communicate with and help you intelligently tag them.
-	p.lead Every week you will receive an update containing new correspondents so you can review the collected info and add your own notes.
-	p.lead
-		| You'll be able to view the curated contacts of other team members and they'll be able to view yours. 
-		strong Remember, with great power comes great something something.
-//- .row-fluid.signup
-//- 	| {{#unless App.user.content}}
-//- 	a.btn.btn-primary.btn-large(href='/authorize') Sign up through email
-//- 	| {{/unless}}
+.carousel.slide
+	.carousel-inner
+		.item.active.section
+			.row
+				.span6
+					h3 What is Redfly?
+					ul
+						li Build your institutional memory.
+						li Redfly helps you and your colleagues to organize your organization's external network of contacts.
+						li By sharing contacts that are important to your organization, you can help increase your organization's social capital.
+				.span6
+					img.img-responsive(src="/images/collabnet.png")
+
+		.item.section-colored
+			.row
+				.span6
+					h3 Get E-mail Updates of New Contacts
+					ul
+						li Redfly sends you weekly e-mails of new contacts that people in your organization has networked with.
+				.span6
+					img.img-responsive(src="/images/emailupdates.png")
+
+		.item.section
+			.row
+				.span6
+					img.img-responsive(src="/images/syncgmail.png")
+				.span6
+					h3 Login with Gmail, Sync with LinkedIn
+					ul
+						li Imports your outgoing e-mails to external contacts
+						li Augments your contacts with LinkedIn information
+
+.span12
+	.row
+		br
+	.row
+		.span4
+			h4
+				i.icon-tags
+				span &nbsp; Tag to Classify
+			p You can tag people with custom tags.  Your admin can setup a tag dictionary and tag groups to bucket tags.
+		.span4
+			h4
+				i.icon-search
+				span &nbsp; Search Contacts
+			p When you need to find someone with particular expertise or background, search for them and request for introduction through Redfly.
+		.span4
+			h4
+				i.icon-exchange
+				span &nbsp; Request and Recommend
+			p If you are looking for specific contacts, request it through Redfly and your colleagues can recommend you new contacts.
+	.row
+		br
+	.row.well
+		.span8
+			h4 Get started by logging in with your organization's Gmail.
+		.span4
+			a.btn.btn-lg.btn-primary.pull-right(href='#', action='login target="view"') Login with Gmail
+
