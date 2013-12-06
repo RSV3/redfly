@@ -117,7 +117,7 @@ schemas.push Schema 'IntroMail',
 	contact: type: Types.ObjectId, ref: 'Contact', required: true
 
 schemas.push Schema 'LinkedIn',
-	user: type: Types.ObjectId, ref: 'User'
+	users: [ type: Types.ObjectId, ref: 'User' ]
 	# TODO: fix schema design error: change user (ref) to users (array of refs)
 	contact: type: Types.ObjectId, ref: 'Contact'
 	linkedinId: type: String, required: true, unique: true
