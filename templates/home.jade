@@ -1,4 +1,4 @@
-.carousel.slide
+#carousel-front-page.carousel.slide
 	.carousel-inner
 		.item.active.section
 			.row
@@ -29,6 +29,16 @@
 					ul
 						li Imports your outgoing e-mails to external contacts
 						li Augments your contacts with LinkedIn information
+	a.left.carousel-control(href="#carousel-front-page", data-slide="prev")
+		i.icon-chevron-left
+	a.right.carousel-control(href="#carousel-front-page", data-slide="next")
+		i.icon-chevron-right
+	ol.carousel-indicators
+		li.active(data-target="#carousel-front-page", data-slide-to="0")
+		li(data-target="#carousel-front-page", data-slide-to="1")
+		li(data-target="#carousel-front-page", data-slide-to="2")
+
+
 
 .span12
 	.row
