@@ -7,7 +7,9 @@ services = require 'phrenetic/lib/server/services'
 Models = require '../server/models'
 Elastic = require '../server/elastic'
 
-
+Goodbye = ->
+	services.close()
+	process.exit()
 
 # automagically save new contacts if they're not classified (or skipped) within 5 days.
 eachSave = (user, done)->
@@ -259,26 +261,26 @@ dailyRoutines ->
 
 					if only_daily
 						console.log "nudge: just manually ran the daily routines."
-						return services.close()
+						return Goodbye()
 					if not succinct_manual
 						console.log "not running manual nudge."
 						if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
 							console.log "Today = #{moment().format('dddd')} isnt in the list :"
 							console.dir process.env.NUDGE_DAYS.split(' ')
-							# return services.close()
+							# return Goodbye()
 							dont_do_parse = true
 
 					Models.User.find query, (err, users)->
 						throw err if err
 						console.log "nudge: scanning linkedin"
 						eachDoc users, eachLink, ()->
-							if dont_do_parse then return services.close()
+							if dont_do_parse then return Goodbye()
 							Models.User.find query, (err, users) ->
 								throw err if err
 								console.log "nudge: parsing emails"
 								if query.email then succinct_manual = false		# always send newsletter if just one user
 								eachDoc users, eachParse, ()->
 									console.log "nudge: DONE parsed emails"
-									return services.close()
+									return Goodbye()
 								, succinct_manual
 
