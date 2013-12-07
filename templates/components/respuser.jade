@@ -1,0 +1,12 @@
+span
+	a.hoverme.nodeco(href="#") {{user.canonicalName}}
+br
+{{#if body}}
+span commented:
+{{else}}
+span suggested:
+{{/if}}
+
+{{#with user}}
+{{partial "hoveruser"}}
+{{/with}}

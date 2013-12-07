@@ -5,18 +5,18 @@
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 
-		| {{#if noneButIAdded}}
 		.row-fluid.actions
+			| {{#if noneButIAdded}}
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
 					i.icon-resize-small.icon-2x
-		| {{/if}}
+			| {{/if}}
 
-		| {{#unless view.parentView.classifying}}
-		span.contact-actions
-			a(href='#', action='remove')
-				i.icon-trash.icon-2x
-		| {{/unless}}
+			| {{#unless view.parentView.classifying}}
+			span.contact-actions
+				a(href='#', action='remove')
+					i.icon-trash.icon-2x
+			| {{/unless}}
 
 		| {{/if}}
 
@@ -79,7 +79,7 @@
 					br
 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
 		.row-fluid
-			| {{#if showEmail}}
+			| {{#if view.showEmail}}
 			h4.email
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
@@ -178,11 +178,9 @@
 		.row-fluid
 			h5.knows-header People who know {{nickname}}
 			ul.knows-list
-				| {{#each knowsSome}}
-				li
-					+linkTo('profile this')
-						| {{canonicalName}}
-				| {{/each}}
+				{{#each knowsSome}}
+				{{view App.ContactuserView}}
+				{{/each}}
 
 
 .row-fluid
@@ -209,11 +207,13 @@
 			+linkTo('profile view.content.author class="pull-left"')
 				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			// TO-DO do nl2br with bindings
-			.media-body
+			.media-body.note
 				p {{{view.content.body}}}
 				small.muted
-					+linkTo('profile view.content.author') {{view.content.author.canonicalName}}
+					{{#with view.content.author}}
+					{{view App.ContactuserView}}
 					span  | {{view.naturaldate}}
+					{{/with}}
 				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
 			//- | {{else}}
 			//- span {{emptyNotesText}}

@@ -1,31 +1,30 @@
 h4 This Month's Leaders
 hr
-table.table.toplead
-	thead
-		tr
-			th Rank
-			th Contributor
-			th New
-	tbody
-		| {{#each leader itemViewClass="App.LeaderView"}}
-		td.pos {{view.pos}}
-		td
-			+linkTo('profile this')
-				span {{canonicalName}}
-		td.count {{contactCount}}
-		| {{/each}}
-br
-table.table.botlead
-	thead
-		tr
-			th Rank
-			th Contributor
-			th New
-	tbody
-		| {{#each laggard itemViewClass="App.LaggardView"}}
-		td.pos {{view.pos}}
-		td
-			+linkTo('profile this')
-				span {{canonicalName}}
-		td.count {{contactCount}}
-		| {{/each}}
+.flipcardparent
+	table.table.toplead
+		thead
+			tr
+				th Rank
+				th Contributor
+				th New
+		tbody
+			| {{#each leader itemViewClass="App.LeaderView"}}
+			tr
+				td.pos {{view.pos}}
+				td {{view view.parentView.leaduserView}}
+				td.count {{contactCount}}
+			| {{/each}}
+	br
+	table.table.botlead
+		thead
+			tr
+				th Rank
+				th Contributor
+				th New
+		tbody
+			| {{#each laggard itemViewClass="App.LaggardView"}}
+			tr
+				td.pos {{view.pos}}
+				td {{view view.parentView.leaduserView}}
+				td.count {{contactCount}}
+			| {{/each}}

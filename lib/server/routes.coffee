@@ -2,244 +2,56 @@ module.exports = (app, route) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	moment = require 'moment'
-	marked = require 'marked'
-	crypto = require './crypto'
-	logic = require './logic'
-	models = require './models'
-	mailer = require './mail'
-	mboxer = require './mboxer'
-
+	Crypto = require './crypto'
+	Logic = require './logic'
+	Models = require './models'
+	Mailer = require './mail'
+	Mboxer = require './mboxer'
+	Search = require './search'
+	Db = require './dbroutes'
 	Elastic = require './elastic'
 
 
-	# when we first add a contact to ES:
-	# A recently added contact may already have notes and tags,
-	# so we should look for em and add em to the doc we send to ES
-	primeContactForES = (doc, cb)->
-		models.Note.find {contact:doc._id}, (nerr, notes)->
-			models.Tag.find {contact:doc._id}, (terr, tags)->
-				if not nerr and notes?.length
-					doc._doc.notes = _.map notes, (n)-> {body:n.body, user:n.author}
-				if not terr and tags?.length
-					doc._doc.indtags = _.map _.filter(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
-					doc._doc.orgtags = _.map _.reject(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
-				cb doc
-
-	searchPagePageSize = 10
-
 	route 'db', (data, io, session, fn)->
-
-		cb = (payload) ->
-			root = _s.underscored data.type
-			if _.isArray payload then root += 's'
-			hash = {}
-			hash[root] = payload
-			fn hash
-
-		model = models[data.type]
-
-		# add details about doc into feed
-		feed = (doc, type) ->
-			o = {type: type, id: doc.id}
-			if doc.addedBy then o.addedBy = doc.addedBy
-			app.io.broadcast 'feed', o
-
-
-		switch data.op
-			when 'find'
-				# TODO
-				try
-					if id = data.id
-						model.findById id, (err, doc) ->
-							throw err if err
-							switch data.type
-								when 'Admin'
-									if doc
-										# mongoose is cool, but we need do this to get around its protection
-										if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-										if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
-										if not doc.orgtagcats then doc._doc['orgtagcats'] = process.env.ORG_TAG_CATEGORIES
-									else
-										new_adm = {_id:1, orgtagcats:process.env.ORG_TAG_CATEGORIES, domains:process.env.ORGANISATION_DOMAIN}
-										return model.create new_adm, (err, doc) ->
-											throw err if err
-											if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
-											if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
-											cb doc
-							cb doc
-					else if ids = data.ids
-						if not ids.length then return cb []
-						model.find _id: $in: ids, (err, docs) ->
-							throw err if err
-							docs = _.sortBy docs, (doc) ->
-								ids.indexOf doc.id
-							cb docs
-					else
-						schemas = require '../schemas'
-						if schemas[data.type].base
-							data.query ?= conditions: {}
-							data.query.conditions._type = data.type
-						if query = data.query
-							if not query.conditions and not query.options
-								query = conditions: query
-							model.find query.conditions, null, query.options, (err, docs) ->
-								throw err if err
-								cb docs
-						else
-							model.find (err, docs) ->
-								throw err if err
-								cb docs
-				catch err
-					console.error 'Error in db API: ' + err
-					cb()
-
-			when 'create'
-				record = data.record
-				if _.isArray record then throw new Error 'unimplemented'
-				switch model
-					when models.Contact
-						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
-						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
-					when models.Note
-						record.body = marked record.body
-				model.create record, (err, doc) ->
-					if err
-						console.log "ERROR: creating record"
-						console.dir err
-						console.dir record
-						throw err unless err.code is 11000		# duplicate key
-						doc = record
-					cb doc
-					switch model
-						when models.Note
-							Elastic.onCreate doc, 'Note', "notes", (err)->
-								cb doc
-						when models.Tag
-							Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
-								if not err then models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
-									if err
-										console.log "error incrementing data count for #{user}"
-										console.dir err
-									feed doc, data.type
-								cb doc
-						when models.Contact
-							if doc.addedBy
-								feed doc, data.type
-								Elastic.create doc, (err)->
-									if err
-										console.log "ERR: ES creating new contact"
-										console.dir doc
-										console.dir err
-									cb doc
-						else cb doc
-
-			when 'save'
-				record = data.record
-				if _.isArray record then throw new Error 'unimplemented'
-				model.findById record.id, (err, doc) ->
-					throw err if err
-					if not doc
-						console.log "ERROR: failed to find record to save:"
-						console.dir data
-						return cb null
-					_.extend doc, record
-					if model is models.Contact 
-						if record.added is null
-							doc.set 'added', undefined
-							doc.set 'classified', undefined
-					modified = doc.modifiedPaths()
-					# Important to do updates through the 'save' call so middleware and validators happen.
-					doc.save (err) ->
-						throw err if err
-						cb doc
-						switch model
-							when models.Contact
-								if doc.added
-									if 'added' in modified
-										feed doc, data.type
-										primeContactForES doc, (doc)->
-											Elastic.create doc, (err)->
-												if not err then return
-												console.log "ERR: ES updating #{type}"
-												console.dir doc
-												console.dir err
-									else
-										Elastic.update String(doc._id), doc:doc, (err)->
-											if not err then return
-											console.log "ERR: ES updating #{type}"
-											console.dir doc
-											console.dir err
-								else if 'knows' in modified		# taken ourselves out of knows list?
-									if not doc.knows.length
-										Elastic.delete doc._id, (err)->
-											if not err then return
-											console.log "ERR: ES removing #{type}"
-											console.dir doc
-									else
-										Elastic.update String(doc._id), doc:doc, (err)->
-											if not err then return
-											console.log "ERR: ES updating #{type}"
-											console.dir doc
-											console.dir err
-								if 'classified' in modified
-									models.User.update {_id:session.user}, $inc: {'contactCount':1, 'fullCount':1}, (err)->
-										if err
-											console.log "error incrementing data count for #{session.user}"
-											console.dir err
-								else if 'updated' in modified
-									models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
-										if err
-											console.log "error incrementing data count for #{session.user}"
-											console.dir err
-
-			when 'remove'
-				if id = data.id
-					model.findByIdAndRemove id, (err, doc) ->
-						throw err if err
-						if not doc then return cb()
-						switch data.type
-							when 'Contact'
-								Elastic.delete id, (err)->
-									if err
-										console.log "ERR: ES deleting #{id} on db remove"
-										console.dir err
-									cb()
-							when 'Note'
-								Elastic.onDelete doc, 'Note', "notes", (err)-> cb()
-							when 'Tag'
-								Elastic.onDelete doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), cb
-							else cb()
-
-				else if ids = data.ids
-					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
-				else
-					throw new Error 'no id on remove'
-			else
-				throw new Error 'un recognised db route'
+		Db.routes app, data, session, fn
 
 
 	route 'dashboard', (fn)->
-		fn {
-			clicks: 3
-			tags: 4
-			classify: 6
-			users: 5
-			searches: 3
-			requests: 4
-			responses: 6
-			org: [
-				{name: 'test.com', count: 3}
-				{name: 'test2.org', count: 2}
-			]}
+		dash =
+			clicks: 0
+			tags: 0
+			classify: 0
+			users: 0
+			searches: 0
+			requests: 0
+			responses: 0
+			org: []
+		Logic.recentOrgs (err, orgs)->
+			if not err then dash.org = orgs
+			Logic.summaryTags (err, c)->
+				if not err then dash.tags = c
+				Logic.summaryReqs (err, c)->
+					if not err then dash.requests = c
+					Logic.summaryResps (err, c)->
+						if not err then dash.responses = c
+						Logic.summaryUnclassified (err, c)->
+							if not err then dash.classify = c
+							Logic.summaryIntros (err, c)->
+								if not err then dash.intros = c
+								Logic.summaryActive (err, c)->
+									if not err then dash.active = c
+									Logic.searchCount (err, c)->
+										if not err then dash.searches = c
+										fn dash
 
 	route 'stats', (fn)->
 		stats = {}
 		last30days = $gt:moment().subtract('days', 30).toDate()
 		query = added:last30days
-		models.Contact.count query, (err, totes)->
+		Models.Contact.count query, (err, totes)->
 			if not err then stats.totalThisMonth = totes
 			query.classified = $not:last30days				# avoids mongoose cast error, while matching both true and $exists:false
-			models.Contact.count query, (err, totes)->
+			Models.Contact.count query, (err, totes)->
 				if not err then stats.autoThisMonth = totes
 				fn stats
 
@@ -247,27 +59,27 @@ module.exports = (app, route) ->
 		fn process.env.ORGANISATION_TITLE
 
 	route 'total.contacts', (fn) ->
-		logic.countConts (err, count) ->
+		Logic.countConts (err, count) ->
 			throw err if err
 			fn count
 
 	route 'summary.contacts', (fn) ->
-		logic.summaryContacts (err, count) ->
+		Logic.summaryContacts (err, count) ->
 			throw err if err
 			fn count
 
 	route 'summary.tags', (fn) ->
-		logic.summaryTags (err, count) ->
+		Logic.summaryTags (err, count) ->
 			throw err if err
 			fn count
 
 	route 'summary.notes', (fn) ->
-		logic.summaryNotes (err, count) ->
+		Logic.summaryNotes (err, count) ->
 			throw err if err
 			fn count
 
 	route 'summary.verbose', (fn) ->
-		models.Tag.find().sort('date').select('body').exec (err, tags) ->
+		Models.Tag.find().sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) ->
 				tag.body.length
@@ -277,31 +89,31 @@ module.exports = (app, route) ->
 		fn 'Joe Chung'
 
 	route 'login.contextio', (data, io, session, fn) ->
-		models.User.findOne email: data.email, (err, user) ->
+		Models.User.findOne email: data.email, (err, user) ->
 			if err
 				console.log err
 				return fn err:'email'
 			if user and user.cIO
-				if crypto.hashPassword(data.password, user.cIO.salt) is user.cIO.hash
+				if Crypto.hashPassword(data.password, user.cIO.salt) is user.cIO.hash
 					session.user = user.id
 					session.save()
 					return fn id:user.id
-			mboxer.create data, (cIOdata)->
+			Mboxer.create data, (cIOdata)->
 				console.dir cIOdata
 				if not cIOdata?.success then return fn err:'email'
 				if cIOdata.err then return fn err:cIOdata.err
 				if not user
 					console.log "creating new user #{data.email}"
 					console.dir cIOdata
-					user = new models.User
+					user = new Models.User
 				user.name = data.name or data.email
 				user.email = data.email
 				user.cIO =
 					expired:false
 					user:data.name
 					label:cIOdata.source.label
-					salt:crypto.generateSalt()
-				user.cIO.hash = crypto.hashPassword(data.password, user.cIO.salt)
+					salt:Crypto.generateSalt()
+				user.cIO.hash = Crypto.hashPassword(data.password, user.cIO.salt)
 				user.save (err, u) ->
 					if err or not u then console.dir err
 					else
@@ -310,149 +122,36 @@ module.exports = (app, route) ->
 						fn id:u.id
 
 
-
-	# this helper goes through a list of tag aggregate candidates,
-	# picking the first five which have one valid contact in its list
-	# candidates: from loadSomeTagNames. _id is the body, contacts is the array of contact IDs
-	_considerHash = {}
-	considerTags = (candidates, cb, goodtags=[])->
-		if not candidates?.length then return cb goodtags
-		if goodtags.length is 5 then return cb goodtags
-		if tag = candidates.shift()
-			if _considerHash[tag._id]
-				goodtags.push tag._id
-				return considerTags candidates, cb, goodtags
-			models.Contact.count {added:{$exists:true}, _id:{$in:tag.contacts}}, (e, c)->
-				if (not e) and c
-					_considerHash[tag._id]=true
-					goodtags.push tag._id
-				return considerTags candidates, cb, goodtags
-
-	# helper, used when building filters: get most common tags matching conditions
-	loadSomeTagNames = (ids, cat, cb)->
-		conditions = category:cat
-		if ids?.length
-			oIDs = []
-			for id in ids
-				oIDs.push models.ObjectId(id)
-			conditions.contact = $in: oIDs
-		models.Tag.aggregate {$match: conditions},
-			{$group:  _id: '$body', count: {$sum: 1}, contacts:$addToSet:'$contact'},
-			{$sort: count: -1},
-			(err, tags) ->
-				throw err if err
-				if ids?.length then return cb _.pluck(tags, '_id')[0..5]
-				considerTags tags, cb
-
-
-	# refactored search:
-	# optional limit for the dynamic searchbox,
-	# and a final callback where we can decide what attributes to package for returning
-	doSearch = (fn, data, session, limit=0) ->
-		query = data.filter or data.query or ''
-		compound = _.compact query.split ':'
-		if not compound.length then terms=''
-		else terms = compound[compound.length-1]
-
-		availableTypes = ['name', 'email', 'company', 'tag', 'note']
-		fields = []		# this array maps the array of results to their type
-		if compound.length is 1						# type specified, eg tag:slacker
-			for type in availableTypes
-				fields.push type
-		else if compound[0] is 'contact'
-			fields = ['name', 'email']
-		else fields = [compound[0]]
-
-		filters = []
-		if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
-		if data.moreConditions?.poor
-			filters.push terms:addedBy:[session.user]
-			filters.push missing:field:"indtags"
-			filters.push missing:field:"orgtags"
-		if data.knows?.length then filters.push terms:knows:data.knows
-		if data.industry?.length 
-			thisf = []
-			for tag in data.industry
-				thisf.push term:"indtags.body.raw":tag,
-			if data.indAND then filters.push "and":thisf
-			else filters.push "or":thisf
-		if data.organisation?.length 
-			thisf = []
-			for tag in data.organisation
-				thisf.push term:"orgtags.body.raw":tag
-			if data.orgAND then filters.push "and":thisf
-			else filters.push "or":thisf
-
-		sort = {}
-		if data.sort
-			key = data.sort
-			if key[0] is '-'
-				key=key.substr 1
-				dir = 'desc'
-			else dir = 'asc'
-			if key is "names"
-				key = "sortname"
-				sort[key]=dir
-				delete data.sort
-			else if key is 'added'
-				sort[key]=dir
-				delete data.sort
-			else
-				key="#{key}.value"
-				sort[key]=dir
-		else if not query.length
-			sort.added = 'desc'
-
-		if not limit
-			options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
-			if data.page then options.skip = data.page*searchPagePageSize
-		else options = {limit:limit, skip:0, facets: false, highlights: true}
-		Elastic.find fields, terms, filters, sort, options, (err, totes, docs, facets) ->
-			throw err if err
-			resultsObj = query:query
-			if docs?.length
-				if facets then resultsObj.facets = facets
-				if docs[0].field
-					resultsObj.response = {}
-					for d in docs
-						if String(d._id) isnt data.moreConditions?._id?.$ne
-							if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
-							else thefield = d.field
-							if not resultsObj[thefield] then resultsObj[thefield] = []
-							resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
-				else
-					resultsObj.response = _.pluck docs, '_id'
-					resultsObj.totalCount = resultsObj.filteredCount = totes
-			return fn resultsObj
-
-
 	route 'fullSearch', (data, io, session, fn) ->
-		doSearch fn, data, session
+		Search fn, data, session
 
 	route 'search', (data, io, session, fn)->
-		doSearch fn, data, session, 19
+		Search fn, data, session, 19
 
 
 	route 'verifyUniqueness', (data, fn) ->
 		field = data.field + 's'
 		conditions = {}
 		conditions[field] = data.value
-		models.Contact.findOne conditions, (err, contact) ->
+		Models.Contact.findOne conditions, (err, contact) ->
 			throw err if err
 			fn contact?[field][0]
 
 	route 'getIntro', (data, fn) ->	# get an email introduction
-		models.Contact.findById data.contact, (err, contact) ->
+		Models.Contact.findById data.contact, (err, contact) ->
 			throw err if err
-			models.User.findById data.userfrom, (err, userfrom) ->
+			Models.User.findById data.userfrom, (err, userfrom) ->
 				throw err if err
-				models.User.findById data.userto, (err, userto) ->
+				Models.User.findById data.userto, (err, userto) ->
 					throw err if err
-					mailer.requestIntro userfrom, userto, contact, data.url, ()->
-						fn()
+					Mailer.requestIntro userfrom, userto, contact, data.url, ()->
+						intromail = {sender:userfrom, recipient:userto, contact:contact}
+						Models.IntroMail.create intromail, (err, mod)->
+							throw err if err
+							fn()
 
 	route 'deprecatedVerifyUniqueness', (data, fn) ->	# Deprecated, bitches
-		models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
+		Models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[data.field])
 				.intersection(data.candidates)
@@ -460,23 +159,32 @@ module.exports = (app, route) ->
 				.value()
 
 	route 'tags.remove', (conditions, fn) ->
-		models.Tag.find conditions, '_id', (err, ids)->
+		Models.Tag.find conditions, (err, tags)->
 			throw err if err
-			ids =  _.pluck ids, '_id'
-			models.Tag.remove {_id: $in: ids}, (err)->
+			ids = _.pluck tags, '_id'
+			Models.Tag.remove {_id: $in: ids}, (err)->
 				if err
 					console.log "error removing tags:"
 					console.dir ids
 					console.dir err
-			fn ids
+					fn null
+				else
+					whichtags = if conditions.category is 'industry' then 'indtags' else 'orgtags'
+					bulkESupd = (tags)->
+						if not tags?.length then return
+						if not (tag = tags.pop()) then return bulkESupd tags
+						Elastic.onDelete tag, 'Tag', whichtags, (err)->
+							bulkESupd tags
+					bulkESupd tags
+					fn ids
 
 	route 'tags.all', (conditions, fn) ->
-		models.Tag.find(conditions).distinct 'body', (err, bodies)->
+		Models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
 			fn bodies.sort()
 
 	_updateTags = (updates, conditions, fn)->
-		models.Tag.find conditions, (err, tags)->
+		Models.Tag.find conditions, (err, tags)->
 			if err or not tags?.length then return fn()
 			newcat = updates.category or conditions.category
 			newbod = updates.body or conditions.body
@@ -485,8 +193,8 @@ module.exports = (app, route) ->
 					Elastic.onDelete doc, 'Tag', (if conditions.category is 'industry' then 'indtags' else 'orgtags'), (err)->
 						doc.body = newbod
 						Elastic.onCreate doc, 'Tag', (if newcat is 'industry' then 'indtags' else 'orgtags')
-			models.Tag.update conditions, updates, {multi:true}, (err) ->
-				if err and err.code is 11001 then return models.Tag.remove conditions, fn	# error: duplicate
+			Models.Tag.update conditions, updates, {multi:true}, (err) ->
+				if err and err.code is 11001 then return Models.Tag.remove conditions, fn	# error: duplicate
 				console.dir err if err
 				return fn()
 
@@ -503,9 +211,9 @@ module.exports = (app, route) ->
 		_updateTags updates, conditions, fn
 
 	route 'tags.popular', (conditions, fn) ->
-		if conditions.contact then conditions.contact = models.ObjectId(conditions.contact)
+		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
 		else conditions.contact = $exists: true
-		models.Tag.aggregate {$match: conditions},
+		Models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
 			{$sort: count: -1},
 			{$limit: 20},
@@ -526,7 +234,7 @@ module.exports = (app, route) ->
 				body: '$_id'
 				count: 1
 				mostRecent: 1
-		models.Tag.aggregate group, project, (err, results) ->
+		Models.Tag.aggregate group, project, (err, results) ->
 			throw err if err
 			fn results
 		# fn [
@@ -543,11 +251,11 @@ module.exports = (app, route) ->
 		console.dir data
 		console.log ''
 		updatedObject = {}
-		models.Contact.findById data.contactId, (err, contact) ->
+		Models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
-			models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
+			Models.Contact.find().in('_id', data.mergeIds).exec (err, merges) ->
 				throw err if err
-				history = new models.Merge
+				history = new Models.Merge
 				history.contacts = [contact].concat merges...
 				history.save (err) ->
 					throw err if err
@@ -569,7 +277,7 @@ module.exports = (app, route) ->
 								update.type = key
 								update.field = value
 							conditions[update.field] = merge.id
-							models[update.type].find conditions, (err, docs) ->
+							Models[update.type].find conditions, (err, docs) ->
 								throw err if err
 								async.forEach docs, (doc, cb) ->
 									doc[update.field] = contact
@@ -591,7 +299,7 @@ module.exports = (app, route) ->
 						contact?.save (err) ->
 							throw err if err
 							console.log "priming contact from merge"
-							primeContactForES contact, (doc)->
+							Db.primeContactForES contact, (doc)->
 								Elastic.create doc, (err)->
 									fn updatedObject
 									if not err then return
@@ -602,7 +310,7 @@ module.exports = (app, route) ->
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	routing_flag_hash = {}
 	route 'parse', (id, io, fn) ->
-		models.User.findById id, (err, user) ->
+		Models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
 			if routing_flag_hash[id] then return	# in case this gets called twice in a row ...
@@ -623,7 +331,7 @@ module.exports = (app, route) ->
 				fn err
 
 	route 'linkin', (id, io, session, fn) ->
-		models.User.findById id, (err, user) ->
+		Models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn err	# in case this gets called and there's not logged in user
 			notifications =
@@ -644,17 +352,19 @@ module.exports = (app, route) ->
 
 
 	route 'classifyQ', (id, fn) ->
-		logic.classifyList id, (neocons)->
-			fn _.map neocons, (n)-> models.ObjectId(n)		# convert back to objectID
+		Logic.classifyList id, (neocons)->
+			fn _.map neocons, (n)-> Models.ObjectId(n)		# convert back to objectID
 
-	route 'classifyCount', logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
+	route 'classifyCount', Logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
+	route 'requestCount', Logic.requestCount		# ditto
+
 
 	route 'companies', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
 		# TODO: fix companies
 		# this is still kinda nonsense. we really wanna search mails from the last week,
 		# then search all contacts in those mails, to then get their company
-		models.Contact.find({company:{$exists:true}, added:{$gt:oneWeekAgo}}).execFind (err, contacts)->
+		Models.Contact.find({company:{$exists:true}, added:{$gt:oneWeekAgo}}).execFind (err, contacts)->
 			throw err if err
 			companies = []
 			_.each contacts, (contact)->
@@ -672,31 +382,50 @@ module.exports = (app, route) ->
 		_.each contacts, (c)->
 			classification = {user:session.user, contact:c}
 			if session?.admin?.flushsave then classification.saved = moment().toDate()
-			models.Classify.create classification, (err, mod)->
+			Models.Classify.create classification, (err, mod)->
 				if err
 					console.log 'flush err:'
 					console.log err
 					console.dir mod
 		fn()
 
+	###
 	route 'recent', (fn)->
-		models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
+		Models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
 			throw err if err
 			recent = _.map contacts, (c)->c._id.toString()
 			console.log "recent"
 			console.dir recent
 			fn recent
+	###
 
-	route 'leaderboard', (fn)->
-		models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
+	route 'leaderboard', (data, io, session, fn)->
+		Models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
 			l = users.length
 			users = _.map _.sortBy(users, (u) ->
 				((u.contactCount or 0) + (u.dataCount or 0)/5)*l + l - (u.lastRank or 0)
 			), (u)-> String(u.get('_id'))
-			fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse()
+			Search (results)->
+				fn process.env.RANK_DAY, l, users[l-5...l].reverse(), users[0...5].reverse(), results?.totalCount
+			, {moreConditions:poor:true}, session
+
+
+	route 'requests', (data, io, session, fn) ->
+		currentReqs = null
+		skip = data?.skip or 0
+		pageSize = 10
+		if data?.old
+			query = expiry:$lt:moment().toDate()
+			if data.me then query.user = session.user
+			else query.user = $ne:session.user
+		else query = expiry:$gte:moment().toDate()
+		Models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+			theresMore = reqs?.length > pageSize
+			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
+			fn currentReqs, theresMore
 
 	route 'renameTags', (data, io, session, fn)->
-		models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+		Models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
 			if err then console.dir err
 			fn err

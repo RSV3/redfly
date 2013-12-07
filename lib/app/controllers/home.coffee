@@ -8,6 +8,7 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/home'
 		classNames: ['home']
 		didInsertElement: ()->
+			@$('.carousel').carousel interval: 5000
 			socket.emit 'total.contacts', (results) =>
 				formatthis = results
 				format = ''

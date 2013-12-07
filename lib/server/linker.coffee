@@ -229,11 +229,12 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
 		linkedin.linkedinId = details.profileid
-		linkedin.user = user
+		linkedin.users = []
 		linkedin.name =
 			firstName: details.firstName
 			lastName: details.lastName
 			formattedName: details.formattedName
+	linkedin.users.addToSet user
 	updateLIrec details, linkedin, 'yearsExperience'
 	updateLIrec details, linkedin, 'pictureUrl'
 	updateLIrec details, linkedin, 'summary'

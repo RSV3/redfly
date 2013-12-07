@@ -1,0 +1,22 @@
+div.badgecount
+	.expandiconspace
+		{{#if count}}
+		a.expandicon.nodeco(href='#')
+			{{#if view.parentView.expanded}}
+			i.icon-caret-down.icon-large
+			{{else}}
+			i.icon-caret-right.icon-large
+			{{/if}}
+		{{/if}}
+	{{#if count}}
+	span.badge.badge-success {{count}}
+	{{else}}
+	span.badge.badge-important {{count}}
+	{{/if}}
+span
+	a.hoverme.nodeco(href="#") {{user.canonicalName}}
+	strong :&nbsp; &nbsp;
+
+{{#with user}}
+{{partial "hoveruser"}}
+{{/with}}
