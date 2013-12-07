@@ -178,7 +178,7 @@ dailyRoutines = (doneDailies)->
 
 resetEachRank = (cb, users)->
 	if not l = users?.length then return cb()
-	user = users.shift()
+	if not user = users.shift() then return resetEachRank cb, users
 	models.Contact.count {addedBy:user.id}, (err, fc)->
 		if not err then user.fullCount = fc
 		models.Contact.count {addedBy:user.id, classified:$exists:false}, (err, ucc)->
@@ -187,20 +187,20 @@ resetEachRank = (cb, users)->
 			DAYS_PER_MONTH = 30
 
 			if not user.oldDcounts then user.oldDcounts = []
-			user.oldDcounts.unshift() while user.oldDcounts?.length > DAYS_PER_MONTH
-			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.unshift()
+			user.oldDcounts.shift() while user.oldDcounts?.length > DAYS_PER_MONTH
+			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.shift()
 			if not user.oldDcounts?.length then user.oldDcounts = [user.dataCount]
 			else user.oldDcounts.push user.dataCount - _.reduce(user.oldDcounts, (t, s)-> t + s)
 
 			if not user.oldCcounts then user.oldCcounts = []
-			user.oldCcounts.unshift() while user.oldCcounts?.length > DAYS_PER_MONTH
-			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.unshift()
+			user.oldCcounts.shift() while user.oldCcounts?.length > DAYS_PER_MONTH
+			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.shift()
 			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
 			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
 
-			if not user.oldDcounts then user.oldDcounts = []
+			if not user.oldRanks then user.oldRanks = []
 			user.oldRanks.push l
-			user.oldRanks.unshift() until user.oldRanks?.length < DAYS_PER_MONTH
+			user.oldRanks.shift() while user.oldRanks?.length > DAYS_PER_MONTH
 			user.lastRank = user.oldRanks[0]
 
 			user.save (err)->
