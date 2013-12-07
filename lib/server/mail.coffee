@@ -2,56 +2,21 @@
 path = require 'path'
 projectRoot = path.dirname path.dirname __dirname
 
-mail = module.exports = require('phrenetic/lib/server/mail') projectRoot
+Mail = module.exports = require('phrenetic/lib/server/mail') projectRoot
+Logic = require './logic'
 
 
-from = "#{process.env.ORGANISATION_CONTACT} <#{process.env.ORGANISATION_EMAIL}>"
-
-# mail.sendWelcome: (to, cb) ->
-# 	mail.sendTemplate 'welcome',
-# 		to: to
-# 		subject: 'Thank you for joining Redfly!'
-# 		# Need to add 'title:' here
-# 	, cb
+Mail.sendNudge = (user, contacts, cb) ->		# note we're now ignoring the 'contacts' list,
+	return Mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
 
 
-mail.sendNudge = (user, contacts, cb) ->		# note we're now ignoring the 'contacts' list,
-	return mail.sendNewNewsletter user, cb		# cos we have a more complicated way to work out classifies
-	###
-	_ = require 'underscore'
-	_s = require 'underscore.string'
-	util = require './util'
-
-	# TO-DO duplicates some logic in the client models. Maybe put said logic in a common place.
-	names = []
-	for contact in contacts
-		if name = _.first(contact.names)
-			names.push name
-		else
-			email = _.first(contact.emails)
-			splitted = email.split '@'
-			domain = _.first _.last(splitted).split('.')
-			names.push "#{_.first(splitted)} [#{domain}]"
-	nicknames = (util.nickname(_.first(contact.names), _.first(contact.emails)) for contact in contacts)
-	
-	mail.sendTemplate 'nudge',
-		to: user.email
-		from: from
-		subject: "Tell me more about #{nicknames.join(', ')}..."	# TO-DO Use _s.toSentenceSerial whenever it becomes available.
-		title: "Hi #{user.name}!"
-		names: names
-	, cb
-	###
-
-
-mail.sendNewNewsletter = (user, cb) ->
-	logic = require './logic'
+Mail.sendNewNewsletter = (user, cb) ->
 	require('step') ->
-		logic.countConts @parallel()					# total in the system
-		logic.myConts user.get('id'), @parallel()		# total this user this week
-		logic.recentConts @parallel()					# short list of recent contacts in system
-		logic.recentOrgs @parallel()					# short list of recent orgs in system
-		logic.classifySome user.get('id'), @parallel()					# list of classifies for this user
+		Logic.countConts @parallel()					# total in the system
+		Logic.myConts user.get('id'), @parallel()		# total this user this week
+		Logic.recentConts @parallel()					# short list of recent contacts in system
+		Logic.recentOrgs @parallel()					# short list of recent orgs in system
+		Logic.classifySome user.get('id'), @parallel()					# list of classifies for this user
 		return undefined
 	, (err, numContacts, numMyContacts, recentContacts, recentOrgs, some2Class) ->
 		if err then return cb err
@@ -77,7 +42,7 @@ mail.sendNewNewsletter = (user, cb) ->
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
-			from: from
+			from: "Come Classify to Fly High with RedFly <#{process.env.ORGANISATION_EMAIL}>"
 			subject: mySubj
 			numContacts: numContacts
 			numMyContacts: numMyContacts
@@ -86,15 +51,15 @@ mail.sendNewNewsletter = (user, cb) ->
 			some2Class: some2Class
 			classStr: classStr
 			headstrip: headstrip
-		mail.sendTemplate 'newnewsletter', templateObj, cb
+		Mail.sendTemplate 'newnewsletter', templateObj, cb
 
 
 
-mail.sendNewsletter = (user, cb) ->
-	return mail.sendNewNewsletter user, cb
+Mail.sendNewsletter = (user, cb) ->
+	return Mail.sendNewNewsletter user, cb
 
 
-mail.requestIntro = (userfrom, userto, contact, url, cb) ->
+Mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 	tonick = userto.name.split(' ')[0]
 	fromnick = userfrom.name.split(' ')[0]
 	contactnick = contact.names[0]?.split(' ')[0]
@@ -103,7 +68,7 @@ mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 	contactname = contact.names[0]
 	if not contactname or not contactname.length
 		contactname = contact.emails.firstObject
-	mail.sendTemplate 'intro',
+	Mail.sendTemplate 'intro',
 		#to: "#{userto.get('canonicalName')} <#{userto.get('email')}>"
 		#from: userfrom.get('email')
 		to: "#{userto.name} <#{userto.email}>"
@@ -117,4 +82,35 @@ mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 		fromnick: fromnick
 		url: url
 	, cb
+
+
+Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
+	if not uRequests.length and not oRequests.length then return cb()
+	templateObj = 
+		org: process.env.ORGANISATION_TITLE
+		title: "Hi #{user.name}!"
+		to: user.email
+		from: "RedFly Request <#{process.env.ORGANISATION_EMAIL}>"
+		subject: "Recent requests for contacts"
+		headstrip: "help colleagues make useful connections"
+		urgentRequests: uRequests
+		otherRequests: oRequests
+		numContacts: numContacts
+	Mail.sendTemplate 'requests', templateObj, cb
+
+
+Mail.sendResponses = (numContacts, user, requests, cb) ->
+	if not requests.length then return cb()
+	templateObj = 
+		org: process.env.ORGANISATION_TITLE
+		title: "Hi #{user.name}!"
+		to: user.email
+		from: "RedFly Response <#{process.env.ORGANISATION_EMAIL}>"
+		subject: "Recent responses to your request for contacts"
+		headstrip: "your colleagues suggest these useful connections"
+		id: user._id
+		requests: requests
+		numContacts: numContacts
+	Mail.sendTemplate 'responses', templateObj, cb
+
 

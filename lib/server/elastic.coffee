@@ -184,6 +184,7 @@ ES_updateOnDelete = (doc, type, field, cb)->
 		} else {
 			ctx.op = "none"
 		} """, cb
+	
 
 
 ES_get = (id, cb)->

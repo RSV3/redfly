@@ -4,17 +4,19 @@ _ = require 'underscore'
 
 services = require 'phrenetic/lib/server/services'
 
-models = require '../server/models'
+Models = require '../server/models'
 Elastic = require '../server/elastic'
 
-
+Goodbye = ->
+	services.close()
+	process.exit()
 
 # automagically save new contacts if they're not classified (or skipped) within 5 days.
 eachSave = (user, done)->
 
 	id = user._id
 	fiveDays = moment().subtract('days', 5)
-	models.Contact.find({
+	Models.Contact.find({
 		knows: id
 		added: $exists: false
 		date: $lt: fiveDays
@@ -26,7 +28,7 @@ eachSave = (user, done)->
 		if not neocons.length then return done()
 
 		# first strip out those who are permanently excluded
-		models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
+		Models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
 			throw err if err
 			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
 			if not neocons.length then return done()
@@ -34,30 +36,30 @@ eachSave = (user, done)->
 			# then strip out the temporary skips:
 			# recent classify records that dont have the 'saved' flag set.
 			class_match = { user:id, saved:{$exists:false}, contact:$in:neocons }
-			models.Classify.find(class_match).select('contact').exec (err, skips) ->
+			Models.Classify.find(class_match).select('contact').exec (err, skips) ->
 				throw err if err
 				skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
 					not _.some unadded, (u)->
-						u._id.toString() is skip.contact.toString() and models.tmStmp(u._id) > models.tmStmp(skip._id)
+						u._id.toString() is skip.contact.toString() and Models.tmStmp(u._id) > Models.tmStmp(skip._id)
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if not neocons.length then return done()
 				updates = { added: new Date(), addedBy: id }
 				matches = _id: $in: neocons
 				options = { safe:true, multi:true }
-				models.Contact.update matches, updates, options, (err)->
+				Models.Contact.update matches, updates, options, (err)->
 					if err
 						console.log "Error updating user #{id}'s contacts:"
 						console.dir neocons
 						console.dir err
 						return done()
-					else models.Contact.find matches, (err, contacts)->
+					else Models.Contact.find matches, (err, contacts)->
 						if not err then while contacts?.length
 							
 							((c)->
 								Elastic.create c, (err)->
 									if err then return
 									# industry tags may have been pre-populated, so:
-									models.Tag.find {contact:c._id, category:'industry'}, (err, tags)->
+									Models.Tag.find {contact:c._id, category:'industry'}, (err, tags)->
 										if err then return
 										while tags?.length
 											t = tags.pop()
@@ -80,6 +82,7 @@ eachUpAdd = (contact, cb)->
 # trawl through a user's linkedin network
 eachLink = (user, cb)->
 	email = user?.email
+	console.log "link #{email}"
 	try require('../server/linker') user, null, (err, changes)->
 		if err
 			console.log "error in nudge link for #{email}"
@@ -88,6 +91,7 @@ eachLink = (user, cb)->
 		else
 			user.lastLink.date = new Date()
 			user.lastLink.count = changes?.length
+			console.dir user.lastLink
 			user.save (err)->
 				if err then console.log "Error saving linkedin count in nudge for #{email}"
 				cb()
@@ -114,10 +118,24 @@ eachDoc = (docs, operate, fcb, succinct_manual) ->
 	, succinct_manual
 
 
+shiftSearchCount = ->
+	DAYS_PER_WEEK = 7
+	Models.Admin.findOne(_id:1).exec (err, admin)->
+		if err then return console.dir err
+		updates = { searchCounts: admin.searchCounts, searchCnt: admin.searchCnt }
+		if not updates.searchCounts then updates.searchCounts = []
+		if not updates.searchCnt then updates.searchCnt = 0
+		updates.searchCounts.unshift updates.searchCnt
+		if updates.searchCounts.length >= DAYS_PER_WEEK then updates.searchCounts.pop()
+		updates.searchCnt = 0
+		Models.Admin.update {_id:1}, {$set:updates}, {safe:true}, (err)->
+			if err then console.dir err
 
 # these operations are performed every time the cron job is called
 
 dailyRoutines = (doneDailies)->
+
+	shiftSearchCount()	# now we're counting searches, need to shift the array each week
 
 	# tidy up the classify records each day, to expire skips and saves
 	###
@@ -125,9 +143,9 @@ dailyRoutines = (doneDailies)->
 	# but now the 'saved' field is a Date.
 	suffix="0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
 	prefix = Math.floor(moment().subtract('months', 1).valueOf()/1000).toString(16)
-	models.Classify.remove {_id : $lt : new models.ObjectId "#{prefix}#{suffix}"}, (err)->
+	Models.Classify.remove {_id : $lt : new Models.ObjectId "#{prefix}#{suffix}"}, (err)->
 	###
-	models.Classify.remove {saved:{$exists:true}, saved:$lt:moment().subtract('months',1).toDate()}, (err)->
+	Models.Classify.remove {saved:{$exists:true}, saved:$lt:moment().subtract('months',1).toDate()}, (err)->
 		if err
 			console.log "Error removing old classifies (saves): IDs less than #{prefix}#{suffix}"
 			console.dir err
@@ -135,7 +153,7 @@ dailyRoutines = (doneDailies)->
 		# skips (not saved) are removed after two weeks
 		suffix = "0000000000000000"	# append this to time 16 char time in secs to get an ObjectId timestamp
 		prefix = Math.floor(moment().subtract('days', 14).valueOf()/1000).toString(16)
-		models.Classify.remove {saved: {$exists: false}, _id: {$lt: new models.ObjectId "#{prefix}#{suffix}"}}, (err)->
+		Models.Classify.remove {saved: {$exists: false}, _id: {$lt: new Models.ObjectId "#{prefix}#{suffix}"}}, (err)->
 			if err
 				console.log "Error removing old classifies (skips): IDs less than #{prefix}#{suffix}"
 				console.dir err
@@ -145,7 +163,7 @@ dailyRoutines = (doneDailies)->
 				return doneDailies()
 
 			# if we're not nudging today, let's take the time to make sure every added contact is searchable
-			models.Contact.find {added: $exists: true}, (err, contacts)->
+			Models.Contact.find {added: $exists: true}, (err, contacts)->
 				if not err and contacts?.length
 					_.each contacts, (c)->
 						Elastic.get c._id, (err, data)->
@@ -161,7 +179,7 @@ dailyRoutines = (doneDailies)->
 					hitAtATime = (hits)->
 						if not hits?.length then return scrollAtATime()
 						hit = hits.pop()
-						models.Contact.findById hit._id, (err, c)->
+						Models.Contact.findById hit._id, (err, c)->
 							if err or not c then Elastic.delete hit._id
 							hitAtATime hits
 					scrollAtATime = ()->
@@ -179,28 +197,28 @@ dailyRoutines = (doneDailies)->
 resetEachRank = (cb, users)->
 	if not l = users?.length then return cb()
 	user = users.shift()
-	models.Contact.count {addedBy:user.id}, (err, fc)->
+	Models.Contact.count {addedBy:user.id}, (err, fc)->
 		if not err then user.fullCount = fc
-		models.Contact.count {addedBy:user.id, classified:$exists:false}, (err, ucc)->
+		Models.Contact.count {addedBy:user.id, classified:$exists:false}, (err, ucc)->
 			if not err then user.unclassifiedCount = ucc
 
 			DAYS_PER_MONTH = 30
 
 			if not user.oldDcounts then user.oldDcounts = []
-			user.oldDcounts.unshift() while user.oldDcounts?.length > DAYS_PER_MONTH
-			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.unshift()
+			while user.oldDcounts?.length > DAYS_PER_MONTH then user.oldDcounts.shift()
+			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.shift()
 			if not user.oldDcounts?.length then user.oldDcounts = [user.dataCount]
 			else user.oldDcounts.push user.dataCount - _.reduce(user.oldDcounts, (t, s)-> t + s)
 
 			if not user.oldCcounts then user.oldCcounts = []
-			user.oldCcounts.unshift() while user.oldCcounts?.length > DAYS_PER_MONTH
-			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.unshift()
+			while user.oldCcounts?.length > DAYS_PER_MONTH then user.oldCcounts.shift()
+			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.shift()
 			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
 			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
 
-			if not user.oldDcounts then user.oldDcounts = []
+			if not user.oldRanks then user.oldRanks = []
+			while user.oldRanks?.length > DAYS_PER_MONTH then user.oldRanks.shift() 
 			user.oldRanks.push l
-			user.oldRanks.unshift() until user.oldRanks?.length < DAYS_PER_MONTH
 			user.lastRank = user.oldRanks[0]
 
 			user.save (err)->
@@ -227,37 +245,41 @@ dailyRoutines ->
 	only_daily = (process.argv[3] is 'daily')
 	dont_do_parse = false
 
-	models.User.find (err, users) ->
+	query = {}
+	if process.argv.length is 5 then query.email = process.argv[4]
+
+	Models.User.find query, (err, users) ->
 		throw err if err
 
 		maybeResetRank not succinct_manual, users, ->
 
-			models.User.find (err, users) ->
+			Models.User.find query, (err, users) ->
 				throw err if err
 				console.log "nudge: auto saving old queue items"
 				eachDoc users, eachSave, ()->
 
 					if only_daily
 						console.log "nudge: just manually ran the daily routines."
-						return services.close()
+						return Goodbye()
 					if not succinct_manual
 						console.log "not running manual nudge."
 						if not _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
 							console.log "Today = #{moment().format('dddd')} isnt in the list :"
 							console.dir process.env.NUDGE_DAYS.split(' ')
-							# return services.close()
+							# return Goodbye()
 							dont_do_parse = true
 
-					models.User.find (err, users)->
+					Models.User.find query, (err, users)->
 						throw err if err
 						console.log "nudge: scanning linkedin"
 						eachDoc users, eachLink, ()->
-							if dont_do_parse then return services.close()
-							models.User.find (err, users) ->
+							if dont_do_parse then return Goodbye()
+							Models.User.find query, (err, users) ->
 								throw err if err
 								console.log "nudge: parsing emails"
+								if query.email then succinct_manual = false		# always send newsletter if just one user
 								eachDoc users, eachParse, ()->
 									console.log "nudge: DONE parsed emails"
-									return services.close()
+									return Goodbye()
 								, succinct_manual
 

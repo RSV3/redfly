@@ -8,6 +8,8 @@ module.exports =
 		ES_NAME: 'redstar'
 		ORG_TAG_CATEGORIES: 'Role, Theme, Project'
 
+		# one default admin
+		ADMIN_EMAIL:	'kwan@redstar.com'
 
 	development:
 		HOST: '127.0.0.1:5000'
@@ -40,11 +42,16 @@ module.exports =
 		#REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
 
-		ES_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:fee2bc06df50ed0f4ddc123686ffbcc5@api.searchbox.io'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
-		NUDGE_DAYS: 'Monday Thursday'
+		NUDGE_DAYS: 'Monday Saturday'
+
+		ADMIN_EMAIL:	['kwan@redstar.com', 'justin@redstar.com']
+		ORGANISATION_DOMAINS: ['redstar.com', 'vinely.com', 'justat.at']
+		AUTH_DOMAINS: ['redstar.com', 'gmail.com', 'r-w.in']
+
 
 	onboarding:
 		# for testing fresh new onboarding of users
@@ -65,8 +72,6 @@ module.exports =
 
 		NUDGE_DAYS: 'Monday Thursday'
 
-		# one default admin
-		ADMIN_EMAIL:	'kwan@redstar.com'
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
@@ -124,7 +129,7 @@ module.exports =
 
 		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
 
-		ES_URL: 'http://29288tc6:kdtzkvwz6vqlppd9@aralia-9555546.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:d39effca815a6a4d7a310d0c7974ea1a@api.searchbox.io'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 

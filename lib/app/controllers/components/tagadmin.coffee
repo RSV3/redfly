@@ -121,7 +121,7 @@ module.exports = (Ember, App, socket) ->
 						App.store.commit()
 					else						# .. but the 'alltags' list are just {body:} objs.
 												# we need to tell the server to remove any tags with the same name
-						if tag.body isnt @get('notag') and c = @get('parentView.controller.category')
+						if tag.body isnt @get('notag') and c = @get('parentView.category')
 							socket.emit 'tags.remove', {category: c, body: tag.body}, (removedTags) =>
 								while removedTags.length
 									id = removedTags.shift()
