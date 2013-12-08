@@ -1,11 +1,11 @@
 .hide
 	#loadingStarted
 		| {{#if view.stateConnecting}}
-		| Makin' pals with gmail...
+		| Makin' pals with gmail... 
 		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
 		| {{#if view.stateStillConnecting}}
-		| Taking a moment to connect to your inbox.
+		| Taking a moment to connect to your inbox. 
 		i.icon-spinner.icon-spin.pull-right
 		| {{/if}}
 		| {{#if view.stateParsing}}
@@ -16,7 +16,7 @@
 				| <div class="bar" {{bindAttr style="view.percent2"}}></div>
 		| {{/if}}
 		| {{#if view.stateQueueing}}
-		div New contacts found: {{view.totalQueued}}
+		div New contacts found: {{view.totalQueued}} 
 		| {{/if}}
 		| {{#if view.stateDone}}
 		| All done! <a href="/linker">Sync LinkedIn</a> to enrich your contacts and start classifying!
