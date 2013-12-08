@@ -68,8 +68,8 @@ eachUserRequest = (users, uReqs, oReqs, operate, fcb) ->
 	if not users.length then return fcb()
 	u = users.pop()
 	filterRequests = (reqs)->
-		_.filter(reqs, (r)->
-			r.user._id isnt u._id and not _.some r.response, (r)-> r.user is u._id
+		_.filter(reqs, (req)->
+			String(req.user._id) isnt String(u._id) and not _.some req.response, (resp)-> String(resp.user) is String(u._id)
 		)
 	operate u, filterRequests(uReqs), filterRequests(oReqs), ()->
 		eachUserRequest users, uReqs, oReqs, operate, fcb
@@ -100,16 +100,18 @@ batchNewReqs = (contCnt, cb)->
 	console.log "broadcasting requests..."
 	# grab the most recent request to be sent out by this routine,
 	# to make sure we don't bombard users with new requests every 5 mins
+	otherQ = {urgent:false, expiry:{$gt:today}, sent:{$exists: false}}
+	urgentQ = {urgent:true, expiry:{$gt:today}, sent: {$not: $gt: twelveAgo}}
 	models.Request.find(expiry:{$gt:today}, sent:{$exists: true}).sort({sent:-1}).limit(1).execFind (err, reqs)->
 		if not err and reqs?.length
 			if reqs[0].sent > moment().subtract('hours', 1).toDate()		# already sent requests within the last hour?
 				return cb()										# don't send requests too often
-		models.Request.find(urgent:true, expiry:{$gt:today}, sent: {$not: $gt: twelveAgo}).sort({urgent:1, date:1}).execFind (err, uReqs)->
+		models.Request.find(urgentQ).sort({urgent:1, date:1}).execFind (err, uReqs)->
 			if err
 				console.log "ERROR: finding urgent unsent requests"
 				console.dir err
 				return services.close()
-			models.Request.find(urgent:false, expiry:{$gt:today}, sent:{$exists: false}).sort({urgent:1, date:1}).execFind (err, oReqs)->
+			models.Request.find(otherQ).sort({urgent:1, date:1}).execFind (err, oReqs)->
 				if err
 					console.log "ERROR: finding unsent requests"
 					console.dir err
@@ -120,11 +122,11 @@ batchNewReqs = (contCnt, cb)->
 						models.User.find query, (err, users) ->	# send the list of new requests to ever user
 							throw err if err
 							eachUserRequest users, uReqs, oReqs, Inject(contCnt, Mail.sendRequests), ()->
-								models.Request.update {sent: $exists: false}, {sent:today}, {multi:true}, (err) ->
+								models.Request.update urgentQ, {$set:sent:today}, {multi:true}, (err) ->
 									if err
 										console.log "ERROR: updating requests as sent"
 										console.dir err
-									models.Request.update {urgent:true, expiry:{$gt:today}, sent:{$lt:twelveAgo}}, {sent:today}, {multi:true}, (err) ->
+									models.Request.update otherQ, {$set:sent:today}, {multi:true}, (err) ->
 										if err
 											console.log "ERROR: updating requests as sent"
 											console.dir err
@@ -146,7 +148,7 @@ sendNewResps = (contCnt, cb)->
 			updateReqs reqs, (reqs)->						# convert user, response ids to objects
 				updateResps reqs, (reqs)->					# and similarly populate contact, user on each resp.
 					eachUserResponse users, reqs, (Inject contCnt, Mail.sendResponses), ()->
-						models.Request.update {expiry:{$gt:today}, updated:{$exists:true, $ne:null}}, {updated:null, updatesent:today}, {multi:true}, (err)->
+						models.Request.update {expiry:{$gt:today}, updated:{$exists:true, $ne:null}}, {$set:{updated:null, updatesent:today}}, {multi:true}, (err)->
 							if err
 								console.log "ERROR: updating requests as sent"
 								console.dir err

@@ -34,6 +34,7 @@ preHook = (Ember, DS, App, socket) ->
 			if App.admin.get('stateManager.currentPath') isnt 'rootState.loading' then App.admin.reload()
 		logOnOut: ->
 			document.cookie = "lastlogin=;path=/;expires=null"
+			document.cookie = "connect.sid=;path=/;expires=null"
 			App.auth.logout()
 
 
