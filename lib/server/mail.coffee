@@ -85,7 +85,7 @@ Mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 
 
 Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
-	if not uRequests.length and not oRequests.length then return cb()
+	if not uRequests?.length and not oRequests?.length then return cb()
 	templateObj = 
 		org: process.env.ORGANISATION_TITLE
 		title: "Hi #{user.name}!"

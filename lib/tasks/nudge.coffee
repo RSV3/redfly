@@ -43,10 +43,10 @@ eachSave = (user, done)->
 						u._id.toString() is skip.contact.toString() and Models.tmStmp(u._id) > Models.tmStmp(skip._id)
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if not neocons.length then return done()
-				updates = { added: new Date(), addedBy: id }
 				matches = _id: $in: neocons
+				updates = { added: new Date(), addedBy: id }
 				options = { safe:true, multi:true }
-				Models.Contact.update matches, updates, options, (err)->
+				Models.Contact.update matches, {$set:updates}, options, (err)->
 					if err
 						console.log "Error updating user #{id}'s contacts:"
 						console.dir neocons
@@ -82,6 +82,7 @@ eachUpAdd = (contact, cb)->
 # trawl through a user's linkedin network
 eachLink = (user, cb)->
 	email = user?.email
+	console.log "link #{email}"
 	try require('../server/linker') user, null, (err, changes)->
 		if err
 			console.log "error in nudge link for #{email}"
@@ -90,6 +91,7 @@ eachLink = (user, cb)->
 		else
 			user.lastLink.date = new Date()
 			user.lastLink.count = changes?.length
+			console.dir user.lastLink
 			user.save (err)->
 				if err then console.log "Error saving linkedin count in nudge for #{email}"
 				cb()
@@ -203,22 +205,19 @@ resetEachRank = (cb, users)->
 			DAYS_PER_MONTH = 30
 
 			if not user.oldDcounts then user.oldDcounts = []
-			while user.oldDcounts?.length > DAYS_PER_MONTH
-				user.oldDcounts.unshift()
-			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.unshift()
+			while user.oldDcounts?.length > DAYS_PER_MONTH then user.oldDcounts.shift()
+			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.shift()
 			if not user.oldDcounts?.length then user.oldDcounts = [user.dataCount]
 			else user.oldDcounts.push user.dataCount - _.reduce(user.oldDcounts, (t, s)-> t + s)
 
 			if not user.oldCcounts then user.oldCcounts = []
-			while user.oldCcounts?.length > DAYS_PER_MONTH
-				user.oldCcounts.unshift()
-			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.unshift()
+			while user.oldCcounts?.length > DAYS_PER_MONTH then user.oldCcounts.shift()
+			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.shift()
 			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
 			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
 
 			if not user.oldRanks then user.oldRanks = []
-			while user.oldRanks?.length >= DAYS_PER_MONTH
-				user.oldRanks.unshift() 
+			while user.oldRanks?.length > DAYS_PER_MONTH then user.oldRanks.shift() 
 			user.oldRanks.push l
 			user.lastRank = user.oldRanks[0]
 
