@@ -43,10 +43,10 @@ eachSave = (user, done)->
 						u._id.toString() is skip.contact.toString() and Models.tmStmp(u._id) > Models.tmStmp(skip._id)
 				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
 				if not neocons.length then return done()
-				updates = { added: new Date(), addedBy: id }
 				matches = _id: $in: neocons
+				updates = { added: new Date(), addedBy: id }
 				options = { safe:true, multi:true }
-				Models.Contact.update matches, updates, options, (err)->
+				Models.Contact.update matches, {$set:updates}, options, (err)->
 					if err
 						console.log "Error updating user #{id}'s contacts:"
 						console.dir neocons
