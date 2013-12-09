@@ -17,7 +17,6 @@ module.exports = (Ember, App, socket) ->
 							pnotify.css top: '60px'
 				name = 'index'
 
-			console.dir name
 			if name is 'index' then return route.render name,
 				into: 'application'
 				outlet:'panel'

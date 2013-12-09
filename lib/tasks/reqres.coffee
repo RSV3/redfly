@@ -9,13 +9,16 @@ Mail = require '../server/mail'
 Logic = require '../server/logic'
 
 
+Goodbye = ->
+	services.close()
+	process.exit()
+
 today = moment().toDate()		# get the stamp immediately. all data after this date will be picked up next time.
-twelveAgo = moment().subtract(12, 'hours').toDate()
 console.dir today
 
 # replace the resp ID with a response object
 updateReqResps = (resps, cb, newresps=[])->
-	if not resps.length then return cb newresps
+	if not resps?.length then return cb newresps
 	resp = resps.pop()
 	models.Response.findOne {_id:resp}, (err, response)->
 		if not err then newresps.push response
@@ -23,7 +26,7 @@ updateReqResps = (resps, cb, newresps=[])->
 
 # replace the user ID with a user object, so too the response array
 updateReqs = (reqs, cb, newrex=[])->				# convert user, response ids to objects
-	if not reqs.length then return cb newrex
+	if not reqs?.length then return cb newrex
 	rec = reqs.pop()
 	models.User.findOne {_id:rec.user.toString()}, (err, user)->	# send the list of new requests to ever user
 		if not err then rec._doc.user = user
@@ -33,7 +36,7 @@ updateReqs = (reqs, cb, newrex=[])->				# convert user, response ids to objects
 			updateReqs reqs, cb, newrex
 
 updateRespContacts = (contacts, cb, newcs=[])->
-	if not contacts.length then return cb newcs
+	if not contacts?.length then return cb newcs
 	c = contacts.pop()
 	models.Contact.findOne {_id:c}, (err, contact)->
 		if not err then newcs.push contact
@@ -41,7 +44,7 @@ updateRespContacts = (contacts, cb, newcs=[])->
 
 # given a list of response objects, replace the contact and user fields with the corresponding object
 updateRespItems = (resps, cb, newresps=[])->
-	if not resps.length then return cb newresps
+	if not resps?.length then return cb newresps
 	resp = resps.pop()
 	models.User.findOne {_id:resp.user}, (err, user)->
 		if not err then resp._doc.user = user
@@ -53,7 +56,7 @@ updateRespItems = (resps, cb, newresps=[])->
 
 # for each request, update the user, contact items on each response
 updateResps = (reqs, cb, newrex=[])->
-	if not reqs.length then return cb newrex
+	if not reqs?.length then return cb newrex
 	rec = reqs.pop()
 	updateRespItems rec.response, (responses)->
 		if responses?.length
@@ -65,7 +68,7 @@ updateResps = (reqs, cb, newrex=[])->
 # ignoring those that match the current user
 # Note: this is called after response objects are loaded, so user id is response[n].user
 eachUserRequest = (users, uReqs, oReqs, operate, fcb) ->
-	if not users.length then return fcb()
+	if not users?.length then return fcb()
 	u = users.pop()
 	filterRequests = (reqs)->
 		_.filter(reqs, (req)->
@@ -79,7 +82,7 @@ eachUserRequest = (users, uReqs, oReqs, operate, fcb) ->
 # ignoring those that don't match the current user
 # Note: this is called after response objects are loaded, so user id is response[n].user._id
 eachUserResponse = (users, reqs, operate, fcb) ->
-	if not users.length then return fcb()
+	if not users?.length then return fcb()
 	u = users.pop()
 	userex = _.filter reqs, (request)->
 		request.user._id.toString() is u._id.toString() and _.some(request.response, (response)->
@@ -96,41 +99,67 @@ Inject = (contactCnt, operate)->
 		operate.apply this, args
 
 
-batchNewReqs = (contCnt, cb)->
-	console.log "broadcasting requests..."
-	# grab the most recent request to be sent out by this routine,
-	# to make sure we don't bombard users with new requests every 5 mins
-	otherQ = {urgent:false, expiry:{$gt:today}, sent:{$exists: false}}
-	urgentQ = {urgent:true, expiry:{$gt:today}, sent: {$not: $gt: twelveAgo}}
-	models.Request.find(expiry:{$gt:today}, sent:{$exists: true}).sort({sent:-1}).limit(1).execFind (err, reqs)->
-		if not err and reqs?.length
-			if reqs[0].sent > moment().subtract('hours', 1).toDate()		# already sent requests within the last hour?
-				return cb()										# don't send requests too often
-		models.Request.find(urgentQ).sort({urgent:1, date:1}).execFind (err, uReqs)->
+operateBatch = (uReqs, oReqs, operation, cb, urgentQuery, otherQuery)->
+	if not uReqs?.length and not oReqs?.length then return cb()		# no new requests
+	updateReqs uReqs, (uReqs)->				# convert user, response ids to objects
+		updateReqs oReqs, (oReqs)->				# convert user, response ids to objects
+			models.User.find query, (err, users) ->	# send the list of new requests to ever user
+				throw err if err
+				eachUserRequest users, uReqs, oReqs, operation, ()->
+					models.Request.update urgentQuery, {$set:sent:today}, {multi:true}, (err) ->
+						if err
+							console.log "ERROR: updating urgent requests as sent"
+							console.dir err
+						if not otherQuery then return cb()
+						models.Request.update otherQuery, {$set:sent:today}, {multi:true}, (err) ->
+							if err
+								console.log "ERROR: updating non-urgent requests as sent"
+								console.dir err
+							return cb()
+
+batchUrgentReqs = (contCnt, cb)->
+	console.log "broadcasting urgent requests..."
+	urgentQ = {urgent:true, expiry:{$gt:today}, response:{$size:0}}
+	models.Request.find(urgentQ).sort(date:-1).execFind (err, uReqs)->
+		if err
+			console.log "ERROR: finding unsent urgent requests"
+			console.dir err
+			return Goodbye()
+		operateBatch uReqs, null, Inject(contCnt, Mail.resendRequests), cb, urgentQ
+
+batchEmptyReqs = (contCnt, cb)->
+	console.log "broadcasting empty requests..."
+	otherQ = {urgent:{$ne:true}, expiry:{$gt:today}, response:{$size:0}}
+	urgentQ = {urgent:true, expiry:{$gt:today}, response:{$size:0}}
+	models.Request.find(urgentQ).sort(date:-1).execFind (err, uReqs)->
+		if err
+			console.log "ERROR: finding urgent unsent requests"
+			console.dir err
+			return Goodbye()
+		models.Request.find(otherQ).sort(date:-1).execFind (err, oReqs)->
 			if err
-				console.log "ERROR: finding urgent unsent requests"
+				console.log "ERROR: finding other unsent requests"
 				console.dir err
-				return services.close()
-			models.Request.find(otherQ).sort({urgent:1, date:1}).execFind (err, oReqs)->
-				if err
-					console.log "ERROR: finding unsent requests"
-					console.dir err
-					return services.close()
-				if not uReqs?.length and not oReqs.length then return cb()		# no new requests
-				updateReqs uReqs, (uReqs)->				# convert user, response ids to objects
-					updateReqs oReqs, (oReqs)->				# convert user, response ids to objects
-						models.User.find query, (err, users) ->	# send the list of new requests to ever user
-							throw err if err
-							eachUserRequest users, uReqs, oReqs, Inject(contCnt, Mail.sendRequests), ()->
-								models.Request.update urgentQ, {$set:sent:today}, {multi:true}, (err) ->
-									if err
-										console.log "ERROR: updating requests as sent"
-										console.dir err
-									models.Request.update otherQ, {$set:sent:today}, {multi:true}, (err) ->
-										if err
-											console.log "ERROR: updating requests as sent"
-											console.dir err
-										return cb()
+				return Goodbye()
+			operateBatch uReqs, oReqs, Inject(contCnt, Mail.resendRequests), cb, urgentQ, otherQ
+
+batchNewReqs = (type, contCnt, cb)->
+	if type is 'urgent' then return batchUrgentReqs contCnt, cb
+	if type is 'empty' then return batchEmptyReqs contCnt, cb
+	console.log "broadcasting requests..."
+	otherQ = {urgent:{$ne:true}, expiry:{$gt:today}, sent:{$exists: false}}
+	urgentQ = {urgent:true, expiry:{$gt:today}}
+	models.Request.find(urgentQ).sort(date:-1).execFind (err, uReqs)->
+		if err
+			console.log "ERROR: finding urgent unsent requests"
+			console.dir err
+			return Goodbye()
+		models.Request.find(otherQ).sort(date:-1).execFind (err, oReqs)->
+			if err
+				console.log "ERROR: finding unsent requests"
+				console.dir err
+				return Goodbye()
+			operateBatch uReqs, oReqs, Inject(contCnt, Mail.sendRequests), cb, urgentQ, otherQ
 
 
 sendNewResps = (contCnt, cb)->
@@ -139,7 +168,7 @@ sendNewResps = (contCnt, cb)->
 		if err
 			console.log "ERROR: finding last sent request"
 			console.dir err
-			return services.close()
+			return Goodbye()
 		if not reqs?.length then return cb()
 		users = _.uniq _.map reqs, (r)-> r.user.toString()
 		respQuery = _id:$in:users
@@ -156,13 +185,25 @@ sendNewResps = (contCnt, cb)->
 
 
 query = {}
-if process.argv.length is 4 then query.email = process.argv[3]
+if process.argv.length > 3
+	if not _.contains ["urgent", "empty", "regular"], process.argv[3]
+		console.log "Usage: node main tasks/reqres <urgent | empty | regular>"
+		return Goodbye()
+	else whichBatch = process.argv[3]
+else if process.argv.length is 3
+	switch "#{moment().hour()}"
+		when process.env.URGENT_HOUR
+			whichBatch = 'urgent'
+		when process.env.EMPTY_HOUR
+			whichBatch = 'empty'
+		else whichBatch = 'regular'
+if process.argv.length is 5 then query.email = process.argv[4]
+
+console.log "#{whichBatch} batch job for requests / responses"
 
 # calculate contacts count once, because every email will need to display it
 Logic.countConts (err, contCnt)->
 	if err then contCnt=0
-	batchNewReqs contCnt, ->			# first send new requests to everyone, 
+	batchNewReqs process.argv[3], contCnt, ->			# first send new requests to everyone, 
 		sendNewResps contCnt, ->		# then send new responses to those who need them
-			services.close()
-			process.exit()
-
+			Goodbye()

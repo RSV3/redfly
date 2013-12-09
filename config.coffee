@@ -11,6 +11,9 @@ module.exports =
 		# one default admin
 		ADMIN_EMAIL:	'kwan@redstar.com'
 
+		URGENT_HOUR:	17		# this is when all the un-answered requests are resent
+		EMPTY_HOUR:		11		# this is when all the un-answered requests (urgent and otherwise) get resent
+
 	development:
 		HOST: '127.0.0.1:5000'
 		#HOST:	'10.0.0.2:5000'

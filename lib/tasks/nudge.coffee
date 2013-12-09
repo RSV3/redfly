@@ -25,24 +25,27 @@ eachSave = (user, done)->
 
 		# get the list of likely queue entries
 		neocons = _.uniq _.map unadded, (u)->u._id.toString()
-		if not neocons.length then return done()
+		if not neocons?.length then return done()
 
 		# first strip out those who are permanently excluded
 		Models.Exclude.find(user:id, contact:$in:neocons).select('contact').exec (err, ludes) ->
 			throw err if err
-			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
-			if not neocons.length then return done()
+			if ludes?.length
+				neocons =  _.difference neocons, _.map ludes, (l)->l?.contact?.toString()
+			if not neocons?.length then return done()
 
 			# then strip out the temporary skips:
 			# recent classify records that dont have the 'saved' flag set.
 			class_match = { user:id, saved:{$exists:false}, contact:$in:neocons }
 			Models.Classify.find(class_match).select('contact').exec (err, skips) ->
 				throw err if err
-				skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
-					not _.some unadded, (u)->
-						u._id.toString() is skip.contact.toString() and Models.tmStmp(u._id) > Models.tmStmp(skip._id)
-				neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
-				if not neocons.length then return done()
+				if skips?.length
+					skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
+						not _.some unadded, (u)->
+							u._id.toString() is skip.contact.toString() and Models.tmStmp(u._id) > Models.tmStmp(skip._id)
+				if skips?.length
+					neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
+				if not neocons?.length then return done()
 				matches = _id: $in: neocons
 				updates = { added: new Date(), addedBy: id }
 				options = { safe:true, multi:true }
@@ -206,12 +209,14 @@ resetEachRank = (cb, users)->
 
 			if not user.oldDcounts then user.oldDcounts = []
 			while user.oldDcounts?.length > DAYS_PER_MONTH then user.oldDcounts.shift()
+			if not user.dataCount then user.dataCount = 0
 			if user.oldDcounts?.length is DAYS_PER_MONTH then user.dataCount -= user.oldDcounts.shift()
 			if not user.oldDcounts?.length then user.oldDcounts = [user.dataCount]
 			else user.oldDcounts.push user.dataCount - _.reduce(user.oldDcounts, (t, s)-> t + s)
 
 			if not user.oldCcounts then user.oldCcounts = []
 			while user.oldCcounts?.length > DAYS_PER_MONTH then user.oldCcounts.shift()
+			if not user.dataCount then user.contactCount = 0
 			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.shift()
 			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
 			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
