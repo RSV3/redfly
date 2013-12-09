@@ -19,71 +19,65 @@ REImake = (str) ->
 	return new RegExp('^' + REescape(str) + '$', 'i')
 
 
-addDeets2Contact = (notifications, user, contact, details, specialties, industries) ->
-	if details.positions and details.positions.length
-		if not contact.company and not contact.position
-			contact.company = details.positions[0].company?.name
-			contact.position = details.positions[0].title
-			dirtycontact = true
-		else if not contact.company
-			contact.company = _.select(details.positions, (p) -> p.title is contact.position)?.company?.name
-			dirtycontact = true
-		else if not contact.position
-			contact.position = _.select(details.positions, (p) -> p.company?.name is contact.company)?.title
-			dirtycontact = true
+addDeets2Contact = (notifications, u, c, l) ->
+	if not l then return l
 
-		# still no matches?
-		if not contact.company
-			contact.company = details.positions[0].company?.name
+	if l.positions?.length
+		if not c.company and not c.position
+			c.company = l.companies[0]
+			c.position = l.positions[0]
 			dirtycontact = true
-		else if not contact.position
+		else if not c.company
+			if (i = _.indexOf(l.positions, c.position)) >= 0
+				c.company = l.companies[i]
 			dirtycontact = true
-			contact.position = details.positions[0].title
-		else if contact.company = details.positions[0].company?.name	# possibly a promotion?
+		else if not c.position
+			if (i = _.indexOf(l.companies, c.company)) >= 0
+				c.position = l.positions[i]
 			dirtycontact = true
-			contact.position = details.positions[0].title
+		else								# still no matches?
+			if not c.company
+				c.company = l.companies[0]
+				dirtycontact = true
+			else if not c.position
+				c.position = l.positions[0]
+				dirtycontact = true
 
-	if not contact.picture and details.pictureUrl
-		contact.picture = details.pictureUrl
+	if not c.picture and l.pictureUrl
+		c.picture = l.pictureUrl
 		dirtycontact = true
 
 	tagstoadd = []
-	if industries?.length then tagstoadd = tagstoadd.concat industries
-	if specialties?.length then tagstoadd = tagstoadd.concat specialties
+	if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
+	if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
 	for eachUser in l.users
 		unless _.contains c.knows, eachUser
 			c.knows.addToSet eachUser
 			dirtycontact = true
-	if tagstoadd.length then addTags user, contact, 'industry', _.uniq tagstoadd
+	if tagstoadd.length then addTags u, c, 'industry', _.uniq tagstoadd
 
-	if (_.indexOf contact.knows, user._id) < 0
-		contact.knows.addToSet user
+	if (_.indexOf c.knows, u._id) < 0
+		c.knows.addToSet u
 		dirtycontact = true
 
-	if contact.linkedin isnt details.profileid
-		contact.linkedin = details.profileid
+	if c.linkedin isnt l.linkedinId
+		c.linkedin = l.linkedinId
 		dirtycontact = true
 	
-	if details.yearsExperience and contact.yearsExperience isnt details.yearsExperience
-		contact.yearsExperience = details.yearsExperience
+	if l.yearsExperience and c.yearsExperience isnt l.yearsExperience
+		c.yearsExperience = l.yearsExperience
 		dirtycontact = true
 
 	if dirtycontact
-		contact.save (err) ->
-			notifications?.updateFeeds? contact
-		return contact._id
+		c.save (err) ->
+			notifications?.updateFeeds? c
+		return c._id
 
 	null
 
 
 copyLI2contact = (u, c, l) ->
-	details =						# in which case add the details to the matched contact
-		profileid: l.linkedinId
-		pictureUrl: l.pictureUrl
-		yearsExperience: l.yearsExperience
-		positions: [{ title: l.positions[0], company: name: l.companies[0]}]
-	addDeets2Contact null, u, c, details, l.specialties, l.industries
-
+	addDeets2Contact null, u, c, l
 	l.contact = c
 	l.lastLink = new Date()
 	l.save (err) ->
