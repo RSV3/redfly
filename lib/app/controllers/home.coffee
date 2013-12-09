@@ -9,6 +9,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['home']
 		didInsertElement: ()->
 			@$('.carousel').carousel interval: 5000
+			###
 			socket.emit 'total.contacts', (results) =>
 				formatthis = results
 				format = ''
@@ -25,3 +26,4 @@ module.exports = (Ember, App, socket) ->
 						interval: 1,
 						stop: "#{results}"
 					).counter 'play'
+			###
