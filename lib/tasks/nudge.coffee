@@ -200,7 +200,7 @@ dailyRoutines = (doneDailies)->
 resetEachRank = (cb, users)->
 	if not l = users?.length then return cb()
 	if not user = users.shift() then return resetEachRank cb, users
-	models.Contact.count {addedBy:user.id}, (err, fc)->
+	Models.Contact.count {addedBy:user.id}, (err, fc)->
 		if not err then user.fullCount = fc
 		Models.Contact.count {addedBy:user.id, classified:$exists:false}, (err, ucc)->
 			if not err then user.unclassifiedCount = ucc
