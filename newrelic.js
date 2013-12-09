@@ -8,11 +8,11 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : ['redfly-staging'],
+  app_name : [process.env.APP_ENV],
   /**
    * Your New Relic license key.
    */
-  license_key : 'a12b66c9dbe607523b5b70ace19d7b84483ec3f9',
+  license_key : process.env.NEWRELIC_KEY,
   logging : {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
