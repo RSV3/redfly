@@ -93,8 +93,8 @@ eachLink = (user, cb)->
 			cb()
 		else
 			user.lastLink.date = new Date()
-			user.lastLink.count = changes?.length
-			console.dir user.lastLink
+			user.lastLink.count = changes?.length or 0
+			console.dir user.lastLink					 # jTNT debug: please remove me
 			user.save (err)->
 				if err then console.log "Error saving linkedin count in nudge for #{email}"
 				cb()
