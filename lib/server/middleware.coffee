@@ -7,7 +7,7 @@ authWithHint = (next, hint)->
 	opts =
 		access_type: 'offline'
 		approval_prompt: if hint then 'auto' else 'force'
-	if hint then opts.login_hint = hint
+		login_hint: if hint then hint else null
 	everyauth.google.authQueryParam opts
 	next()
 

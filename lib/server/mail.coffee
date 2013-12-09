@@ -99,6 +99,21 @@ Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 	Mail.sendTemplate 'requests', templateObj, cb
 
 
+Mail.resendRequests = (numContacts, user, uRequests, oRequests, cb) ->
+	if not uRequests?.length and not oRequests?.length then return cb()
+	templateObj = 
+		org: process.env.ORGANISATION_TITLE
+		title: "Hi #{user.name}!"
+		to: user.email
+		from: "RedFly Request <#{process.env.ORGANISATION_EMAIL}>"
+		subject: "Unanswered requests for contacts"
+		headstrip: "help colleagues make useful connections"
+		urgentRequests: uRequests
+		otherRequests: oRequests
+		numContacts: numContacts
+	Mail.sendTemplate 'rerequests', templateObj, cb
+
+
 Mail.sendResponses = (numContacts, user, requests, cb) ->
 	if not requests.length then return cb()
 	templateObj = 
