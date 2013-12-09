@@ -216,7 +216,7 @@ resetEachRank = (cb, users)->
 
 			if not user.oldCcounts then user.oldCcounts = []
 			while user.oldCcounts?.length > DAYS_PER_MONTH then user.oldCcounts.shift()
-			if not user.dataCount then user.contactCount = 0
+			if not user.contactCount then user.contactCount = 0
 			if user.oldCcounts?.length is DAYS_PER_MONTH then user.contactCount -= user.oldCcounts.shift()
 			if not user.oldCcounts?.length then user.oldCcounts = [user.contactCount]
 			else user.oldCcounts.push user.contactCount - _.reduce(user.oldCcounts, (t, s)-> t + s)
