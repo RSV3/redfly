@@ -20,7 +20,7 @@ REImake = (str) ->
 
 
 addDeets2Contact = (notifications, u, c, l) ->
-	if not l then return l
+	if not l then return null
 
 	if l.positions?.length
 		if not c.company and not c.position
