@@ -11,6 +11,9 @@ module.exports =
 		# one default admin
 		ADMIN_EMAIL:	'kwan@redstar.com'
 
+		URGENT_HOUR:	17		# this is when all the un-answered requests are resent
+		EMPTY_HOUR:		11		# this is when all the un-answered requests (urgent and otherwise) get resent
+
 	development:
 		HOST: '127.0.0.1:5000'
 		#HOST:	'10.0.0.2:5000'
@@ -73,6 +76,7 @@ module.exports =
 		NUDGE_DAYS: 'Monday Thursday'
 
 
+
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
 		NODE_ENV: 'production'
@@ -91,6 +95,7 @@ module.exports =
 		ES_URL: 'http://paas:4766d4887993f5018fa1132ea5012002@api.searchbox.io'
 
 		NUDGE_DAYS: 'Monday Thursday'
+		NEWRELIC_KEY: 'a12b66c9dbe607523b5b70ace19d7b84483ec3f9'
 
 
 
@@ -134,3 +139,4 @@ module.exports =
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Tuesday Friday'
+		NEWRELIC_KEY: 'ce6dfd0bb4e2532072d644b30820a2de431ebca4'
