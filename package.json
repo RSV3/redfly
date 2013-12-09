@@ -2,7 +2,8 @@
   "name": "redfly",
   "version": "0.4.0",
   "dependencies": {
-    "phrenetic": "git://github.com/justinTNT/phrenetic.git",
+    "phrenetic": "git://github.com/justinTNT/phrenetic.git#7d05a17f28",
+    "newrelic": "~1.0.0",
     "underscore": "1.4.4",
     "underscore.string": "2.3.1",
     "async": "0.2.6",

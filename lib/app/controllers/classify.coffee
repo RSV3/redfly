@@ -15,7 +15,6 @@ module.exports = (Ember, App, socket) ->
 		modelChanged: (->
 			if (c = @get 'thisContact')
 				@set 'controllers.contact.content', c
-				@set 'controllers.contact.forceShowEmail', true
 		).observes 'thisContact'
 
 		total: (->
@@ -52,6 +51,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'thisContact.classified', new Date
 			if not @get 'thisContact.added'
 				@set 'thisContact.added', new Date
+			if not @get 'thisContact.addedBy'
 				@set 'thisContact.addedBy', App.user
 				App.user.incrementProperty 'contactCount'
 			App.Classify.createRecord
@@ -66,20 +66,11 @@ module.exports = (Ember, App, socket) ->
 				contact: App.Contact.find @get 'thisContact.id'
 			@_next()
 		ignore: ->
-			knows = @get('thisContact').get('knows.content').filter (u)-> u.id isnt App.user.get('id')
-			@set 'thisContact.knows.content', knows
-			ab = @get('thisContact.addedBy') 
-			if ab?.get('id') is App.user.get('id')
-				@set 'thisContact.addedBy', null
-				ab = null
-			if not ab then @set 'thisContact.added', null
-			App.Exclude.createRecord
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
+			@get('controllers.contact').remove()
 			@_next()
 		_next: ->
-			@incrementProperty 'classifyCount'
 			App.store.commit()
+			@incrementProperty 'classifyCount'
 
 		unflush: -> @set 'flushing', false
 		flush: ->

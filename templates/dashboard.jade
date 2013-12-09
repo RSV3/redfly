@@ -3,28 +3,34 @@
 	.span9
 		h1 Redfly Dashboard
 		hr
-		br
 
-		h2 Redfly Stats
+		{{#if dash}}
+		h2 Weekly Stats
 		ul
 			li Number of introduction clicks:
-				span {{dash.clicks}}
+				span.count {{dash.intros}}
 			li Number of tags added:
-				span {{dash.tags}}
+				span.count {{dash.tags}}
 			li Number of unclassified contacts:
-				span {{dash.classify}}
-			li Number of active users this week:
-				span {{dash.users}}
-			li Number of searches this week:
-				span {{dash.searches}}
-			li Number of requests this week:
-				span {{dash.requests}}
-			li Number of responses this week:
-				span {{dash.responses}}
+				span.count {{dash.classify}}
+			li Number of active users:
+				span.count {{dash.active}}
+			li Number of searches:
+				span.count {{dash.searches}}
+			li Number of requests:
+				span.count {{dash.requests}}
+			li Number of responses:
+				span.count {{dash.responses}}
 
-		h2 Contacted Organisations
+		h3 Contacted Organisations
 		ul
 			| {{#each dash.org}}
-			li {{ name }}
+			li
+				| <a class="nodeco body" href="#" {{action search company target="view"}}>{{company}}</a>
 			| {{/each}}
+		{{else}}
+		.loading
+			+unless ('empty')
+				i.icon-spinner.icon-spin
+		{{/if}}
 {{/if}}

@@ -21,8 +21,8 @@ module.exports = (DS, App) ->
 		canonicalPicture: (->
 				@get('picture') or 'http://i.imgur.com/t1Svb.jpg'
 			).property 'picture'
-		classifyCount: DS.attr 'number'		# this is calculated on the server, transmitted on session user
-											# and then, just to make it interesting, stored on App.admin
+		classifyCount: DS.attr 'number'		# these are calculated on the server, transmitted on session user
+		requestCount: DS.attr 'number'		# and then, just to make it interesting, stored on App.admin
 											# (because session user data may get batch loaded)
 
 	App.Contact.reopen
@@ -65,3 +65,13 @@ module.exports = (DS, App) ->
 				_s = require 'underscore.string'
 				_s.prune _s.stripTags(@get 'body'), 80
 			).property 'body'
+
+
+	App.Tag.reopen
+		catid: (->
+			switch (cat = @get 'category')
+				when App.admin.get('orgtagcat1').toLowerCase() then 'orgtagcat1'
+				when App.admin.get('orgtagcat2').toLowerCase() then 'orgtagcat2'
+				when App.admin.get('orgtagcat3').toLowerCase() then 'orgtagcat3'
+				else cat
+		).property 'category'

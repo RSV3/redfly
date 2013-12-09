@@ -3,17 +3,24 @@ models = require './models'
 
 everyauth = require 'everyauth'
 
+authWithHint = (next, hint)->
+	opts =
+		access_type: 'offline'
+		approval_prompt: if hint then 'auto' else 'force'
+		login_hint: if hint then hint else null
+	everyauth.google.authQueryParam opts
+	next()
+
 module.exports = (app) ->
 	app.use auth.middleware()
 	app.use (req, res, next)->
-		if not req.session?.user?.length then return next() 
-		models.User.findById req.session.user, (err, user) ->
-			if err or not user
-				console.log "couldnt login with #{req.session.user}"
+		if req.session?.user?.length then return next() 	# already logged in? well, thatsok.
+		lastlogin = req.cookies?.lastlogin
+		if not lastlogin?.length
+			return authWithHint next
+		models.User.findById lastlogin, (err, user) ->
+			if err or not user?.oauth
+				console.log "couldn't login with #{lastlogin} : #{user?.email} / #{user?.oauth}"
 				console.dir err
-				console.dir user
-				return next()
-			everyauth.google.authQueryParam		# if there's no idea who, we need to force approval in authorisation,
-				approval_prompt: 'force'		# otherwise we might not have a refresh token. 
-				access_type: 'offline'		# what we really need tho is some way to set the login_hint option ...
-			next()
+				return authWithHint next
+			return authWithHint next, user.email

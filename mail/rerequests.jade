@@ -1,0 +1,54 @@
+extends reqreslayout
+
+
+block content
+	br
+	p
+		span Unanswered requests for contact suggestions:
+	p
+		br
+
+	if urgentRequests.length
+		div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#fee;')
+			each request,i in urgentRequests
+				div(style='clear:both;')
+					p
+						a(href='#{path('/profile/' + request.user._id)}')
+							if request.user.picture
+								img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+							else
+								img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+						a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+						br
+						span #{request.text}
+						br
+				div(style='clear:both;')
+
+	if otherRequests.length
+		div(style='padding:1em; -moz-border-radius:9px; -webkit-border-radius:9px; -o-border-radius:9px; border-radius:9px; background-color:#eee; ')
+			each request,i in otherRequests
+				div(style='clear:both;')
+					p
+						a(href='#{path('/profile/' + request.user._id)}')
+							if request.user.picture
+								img(src='#{request.user.picture}', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+							else
+								img(src='http://i.imgur.com/t1Svb.jpg', border='0', height='4em', alt='picture', style='margin-right:4px; height: 4em; line-height: 100%; outline-style: none; text-decoration: none; display: inline-block; float:left')
+						a(href='#{path('/profile/' + request.user._id)}') #{request.user.name}:
+						br
+						span #{request.text}
+						br
+				div(style='clear:both;')
+
+	div(style='clear:both;')
+		br
+
+		div(style='float:left')
+			h2 Come to Redfly and share your connections,
+			h2(style='font-size:100%') or Browse our #{numContacts} contacts
+				i &nbsp;and counting
+		div(style='float:right')
+			div(style='border:2px solid black; padding-left:0.5em; padding-right:0.5em; background-color:#468; box-shadow: 0 5px 25px #123;')
+				a(href='#{path("/requests")}', style='text-decoration:none')
+					h1(style='color:white') Let me help!
+

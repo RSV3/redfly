@@ -9,7 +9,7 @@ ul.dropdown-menu.search-results
 	.nav-header Names
 	| {{#each view.results.names}}
 	li.no-resultsz
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}}</a>
+		| <a href="#" {{action select contact on="mouseDown" target="view"}}>{{contact.canonicalName}}</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}
@@ -17,7 +17,7 @@ ul.dropdown-menu.search-results
 	.nav-header Emails
 	| {{#each view.results.emails}}
 	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; {{contact.email}}</a>
+		| <a href="#" {{action select contact on="mouseDown" target="view"}}>{{contact.canonicalName}} &mdash; {{contact.email}}</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}
@@ -25,7 +25,7 @@ ul.dropdown-menu.search-results
 	.nav-header Company name matches
 	| {{#each view.results.company}}
 	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
+		| <a href="#" {{action select contact on="mouseDown" target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}
@@ -33,7 +33,7 @@ ul.dropdown-menu.search-results
 	.nav-header Matches in tags
 	| {{#each view.results.tags}}
 	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
+		| <a href="#" {{action select contact on="mouseDown" target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
 	| {{/each}}
 	li.divider
 	| {{/if}}

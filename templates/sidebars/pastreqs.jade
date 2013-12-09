@@ -1,0 +1,74 @@
+{{#if showthisreq}}
+.thisReq.myLightSpeedIn.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
+	.modal-header
+		.row-fluid
+			.span2
+				+linkTo('profile showthisreq.user')
+					| <img class=".span11 img-rounded" {{bindAttr src="showthisreq.user.canonicalPicture"}}>
+				br
+				i.fright {{showthisreq.user.canonicalName}}
+			.span9
+				h3#myModalLabel {{showthisreq.text}}
+			.span1
+				a.close(action='closeModal target="view"')
+					i.text-error.icon-remove-sign
+	.modal-body.expandedcontent
+		| {{#each showthisreq.response itemViewClass="App.ResponseView" itemController="response"}}
+		{{partial "response"}}
+		| {{/each}}
+	p
+		br
+{{/if}}
+ul.nav.nav-tabs
+	h4 Past requests
+	li.minerex
+		<a {{action selectTab "minerex" target="view"}}>Mine</a>
+	li.othersrex.active
+		<a {{action selectTab "othersrex" target="view"}}>Others</a>
+.tab-content
+	.tab-pane.minerex
+		| {{#each my_reqs itemViewClass="App.RequestView" itemController="request"}}
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
+			| {{#if urgent}}
+			i.text-error.icon-flag
+			&nbsp;&nbsp;
+			| {{/if}}
+			| {{#if count}}
+			span.badge.badge-success {{count}}
+			&nbsp;&nbsp;
+			| {{/if}}
+			{{text}}
+		| {{/each}}
+		.row-fluid
+			.span2
+			.span8
+				hr
+				ul.pager
+					li.previous
+						| {{#if my_hasPrev}}<a href="#" {{action prevPage "my" target="view"}}>&larr; Back</a>{{/if}}
+					li.next
+						| {{#if my_hasNext}}<a href="#" {{action nextPage "my" target="view"}}>More &rarr;</a>{{/if}}
+
+	.tab-pane.active.othersrex
+		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
+		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
+			| {{#if urgent}}
+			i.text-error.icon-flag
+			&nbsp;&nbsp;
+			| {{/if}}
+			| {{#if count}}
+			span.badge.badge-success {{count}}
+			&nbsp;&nbsp;
+			| {{/if}}
+			{{text}}
+		| {{/each}}
+		.row-fluid
+			.span2
+			.span8
+				hr
+				ul.pager
+					li.previous
+						| {{#if other_hasPrev}}<a href="#" {{action prevPage "other" target="view"}}>&larr; Back</a>{{/if}}
+					li.next
+						| {{#if other_hasNext}}<a href="#" {{action nextPage "other" target="view"}}>More &rarr;</a>{{/if}}
+

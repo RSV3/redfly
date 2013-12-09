@@ -199,7 +199,7 @@ splitSpecials = (specialties) ->
 ###
 add new contact details to the queue for this user
 ###
-push2linkQ = (notifications, user, contact, details) ->
+push2linkQ = (notifications, user, contact, details, cb) ->
 	specialties = splitSpecials details.specialties
 
 	positions = _.pluck details.positions, 'title'
@@ -214,28 +214,27 @@ push2linkQ = (notifications, user, contact, details) ->
 		industries:industries
 		companies:companies
 		positions:positions
-
-	if contact and not _.isArray(contact)	# only if we're certain which contact this matches,
-		return addDeets2Contact notifications, user, contact, details, specialties, industries
-
-	null
+	, (linkedin)->
+		if linkedin and contact and not _.isArray(contact)	# only if we're certain which contact this matches,
+			cb addDeets2Contact notifications, user, contact, linkedin
+		else cb null
+	cb null
 
 
 updateLIrec = (details, linkedin, field)->
 	if details[field] then linkedin[field] = details[field]
 
-saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
+saveLinkedin = (details, listedDetails, user, contact, linkedin, cb) ->
 	if not linkedin
 		linkedin = new models.LinkedIn
 		linkedin.contact = contact
 		linkedin.linkedinId = details.profileid
-		linkedin.user = user
+		linkedin.users = []
 		linkedin.name =
 			firstName: details.firstName
 			lastName: details.lastName
 			formattedName: details.formattedName
-	# schema design issue: need to initialise linkedin.users to [] and then:
-	# linkedin.users.addToSet user
+	linkedin.users.addToSet user
 	updateLIrec details, linkedin, 'yearsExperience'
 	updateLIrec details, linkedin, 'pictureUrl'
 	updateLIrec details, linkedin, 'summary'
@@ -250,19 +249,21 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin) ->
 						linkedin[detail].addToSet item
 	linkedin.lastLink = new Date()
 	linkedin.save (err) ->
+		if err then console.dir err
+		cb linkedin
 
 
-addDeets2Linkedin = (user, contact, details, listedDetails) ->
+addDeets2Linkedin = (user, contact, details, listedDetails, cb) ->
 	if _.isArray(contact)	# if this linkedin connection matches multiple contacts,
 		contact = null		# just store the deets, without trying to match
 	if contact
 		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
 			throw err if err
-			saveLinkedin details, listedDetails, user, contact, linkedin
+			saveLinkedin details, listedDetails, user, contact, linkedin, cb
 	else
 		models.LinkedIn.findOne {linkedinId: details.profileid}, (err, linkedin) ->
 			throw err if err
-			saveLinkedin details, listedDetails, user, contact, linkedin
+			saveLinkedin details, listedDetails, user, contact, linkedin, cb
 
 
 #
@@ -374,19 +375,20 @@ linker = (user, notifications, finalCB) ->
 						return fn err, changed, counter
 					console.log "error in linkedin process"
 					console.dir err
-				else if deets
-					for key, val of deets		# copy profile, splitting past and present positions
-						if key is 'positions'
-							item[key] = _.select val.values, (p) -> p.isCurrent
-							item.pastpositions = _.select val.values, (p) -> not p.isCurrent
-						else if key is 'pictureUrls'
-							if val._total then item.pictureUrl = val.values[0]
-						else item[key] = val
-					if countSomeFeed then countSomeFeed--
-					else notifications?.updateFeeds = null
-					id = push2linkQ notifications, user, contact, item
+					return cb()
+				unless deets then return cb()
+				for key, val of deets		# copy profile, splitting past and present positions
+					if key is 'positions'
+						item[key] = _.select val.values, (p) -> p.isCurrent
+						item.pastpositions = _.select val.values, (p) -> not p.isCurrent
+					else if key is 'pictureUrls'
+						if val._total then item.pictureUrl = val.values[0]
+					else item[key] = val
+				if countSomeFeed then countSomeFeed--
+				else notifications?.updateFeeds = null
+				push2linkQ notifications, user, contact, item, (id)->
 					if id then changed.push id
-				cb()
+					cb()
 
 		maybeMore = []
 		if (user.linkedInThrottle < network.values.length)		# recall where we were up to when we got throttled

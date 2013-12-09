@@ -6,7 +6,13 @@ module.exports =
 		ORGANISATION_EMAIL: 'tech@redstar.com'
 		ORGANISATION_DOMAIN: 'redstar.com'
 		ES_NAME: 'redstar'
+		ORG_TAG_CATEGORIES: 'Role, Theme, Project'
 
+		# one default admin
+		ADMIN_EMAIL:	'kwan@redstar.com'
+
+		URGENT_HOUR:	17		# this is when all the un-answered requests are resent
+		EMPTY_HOUR:		11		# this is when all the un-answered requests (urgent and otherwise) get resent
 
 	development:
 		HOST: '127.0.0.1:5000'
@@ -39,11 +45,16 @@ module.exports =
 		#REDISTOGO_URL: 'redis://redistogo:d8fafc860dfba6c9d50b6dbabc90653b@koi.redistogo.com:9609/'
 		REDISTOGO_URL: 'redis://redistogo:6bc53b4afcb65dd6e7e3fa6242b5e744@beardfish.redistogo.com:9484/'
 
-		ES_URL: 'http://7spn3lzk:xeh3s2fieqwyk2q2@oak-6045321.us-east-1.bonsai.io'
+		ES_URL: 'http://paas:fee2bc06df50ed0f4ddc123686ffbcc5@api.searchbox.io'
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
-		NUDGE_DAYS: 'Monday Thursday'
+		NUDGE_DAYS: 'Monday Saturday'
+
+		ADMIN_EMAIL:	['kwan@redstar.com', 'justin@redstar.com']
+		ORGANISATION_DOMAINS: ['redstar.com', 'vinely.com', 'justat.at']
+		AUTH_DOMAINS: ['redstar.com', 'gmail.com', 'r-w.in']
+
 
 	onboarding:
 		# for testing fresh new onboarding of users
@@ -64,8 +75,7 @@ module.exports =
 
 		NUDGE_DAYS: 'Monday Thursday'
 
-		# one default admin
-		ADMIN_EMAIL:	'kwan@redstar.com'
+
 
 	staging:
 		HOST: 'redfly-staging.herokuapp.com'	# 'staging.redfly.com'
@@ -85,6 +95,7 @@ module.exports =
 		ES_URL: 'http://paas:4766d4887993f5018fa1132ea5012002@api.searchbox.io'
 
 		NUDGE_DAYS: 'Monday Thursday'
+		NEWRELIC_KEY: 'a12b66c9dbe607523b5b70ace19d7b84483ec3f9'
 
 
 
@@ -128,3 +139,4 @@ module.exports =
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Tuesday Friday'
+		NEWRELIC_KEY: 'ce6dfd0bb4e2532072d644b30820a2de431ebca4'

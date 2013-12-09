@@ -43,9 +43,9 @@ module.exports = (Ember, App, socket) ->
 		noseToPick: (->
 			topnose = []
 			if gno = @get('known')
-				if gno?.get('length') is @get('f_knows.length')
-					gno.forEach (n)->
-						topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
+				gno.forEach (n)->
+					unless n.get('canonicalName') then return
+					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
 			topnose
 		).property 'known.@each.isLoaded'
 

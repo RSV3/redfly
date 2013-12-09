@@ -51,6 +51,7 @@ module.exports = (Ember, App, socket) ->
 		_popularTags: (->
 			if (pTags = @get('storePopTags')) then return pTags
 			cat = @get 'category'
+			catid = @get 'catid'
 			unless (priorTags = @get('storePriorTags')) and priorTags.get('length')
 				return null
 			if grandparent = @gpView()?.get('storePopTags')
@@ -60,9 +61,12 @@ module.exports = (Ember, App, socket) ->
 			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
 				pTags = @get 'storePopTags'
 				priorTags = @get 'storePriorTags'
-				pTags.pushObjects priorTags.map (p)-> {body:p.get('body'), category:p.get('category')}
+				pTags.pushObjects priorTags.map (p)->
+					{body:p.get('body'), category:cat, catid:catid}
 				priorBodies = priorTags.getEach 'body'
-				pTags.pushObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length]
+				pTags.pushObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
+					{body:p.body, category:cat, catid:catid}
+
 				if grandparent then grandparent[cat] = @get 'storePopTags'
 			@set 'storePopTags', []
 			@get 'storePopTags'
@@ -101,6 +105,7 @@ module.exports = (Ember, App, socket) ->
 				, 1000
 			didInsertElement: ->
 				@$().addClass(@get('parentView.category') or @get('context.category'))
+				@$().addClass(@get('parentView.catid') or @get('context.catid'))
 				if @get 'parentView.animate'
 					@set 'parentView.animate', false
 					@$().addClass 'animated bounceIn'
