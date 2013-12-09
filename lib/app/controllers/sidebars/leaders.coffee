@@ -6,9 +6,13 @@ module.exports = (Ember, App, socket) ->
 		leader: []
 		laggard: []
 
+	App.LeaduserView = App.HoveruserView.extend
+		template: require '../../../templates/components/leaduser'
+
 	App.LeadersView = Ember.View.extend
 		template: require '../../../../templates/sidebars/leaders'
 		classNames: ['leaders']
+		leaduserView: App.LeaduserView.extend()
 		didInsertElement: ->
 			socket.emit 'leaderboard', (day, lowest, leaders, laggards) =>
 				if @get 'controller'	# in case we already switched out

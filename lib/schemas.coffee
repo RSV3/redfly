@@ -11,6 +11,8 @@ schemas = []
 schemas.push Schema 'Admin',
 	_id: type: Number			# special case: there is only one admin record, so let's call it _id:1
 	domains: [ type: String ]	# list of domains served by this instance
+	authdomains: [ type: String ]	# list of domains users can auth with, in addition to domains
+	whitelistemails: [ type: String ]	# list of emails that can log auth in addition to domains, authdomains
 	blacklistdomains: [ type: String ]	# list of domains blacklisted from the service
 	blacklistemails: [ type: String ]	# list of emails blacklisted from the service
 	blacklistnames: [ type: String ]	# list of names blacklisted from the service
@@ -18,6 +20,9 @@ schemas.push Schema 'Admin',
 	flushsave: type: Boolean	# if set, FLUSH saves queued contacts: otherwise, skips
 	hidemails: type: Boolean	# hide the email of unknown contacts
 	anyedit: type: Boolean		# allow any user to edit some contact fields
+	orgtagcats: type: String	# comma delimited category names
+	searchCnt: type: Number		# counts unique searches today
+	searchCounts: [ type: Number ]		# stores last week of search counts
 
 schemas.push Schema 'Classify',
 	user: type: Types.ObjectId, ref: 'User'
@@ -34,6 +39,7 @@ schemas.push Schema 'User',
 	picture: type: String, trim: true, validate: validators.isUrl
 	oauth: type: String	# This would be required, but it might briefly be empty during the OAuth2 migration.
 	lastParsed: type: Date
+	lastLogin: type: Date
 	# queue: [ type: Types.ObjectId, ref: 'Contact' ]		# now built dynamicly from mails, classifies, excludes
 	# excludes: [oldexcludeSchema]		# now mapped in excludes
 	admin: type: Boolean
@@ -89,9 +95,9 @@ schemas.push Schema 'Contact',
 	facebook: type: String, trim: true, match: util.socialPatterns.facebook
 
 schemas.push Schema 'Tag',
-	creator: type: Types.ObjectId, ref: 'User', sparse: true#, required: true
-	contact: type: Types.ObjectId, ref: 'Contact', sparse: true#, required: true
-	category: type:String, required:true, enum:['role', 'theme', 'project', 'organisation', 'industry']
+	creator: type: Types.ObjectId, ref: 'User', sparse: true
+	contact: type: Types.ObjectId, ref: 'Contact', sparse: true
+	category: type:String, required:true
 	body: type: String, required: true, trim: true, lowercase: true
 
 schemas.push Schema 'Note',
@@ -105,8 +111,13 @@ schemas.push Schema 'Mail',
 	subject: type: String, trim: true
 	sent: type: Date
 
+schemas.push Schema 'IntroMail',
+	sender: type: Types.ObjectId, ref: 'User', required: true
+	recipient: type: Types.ObjectId, ref: 'User', required: true
+	contact: type: Types.ObjectId, ref: 'Contact', required: true
+
 schemas.push Schema 'LinkedIn',
-	user: type: Types.ObjectId, ref: 'User'
+	users: [ type: Types.ObjectId, ref: 'User' ]
 	# TODO: fix schema design error: change user (ref) to users (array of refs)
 	contact: type: Types.ObjectId, ref: 'Contact'
 	linkedinId: type: String, required: true, unique: true
@@ -183,6 +194,21 @@ schemas.push Schema 'FullContact',
 		url: type: String
 	]
 
+
+schemas.push Schema 'Response',
+	contact: [ type: Types.ObjectId, ref: 'Contact' ]
+	body: type: String
+	user: type: Types.ObjectId, ref: 'User'
+
+schemas.push Schema 'Request',
+	user: type: Types.ObjectId, ref: 'User'
+	response: [ type: Types.ObjectId, ref: 'Response' ]
+	text: type: String, required: true
+	urgent: type: Boolean
+	expiry: type: Date
+	sent: type: Date
+	updated: type: Boolean
+	updatesent: type: Date
 
 
 exports.all = ->

@@ -17,12 +17,12 @@
 				ul.nav.nav-tabs
 					p
 						br
-					li.active
-						| <a href=project data-toggle=tab> Project </a>
-					li
-						| <a href=theme data-toggle=tab> Theme </a>
-					li
-						| <a href=role data-toggle=tab> Role </a>
+					li.cat1.editable.active.alreadyhere(action='editme "cat1" target="view"')
+						| <a href=orgtagcat1 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat1}} </a>
+					li.cat2.editable(action='editme "cat2" target="view"')
+						| <a href=orgtagcat2 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat2}} </a>
+					li.cat3.editable(action='editme "cat3" target="view"')
+						| <a href=orgtagcat3 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat3}} </a>
 					li
 						| <a href=industry data-toggle=tab> Industry </a>
 					li
@@ -39,15 +39,22 @@
 					.tagboxes
 						.tab-pane.active#organisation
 						.tab-pane#industry
-						.tab-pane#project
-						.tab-pane#theme
-						.tab-pane#role
+						.tab-pane#orgtagcat1
+						.tab-pane#orgtagcat2
+						.tab-pane#orgtagcat3
 						{{view App.TagAdminView}}
 
 		h3 Organization Domains
 		.row-fluid
 			.span4
+				h5 parse emails sent from these domains:
 				{{view Ember.TextArea valueBinding="domainlist"}}
+			.span4
+				h5 authorise any user from these domains:
+				{{view Ember.TextArea valueBinding="authdomainlist"}}
+			.span4
+				h5 authorise these specific email addresses:
+				{{view Ember.TextArea valueBinding="emailwhitelist"}}
 
 		h3 Classify Queue Configuration
 			.row-fluid.checkadmin
@@ -73,13 +80,13 @@
 		h3 Blacklists
 		.row-fluid
 			.span4
-				.h4 Domains
+				h5 Domains
 				{{view Ember.TextArea valueBinding="domainblacklist"}}
 			.span4
-				.h4 Names
+				h5 Names
 				{{view Ember.TextArea valueBinding="nameblacklist"}}
 			.span4
-				.h4 Emails
+				h5 Emails
 				{{view Ember.TextArea valueBinding="emailblacklist"}}
 
 

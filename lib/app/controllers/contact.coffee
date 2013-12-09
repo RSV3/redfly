@@ -5,6 +5,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.ContactController = Ember.ObjectController.extend
 
+		hovering: null
 		allowEdits: (->
 			if @get('isKnown') then return true
 			a = App.Admin.find 1
@@ -33,10 +34,6 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
-		showEmail: (->
-			a = App.Admin.find 1
-			@get('isKnown') or a and a.get('hidemails') is false or @get('forceShowEmail')
-		).property 'id'
 		allMeasures: (->
 			if (id=@get('id'))
 				App.Measurement.find contact:id
@@ -119,15 +116,37 @@ module.exports = (Ember, App, socket) ->
 			if @get 'isKnown'
 				@set 'isVip', not @get 'isVip'
 				@commitNcount()
+
+		remove: ->
+			knows = @get('knows.content').filter (u)-> u.id isnt App.user.get('id')
+			ab = @get('addedBy') 
+			if ab?.get('id') is App.user.get('id')
+				if knows.length then ab = knows[0]
+				else ab = null
+				@set 'addedBy', ab
+			@set 'knows.content', knows
+			if not ab then @set 'added', null
+			App.Exclude.createRecord
+				user: App.User.find App.user.get 'id'
+				contact: App.Contact.find @get 'id'
+			@commitNcount()
+
 		commitNcount: ->
 			@set 'updated', new Date
 			@set 'updatedBy', App.User.find App.user.get 'id'
 			App.store.commit()
 
+	App.ContactuserView = App.HoveruserView.extend
+		template: require '../../../templates/components/contactuser'
+
 	App.ContactView = Ember.View.extend
 		template: require '../../../templates/contact'
 		classNames: ['contact']
 
+		showEmail: (->
+			a = App.Admin.find 1
+			@get('controller.isKnown') or a and a.get('hidemails') is false or @get('parentView.classifying')
+		).property 'id'
 		indTags: (->
 			@get('catTags')?['industry']
 		).property 'catTags'
@@ -139,19 +158,19 @@ module.exports = (Ember, App, socket) ->
 			result
 		).property 'catTags'
 		catTags: (->
+			cattags = industry:[]
+			if not (cats = App.admin.get 'orgtagcats')
+				return console.log "ERROR: no admin categories ..."
+			_.each _.map(cats.split(','), (t)-> t.trim()), (t)->
+				cattags[t] = []	# add empty list for each organisational tag category
 			tags = @get 'tags'
-			cattags =
-				industry:[]
-				project:[]
-				role:[]
-				theme:[]
 			if not tags or not tags.get('length') then return cattags
 			tags.forEach (t)->
 				if (c = t.get('category'))
 					if not cattags[c] then cattags[c]=[]
 					cattags[c].push t
 			cattags
-		).property 'tags.@each'
+		).property 'tags.@each', 'App.admin.orgtagcats'
 		tags: (->
 			if (id = @get('controller.id'))
 				App.Tag.filter {contact: id}, (data) =>
@@ -161,7 +180,7 @@ module.exports = (Ember, App, socket) ->
 		introMailto: (->
 			bootbox.confirm "Request an introduction from #{@get 'controller.addedBy.name'}?", (yorn)=>
 				if not yorn then return
-				CR = '%0D%0A'		# carriage return / line feed
+				CR = '%0D%0A'		# carriage return / linefeed
 				port = if window.location.port then ":#{window.location.port}" else ""
 				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 				$('p.bullhorn>a').css('color','grey').bind('click', false)
@@ -351,6 +370,7 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
+					$('div.search.dropdown').blur()
 					@get('parentView.selections').addObject App.Contact.find context.id
 				# override form submission
 				keyUp: (event) -> false

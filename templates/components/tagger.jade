@@ -5,19 +5,20 @@
 	// TO-DO this would be more efficient with itemView
 	+each('view.tags')
 		+view('view.tagView')
-			i.icon-tag  
+			i.icon-tag
 			a.body(href='#', action='search target="view"') {{body}}
 			a.close(action='delete target="view"')
 				i.icon-remove
-	form.new-tag-form(action='add on="submit" target="view"')
-		+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
+	+if('view.full')
+		form.new-tag-form(action='add on="submit" target="view"')
+			+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
 
 +if('view.full')
 	.cloud
 		+each('view.cloudTags')
 			+view('view.cloudView')
 				a(href='#', action='use target="view"')
-					span(bindAttr='class=":label category"')
+					span(bindAttr='class=":label category catid"')
 						i.icon-plus
-						|  {{body}}
-				|  
+						|{{body}}
+				| 

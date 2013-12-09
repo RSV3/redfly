@@ -3,7 +3,6 @@
 @import 'vendor/jquery.counter-analog.css'
 
 
-
 // Implicit Bootstrap abstractions.
 horizontalMargin = baseLineHeight * 0.5
 
@@ -13,6 +12,9 @@ smallFontSize = baseFontSize * 0.7
 lightBorder = #EEE
 organisation = #e51937
 
+
+a.nodeco:hover
+	text-decoration	none
 
 
 // Global styles.
@@ -136,6 +138,9 @@ tagger(fontSize)
 			margin-top 10px
 			a:hover
 				text-decoration none
+			span
+				i.icon-plus
+					margin-right	0.3em
 
 span.label.organisation, a.label.organisation
 	background-color	#ff6600
@@ -145,13 +150,13 @@ span.label.industry, a.label.industry
 	border-color		#456
 	color #fff
 	text-shadow none
-span.label.project, a.label.project
+span.label.orgtagcat3, a.label.orgtagcat3
 	background-color	#987
 	border-color		#654
-span.label.theme, a.label.theme
+span.label.orgtagcat2, a.label.orgtagcat2
 	background-color	#978
 	border-color		#645
-span.label.role, a.label.role
+span.label.orgtagcat1, a.label.orgtagcat1
 	background-color	#798
 	border-color		#564
 a.label.knows
@@ -182,6 +187,8 @@ body
 	padding-top 70px	// Make the container go all the way to the bottom of the topbar.
 
 .navbar
+	form>input
+		width	10em
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
@@ -200,6 +207,15 @@ body
 	.summary .own-line
 		margin-top 10px
 	.feed
+		.hoveruser
+			float	left
+			.expandthis
+				margin-top	-10em
+				margin-left	-3em
+				font-size baseFontSize
+		.leftone
+			float	left
+			margin-right	0.5em
 		font-size smallFontSize
 		tagger(smallFontSize)
 		.feed-item
@@ -234,6 +250,137 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
+
+
+.pastreqs
+	border-left	1px solid lightgrey
+	padding-left	1em
+	.nav-tabs > li
+		float	right
+		margin-right	1em
+		margin-top	-2em
+	.oldrequests
+		background-color	#fff
+		border-radius	7px
+		padding	3px
+		margin 3px
+		margin-bottom	1em
+		padding-left	7px
+	.oldrequests.hoverable:hover
+		background-color	#eee
+	.modal
+		top	2em
+		width	66%
+		height	600px
+		margin-left	-400px
+		.modal-header
+			height	150px
+		.modal-body
+			overflow-x	visible
+			height	400px
+		.hoveruser
+			.expandthis
+				position	fixed
+				left	1em
+				margin-top 0
+				top	3em
+	.pager
+		li
+			a
+				border	none
+
+.hoveruser
+	display	inline-block
+	.expandthis
+		width	280px
+		position	absolute
+		z-index	99
+		.expanded
+			padding	1em
+			background-color	#eee
+			border-radius baseBorderRadius
+			box-shadow	5px 5px 3px #555
+			img.img-polaroid
+				margin-bottom	0.5em
+			.insetalittle
+				margin	1em
+
+.requests
+	.request
+		.span9
+			padding-left	3em
+			.hoveruser
+				margin-left	-3em
+	hr
+		margin	0.5em 0
+	#datepicker
+		margin	4px
+	.badgecount
+		width	3em
+		float	left
+		box-sizing	border-box
+		.expandiconspace
+			display	inline-block
+			width	1em
+			a.expandicon
+				margin-right	0.4em
+		.badge
+			padding-left	5px
+			padding-right	5px
+	.pager
+		position relative
+		width 70%
+		left 50%
+		margin-left -25%
+		.pagenums
+			color	#069
+			margin-top	0.5em
+			display	inline-block
+
+.request
+	.hoveruser
+		.expandthis
+			margin-left	0
+			margin-top	-13em
+	.requser.expanded
+		display	inline-block
+	i.fright
+		float right
+	.btn.span11
+		margin-left	0
+	.label.urgent
+		border-color	#bd362f
+		color	#bd362f
+	.label
+		text-align	center
+		min-height	2em
+		margin	0
+		padding-top	4px
+		border	1px	solid black
+		background-color	white
+		color	gray
+	a.label.knows
+		color	#08c
+	a.label.disabled
+		background-color	lightgrey
+	a.label:hover
+		color	#08c
+	a.label.disabled:hover
+		color	#808080
+	.expandedcontent
+		padding	1em
+		.response
+			i.icon-bullhorn
+				padding-right	0.3em
+			i.icon-bullhorn:hover
+				text-decoration	none
+			padding-bottom	1em
+			.suggesttext
+				margin-left	0.2em
+			.suggestions
+				.imgpad
+					padding-bottom	1em
+
 
 .results
 	.sort
@@ -390,6 +537,7 @@ body
 	a:hover
 		text-decoration	none
 
+
 .admin
 	.checkadmin
 		input
@@ -399,24 +547,37 @@ body
 		label
 			display	inline
 			margin-left	1em
-
+	li.editable
+		a
+			i
+				display	none
+	li.editable.active
+		a
+			i
+				float	left
+				margin-right	1em
+				display	inline-block
+				color	#888
+		a:hover
+			i
+				color	#08c
 
 .tagadmin, .tagger .main
 	.tag
 		margin	2px
 		border-width	1px
 		border-style	solid
-	.tag.role
+	.tag.orgtagcat1
 		background-color	#dfe
 		border-color		#acb
 		i.icon-tag
 			color		#564
-	.tag.theme
+	.tag.orgtagcat2
 		background-color	#fde
 		border-color		#cab
 		i.icon-tag
 			color		#645
-	.tag.project
+	.tag.orgtagcat3
 		background-color	#fed
 		border-color		#cba
 		i.icon-tag
@@ -431,6 +592,10 @@ body
 		border-color		#bbb
 		i.icon-tag
 			color		#444
+	.tag
+		i.icon-tag
+			margin-left	-0.3em
+			margin-right	0.3em
 	.tag a.body
 		color	#036
 
@@ -551,7 +716,7 @@ body
 		tagger(baseFontSize)
 		.tagger .main
 			min-height 42px
-			border 1px dashed lightBorder
+			border 1px solid #ddd
 			border-radius baseBorderRadius
 		.span4
 			margin-left	1%
@@ -578,6 +743,25 @@ body
 		.search .dropdown-menu
 			max-width 528px
 			margin-top 40px // TO-DO hackily hackface mchackerson
+	.note
+		.hoveruser
+			.expandthis
+				margin-top	-8em
+				margin-left	-12em
+			li
+				display	inline
+	.hoveruser
+		display	block
+		margin-right	1em
+
+
+.contact
+	.hoveruser
+		.expandthis
+			margin-left	-19em
+			margin-top	-3em
+
+
 
 // For _contact partial
 //ul.knows-list
@@ -800,6 +984,10 @@ ul.nav .popover
 		margin-right	0.4em
 
 .leaders
+	.hoveruser
+		.expandthis
+			top	0
+			margin-left	-4em
 	table
 		td
 			padding	4px
@@ -814,3 +1002,216 @@ ul.nav .popover
 	table.botlead
 		td.pos
 			color	darkred
+
+// dashboard
+
+li
+	span.count
+		color	#006
+		margin-left	1em
+
+
+// animations / transitions / transforms / etc
+
+@-webkit-keyframes flipcardin {
+	100% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
+	0% { -webkit-transform: rotateX(11deg); opacity:0;  }
+}
+
+@-moz-keyframes flipcardin {
+	100% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }	
+	0% { -moz-transform: rotateX(11deg); opacity:0;  }
+}
+
+@-o-keyframes flipcardin {
+	100% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
+	0% { -o-transform: rotateX(11deg); opacity:0; }
+}
+
+@keyframes flipcardin {
+	100% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
+	0% { transform: rotateX(11deg);  opacity:0; }
+}
+
+
+@-webkit-keyframes flipcardout {
+	0% { -webkit-transform: rotateX(0);  -webkit-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -webkit-transform: rotateX(-11deg); opacity:0; }
+}
+
+@-moz-keyframes flipcardout {
+	0% { -moz-transform: rotateX(0);  -moz-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -moz-transform: rotateX(-11deg); opacity:0; }
+}
+
+@-o-keyframes flipcardout {
+	0% { -o-transform: rotateX(0);  -o-animation-timing-function: ease-in-out; opacity:1; }
+	100% { -o-transform: rotateX(-11deg); opacity:0; }
+}
+
+@keyframes flipcardout {
+	0% { transform: rotateX(0);  animation-timing-function: ease-in-out; opacity:1; }
+	100% { transform: rotateX(-11deg); opacity:0; }
+}
+
+.flipcardout {
+	-webkit-animation-name: flipcardout;
+	-moz-animation-name: flipcardout;
+	-o-animation-name: flipcardout;
+	animation-name: flipcardout;
+	-webkit-transform-origin: bottom center 10cm;
+	-moz-transform-origin: bottom center 10cm;
+	-o-transform-origin: bottom center 10cm;
+	transform-origin: bottom center 10cm;
+}
+
+.flipcardin {
+	-webkit-animation-name: flipcardin;
+	-moz-animation-name: flipcardin;
+	-o-animation-name: flipcardin;
+	animation-name: flipcardin;
+	-webkit-transform-origin: bottom center 10cm;
+	-moz-transform-origin: bottom center 10cm;
+	-o-transform-origin: bottom center 10cm;
+	transform-origin: bottom center 10cm;
+}
+
+.flipcard {
+	opacity: 0
+}
+
+.flipcardparent {
+	perspective	20cm
+}
+
+
+/* originally authored by Angelo Rohit - https://github.com/angelorohit */
+
+@-webkit-keyframes myLightSpeedIn {
+	0% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedIn {
+	0% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedIn {
+	0% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { -o-transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { -o-transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedIn {
+	0% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	40% { transform: translateX(-10%) skewX(5deg); opacity: 1; }
+	70% { transform: translateX(0%) skewX(-3deg); opacity: 1; }
+	100% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedIn {
+    -webkit-animation-name: myLightSpeedIn;
+    -moz-animation-name: myLightSpeedIn;
+    -o-animation-name: myLightSpeedIn;
+    animation-name: myLightSpeedIn;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+
+	opacity:	0;
+}
+
+.animated.myLightSpeedIn {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
+
+@-webkit-keyframes myLightSpeedOut {
+	100% { -webkit-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -webkit-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -webkit-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -webkit-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-moz-keyframes myLightSpeedOut {
+	100% { -moz-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -moz-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -moz-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -moz-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@-o-keyframes myLightSpeedOut {
+	100% { -o-transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { -o-transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { -o-transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { -o-transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+@keyframes myLightSpeedOut {
+	100% { transform: translateX(100%) skewX(-10deg); opacity: 0; }
+	70% { transform: translateX(-10%) skewX(5deg); opacity: 0.5; }
+	40% { transform: translateX(0%) skewX(-3deg); opacity: 0.5; }
+	0% { transform: translateX(0%) skewX(0deg); opacity: 1; }
+}
+
+.myLightSpeedOut {
+    -webkit-animation-name: myLightSpeedOut;
+    -moz-animation-name: myLightSpeedOut;
+    -o-animation-name: myLightSpeedOut;
+    animation-name: myLightSpeedOut;
+
+    -webkit-animation-timing-function: ease-out;
+    -moz-animation-timing-function: ease-out;
+    -o-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+}
+
+.animated.myLightSpeedOut {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+}
+
+
+
+.home
+	.carousel
+		height	480px
+		.carousel-indicators
+			bottom	0
+			top	auto
+			height	1.2em
+			left	50%
+			margin-left	-1em
+			li
+				background-color	#dde
+			ii.active
+				background-color	#3a87ad
+		.carousel-control:hover
+			background-color	#3a87ad
+		.carousel-control
+			background-color	#dde
+			i
+				font-size	44px
+		.carousel-control.left
+			margin-left	-40px
+		.carousel-control.right
+			margin-right	-20px
+	.section, .section-colored
+		padding	50px
+		height	380px
+		width	90%
+	.section-colored
+		background-color	#eee

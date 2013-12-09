@@ -16,24 +16,39 @@ module.exports = (Ember, App, socket) ->
 						before_open: (pnotify) =>
 							pnotify.css top: '60px'
 				name = 'index'
+
+			if name is 'index' then return route.render name,
+				into: 'application'
+				outlet:'panel'
+
+			appname = if name is 'requests' then 'app2' else 'app1'
+			route.render appname,
+				into: 'application'
+				outlet: 'panel'
+
 			if name is 'results'
 				route.render 'filter',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'results'
 			else if name is 'classify' or name is 'enrich'
 				route.render 'leaders',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'leaders'
+			else if name is 'requests'
+				route.render 'pastreqs',
+					into: appname
+					outlet: 'sidebar'
+					controller: 'pastreqs'
 			else
 				route.render 'feed',
-					into: 'application'
+					into: appname
 					outlet: 'sidebar'
 					controller: 'feed'
 			if name is 'enrich' then name = 'results'
 			route.render name,
-				into: 'application'
+				into: appname
 				outlet: 'main'
 				controller: name
 
@@ -42,6 +57,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'contact', path: '/contact/:contact_id'
 		@route 'contacts'
 		@route 'leaderboard'
+		@route 'requests'
 		@resource 'results', path: '/results/:query_text'
 		@route 'noresult', path: '/results'
 		@route 'allresults', path: '/results/'
@@ -68,7 +84,7 @@ module.exports = (Ember, App, socket) ->
 		events:
 			logout: (context) ->
 				socket.emit 'logout', =>
-					App.auth.logout()
+					App.auth.logOnOut()
 					@transitionTo 'index'
 
 	App.ProfileRoute = Ember.Route.extend
@@ -94,6 +110,12 @@ module.exports = (Ember, App, socket) ->
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'admin'
+
+	App.ImportRoute = Ember.Route.extend
+		renderTemplate: -> @router.connectem @, 'import'
+
+	App.CreateRoute = Ember.Route.extend
+		renderTemplate: -> @router.connectem @, 'create'
 
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
@@ -201,32 +223,26 @@ module.exports = (Ember, App, socket) ->
 		redirect: ->
 			poorResults = App.Results.create {text: '', poor:true}
 			@transitionTo 'results', poorResults
-			###
-			setupController: (cuntroller, model) ->
-				controller = @controllerFor 'results'
-				this._super controller, model
-				for nullit in ['all', 'f_knows', 'f_industry', 'f_organisation', 'sortType']
-					controller.set nullit, null
-				for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
-					controller.set zeroit, 0
-				controller.set 'datapoor', true
-				controller.set 'empty', false
-				socket.emit 'fullSearch', moreConditions:poor:true, (results) =>
-					console.log 'enrich got:'
-					console.dir results
-					if not results?.response?.length then return @transitionTo 'classify'
-					controller.set 'all', App.store.findMany(App.Contact, results.response)
-			renderTemplate: ->
-				@router.connectem @, 'enrich'
-			###
+
+	App.RequestsRoute = Ember.Route.extend
+		setupController: (controller, model)->
+			socket.emit 'requests', (reqs, theresmore)->
+				if reqs
+					controller.set 'hasNext', theresmore
+					if theresmore then controller.set 'pageSize', reqs.length
+					controller.set 'reqs', App.store.findMany App.Request, reqs
+		renderTemplate: ->
+			@router.connectem @, 'requests'
+
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards) =>
+			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) =>
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', App.store.findMany(App.User, leaders)
 				controller.set 'laggard', App.store.findMany(App.User, laggards)
+				controller.set 'datapoor', datapoor
 		renderTemplate: ->
 			@router.connectem @, 'leaderboard'
 

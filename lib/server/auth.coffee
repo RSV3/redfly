@@ -27,12 +27,11 @@ everyauth.google.configure
 
 	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
 		email = googleUserMetadata.email.toLowerCase()
+		promise = @Promise()
 		models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if admin?.domains?.length and not _.some(admin.domains, (domain)->
-				_s.endsWith email, "@#{domain}"
-			)
-				return {}
+			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)-> _s.endsWith email, "@#{domain}") and not _.contains(admin.whitelistemails, email)
+				return promise.fulfill null
 			models.User.findOne email: email, (err, user) ->
 				throw err if err
 				if not user
@@ -41,7 +40,7 @@ everyauth.google.configure
 					user.email = email
 					user.name = googleUserMetadata.name
 					if googleUserMetadata.picture then user.picture = googleUserMetadata.picture
-					if process.env.ADMIN_EMAIL is user.email then user.admin = true
+					if process.env.ADMIN_EMAIL?.length and _.contains process.env.ADMIN_EMAIL.split(' '), user.email then user.admin = true
 
 				token = accessTokenExtra.refresh_token
 				if not user.oauth		# OA2 virgin?
@@ -51,8 +50,7 @@ everyauth.google.configure
 					if not user.name then user.name = googleUserMetadata.name			# if user was created by cIO
 					if not user.picture?.length and googleUserMetadata.picture?.length
 						user.picture = googleUserMetadata.picture	# but then logs in with gOA2
-					console.dir "nu user oauth"
-					console.dir user
+					console.dir "new user oauth #{user.oauth} for #{user.email}/#{user._id}"
 					user.save (err) ->
 						throw err if err
 						promise.fulfill user
@@ -63,14 +61,16 @@ everyauth.google.configure
 						throw err if err
 						promise.fulfill user
 				else promise.fulfill user			# user #{email} already had correct token #{token}
-		promise = @Promise()
+		promise
+
 
 	addToSession: (session, auth) ->
-		session.user = auth.user.id
+		session.user = auth.user?.id
 
 	sendResponse: (res, data) ->
 		user = data.user
-		if not user.id then return res.redirect '/invalid'
+		if not user then return res.redirect '/unauthorized'
+		else if not user.id then return res.redirect '/invalid'
 		if user.lastParsed and user.oauth then return res.redirect '/recent'	# this might be good enough ...
 		res.redirect '/load'
 

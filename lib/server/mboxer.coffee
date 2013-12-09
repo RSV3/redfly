@@ -1,12 +1,15 @@
-util = require './util'
-models = require './models'
 validators = require('validator').validators
 _ = require 'underscore'
 _s = require 'underscore.string'
-ContextIO = require('contextio');
+ContextIO = require 'contextio'
+mimelib = require 'mimelib'
+moment = require 'moment'
+
+util = require './util'
+Models = require './models'
 
 
-contextConnect = (user, blacklist, cb)->
+contextConnect = (user, blacklist, domains, cb)->
 	ctxioClient = new ContextIO.Client {
 		key: process.env.CONTEXTIO_KEY
 		secret: process.env.CONTEXTIO_SECRET }
@@ -17,9 +20,19 @@ contextConnect = (user, blacklist, cb)->
 		account = account?.body
 		if account?.length then account = account[0]
 		# session.id = account.id # wtf? don't think this achieves anything ...
-		cb null, { CIO:ctxioClient, id:account.id, blacklist:blacklist }	# return CIO server as attribute on mbox session
+		cb null,
+			CIO:ctxioClient
+			id:account.id
+			blacklist:blacklist
+			domains:domains			# return CIO server as attribute on mbox session
 
-imapConnect = (user, blacklist, cb)->
+clearOauthOnErr = (user)->
+	Models.User.update {_id:user.id}, $set:oauth:null, (err)->
+		if not err then return
+		console.log "clearing oauth for #{user.id}"
+		console.dir err
+
+imapConnect = (user, blacklist, domains, cb)->
 	generator = require('xoauth2').createXOAuth2Generator
 		user: user.email
 		clientId: process.env.GOOGLE_API_ID
@@ -28,7 +41,8 @@ imapConnect = (user, blacklist, cb)->
 	generator.getToken (err, token) ->
 		if err
 			console.log "generator.getToken #{token} for #{user.email}"
-			console.warn err
+			console.dir err
+			clearOauthOnErr user
 			return cb err, null
 		server = new require('imap').ImapConnection
 			host: 'imap.gmail.com'
@@ -38,23 +52,42 @@ imapConnect = (user, blacklist, cb)->
 		server.connect (err) ->
 			if err
 				console.dir err
+				clearOauthOnErr user
 				return cb new Error 'Problem connecting to mail.'
-			server.openBox '[Gmail]/Sent Mail', true, (err, box) ->
+			server.getBoxes (err, boxen)->
 				if err
 					console.warn err
-					return cb new Error 'Problem opening mailbox.'
-				return cb null, { IMAP:server, blacklist:blacklist }	# return IMAP server as attribute on mbox session
+					return cb new Error 'Problem listing mailbox folders.'
+				doOpenBox = (name)->
+					server.openBox name, true, (err, box) ->
+						if err
+							console.warn err
+							return cb new Error 'Problem opening mailbox.'
+						return cb null,
+							IMAP:server
+							blacklist:blacklist
+							domains: domains		# return IMAP server as attribute on mbox session
+				for own bname, box of boxen
+					if box.children
+						for own cname, child of box.children
+							if cname.match /sent.*/i
+								return doOpenBox "#{bname}#{box.delimiter}#{cname}"
+				for own bname, box of boxen
+					if bname.match /sent.*/i
+						return doOpenBox bname
+				return cb new Error "couldn't find sent folder to open in mailbox."
 
 
 imapSearch = (session, user, cb)->
-	criteria = [['FROM', user.email]]
-	if previous = user.lastParsed then criteria.unshift ['SENTSINCE', previous]
+	criteria = [] #'FROM', user.email]]
+	previous = user.lastParsed or moment().subtract(30, 'days').toDate()
+	criteria.unshift ['SENTSINCE', previous]
 	console.log '' # DEBUG
 	console.dir criteria # DEBUG
 	session.IMAP.search criteria, cb
 
 contextSearch = (session, user, cb)->
-	options = from:user.email, limit:600, folder:'[Gmail]/Sent Mail'
+	options = limit:600, folder:'[Gmail]/Sent Mail' #, from:user.email
 	if user.lastParsed then options.date_after = user.lastParsed.getTime()/1000
 	m = session.CIO.accounts(session.id)?.messages()
 	if not m then return cb -1, null
@@ -66,11 +99,11 @@ contextSearch = (session, user, cb)->
 # exclude junk like "undisclosed recipients", and exclude yourself.
 _acceptableContact = (user, name, email, excludes, blacklist)->
 	return (validators.isEmail email) and (email isnt user.email) and
-			(_.last(email.split('@')) not in blacklist.domains) and
-			(name not in blacklist.names) and
-			(email not in blacklist.emails) and
-			(not excludes?.names or (name not in excludes.names)) and
-			(not excludes?.emails or (email not in excludes.emails))
+		(_.last(email.split '@') not in blacklist.domains) and
+		(name not in blacklist.names) and
+		(not _.some blacklist.emails, (e)-> e is email or email.match(new RegExp(e))) and
+		(not excludes?.names or (name not in excludes.names)) and
+		(not excludes?.emails or (email not in excludes.emails))
 
 # make sure the name isn't just an email address, then tidy it up
 _normaliseName = (name)->
@@ -91,18 +124,19 @@ eachContextMsg = (session, user, results, finish, cb) ->
 	while results.length
 		msg = results.pop()
 		newmails = []
-		for to in msg.addresses.to
-			email = util.trim to.email.toLowerCase()
-			name = _normaliseName to.name
-			if not email?.length and validators.isEmail name
-				email = name
-				name = null
-			if _acceptableContact user, name, email, session.excludes, session.blacklist
-				newmails.push
-					subject: msg.subject
-					sent: new Date(1000*msg.date)
-					recipientEmail: email
-					recipientName: name
+		if _.contains session.domains, _.last msg.addresses.from.email.split('@')
+			for to in msg.addresses.to
+				email = util.trim to.email.toLowerCase()
+				name = _normaliseName to.name
+				if not email?.length and validators.isEmail name
+					email = name
+					name = null
+				if _acceptableContact user, name, email, session.excludes, session.blacklist
+					newmails.push
+						subject: msg.subject
+						sent: new Date(1000*msg.date)
+						recipientEmail: email
+						recipientName: name
 		cb newmails
 	finish()
 
@@ -113,20 +147,20 @@ eachImapMsg = (session, user, results, finish, cb) ->
 			fetch.on 'message', (msg)->
 				msg.on 'headers', (headers)->
 					newmails = []
-					for to in require('mimelib').parseAddresses headers.to?[0]
-						email = util.trim to.address.toLowerCase()
-						name = _normaliseName to.name
-						if not email?.length and validators.isEmail name
-							email = name
-							name = null
-						if _acceptableContact user, name, email, session.excludes, session.blacklist
-							console.log '' # DEBUG
-							console.dir headers # DEBUG
-							newmails.push
-								subject: headers.subject?[0]
-								sent: new Date headers.date?[0]
-								recipientEmail: email
-								recipientName: name
+					from = mimelib.parseAddresses(headers.from?[0])[0].address
+					if from and _.contains session.domains, _.last from.split '@'
+						for to in mimelib.parseAddresses headers.to?[0]
+							email = util.trim to.address.toLowerCase()
+							name = _normaliseName to.name
+							if not email?.length and validators.isEmail name
+								email = name
+								name = null
+							if _acceptableContact user, name, email, session.excludes, session.blacklist
+								newmails.push
+									subject: headers.subject?[0]
+									sent: new Date headers.date?[0]
+									recipientEmail: email
+									recipientName: name
 					cb newmails
 	},->
 		session.IMAP.logout()
@@ -155,13 +189,13 @@ cIOcreate = (data, cb)->
 		if err or not account or account.body?.type is 'error' then return cb err:'email'
 		if not account.body?.success then cb err:'password'
 		account = account?.body
-		models.Admin.findById 1, (err, admin)->
+		Models.Admin.findById 1, (err, admin)->
 			throw err if err
-			if admin?.domains?.length and not _.some(admin.domains, (domain)->
+			if admin?.authdomains?.length and not _.some(admin.authdomains, (domain)->
 				return _s.endsWith data.email, "@#{domain}"
-			)
+			) and not _.contains(admin.whitelistemails, data.email)
 				console.log "ERR: login email #{data.email} doesn't match domains"
-				console.dir admin.domains
+				console.dir admin.authdomains
 				return cb err:'email'
 			return cb account
 
@@ -181,13 +215,13 @@ googOrCio = (user, goog, cio, cb, action)->
 
 module.exports =
 	connect: (user, cb) ->
-		models.Admin.findById 1, (err, admin) ->
+		Models.Admin.findById 1, (err, admin) ->
 			blacklist = {domains:admin.blacklistdomains, names:admin.blacklistnames, emails:admin.blacklistemails}
 			if not admin.userstoo then blacklist.domains = blacklist.domains.concat(admin.domains)
 			googOrCio user, ->
-				imapConnect user, blacklist, cb
+				imapConnect user, blacklist, admin.domains, cb
 			, ->
-				contextConnect user, blacklist, cb
+				contextConnect user, blacklist, admin.domains, cb
 			, cb, "connect"
 	auth: (user, cb) ->
 		googOrCio user, ->
@@ -198,7 +232,7 @@ module.exports =
 	search: (mbSession, user, cb) ->
 		# if we got this far, it's really happening:
 		# so we'll need a list of excludes (contacts skipped forever)
-		models.Exclude.find(user: user._id).populate('contact').exec (err, excludes) ->
+		Models.Exclude.find(user: user._id).populate('contact').exec (err, excludes) ->
 			if err then console.dir err
 			else
 				excludes = _.map excludes, (x)->
