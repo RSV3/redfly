@@ -147,9 +147,11 @@ batchNewReqs = (type, contCnt, cb)->
 	if type is 'urgent' then return batchUrgentReqs contCnt, cb
 	if type is 'empty' then return batchEmptyReqs contCnt, cb
 	console.log "broadcasting requests..."
-	otherQ = {urgent:{$ne:true}, expiry:{$gt:today}, sent:{$exists: false}}
-	urgentQ = {urgent:true, expiry:{$gt:today}}
-	models.Request.find(urgentQ).sort(date:-1).execFind (err, uReqs)->
+	otherQ = {urgent:{$ne:true}, expiry:{$gt:today}, sent:{$exists: false}}		# only care about new non-urgent requests
+	urgentQ = {urgent:true, expiry:{$gt:today}}									# interested in any current urgent requests
+	urgentQunsent  = _.extend {sent: $exists: false}, urgentQ					# but only iff there are some unsent requests
+	urgentQsent  = _.extend {sent: $exists: true}, urgentQ						# so we query these separately
+	models.Request.find(urgentQunsent).sort(date:-1).execFind (err, uReqs)->
 		if err
 			console.log "ERROR: finding urgent unsent requests"
 			console.dir err
@@ -159,7 +161,14 @@ batchNewReqs = (type, contCnt, cb)->
 				console.log "ERROR: finding unsent requests"
 				console.dir err
 				return Goodbye()
-			operateBatch uReqs, oReqs, Inject(contCnt, Mail.sendRequests), cb, urgentQ, otherQ
+			unless (uReqs?.length or oReqs?.length) then return cb()			# if there's no unsent requests, bail out
+			models.Request.find(urgentQsent).sort(date:-1).execFind (err, sentUreqs)->		# otherwise, append sent urgents
+				if err
+					console.log "ERROR: finding urgent sent requests"
+					console.dir err
+					return Goodbye()
+				uReqs = uReqs.concat sentUreqs
+				operateBatch uReqs, oReqs, Inject(contCnt, Mail.sendRequests), cb, urgentQ, otherQ
 
 
 sendNewResps = (contCnt, cb)->
