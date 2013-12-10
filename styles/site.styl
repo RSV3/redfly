@@ -211,7 +211,7 @@ body
 			float	left
 			.expandthis
 				margin-top	-10em
-				margin-left	-3em
+				margin-left	-5em
 				font-size baseFontSize
 		.leftone
 			float	left
@@ -240,7 +240,6 @@ body
 			color organisation
 	h2
 		display inline
-		margin-left 15px
 	h3.contactcounter
 		margin-left	10em
 	.version
@@ -250,7 +249,14 @@ body
 		margin-bottom 30px
 	.signup
 		margin-top 30px
-
+	li
+		margin-top 5px
+	li.subheading
+		font-size 1.3em
+	h4
+		font-size 1.6em
+	p
+		font-size 1.2em
 
 .pastreqs
 	border-left	1px solid lightgrey
@@ -1187,16 +1193,16 @@ li
 
 .home
 	.carousel
-		height	480px
-		.carousel-indicators
-			bottom	0
+		height	380px
+		ol.carousel-indicators
+			bottom	-1em
 			top	auto
 			height	1.2em
 			left	50%
 			margin-left	-1em
 			li
 				background-color	#dde
-			ii.active
+			li.active
 				background-color	#3a87ad
 		.carousel-control:hover
 			background-color	#3a87ad
@@ -1210,7 +1216,9 @@ li
 			margin-right	-20px
 	.section, .section-colored
 		padding	50px
-		height	380px
+		height	280px
 		width	90%
 	.section-colored
 		background-color	#eee
+	.span4 > h4 > i
+		color	#3a87ad
