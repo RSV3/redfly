@@ -218,7 +218,6 @@ push2linkQ = (notifications, user, contact, details, cb) ->
 		if linkedin and contact and not _.isArray(contact)	# only if we're certain which contact this matches,
 			cb addDeets2Contact notifications, user, contact, linkedin
 		else cb null
-	cb null
 
 
 updateLIrec = (details, linkedin, field)->
