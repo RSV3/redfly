@@ -5,32 +5,34 @@
 				.item.active.section
 					.row
 						.span6
-							h3 What is Redfly?
+							h2 What is Redfly?
 							ul
-								li Build your institutional memory.
-								li Redfly helps you and your colleagues to organize your organization's external network of contacts.
-								li By sharing contacts that are important to your organization, you can help increase your organization's social capital.
+								li.subheading Redfly helps you organize and align individual networks around organizational goals
+								//li Redfly is a business contact management software that helps you build your <b>institutional memory</b> by sharing and organizing important contacts within your organization
+								li.subheading We allow you take advantage of your organization's existing social capital
 						.span6
 							img.img-responsive(src="/images/collabnet.png")
 
 				.item.section-colored
 					.row
 						.span6
-							h3 Get E-mail Updates of New Contacts
+							h2 Get email updates for new contacts
 							ul
-								li Redfly sends you weekly e-mails of new contacts that people in your organization has networked with.
+								li.subheading Redfly sends you weekly emails with new contacts added to your company's network each week
+								li.subheading We allow you to stay on top of business opportunities and network growth
 						.span6
-							img.img-responsive(src="/images/emailupdates.png")
+							img.img-responsive(src="/images/emailupdates2.png")
 
 				.item.section
 					.row
 						.span6
 							img.img-responsive(src="/images/syncgmail.png")
 						.span6
-							h3 Login with Gmail, Sync with LinkedIn
+							h2 Easy login and syncing with Gmail and LinkedIn
 							ul
-								li Imports your outgoing e-mails to external contacts
-								li Augments your contacts with LinkedIn information
+								li.subheading Import your contacts from outgoing emails
+								li.subheading Augment your current contacts with up-to-date LinkedIn information
+								li.subheading Keep private contacts private with personal controls
 			a.left.carousel-control(href="#carousel-front-page", data-slide="prev")
 				i.icon-chevron-left
 			a.right.carousel-control(href="#carousel-front-page", data-slide="next")
@@ -40,32 +42,31 @@
 				li(data-target="#carousel-front-page", data-slide-to="1")
 				li(data-target="#carousel-front-page", data-slide-to="2")
 
-
-
-		.span12
-			.row
-				br
-			.row
-				.span4
-					h4
-						i.icon-tags
-						span &nbsp; Tag to Classify
-					p You can tag people with custom tags.  Your admin can setup a tag dictionary and tag groups to bucket tags.
-				.span4
-					h4
-						i.icon-search
-						span &nbsp; Search Contacts
-					p When you need to find someone with particular expertise or background, search for them and request for introduction through Redfly.
-				.span4
-					h4
-						i.icon-exchange
-						span &nbsp; Request and Recommend
-					p If you are looking for specific contacts, request it through Redfly and your colleagues can recommend you new contacts.
-			.row
-				br
-			.row.well
-				.span8
-					h4 Get started by logging in with your organization's Gmail.
-				.span4
-					a.btn.btn-lg.btn-primary.pull-right(href='/authorize') Login with Gmail
+.row-fluid
+	.row
+		p
+	.row
+		.span4
+			h4
+				i.icon-tags
+				span &nbsp; Tag to Classify
+			p You can tag people with custom tags.  Your admin can setup a tag dictionary and tag groups to bucket tags.
+		.span4
+			h4
+				i.icon-search
+				span &nbsp; Search Contacts
+			p When you need to find someone with particular expertise or background, search for them and request for introduction through Redfly.
+		.span4
+			h4
+				i.icon-exchange
+				span &nbsp; Request and Recommend
+			p If you are looking for specific contacts, request it through Redfly and your colleagues can recommend you new contacts.
+	.row
+		p
+			br
+	.row.well
+		.span8
+			h4 Get started by logging in with your organization's Gmail.
+		.span4
+			a.btn.btn-large.btn-primary.pull-right(href='/authorize') Login with Gmail
 

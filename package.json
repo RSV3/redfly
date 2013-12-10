@@ -21,7 +21,8 @@
     "source-map-support": "~0.1.2",
     "elasticsearchclient": "git://github.com/justinTNT/node-elasticsearch-client.git",
     "icalendar": "0.6.x",
-    "marked": "~0.2.9"
+    "marked": "~0.2.9",
+    "newrelic": "~1.0.0"
   },
   "devDependencies": {
     "chai": "1.4.2"
