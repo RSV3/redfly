@@ -45,7 +45,7 @@ module.exports = (Ember, App, socket) ->
 			# Determine the newly focused element and see if it's anywhere inside the search view. 
 			# If not, hide the results (after a small delay in case of mousedown).
 			setTimeout =>
-				@set 'using', false
+				if @get 'using' then @set 'using', false
 			, 123
 
 		searchBoxView: Ember.TextField.extend
