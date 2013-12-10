@@ -30,7 +30,7 @@ module.exports = (Ember, App, socket) ->
 					$target.removeClass('flipcard').addClass('animated flipcardin')
 					Ember.run.later this, =>
 						$target.removeClass('flipcardin')
-						if $target.hasClass('flipcardout') then hoverOff this
+						if $target.hasClass('flipcardout') then @hoverOff this
 						else $target.removeClass('animated')
 					, 1001
 			, 234
