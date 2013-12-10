@@ -88,7 +88,7 @@ eachLink = (user, cb)->
 	console.log "link #{email}"
 	try require('../server/linker') user, null, (err, changes)->
 		if err
-			console.log "error in nudge link for #{email}"
+			console.log "received error in nudge link for #{email}"
 			console.dir err
 			cb()
 		else
@@ -99,7 +99,7 @@ eachLink = (user, cb)->
 				if err then console.log "Error saving linkedin count in nudge for #{email}"
 				cb()
 	catch err
-		console.log "error in nudge link for #{email}"
+		console.log "caught error in nudge link for #{email}"
 		console.dir err
 		cb()
 
