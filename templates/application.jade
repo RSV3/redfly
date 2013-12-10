@@ -16,6 +16,12 @@
 				ul.nav
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 					li
+						+linkTo('requests') Recommend
+					| {{#if App.admin.requestCount}}
+					li
+						span.badge.badge-important {{App.admin.requestCount}}
+					| {{/if}}				
+					li
 						+linkTo('classify') Classify
 					| {{#if App.admin.classifyCount}}
 					li
@@ -25,12 +31,6 @@
 						+linkTo('companies') Companies
 					li
 						+linkTo('leaderboard') Leaderboard
-					li
-						+linkTo('requests') Recommend
-					| {{#if App.admin.requestCount}}
-					li
-						span.badge.badge-important {{App.admin.requestCount}}
-					| {{/if}}
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
