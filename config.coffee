@@ -112,7 +112,7 @@ module.exports =
 		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://heroku_app18594187:cnfvvgj0ctnnelsb2ic0us4a07@ds049988-a0.mongolab.com:49988/heroku_app18594187'
+		MONGOLAB_URI: 'mongodb://heroku_app18594187:56m25k6325f2i6489mc4kh2r3h@ds053858.mongolab.com:53858/heroku_app18594187'
 		ES_URL: 'http://paas:041e4f042e1234537da0385d8305787b@api.searchbox.io'
 		ES_NAME: 'project11'
 		NUDGE_DAYS: 'Tuesday Friday'

@@ -1,4 +1,3 @@
-
 _ = require 'underscore'
 moment = require 'moment'
 
@@ -38,7 +37,6 @@ preHook = (Ember, DS, App, socket) ->
 			App.auth.logout()
 
 
-
 postHook = (Ember, DS, App, socket) ->
 	require '../vendor'
 
@@ -55,6 +53,7 @@ postHook = (Ember, DS, App, socket) ->
 	App.set 'admin', App.Admin.find 1
 	App.admin.on 'didLoad', ->
 		configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
+
 	socket.emit 'session', (session) ->
 		if id = session.user
 			App.auth.login id
@@ -63,5 +62,5 @@ postHook = (Ember, DS, App, socket) ->
 			App.advanceReadiness()
 
 
-
 require('phrenetic/lib/app') preHook, postHook
+
