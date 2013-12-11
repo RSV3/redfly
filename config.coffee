@@ -49,7 +49,7 @@ module.exports =
 		
 		SENDGRID_USERNAME: 'app6379653@heroku.com'
 		SENDGRID_PASSWORD: 'lxjmkfhw'
-		NUDGE_DAYS: 'Tuesday'
+		NUDGE_DAYS: 'Wednesday'
 
 		ADMIN_EMAIL:	['kwan@redstar.com', 'justin@redstar.com']
 		ORGANISATION_DOMAINS: ['redstar.com', 'vinely.com', 'justat.at']
@@ -95,7 +95,6 @@ module.exports =
 		ES_URL: 'http://paas:4766d4887993f5018fa1132ea5012002@api.searchbox.io'
 
 		NUDGE_DAYS: 'Monday Thursday'
-		NEWRELIC_KEY: 'a12b66c9dbe607523b5b70ace19d7b84483ec3f9'
 
 
 
@@ -139,4 +138,3 @@ module.exports =
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
 		NUDGE_DAYS: 'Tuesday Friday'
-		NEWRELIC_KEY: 'ce6dfd0bb4e2532072d644b30820a2de431ebca4'
