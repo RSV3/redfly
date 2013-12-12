@@ -258,6 +258,9 @@ addDeets2Linkedin = (user, contact, details, listedDetails, cb) ->
 	if contact
 		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
 			throw err if err
+			if linkedin and not linkedin.linkedinId?.length 	# possible artifact of an old error
+				console.log "warning: overwriting linkedin ID #{details.profileid} on #{linkedin._id}"
+				linkedin.linkedinId = details.profileid
 			saveLinkedin details, listedDetails, user, contact, linkedin, cb
 	else
 		models.LinkedIn.findOne {linkedinId: details.profileid}, (err, linkedin) ->
