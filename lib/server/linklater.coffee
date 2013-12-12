@@ -80,6 +80,8 @@ copyLI2contact = (u, c, l) ->
 	addDeets2Contact null, u, c, l
 	l.contact = c
 	l.lastLink = new Date()
+	console.log "tmp jTNT remove this: copyLI2contact"
+	console.dir l
 	l.save (err) ->
 		if err
 			console.log "ERROR copying LI2contact"
