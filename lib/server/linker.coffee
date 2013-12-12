@@ -258,14 +258,13 @@ addDeets2Linkedin = (user, contact, details, listedDetails, cb) ->
 	if contact
 		models.LinkedIn.findOne {contact: contact}, (err, linkedin) ->
 			throw err if err
-			console.log "tmp jTNT remove this: saveLinkedin found from contact #{contact}"
-			console.dir linkedin
+			if not linkedin.linkedinId
+				console.log "warning: overwriting linkedin ID #{details.profileid} on #{linkedin._id}"
+				linkedin.linkedinId = details.profileid
 			saveLinkedin details, listedDetails, user, contact, linkedin, cb
 	else
 		models.LinkedIn.findOne {linkedinId: details.profileid}, (err, linkedin) ->
 			throw err if err
-			console.log "tmp jTNT remove this: saveLinkedin found from contact #{details.profileid}"
-			console.dir linkedin
 			saveLinkedin details, listedDetails, user, contact, linkedin, cb
 
 
