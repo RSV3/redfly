@@ -33,7 +33,7 @@ module.exports = (Ember, App, socket) ->
 				if category is 'industry' then conditions = category:'industry'
 				else conditions = category:$ne:'industry'
 				socket.emit 'tags.all', conditions, (allTags) =>
-                    @set 'autocompletes', allTags
+					unless @isDestroyed then @set 'autocompletes', allTags
 			else @set 'allautos', App.User.filter {name:$exists:true}, (u)->u?.get('name')?.length
 		updateTypeahead: (->
 			if t=@get('typeahead') then t.data('typeahead').source = @get('autocompletes')
