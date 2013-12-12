@@ -43,8 +43,6 @@ module.exports = (Ember, App, socket) ->
 			didInsertElement: ->
 				@$().addClass 'animated flipInX'
 				Ember.run.later this, ->
-					console.log @$()[0].className
 					@$().removeClass 'animated flipInX'
-					console.log @$()[0].className
 				, 1000
 

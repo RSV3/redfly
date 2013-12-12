@@ -108,7 +108,8 @@ module.exports = (Ember, App, socket) ->
 							responses = request.get 'response'
 							new_resp = _.without data.response, responses.getEach('id')
 							_.each new_resp, (r)-> responses.addObject App.Response.find r
-							request.get('stateManager').send 'becameClean'
+							Ember.run.next this, ->
+								request.get('stateManager').send 'becameClean'
 					else
 						if @get 'controller.rangeStart' then return		# dont try to show new request if we're on another page
 						if not @get 'controller.rangeStop' then return	# and dont bother if there's no shown
