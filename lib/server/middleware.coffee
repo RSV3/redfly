@@ -7,13 +7,13 @@ authWithHint = (next, hint)->
 	opts =
 		access_type: 'offline'
 		approval_prompt: if hint then 'auto' else 'force'
+		login_hint: if hint then hint else null
 		scope: [
 				'https://www.googleapis.com/auth/userinfo.profile'
 				'https://www.googleapis.com/auth/userinfo.email'
 				'https://mail.google.com/'
 				'https://www.google.com/m8/feeds'
 			].join ' '
-	if hint then opts.login_hint = hint
 	console.log ""
 	console.log "opts from authWithHint"
 	console.dir opts
