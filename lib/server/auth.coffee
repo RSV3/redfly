@@ -15,6 +15,7 @@ everyauth.google.configure
 	authQueryParam:
 		approval_prompt: 'force'
 		access_type: 'offline'
+		include_granted_scopes: true
 	scope: [
 			'https://www.googleapis.com/auth/userinfo.profile'
 			'https://www.googleapis.com/auth/userinfo.email'
@@ -23,6 +24,11 @@ everyauth.google.configure
 		].join ' '
 
 	handleAuthCallbackError: (req, res) ->
+		console.log ""
+		console.log "AuthCallbackError"
+		console.log ""
+		req.session = null
+		res.clearCookie 'lastlogin'
 		res.redirect '/unauthorized'
 
 	findOrCreateUser: (session, accessToken, accessTokenExtra, googleUserMetadata) ->
