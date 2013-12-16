@@ -96,11 +96,15 @@
 
 	.row-fluid
 		.span7
-			ul.pager
-				li.previous
-					| {{#if hasPrev}}<a href="#" {{action prevPage}}>&larr; Prev</a>{{/if}}
-				div.pagenums
-				| {{plusOne rangeStart}}-{{rangeStop}}
-				li.next
-					| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+		{{#if rangeStop}}
+		ul.pager
+			li.previous
+				| {{#if hasPrev}}<a href="#" {{action prevPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+			| {{plusOne rangeStart}}-{{rangeStop}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+		{{else}}
+		span No requests.
+		{{/if}}
 
