@@ -42,7 +42,6 @@ module.exports = (Ember, App, socket) ->
 						allTags = _.difference allTags, p
 					doLongList = (res, tags)->
 						if not tags?.length then return
-						console.log tags.length
 						res.pushObjects _.map tags[0..99], (b)=> {body:b, catid:catid}
 						Ember.run.next this, ->
 							doLongList res, tags[100..]
@@ -105,7 +104,7 @@ module.exports = (Ember, App, socket) ->
 			add: ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
-				if tag.body isnt @get('notag')
+				if tag.body
 					newtag = App.Tag.createRecord
 						date: new Date
 						category: @get 'parentView.category'
@@ -113,20 +112,24 @@ module.exports = (Ember, App, socket) ->
 					App.store.commit()
 				@set 'parentView.animate', true
 			delete: ->
-				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
-				if tag then setTimeout =>
-					if tag.deleteRecord 		# priority tags are real tags ..
-						tag.deleteRecord()
-						App.store.commit()
-					else						# .. but the 'alltags' list are just {body:} objs.
-												# we need to tell the server to remove any tags with the same name
-						if tag.body isnt @get('notag') and c = @get('parentView.category')
-							socket.emit 'tags.remove', {category: c, body: tag.body}, (removedTags) =>
-								while removedTags.length
-									id = removedTags.shift()
-									App.store.filter(App.Tag, (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
-				, 1000
+				if tag = @get 'context'
+					b = tag.body
+					c = @get('parentView.category')
+					Ember.run.later this, ->
+						console.dir b
+						console.dir c
+						console.dir tag
+						if tag.deleteRecord 		# priority tags are real tags ..
+							tag.deleteRecord()
+							App.store.commit()
+						else								# .. but the 'alltags' list are just {body:} objs.
+							if b?.length and c?.length		# we need to tell the server to remove any tags with the same name
+								socket.emit 'tags.remove', {category: c, body: b}, (removedTags) =>
+									while removedTags.length
+										id = removedTags.shift()
+										App.store.filter(App.Tag, (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
+					, 2345
 			didInsertElement: ->
 				that = this.get 'parentView'
 				@$().draggable(
