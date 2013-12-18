@@ -12,6 +12,9 @@ util.nickname = (name, email) ->
 		return _.first email.split('@')
 
 util.socialPatterns =
-	linkedin: /^[\w]*$/
+	linkedin: /^[\w\/\-\.]*$/
 	twitter: /^[\w\-\.]*$/
 	facebook: /^[\w\-\.]*$/
+	linkedinugly: /^[\w\/\-\.]*$/
+	linkedinprivate: /^[0-9]*$/
+	linkedincustom: /^[\w]*$/

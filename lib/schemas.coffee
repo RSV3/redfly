@@ -90,9 +90,10 @@ schemas.push Schema 'Contact',
 	company: type: String, trim: true
 	yearsExperience: type: Number
 	isVip: type: Boolean
-	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin
-	twitter: type: String, trim: true, match: util.socialPatterns.twitter
-	facebook: type: String, trim: true, match: util.socialPatterns.facebook
+	linkedinId: type: String			# this one is the API ID, for matching to existing linkedin records:
+	linkedin: type: String, trim: true, match: util.socialPatterns.linkedin		# this one is the suffix to the public url.
+	twitter: type: String, trim: true, match: util.socialPatterns.twitter		# So too the usernames for other social media
+	facebook: type: String, trim: true, match: util.socialPatterns.facebook		# yes, even fbook.
 
 schemas.push Schema 'Tag',
 	creator: type: Types.ObjectId, ref: 'User', sparse: true
@@ -132,6 +133,7 @@ schemas.push Schema 'LinkedIn',
 	summary: type: String, trim: true
 	headline: type: String, trim: true
 	pictureUrl: type: String, trim: true
+	publicProfileUrl: type: String, trim: true
 	yearsExperience: type: Number
 	lastLink: type: Date
 

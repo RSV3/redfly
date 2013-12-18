@@ -60,9 +60,17 @@ addDeets2Contact = (notifications, u, c, l) ->
 		c.knows.addToSet u
 		dirtycontact = true
 
-	if c.linkedin isnt l.linkedinId
-		c.linkedin = l.linkedinId
+	if c.linkedinId isnt l.linkedinId
+		c.linkedinId = l.linkedinId
 		dirtycontact = true
+
+	if l.publicProfileUrl and not c.linkedin
+		if (i = l.publicProfileUrl.indexOf '/pub/') >= 0 then i = i+5
+		else if (i = l.publicProfileUrl.indexOf '/in/') >= 0 then i = i+4
+		if i>0
+			c.linkedin = l.publicProfileUrl[i..]
+			dirtycontact = true
+
 	
 	if l.yearsExperience and c.yearsExperience isnt l.yearsExperience
 		c.yearsExperience = l.yearsExperience

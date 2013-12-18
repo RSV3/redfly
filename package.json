@@ -22,7 +22,8 @@
     "elasticsearchclient": "git://github.com/justinTNT/node-elasticsearch-client.git",
     "icalendar": "0.6.x",
     "marked": "~0.2.9",
-    "newrelic": "~1.0.0"
+    "newrelic": "~1.0.0",
+	"cheerio": "0.0.3"
   },
   "devDependencies": {
     "chai": "1.4.2"
