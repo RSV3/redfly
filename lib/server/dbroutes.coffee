@@ -22,6 +22,7 @@ primeContactForES = (doc, cb)->
 routes =  (app, data, session, fn)->
 
 	cb = (payload) ->
+		if not fn then return
 		root = _s.underscored data.type
 		if _.isArray payload then root += 's'
 		hash = {}
@@ -35,7 +36,8 @@ routes =  (app, data, session, fn)->
 		o = {type: type, id: doc.id}
 		if doc.addedBy then o.addedBy = doc.addedBy
 		if doc.response?.length then o.response = doc.response
-		app.io.broadcast 'feed', o
+		if fn then app.io.broadcast 'feed', o
+		else app.io.emit 'linkedscraped', o
 
 
 	switch data.op
@@ -205,6 +207,31 @@ routes =  (app, data, session, fn)->
 									console.dir deets
 									console.log 'from'
 									console.log doc.linkedin
+									updates = {}
+									if deets.positions.length and deets.positions[0] and not doc.position?.length
+										updates.position = deets.positions[0]
+									if deets.companies.length and deets.companies[0] and not doc.company?.length
+										updates.company = deets.companies[0]
+									if deets.pictureUrl?.length and not doc.picture?.length
+										updates.picture = deets.pictureUrl
+									if deets.name?.length and not _.contains doc.names, deets.name
+										doc.names.push deets.name
+									if _.keys(updates).length
+										updates.id = doc._id
+										console.log 'emitting updates'
+										console.dir updates
+										app.io.emit 'linkedparsed', updates
+										routes app, {op:'save', type:'Contact', record:updates}, session
+									for skill in deets.specialties
+										Models.Tag.find {contact:doc._id, body:skill}, (terr, tags)->
+											if tags?.length then return
+											rec =
+												user: session.user
+												contact:doc._id
+												body:skill
+											console.log 'emitting new skill tags'
+											console.dir rec
+											routes app, {op:'create', type:'Tag', record:rec}, session
 
 
 		when 'remove'
