@@ -69,7 +69,7 @@ alreadyLinked = (profid, contact, confirm) ->
 getDeets = (id, profid, contact, oa, cb) ->
 	alreadyLinked profid, contact, (test) ->
 		if test then return cb null, null
-		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary)')
+		u = ('/id=' + id + ':(industry,specialties,positions,picture-urls::(original),headline,summary,public-profile-url)')
 		getLinked u, null, oa, cb
 
 
@@ -236,6 +236,7 @@ saveLinkedin = (details, listedDetails, user, contact, linkedin, cb) ->
 	linkedin.users.addToSet user
 	updateLIrec details, linkedin, 'yearsExperience'
 	updateLIrec details, linkedin, 'pictureUrl'
+	updateLIrec details, linkedin, 'publicProfileUrl'
 	updateLIrec details, linkedin, 'summary'
 	updateLIrec details, linkedin, 'headline'
 	for detail, list of listedDetails
@@ -421,7 +422,6 @@ linker = (user, notifications, finalCB) ->
 # If the notifications object has the right vectors they fire during the process
 #
 # module.exports = linker
-module.exports = (user, notifications, cb) ->
-	linker user, notifications, (err, changes) ->
-		cb err, changes
-
+module.exports =
+	linker:linker
+	addDeets:addDeets2Linkedin

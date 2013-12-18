@@ -542,9 +542,15 @@ module.exports = (Ember, App, socket) ->
 					_fire: ->
 						@set 'error', null
 						network = @get 'network'
-						if (value = @get('value')) and not value.match(util.socialPatterns[network])
-							_s = require 'underscore.string'
-							@set 'error', 'That doesn\'t look like a ' + _s.capitalize(network) + ' URL.'
+						if value = @get('value')
+							socialView = @get 'parentView.parentView'
+							patternName = socialView.guessPattern network, value
+							value = socialView.simplifyID patternName, value
+							if value.match(util.socialPatterns[patternName])
+								@set 'value', value
+							else
+								_s = require 'underscore.string'
+								@set 'error', "That doesn't look like a #{_s.capitalize network} URL."
 				toggle: ->
 					if not @toggleProperty('show')
 						@get('controller').get('transaction').rollback()	# This probably could be better, only targeting changes to this contact.

@@ -3,6 +3,7 @@ _s = require 'underscore.string'
 marked = require 'marked'
 Models = require './models'
 Elastic = require './elastic'
+ScrapeLI = require './linkscraper'
 
 
 # when we first add a contact to ES:
@@ -151,7 +152,9 @@ routes =  (app, data, session, fn)->
 
 				# Important to do updates through the 'save' call so middleware and validators happen.
 				doc.save (err) ->
-					throw err if err
+					if err
+						console.dir err
+						return cb null
 					cb doc
 					switch model
 						when Models.Request
@@ -195,6 +198,14 @@ routes =  (app, data, session, fn)->
 									if err
 										console.log "error incrementing data count for #{session.user}"
 										console.dir err
+							if 'linkedin' in modified
+								ScrapeLI.contact session.user, doc, (deets)->
+									console.log ''
+									console.log 'jTNT removeme: adding to linkedin'
+									console.dir deets
+									console.log 'from'
+									console.log doc.linkedin
+
 
 		when 'remove'
 			if id = data.id
