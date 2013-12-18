@@ -126,17 +126,18 @@ eachContextMsg = (session, user, results, finish, cb) ->
 		newmails = []
 		if _.contains session.domains, _.last msg.addresses.from.email.split('@')
 			for to in msg.addresses.to
-				email = util.trim to.email.toLowerCase()
-				name = _normaliseName to.name
-				if not email?.length and validators.isEmail name
-					email = name
-					name = null
-				if _acceptableContact user, name, email, session.excludes, session.blacklist
-					newmails.push
-						subject: msg.subject
-						sent: new Date(1000*msg.date)
-						recipientEmail: email
-						recipientName: name
+				if to
+					email = util.trim to.email?.toLowerCase()
+					name = _normaliseName to.name
+					if not email?.length and validators.isEmail name
+						email = name
+						name = null
+					if _acceptableContact user, name, email, session.excludes, session.blacklist
+						newmails.push
+							subject: msg.subject
+							sent: new Date(1000*msg.date)
+							recipientEmail: email
+							recipientName: name
 		cb newmails
 	finish()
 
@@ -150,17 +151,18 @@ eachImapMsg = (session, user, results, finish, cb) ->
 					from = mimelib.parseAddresses(headers.from?[0])[0].address
 					if from and _.contains session.domains, _.last from.split '@'
 						for to in mimelib.parseAddresses headers.to?[0]
-							email = util.trim to.address.toLowerCase()
-							name = _normaliseName to.name
-							if not email?.length and validators.isEmail name
-								email = name
-								name = null
-							if _acceptableContact user, name, email, session.excludes, session.blacklist
-								newmails.push
-									subject: headers.subject?[0]
-									sent: new Date headers.date?[0]
-									recipientEmail: email
-									recipientName: name
+							if to
+								email = util.trim to.address?.toLowerCase()
+								name = _normaliseName to.name
+								if not email?.length and validators.isEmail name
+									email = name
+									name = null
+								if _acceptableContact user, name, email, session.excludes, session.blacklist
+									newmails.push
+										subject: headers.subject?[0]
+										sent: new Date headers.date?[0]
+										recipientEmail: email
+										recipientName: name
 					cb newmails
 	},->
 		session.IMAP.logout()
