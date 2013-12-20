@@ -19,7 +19,7 @@ primeContactForES = (doc, cb)->
 				doc._doc.orgtags = _.map _.reject(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
 			cb doc
 
-routes =  (app, data, session, fn)->
+routes =  (app, data, io, session, fn)->
 
 	cb = (payload) ->
 		if not fn then return
@@ -36,8 +36,8 @@ routes =  (app, data, session, fn)->
 		o = {type: type, id: doc.id}
 		if doc.addedBy then o.addedBy = doc.addedBy
 		if doc.response?.length then o.response = doc.response
-		if fn then app.io.broadcast 'feed', o
-		else app.io.emit 'linkedscraped', o
+		if fn then io.broadcast 'feed', o
+		else io.emit 'linkscrapedtag', o
 
 
 	switch data.op
@@ -116,11 +116,11 @@ routes =  (app, data, session, fn)->
 							if err then console.dir err
 					when Models.Tag
 						Elastic.onCreate doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), (err)->
-							if not err then Models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
+							unless err then Models.User.update {_id:session.user}, $inc: 'dataCount': 1, (err)->
 								if err
 									console.log "error incrementing data count for #{user}"
 									console.dir err
-								feed doc, data.type
+							feed doc, data.type
 					when Models.Contact
 						if doc.addedBy
 							feed doc, data.type
@@ -202,37 +202,27 @@ routes =  (app, data, session, fn)->
 										console.dir err
 							if 'linkedin' in modified
 								ScrapeLI.contact session.user, doc, (deets)->
-									console.log ''
-									console.log 'jTNT removeme: adding to linkedin'
-									console.dir deets
-									console.log 'from'
-									console.log doc.linkedin
 									updates = {}
-									if deets.positions.length and deets.positions[0] and not doc.position?.length
+									if deets.positions?.length and deets.positions[0] and not doc.position?.length
 										updates.position = deets.positions[0]
-									if deets.companies.length and deets.companies[0] and not doc.company?.length
+									if deets.companies?.length and deets.companies[0] and not doc.company?.length
 										updates.company = deets.companies[0]
 									if deets.pictureUrl?.length and not doc.picture?.length
 										updates.picture = deets.pictureUrl
 									if deets.name?.length and not _.contains doc.names, deets.name
 										doc.names.push deets.name
-									if _.keys(updates).length
+									if _.keys(updates)?.length
 										updates.id = doc._id
-										console.log 'emitting updates'
-										console.dir updates
-										app.io.emit 'linkedparsed', updates
-										routes app, {op:'save', type:'Contact', record:updates}, session
-									for skill in deets.specialties
-										Models.Tag.find {contact:doc._id, body:skill}, (terr, tags)->
-											if tags?.length then return
-											rec =
-												user: session.user
-												contact:doc._id
-												body:skill
-											console.log 'emitting new skill tags'
-											console.dir rec
-											routes app, {op:'create', type:'Tag', record:rec}, session
-
+										io.emit 'linkscrapedcontact', updates
+										routes app, {op:'save', type:'Contact', record:updates}, io, session
+									for skill in deets.specialities
+										((rec)->
+											Models.Tag.find rec, (terr, tags)->
+												if tags?.length then return
+												rec.user = session.user
+												rec.category = 'industry'
+												routes app, {op:'create', type:'Tag', record:rec}, io, session
+										) {contact:doc._id, body:skill}
 
 		when 'remove'
 			if id = data.id
