@@ -207,6 +207,14 @@ module.exports = (Ember, App, socket) ->
 			@get('tooltip')?.data('tooltip')?.options?.title = @vipHoverStr()
 		).observes 'controller.isVip'
 		didInsertElement: ->
+			socket.on 'linkscrapedcontact', (data)=>
+				for own key, val of data
+					if key isnt 'id'
+						@set "controller.#{key}", val
+			socket.on 'linkscrapedtag', (data)=>
+				console.log 'get socket.on linkscrapedtag'
+				console.dir data
+				App.Tag.find data.id
 			if @get 'controller.isKnown'
 				@set 'tooltip', @$('div.maybevip').tooltip
 					title: @vipHoverStr()

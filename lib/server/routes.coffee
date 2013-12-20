@@ -13,7 +13,7 @@ module.exports = (app, route) ->
 
 
 	route 'db', (data, io, session, fn)->
-		Db.routes app, data, session, fn
+		Db.routes app, data, io, session, fn
 
 
 	route 'dashboard', (fn)->

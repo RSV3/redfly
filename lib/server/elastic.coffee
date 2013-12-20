@@ -148,7 +148,7 @@ ES_delete = (id, cb)->
 # this little routine updates the relevant elasticsearch document when we add or remove tags or notes
 runScriptOnOp = (doc, type, field, script, cb)->
 	user = doc.creator or doc.author
-	if not doc.contact or not user then return
+	if not doc.contact or not user then return cb -1
 	esup_doc =
 		params: val: {user:String(user), body:doc.body}
 		script: script
