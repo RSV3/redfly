@@ -86,7 +86,7 @@ eachUpAdd = (contact, cb)->
 eachLink = (user, cb)->
 	email = user?.email
 	console.log "link #{email}"
-	try require('../server/linker') user, null, (err, changes)->
+	try require('../server/linker').linker user, null, (err, changes)->
 		if err
 			console.log "received error in nudge link for #{email}"
 			console.dir err
@@ -94,7 +94,6 @@ eachLink = (user, cb)->
 		else
 			user.lastLink.date = new Date()
 			user.lastLink.count = changes?.length or 0
-			console.dir user.lastLink					 # jTNT debug: please remove me
 			user.save (err)->
 				if err then console.log "Error saving linkedin count in nudge for #{email}"
 				cb()
@@ -137,7 +136,6 @@ shiftSearchCount = ->
 # these operations are performed every time the cron job is called
 
 dailyRoutines = (doneDailies)->
-
 	shiftSearchCount()	# now we're counting searches, need to shift the array each week
 
 	# tidy up the classify records each day, to expire skips and saves
