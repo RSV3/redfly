@@ -1,0 +1,35 @@
+{
+	"manifest_version": 2,
+
+	"name": "redflyext",
+	"description": "This extension helps make the link between linkedin and redfly",
+	"version": "1.0",
+
+
+	"content_scripts": [
+		{
+			"run_at": "document_end",
+			"matches": ["http://www.linkedin.com/*", "http://10.0.0.2:5000/*"],
+			"css": ["redflycontent.css"],
+			"js": ["redflycontent.js"]
+		}
+	],
+
+	"externally_connectable": {
+		  "matches": ["http://10.0.0.2:5000/*"]
+	},
+
+	"background": {
+		"scripts": ["redflybackground.js"],
+		"persistent": false
+	},
+
+	"permissions": [
+		"webNavigation",
+		"tabs",
+		"cookies",
+		"storage",
+		"http://www.linkedin.com/",
+		"http://10.0.0.2:5000/"
+	]
+}
