@@ -94,4 +94,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['classify']
 		didInsertElement: ->
 			@set 'controller.$', @$()
+			Ember.$(document).on 'classifyExtension', null, (ev, tr)=>
+				if (url = ev?.originalEvent?.detail?.url) and (c = @get 'controller.thisContact')
+					@get('controller.controllers.contact').setLinkedin url
 		classifying:true

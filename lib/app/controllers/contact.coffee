@@ -136,6 +136,17 @@ module.exports = (Ember, App, socket) ->
 			@set 'updatedBy', App.User.find App.user.get 'id'
 			App.store.commit()
 
+		setLinkedin: (url)->
+			tmpSocV = App.SocialView.create()
+			patternName = tmpSocV.guessPattern 'linkedin', url
+			url = tmpSocV.simplifyID patternName, url
+			if url.match(util.socialPatterns[patternName])
+				@set 'linkedin', url
+				@set 'updated', new Date
+				@set 'updatedBy', App.user
+				App.store.commit()
+
+
 	App.ContactuserView = App.HoveruserView.extend
 		template: require '../../../templates/components/contactuser'
 
