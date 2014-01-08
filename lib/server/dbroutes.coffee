@@ -200,6 +200,7 @@ routes =  (app, data, io, session, fn)->
 									if err
 										console.log "error incrementing data count for #{session.user}"
 										console.dir err
+							###
 							if 'linkedin' in modified
 								ScrapeLI.contact session.user, doc, (deets)->
 									updates = {}
@@ -223,6 +224,7 @@ routes =  (app, data, io, session, fn)->
 												rec.category = 'industry'
 												routes app, {op:'create', type:'Tag', record:rec}, io, session
 										) {contact:doc._id, body:skill}
+							###
 
 		when 'remove'
 			if id = data.id

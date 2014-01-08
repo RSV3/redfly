@@ -10,8 +10,7 @@
 		{
 			"run_at": "document_end",
 			"matches": ["http://www.linkedin.com/*", "http://10.0.0.2:5000/*"],
-			"css": ["redflycontent.css"],
-			"js": ["redflycontent.js"]
+			"js": ["extconf.js", "redflycontent.js"]
 		}
 	],
 
@@ -20,7 +19,7 @@
 	},
 
 	"background": {
-		"scripts": ["redflybackground.js"],
+		"scripts": ["extconf.js", "redflybackground.js"],
 		"persistent": false
 	},
 
