@@ -38,14 +38,15 @@ module.exports = (DS, App) ->
 		otherEmails: (->
 				_.rest @get('emails')
 			).property 'emails.@each'
-		canonicalName: (->
-				if name = @get('name')
-					return name
+		desperateName: (->
 				if email = @get('email')
 					splitted = email.split '@'
 					domain = _.first _.last(splitted).split('.')
 					return _.first(splitted) + ' [' + domain + ']'
 				null
+			).property 'email'
+		canonicalName: (->
+				@get('name') or @get('desperateName')
 			).property 'name', 'email'
 		nickname: (->
 				util.nickname @get('name'), @get('email')

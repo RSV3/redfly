@@ -94,7 +94,11 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['classify']
 		didInsertElement: ->
 			@set 'controller.$', @$()
+
+			# handle this event from the chrome extension,
+			# which brings us scraped data for adding to the classify contact
 			Ember.$(document).on 'classifyExtension', null, (ev, tr)=>
-				if (url = ev?.originalEvent?.detail?.url) and (c = @get 'controller.thisContact')
-					@get('controller.controllers.contact').setLinkedin url
+				if (ev = ev?.originalEvent?.detail) and (c = @get 'controller.thisContact')
+					@get('controller.controllers.contact').getExtensionData ev
+
 		classifying:true

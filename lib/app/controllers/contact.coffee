@@ -136,15 +136,33 @@ module.exports = (Ember, App, socket) ->
 			@set 'updatedBy', App.User.find App.user.get 'id'
 			App.store.commit()
 
-		setLinkedin: (url)->
-			tmpSocV = App.SocialView.create()
-			patternName = tmpSocV.guessPattern 'linkedin', url
-			url = tmpSocV.simplifyID patternName, url
-			if url.match(util.socialPatterns[patternName])
-				@set 'linkedin', url
-				@set 'updated', new Date
-				@set 'updatedBy', App.user
-				App.store.commit()
+		getExtensionData: (ev)->
+			if not ev then return
+			if url = ev.url
+				tmpSocV = App.SocialView.create()
+				patternName = tmpSocV.guessPattern 'linkedin', url
+				url = tmpSocV.simplifyID patternName, url
+				if url.match(util.socialPatterns[patternName])
+					@set 'linkedin', url
+			if url = ev.pictureUrl and not @get('picture') then @set 'picture', ev.pictureUrl
+			if name = ev.name
+				if not @get('names')?.length or @get('names').length is 1 and @get('name') is @get('desperateName')
+					@set 'names', [ev.name]
+				else @set 'names', @get('names').unshift ev.name
+			if ev.companies.length and not @get('company') then @set 'company', ev.companies[0]
+			if ev.positions.length and not @get('position') then @set 'position', ev.positions[0]
+			for spec in ev.specialities
+				if spec and not _.contains @get('indTags'), spec
+					App.Tag.createRecord {
+					    date: new Date  # Only so that sorting is smooth.
+						creator: App.User.find App.user.get 'id'
+						contact: App.Contact.find @get 'id'
+						category: 'industry'
+						body: spec
+					}
+			@set 'updated', new Date
+			@set 'updatedBy', App.user
+			App.store.commit()
 
 
 	App.ContactuserView = App.HoveruserView.extend

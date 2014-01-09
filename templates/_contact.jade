@@ -48,8 +48,9 @@
 				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 				+if('allowEdits')
 					| {{#if editpositiondetails}}
-					i {{editpositiondetails}}&nbsp;
+					i {{editpositiondetails}}
 					| {{/if}}
+					| &nbsp;&nbsp;
 					+view('view.editView')
 						a(href='#', action='toggle target="view"')
 							i.icon-pencil
