@@ -92,13 +92,13 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyView = Ember.View.extend
 		template: require '../../../templates/classify'
 		classNames: ['classify']
+		classifying:true
 		didInsertElement: ->
 			@set 'controller.$', @$()
-
 			# handle this event from the chrome extension,
 			# which brings us scraped data for adding to the classify contact
 			Ember.$(document).on 'classifyExtension', null, (ev, tr)=>
 				if (ev = ev?.originalEvent?.detail) and (c = @get 'controller.thisContact')
 					@get('controller.controllers.contact').getExtensionData ev
-
-		classifying:true
+		willDestroyElement: ->
+			Ember.$(document).off 'classifyExtension'

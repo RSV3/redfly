@@ -5,16 +5,20 @@ background =
 	# keeping track in local storage.
 	# this is how we know which user to work with, and which redfly page we're on
 
+	sendPage2LI: (setObj)->
+		chrome.tabs.query {}, (tabs)->
+			for t in tabs
+				if t.url.indexOf(window.linkedURL) > 0					# for each linkedin tab
+					chrome.tabs.sendMessage t.id, redfly:setObj			# send the new redfly navigation state
+
 	loaded: ->
 		chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
+			###
+			# read ('get') messages
+			###
 
-			if request.tab
-				# these are messages which simply pass on from one content script to another
-				chrome.tabs.sendMessage request.tab, request.data
-				return false		# all done and done. don't bother replying.
-
+			# these are requests for data.
 			if key = request.get
-				# these are requests for data.
 				if key is "data"			# get:'data' returns object with all stateful data
 					chrome.storage.local.get null, (data)->			# get all local storage
 						chrome.tabs.query {}, (tabs)->				# get all tabs
@@ -42,11 +46,27 @@ background =
 						sendResponse items
 				return true		# ^-- storage interface is async: requires return true from addListener
 			
-			# if its not a tab message, or a get, simply fall thru to 'set' logic
+
+			###
+			# write messages
+			###
+
+			# these 'tab' messages simply pass on from one content script to another
+			# so far, we only use these to send a message from linkedin to redfly
+
+			if request.tab
+				chrome.tabs.sendMessage request.tab, request.data
+				return false		# all done and done. don't bother replying.
+
+			# if its not a 'tab' write message, or a 'get' read message, simply fall thru to 'set' logic
+			# currently, this is just redfly setting user and page details
 			setObj = {}
-			for key of request
-				setObj[key] = request[key]
+			if request.user then setObj.user = request.user
+			if request.page and sender?.tab?.id then setObj["page_#{sender.tab.id}"] = request.page
 			chrome.storage.local.set setObj
+			if request.page
+				delete setObj.user
+				background.sendPage2LI setObj
 			false		# all done and done. don't bother replying.
 
 
@@ -61,15 +81,12 @@ window.onload = ->
 	chrome.webNavigation.onHistoryStateUpdated.addListener (deets)->		# gets historystate events for redfly
 		if not tab = deets?.tabId then return
 		if not (url = deets?.url)?.length then return
-		if (i =  url.indexOf(window.redflyURL)) < 0 then return				# so far we only need to do this for redfly
-		url = url.substr(i + window.redflyURL.length + 1)					# (linkedin always refreshes: gmail might be hashes...)
+		if (i =  url.indexOf(window.redflyURL)) < 0 then return			# so far we only need to do this for redfly
+		url = url.substr(i + window.redflyURL.length + 1)				# (linkedin always refreshes: gmail might be hashes...)
 		setObj = {}
 		setObj["page_#{tab}"] = url											# save current redfly navigation to local storage
 		chrome.storage.local.set setObj
 		chrome.storage.local.get 'user', (data) ->
-			if not data?.user then return									# don't bother if there's no user
-			chrome.tabs.query {}, (tabs)->
-				for t in tabs
-					if t.url.indexOf(window.linkedURL) > 0					# for each linkedin tab
-						chrome.tabs.sendMessage t.id, redfly:setObj			# send the new redfly navigation state
+			if data?.user												# if there's no user,
+				background.sendPage2LI.bind(background) setObj			# let the linkedin tabs know the new redfly state
 

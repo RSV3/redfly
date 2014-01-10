@@ -118,9 +118,10 @@ content =
 			return unless lastlogin
 			data = user:lastlogin
 			if page = document.location.hash
-				unless page.match(/respond/) or page.match(/classify/)
+				unless page.match(/respond/) or page.match(/classify/)		# ignore hash except for respond and classify
 					page = null
-			if not page and (page = document.location.pathname) and page.length then data.page = page.substr 1
+			if not page then page = document.location.pathname
+			if page?.length then data.page = page.substr 1
 			chrome.runtime.sendMessage data
 
 	setupRedfly: ->
@@ -130,19 +131,18 @@ content =
 			switch request?.type
 				when 'respond'		# response
 					if request.url
-						evt = document.createEvent "CustomEvent"
-						evt.initCustomEvent "respondExtension", true, true, request
-						document.dispatchEvent evt
+						if evt = document.createEvent "CustomEvent"
+							evt.initCustomEvent "respondExtension", true, true, request
 				when 'classify'		# classifying
 					if request.url
-						evt = document.createEvent "CustomEvent"
-						evt.initCustomEvent "classifyExtension", true, true, request
-						document.dispatchEvent evt
+						if evt = document.createEvent "CustomEvent"
+							evt.initCustomEvent "classifyExtension", true, true, request
 				when 'save'		# regular scrape save
 					if request.url
-						evt = document.createEvent "CustomEvent"
-						evt.initCustomEvent "saveExtension", true, true, request
-						document.dispatchEvent evt
+						if evt = document.createEvent "CustomEvent"
+							evt.initCustomEvent "saveExtension", true, true, request
+			if evt
+				document.dispatchEvent evt
 
 
 
@@ -175,7 +175,7 @@ content =
 				return false
 			for own key,val of data
 				if key then key = key.split '_'
-				if key?.length and key[0] is 'page' then key = key[1]
+				if key?.length and key[0] is 'page' then key = parseInt key[1]
 				else key = null
 				unless key
 					console.log "invalid message to linkedin:"

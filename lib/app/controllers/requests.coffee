@@ -1,8 +1,9 @@
 module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+	util = require '../util'
 	_ = require 'underscore'
 	moment = require 'moment'
 
+	###
 	App.DatePicker = Ember.View.extend
 		classNames: ['ember-text-field']
 		tagName: "input"
@@ -28,6 +29,7 @@ module.exports = (Ember, App, socket) ->
 		willDestroyElement: (->
 			@$().datepicker('destroy')
 		)
+	###
 
 	App.RequestsController = Ember.ObjectController.extend
 		hasPrev: false
@@ -94,9 +96,11 @@ module.exports = (Ember, App, socket) ->
 			placeholder: 'New request'
 			rows: 5
 			tabindex: 1
+		###
 		newDateView: App.DatePicker.extend
 			placeholder: 'Expiration'
 			classNames: ['span11']
+		###
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
 				if not data or data.type isnt 'Request' or not data.id then return
@@ -156,20 +160,42 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../templates/components/respuser'
 
 	App.RequestView = Ember.View.extend
+		selectedSearchContacts: (->
+			if @get('selectedOption') isnt 'Redfly Contact' then return false
+			location.hash = ''
+			true
+		).property 'selectedOption'
+		selectedSuggestLink: (->
+			if @get('selectedOption') isnt 'Linkedin Link' then return false
+			location.hash = 'respond'
+			# setup handler for linkedin response
+			@$(document).off 'respondExtension'					# never quite sure if it's already been set ...
+			@$(document).on 'respondExtension', (ev)=>
+				if (ev = ev?.originalEvent?.detail) and @get 'selectedSuggestLink'
+					if ev.url then @set 'newnote', ev.url
+				false
+			true
+		).property 'selectedOption'
+		selectedAddNote: (->
+			if @get('selectedOption') isnt 'Message' then return false
+			location.hash = ''
+			true
+		).property 'selectedOption'
+		selectedOption: "Redfly Contact"
+		selectOptions: ["Redfly Contact", "Linkedin Link", "Message"]
 		expanded: false
 		selections:[]
 		newnote:''
 		idsme: (->
 			@get('controller.user.id') is App.user.get('id')
 		).property 'controller.user'
-		saveNote: (->
-			not @get('newnote').length
-		).property 'newnote'
 		saveSuggestions: (->
-			not @get('selections').length
-		).property 'selections.@each'
+			if @get 'selectedSearchContacts' then return not @get('selections').length
+			if @get 'selectedAddNote' then return not @get('newnote').length
+			return not util.isLIURL @get('newnote')
+		).property 'selections.@each', 'newnote', 'selectedSearchContacts', 'selectedAddNote'
 		showold: (->
-			if @get('addingcontacts') or @get('addingnote') then return
+			if @get 'suggesting' then return
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
 			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
@@ -178,40 +204,42 @@ module.exports = (Ember, App, socket) ->
 				@get('parentView').$('.thisReq').removeClass('myLightSpeedOut').addClass('animated myLightSpeedIn')
 		)
 		toggle: (->
-			if @get('addingcontacts') or @get('addingnote') then return
+			if @get 'suggesting' then return
 			if not @get('controller.response.length') then return
 			@set 'expanded', not @get 'expanded'
 		)
-		closecontacts: (->
-			@set 'addingcontacts', false
+		cancel: (->
+			@set 'selections', []
+			delete location.hash
+			@set 'suggesting', false
 		)
 		suggest: (->
+			if @get('controller.disabled') then return
 			@set 'selections', []
-			if not @get('controller.disabled') then @set 'addingcontacts', true
-		)
-		closenote: (->
-			@set 'addingnote', false
+			location.hash = ''
+			@set 'suggesting', true
 		)
 		note: (->
 			@set 'newnote', ''
 			@set 'addingnote', true
 		)
-		addNewNote: (->
-			@get('controller').addNote @get 'newnote'
-			@closenote()
-			@set 'expanded', true
-		)
-		addNewContacts: (->
-			@get('controller').addSuggestions @get 'selections'
-			@closecontacts()
+		addResponse: (->
+			if @get('selectedSearchRedfly') then @get('controller').addSuggestions @get 'selections'
+			else @get('controller').addNote @get 'newnote'
+			@set 'suggesting', false
 			@set 'expanded', true
 		)
 		reqUserView: App.RequserView.extend()
+		leaveLinkView: Ember.TextArea.extend
+			classNames: ['span12']
+			placeholder: 'Paste Linkedin url'
+			rows: 1
 		newNoteView: Ember.TextArea.extend
 			classNames: ['span12']
-			placeholder: 'Leave a comment'
-			rows: 4
+			placeholder: 'Leave a message'
+			rows: 1
 		responseSearchView: App.SearchView.extend
+			classNames: ['span12']
 			prefix: 'contact:'
 			conditions: (->
 				addedBy: App.user.get 'id'
@@ -227,6 +255,9 @@ module.exports = (Ember, App, socket) ->
 				@get('parentView.selections').addObject App.Contact.find context.id
 			keyUp: (event) -> false
 			submit: -> false
+		willDestroyElement: (->
+			@$(document).off 'respondExtension'				# tear down handler if we're disappearing...
+		)
 
 
 	App.ResponseController = Ember.ObjectController.extend
