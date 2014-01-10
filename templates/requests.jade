@@ -1,6 +1,6 @@
 .row-fluid
 	form(action='add on="submit" target="controller"')
-		.span9
+		.span9.indent9
 			| {{view view.newReqView valueBinding="controller.newreq"}}
 		.span3
 			br
@@ -28,11 +28,15 @@
 			.span3
 				.row-fluid
 					.span9
-						| {{#unless view.suggesting}}
-						| <a {{bindAttr class=":reqact :label :span12 disabled"}} href="#" {{action suggest target="view"}}>Suggest</a>
+						| {{#if view.disabled}}
+						| <a {{bindAttr class=":reqend :label :span12"}} href="#" {{action suggest target="view"}}>End </a>
 						| {{else}}
-						| <a {{bindAttr class=":reqact :label :span12 disabled"}} href="#" {{action cancel target="view"}}>Cancel </a>
+						| {{#unless view.suggesting}}
+						| <a {{bindAttr class=":reqact :label :span12"}} href="#" {{action suggest target="view"}}>Suggest</a>
+						| {{else}}
+						| <a {{bindAttr class=":reqend :label :span12"}} href="#" {{action cancel target="view"}}>Cancel </a>
 						| {{/unless}}
+						| {{/if}}
 					.span1
 						| &nbsp;
 					.span1
@@ -65,18 +69,21 @@
 
 		| {{#if view.selections.length}}
 		.row-fluid
-			| {{#each view.selections}}
-			+linkTo('contact this')
-				.span6
-					.span3
-						| <img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
-					.span9
-						span {{canonicalName}}
-						br
-						span {{position}}
-						br
-						span {{company}}
-			| {{/each}}
+			.span1
+			.span10
+				| {{#each view.selections}}
+				+linkTo('contact this')
+					.span6
+						.span3.imgpad
+							| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+						.span9
+							span {{canonicalName}}
+							br
+							span {{position}}
+							br
+							span {{company}}
+				| {{/each}}
+			.span1
 		| {{/if}}
 
 
