@@ -208,25 +208,24 @@ module.exports = (Ember, App, socket) ->
 			if not @get('controller.response.length') then return
 			@set 'expanded', not @get 'expanded'
 		)
-		cancel: (->
+		clear: (->
 			@set 'selections', []
-			delete location.hash
+			@set 'newnote', ''
+			location.hash = ''
+		)
+		cancel: (->
+			@clear()
 			@set 'suggesting', false
 		)
 		suggest: (->
 			if @get('controller.disabled') then return
-			@set 'selections', []
-			location.hash = ''
+			@clear()
 			@set 'suggesting', true
 		)
-		note: (->
-			@set 'newnote', ''
-			@set 'addingnote', true
-		)
 		addResponse: (->
-			if @get('selectedSearchRedfly') then @get('controller').addSuggestions @get 'selections'
+			if @get('selectedSearchContacts') then @get('controller').addSuggestions @get 'selections'
 			else @get('controller').addNote @get 'newnote'
-			@set 'suggesting', false
+			@cancel()
 			@set 'expanded', true
 		)
 		reqUserView: App.RequserView.extend()
@@ -264,9 +263,14 @@ module.exports = (Ember, App, socket) ->
 		mine: (->
 			@get('user') is App.user.id
 		).property 'user'
+		isLink: (->
+			return util.isLIURL @get('body')
+		).property 'body'
+		isMsg: (->
+			return @get('body')?.length and not @get('isLink')
+		).property 'body'
 
 	App.ResponseView = Ember.View.extend
 		respUserView: App.RespuserView.extend()
-		select: (->
-		)
+
 

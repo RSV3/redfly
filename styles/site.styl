@@ -313,6 +313,10 @@ body
 
 .requests
 	.request
+		a.reqend
+			margin-left	0.5em
+		a.reqend:hover
+			color	#f50
 		a.reqact
 			margin-left	0.5em
 		form
@@ -320,7 +324,7 @@ body
 		.shiftleft10
 			padding-left	0
 			margin-left	-10%
-		.span9
+		.indent9
 			padding-left	3em
 			.hoveruser
 				margin-left	-3em
@@ -351,6 +355,8 @@ body
 			display	inline-block
 
 .request
+	.imgpad
+		padding-bottom	0.5em
 	.hoveruser
 		.expandthis
 			margin-left	0
@@ -382,7 +388,23 @@ body
 		color	#808080
 	.expandedcontent
 		padding	1em
+		.breaker.span12
+			min-height	6px
+			padding-bottom	6px
+		.breaker.span12
+			.span2
+				min-height	6px
+		.breaker.span12
+			.span8
+				min-height	6px
+				border-bottom	1px solid #f7f7f7
 		.response
+			>div
+				margin-left	1%
+			.islink
+				font-size	150%
+				img
+					height	1.5em
 			i.icon-bullhorn
 				padding-right	0.3em
 			i.icon-bullhorn:hover
@@ -390,9 +412,6 @@ body
 			padding-bottom	1em
 			.suggesttext
 				margin-left	0.2em
-			.suggestions
-				.imgpad
-					padding-bottom	1em
 
 
 .results
