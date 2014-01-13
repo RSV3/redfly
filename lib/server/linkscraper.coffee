@@ -14,7 +14,7 @@ scrapeURL = (url, cb)->
 		if error or response.statusCode isnt 200 then return cb? null
 		$ = cheerio.load html
 		deets =
-			specialities:[]
+			specialties:[]
 			positions:[]
 			companies:[]
 		$('.profile-header').find('.image img').each (i, el)->
@@ -22,7 +22,7 @@ scrapeURL = (url, cb)->
 		$('.profile-header').find('span.full-name').each (i, el)->
 			deets.name = $(this).text()
 		$('ol.skills').find('li').each (i, el)->
-			deets.specialities.push util.trim $(this).text()
+			deets.specialties.push util.trim $(this).text()
 		$('.position').each (i, el)->
 			position = $(this).find('h3 span.title').text()
 			company = $(this).find('h4 span.org').text()

@@ -3,8 +3,8 @@
 
 	"name": "redflyext",
 	"description": "This extension helps make the link between linkedin and redfly",
+	"update_url": "http://10.0.0.2:5000/redflyext/updates.xml",
 	"version": "1.0",
-
 
 	"content_scripts": [
 		{

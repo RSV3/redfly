@@ -1,3 +1,3 @@
-window.redflyURL = "10.0.0.2:5000"
+window.redflyURL = "redfly-staging.herokuapp.com"
 window.gmailURL = "gmail.com"
 window.linkedURL = "linkedin.com"

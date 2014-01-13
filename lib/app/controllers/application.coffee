@@ -16,6 +16,7 @@ module.exports = (Ember, App, socket) ->
 
 		didInsertElement: ->
 
+			App.admin.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
 			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
 				changes = _.filter changes, (change) ->
@@ -36,6 +37,47 @@ module.exports = (Ember, App, socket) ->
 				@set 'controller.mostVerboseTag', verbose
 			socket.emit 'summary.user', (user) =>
 				@set 'controller.mostActiveUser', user
+
+			# handle the event sent by the browser plugin on installation
+			Ember.$(document).on 'installExtension', null, (ev, tr)=>
+				App.admin.set 'extensionOn', true
+
+			# handle the event sent by the browser plugin on scrape
+			Ember.$(document).on 'saveExtension', null, (ev, tr)=>
+				if (ev = ev?.originalEvent?.detail).url
+					App.ls = Ember.ObjectProxy.create()
+					lsinit = ->
+						App.set 'ls', App.LinkScraped.createRecord {
+							publicProfileUrl:ev.url,
+							users:[], positions:[], companies:[], specialties:[]
+						}
+					lshandler = ->
+						if not App.get('ls') or not App.ls.get('id') then lsinit()
+						App.ls.get('users').addObject App.User.find App.user.get 'id'
+						if not App.ls.get 'name'
+							App.ls.set 'name', formattedName:ev.name
+							if ev.name?.length
+								App.ls.set 'name.firstName', ev.name.split(' ')[0]
+								App.ls.set 'name.lastName', ev.name.split(' ')[1..].join(' ')
+						if ev.positions
+							for own i,val of ev.positions
+								if not App.ls.get('positions').contains(ev.positions[i]) or not App.ls.get('companies').contains(ev.companies[i])
+									App.ls.get('positions').pushObject ev.positions[i]
+									App.ls.get('companies').pushObject ev.companies[i]
+						if ev.specialties
+							for spec in ev.specialties
+								App.ls.get('specialties').addObject spec
+						if not App.ls.get('pictureUrl')?.length then App.ls.set 'pictureUrl', ev.pictureUrl
+						App.store.commit()
+					App.set 'ls', App.LinkScraped.find publicProfileUrl:ev.url
+					App.ls.one 'didLoad', ->
+						App.set 'ls', App.ls.get 'firstObject'
+						if App.get('ls.isLoaded') then lshandler()
+						else App.ls.one 'didLoad', ->
+							lshandler()
+					App.ls.one 'becameError', ->
+						lshandler()
+
 
 		spotlightSearchView: App.SearchView.extend
 			tagName: 'li'

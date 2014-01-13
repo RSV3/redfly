@@ -3,7 +3,7 @@ content =
 
 	# scrape linkedin view page data
 	scrape: (deets)->
-		deets.specialities = []
+		deets.specialties = []
 		deets.positions = []
 		deets.companies = []
 		if profile = document.getElementById 'profile'
@@ -13,10 +13,10 @@ content =
 			if els = profile.querySelectorAll 'ul.skills-section li'
 				for el in els
 					if name = el.querySelector 'span.endorse-item-name a'
-						deets.specialities.push name.firstChild.nodeValue
+						deets.specialties.push name.firstChild.nodeValue
 			else if els = profile.querySelectorAll 'ol.skills li'
 				for el in els
-					deets.specialities.push el.firstChild.nodeValue
+					deets.specialties.push el.firstChild.nodeValue
 
 			position = company = null
 			if el = profile.querySelector '.background-experience'
@@ -125,6 +125,14 @@ content =
 			chrome.runtime.sendMessage data
 
 	setupRedfly: ->
+		# add a dummy div to note that we're loaded
+		flag = document.createElement 'div'
+		flag.className = 'redfly-flag-extension-is-loaded'
+		dest = document.querySelector('body').firstChild
+		dest.parentNode.insertBefore flag, dest
+		if evt = document.createEvent "CustomEvent"
+			evt.initCustomEvent "installExtension", true, true, null
+
 		content.refreshRedfly()
 		# messages come to the redfly tab from the linkedin tab via the background page
 		chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
