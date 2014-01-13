@@ -151,7 +151,7 @@ module.exports = (Ember, App, socket) ->
 				else @set 'names', @get('names').unshift ev.name
 			if ev.companies.length and not @get('company') then @set 'company', ev.companies[0]
 			if ev.positions.length and not @get('position') then @set 'position', ev.positions[0]
-			for spec in ev.specialities
+			for spec in ev.specialties
 				if spec and not _.contains @get('indTags'), spec
 					App.Tag.createRecord {
 					    date: new Date  # Only so that sorting is smooth.

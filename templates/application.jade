@@ -86,6 +86,10 @@
 						li
 							+linkTo('dashboard') Dashboard
 						{{/if}}
+						{{#unless App.admin.extensionOn}}
+						li
+							| <a href="#" {{action install}}>Install plugin</a>
+						{{/unless}}
 						li
 							| <a href="#" {{action logout}}>Log Out</a>
 				| {{/unless}}

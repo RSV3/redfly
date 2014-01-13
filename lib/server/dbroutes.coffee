@@ -216,7 +216,7 @@ routes =  (app, data, io, session, fn)->
 										updates.id = doc._id
 										io.emit 'linkscrapedcontact', updates
 										routes app, {op:'save', type:'Contact', record:updates}, io, session
-									for skill in deets.specialities
+									for skill in deets.specialties
 										((rec)->
 											Models.Tag.find rec, (terr, tags)->
 												if tags?.length then return
