@@ -1,10 +1,11 @@
 {
 	"manifest_version": 2,
 
-	"name": "redflyext",
+	"name": "redflyplugin",
 	"description": "This extension helps make the link between linkedin and redfly",
-	"update_url": "http://10.0.0.2:5000/redflyext/updates.xml",
-	"version": "1.0",
+	"version": "0.0.1",
+
+	"icons": { "128": "icon128.png"},
 
 	"content_scripts": [
 		{
