@@ -83,7 +83,7 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationRoute = Ember.Route.extend
 		events:
 			install: (context) ->
-				chrome.webstore.install 'https://chrome.google.com/webstore/detail/itemID', ->
+				chrome.webstore.install 'https://chrome.google.com/webstore/detail/pmhekbfebpnlmdpnffgbdmgmnkaamolg', ->
 					App.admin.set 'extensionOn', true
 			logout: (context) ->
 				socket.emit 'logout', =>
