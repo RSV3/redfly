@@ -1,3 +1,4 @@
-window.redflyURL = "redfly-staging.herokuapp.com"
-window.gmailURL = "gmail.com"
-window.linkedURL = "linkedin.com"
+window.extURLs =
+	redfly: "redfly-staging.herokuapp.com"
+	gmail: "gmail.com"
+	linked: "linkedin.com"
