@@ -1,6 +1,7 @@
 _ = require 'underscore'
 _s = require 'underscore.string'
 marked = require 'marked'
+cheerio = require 'cheerio'
 Models = require './models'
 Elastic = require './elastic'
 ScrapeLI = require './linkscraper'
@@ -101,7 +102,8 @@ routes =  (app, data, io, session, fn)->
 					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
 					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
 				when Models.Note
-					record.body = marked record.body
+					record.body = marked record.body												# encode markdown, but
+					if ($b = cheerio.load(record.body)('p'))?.length then record.body = $b.html()	# dont wrap in paragraphs
 			model.create record, (err, doc) ->
 				if err
 					console.log "ERROR: creating record"
@@ -162,6 +164,17 @@ routes =  (app, data, io, session, fn)->
 						when Models.Request
 							if 'response' in modified		# want to make sure new responses get updated on the page
 								feed doc, data.type
+								Models.Response.findById _.last(doc.response), (err, r)->
+									if err or not r?.contact?.length then return
+									console.dir r
+									Models.User.findById doc.user, (err, u)->
+										if err or not u then return
+										console.dir u
+										b = "recommended for #{u.name}'s request: _#{doc.text}_"
+										for c in r.contact
+											rec = {author:r.user, contact:c, body:b}
+											console.dir rec
+											routes app, {op:'create', type:'Note', record:rec}, io, session
 						when Models.Contact
 							if doc.added
 								if 'added' in modified

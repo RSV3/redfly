@@ -4,6 +4,7 @@
 _ = require 'underscore'
 Models = require './models'
 Elastic = require './elastic'
+cheerio = require 'cheerio'
 
 module.exports = (fn, data, session, limit=0) ->
 
@@ -84,6 +85,7 @@ module.exports = (fn, data, session, limit=0) ->
 						if _.contains ['indtags','orgtags'], d.field then thefield = 'tags'
 						else thefield = d.field
 						if not resultsObj[thefield] then resultsObj[thefield] = []
+						if ($f = cheerio.load(d.fragment)('p'))?.length then d.fragment = $f.html()		# markdown paragraphs
 						resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
 			else
 				resultsObj.response = _.pluck docs, '_id'
