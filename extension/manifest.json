@@ -3,7 +3,7 @@
 
 	"name": "redflyplugin",
 	"description": "This extension helps make the link between linkedin and redfly",
-	"version": "0.0.3",
+	"version": "0.0.4",
 
 	"icons": { "128": "icon128.png"},
 
