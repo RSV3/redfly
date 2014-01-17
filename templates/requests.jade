@@ -20,16 +20,17 @@
 	hr
 .flipcardparent
 	| {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
+	| {{#unless expiry}}
 	.row-fluid.request
 		.row-fluid
-			.span9(action='toggle target="view"')
+			.span10(action='toggle target="view"')
 				{{view view.reqUserView}}
 				{{text}}
-			.span3
+			.span2
 				.row-fluid
 					.span9
-						| {{#if view.disabled}}
-						| <a {{bindAttr class=":reqend :label :span12"}} href="#" {{action suggest target="view"}}>End </a>
+						| {{#if controller.disabled}}
+						| <a {{bindAttr class=":reqend :label :span12"}} href="#" {{action expire target="view"}}>End </a>
 						| {{else}}
 						| {{#unless view.suggesting}}
 						| <a {{bindAttr class=":reqact :label :span12"}} href="#" {{action suggest target="view"}}>Suggest</a>
@@ -37,11 +38,11 @@
 						| <a {{bindAttr class=":reqend :label :span12"}} href="#" {{action cancel target="view"}}>Cancel </a>
 						| {{/unless}}
 						| {{/if}}
-					.span1
-						| &nbsp;
-					.span1
+					.span3
 						| {{#if urgent}}
-						i.text-error.icon-flag
+						span
+							| &nbsp;&nbsp;
+							i.text-error.icon-flag
 						| {{/if}}
 
 			| {{#if view.suggesting}}
@@ -96,6 +97,7 @@
 
 
 	hr
+	| {{/unless}}
 	| {{/each}}
 
 	.row-fluid
