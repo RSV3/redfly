@@ -41,7 +41,7 @@ ul.dropdown-menu.search-results
 	.nav-header Matches in notes
 	| {{#each view.results.notes}}
 	li
-		| <a href="#" {{action select contact target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
+		| <a href="#" {{action select contact on="mouseDown" target="view"}}>{{contact.canonicalName}} &mdash; &lsquo;{{{fragment}}}&rsquo;</a>
 	| {{/each}}
 	| {{/if}}
 | {{/if}}
