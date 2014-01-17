@@ -416,11 +416,11 @@ module.exports = (app, route) ->
 		skip = data?.skip or 0
 		pageSize = 10
 		if data?.old
-			query = expiry:$lt:moment().toDate()
+			query = expiry:$exists:true
 			if data.me then query.user = session.user
 			else query.user = $ne:session.user
-		else query = expiry:$gte:moment().toDate()
-		Models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+		else query = expiry:$exists:false
+		Models.Request.find(query).sort(expiry:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
 			theresMore = reqs?.length > pageSize
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore

@@ -62,8 +62,9 @@ module.exports = (Ember, App, socket) ->
 		)
 		add: (->
 			if note = util.trim @get('newreq')
+				# we used to have set expiry to future a date, ie: new Date @get('newdate') or moment().add(7, 'days')
+				# now, we start with a record with no expiry, then set it when the request is ended.
 				nuReq = 
-					expiry: new Date @get('newdate') or moment().add(7, 'days')
 					user: App.user
 					urgent: @get 'urgent'
 					text: note
@@ -127,9 +128,13 @@ module.exports = (Ember, App, socket) ->
 		hoverable: (->
 			if @get('count') then 'hoverable' else 'nothoverable'
 		).property 'count'
+		###
+		# we used to display the date when the request was scheduled to expire ...
+		#
 		expires: (->
 			if expireswhen = @get('expiry') then moment(expireswhen).fromNow()
 		).property 'expiry'
+		###
 		disabled: (->
 			if @get('user')?.get('id') is App.user.id then "disabled"
 		).property 'user'
@@ -198,7 +203,7 @@ module.exports = (Ember, App, socket) ->
 			if @get 'suggesting' then return
 			if @get('controller.count') then it = @get('controller.content')
 			else it = null
-			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
+			@set 'parentView.idsme', App.user.get('id') is it?.get('user.id')
 			@set 'parentView.controller.showthisreq', it
 			Ember.run.next this, ->
 				@get('parentView').$('.thisReq').removeClass('myLightSpeedOut').addClass('animated myLightSpeedIn')
@@ -221,6 +226,10 @@ module.exports = (Ember, App, socket) ->
 			if @get('controller.disabled') then return
 			@clear()
 			@set 'suggesting', true
+		)
+		expire: (->
+			@set 'controller.expiry', new Date()		# used to be a future date: now set it to today when user ends request
+			App.store.commit()
 		)
 		addResponse: (->
 			if @get('selectedSearchContacts') then @get('controller').addSuggestions @get 'selections'
