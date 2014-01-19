@@ -4,7 +4,10 @@ marked = require 'marked'
 cheerio = require 'cheerio'
 Models = require './models'
 Elastic = require './elastic'
-ScrapeLI = require './linkscraper'
+Linker = require './linker'
+linkLater = require('./linklater')
+addDeets2Contact = linkLater.addDeets2Contact
+# ScrapeLI = require './linkscraper'
 
 
 # when we first add a contact to ES:
@@ -104,6 +107,13 @@ routes =  (app, data, io, session, fn)->
 				when Models.Note
 					record.body = marked record.body												# encode markdown, but
 					if ($b = cheerio.load(record.body)('p'))?.length then record.body = $b.html()	# dont wrap in paragraphs
+				when Models.LinkScraped
+					# before creating a new LinkScraped record, see if it matches a known contact
+					Linker.matchContact session.user, record.name.firstName, record.name.lastName, record.name.formattedName, (contact)->
+						if contact				#	and if it does, then trye to add some details from the linkedin record to the contact
+							models.User.findById session.user, (err, user) ->
+								throw err if err
+								record.contact = addDeets2Contact null, user, contact, record
 			model.create record, (err, doc) ->
 				if err
 					console.log "ERROR: creating record"
