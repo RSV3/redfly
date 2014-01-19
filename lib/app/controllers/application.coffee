@@ -88,13 +88,16 @@ module.exports = (Ember, App, socket) ->
 						if not App.ls.get('pictureUrl')?.length then App.ls.set 'pictureUrl', ev.pictureUrl
 						App.store.commit()
 					App.set 'ls', App.LinkScraped.find publicProfileUrl:ev.url
-					App.ls.one 'didLoad', ->
-						App.set 'ls', App.ls.get 'firstObject'
-						if App.get('ls.isLoaded') then lshandler()
-						else App.ls.one 'didLoad', ->
-							lshandler()
-					App.ls.one 'becameError', ->
-						lshandler()
+					if App.get('ls.isLoaded') then lshandler()
+					else
+						App.ls.one 'didLoad', ->
+							App.set 'ls', App.ls.get 'firstObject'
+							if not App.get('ls') then lshandler()
+							else if App.get('ls.isLoaded') then lshandler()
+							else
+								App.ls.one 'didLoad', lshandler
+								App.ls.one 'becameError', lshandler
+						App.ls.one 'becameError', lshandler
 
 
 		spotlightSearchView: App.SearchView.extend
