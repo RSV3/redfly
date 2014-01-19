@@ -47,20 +47,22 @@ addDeets2Contact = (notifications, u, c, l) ->
 		c.picture = l.pictureUrl
 		dirtycontact = true
 
-	tagstoadd = []
-	if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
-	if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
 	for eachUser in l.users
 		unless _.contains c.knows, eachUser
 			c.knows.addToSet eachUser
 			dirtycontact = true
-	if tagstoadd.length then addTags u, c, 'industry', _.uniq tagstoadd
+
+	unless c.classified		# don't mess with tags if they've already been edited ...
+		tagstoadd = []
+		if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
+		if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
+		if tagstoadd.length then addTags u, c, 'industry', _.uniq tagstoadd
 
 	if (_.indexOf c.knows, u._id) < 0
 		c.knows.addToSet u
 		dirtycontact = true
 
-	if c.linkedinId isnt l.linkedinId
+	if l.linkedinId and c.linkedinId isnt l.linkedinId
 		c.linkedinId = l.linkedinId
 		dirtycontact = true
 
