@@ -53,7 +53,7 @@ linkedContentObj =
 
 	# draw the appropriate button on the linkedin tab
 	addButton: (name, tab) ->
-		if removeme = document.querySelector '.rfaction' then removeme.parentNode.removeChild removeme
+		if removeme = document.querySelector('.rfaction') then removeme.parentNode.removeChild removeme
 		src = document.createElement 'div'
 		src.className = 'rfaction button-group-primary'
 		src.innerHTML = "<input type='submit' name='#{name}' value='#{name} to Redfly' class='btn-action' style='float:right; margin:0.4em;' />"
@@ -61,23 +61,14 @@ linkedContentObj =
 		dest.parentNode.insertBefore src, dest
 		src.addEventListener 'click', ->
 			linkedContentObj.linkevents[name] tab
-			if removeme = document.querySelector '.rfaction' then removeme.parentNode.removeChild removeme
+			if hideMe = document.querySelector('.rfaction') then hideMe.style.display = 'none'
 		, false
 
-	# replace the button on the linkedin tab - only if it's there.
+	# replace the button on the linkedin tab - unless it's hidden
 	replaceButton: (name, tab) ->
-		if removeme = document.querySelector '.rfaction' then removeme.parentNode.removeChild removeme
-		else return false
-		src = document.createElement 'div'
-		src.className = 'rfaction button-group-primary'
-		src.innerHTML = "<input type='submit' name='#{name}' value='#{name} to Redfly' class='btn-action' style='float:right; margin:0.4em;' />"
-		dest = document.querySelector '#top-card .profile-actions'
-		dest.parentNode.insertBefore src, dest
-		src.addEventListener 'click', ->
-			linkedContentObj.linkevents[name] tab
-			if removeme = document.querySelector '.rfaction' then removeme.parentNode.removeChild removeme
-		, false
-
+		# don't add (replace) the button if its already there and hidden
+		if (replaceMe = document.querySelector '.rfaction') and replaceMe.style.display is 'none' then return false
+		linkedContentObj.addButton name, tab
 
 
 	###
