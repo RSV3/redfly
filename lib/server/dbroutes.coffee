@@ -57,6 +57,7 @@ routes =  (app, data, io, session, fn)->
 							process.env.AUTH_DOMAINS ?= process.env.ORGANISATION_DOMAINS
 							if doc
 								# mongoose is cool, but we need do this to get around its protection
+								doc._doc['plugin'] = process.env.PLUGIN_URL
 								if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
 								if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 								if not doc.orgtagcats then doc._doc['orgtagcats'] = process.env.ORG_TAG_CATEGORIES
@@ -66,6 +67,7 @@ routes =  (app, data, io, session, fn)->
 									orgtagcats: process.env.ORG_TAG_CATEGORIES
 									domains: process.env.ORGANISATION_DOMAINS.split /[\s*,]/
 									authdomains: process.env.AUTH_DOMAINS.split /[\s*,]/
+									plugin: process.env.PLUGIN_URL
 								return model.create new_adm, (err, doc) ->
 									throw err if err
 									if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true

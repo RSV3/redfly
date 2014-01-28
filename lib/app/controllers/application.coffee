@@ -17,21 +17,15 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 
 			$('#installationlink').click ->
-			document.querySelector('#installationlink').onclick = (e)->
-				console.log 'handling click ...'
-				console.dir e
-				chrome.webstore.install 'https://chrome.google.com/webstore/detail/pmhekbfebpnlmdpnffgbdmgmnkaamolg', (o)->
+				chrome.webstore.install App.admin.get('plugin'), (o)->
 					console.log 'returned from install ...'
 					App.admin.set 'extensionOn', true
 					console.dir o
-					console.log ' ... exiting install callback'
 					false
 				, (o)->
 					console.log 'failed from install ...'
 					console.dir o
-					console.log ' ... exiting install failure callback'
 					false
-				console.log ' ... exiting install click handler'
 				false
 
 			App.admin.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
