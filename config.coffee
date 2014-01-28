@@ -14,6 +14,8 @@ module.exports =
 		URGENT_HOUR:	17		# this is when all the un-answered requests are resent
 		EMPTY_HOUR:		11		# this is when all the un-answered requests (urgent and otherwise) get resent
 
+		PLUGIN_URL: 'https://chrome.google.com/webstore/detail/pmhekbfebpnlmdpnffgbdmgmnkaamolg'
+
 	development:
 		#HOST: '127.0.0.1:5000'
 		HOST:	'10.0.0.2:5000'
@@ -118,6 +120,7 @@ module.exports =
 		NUDGE_DAYS: 'Monday Thursday'
 
 	project11prod:
+		ORGANISATION_NAME: 'project11'
 		ORGANISATION_TITLE: 'Project11'
 		ORGANISATION_DOMAIN: 'project11.com'
 
