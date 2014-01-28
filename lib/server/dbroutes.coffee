@@ -52,7 +52,7 @@ routes =  (app, data, io, session, fn)->
 					model.findById id, (err, doc) ->
 						throw err if err
 						if data.type is 'Admin'
-							process.env.ORGANISTION_DOMAINS ?= process.env.ORGANISATION_DOMAIN
+							process.env.ORGANISATION_DOMAINS ?= process.env.ORGANISATION_DOMAIN
 							process.env.AUTH_DOMAINS ?= process.env.AUTH_DOMAIN
 							process.env.AUTH_DOMAINS ?= process.env.ORGANISATION_DOMAINS
 							if doc
