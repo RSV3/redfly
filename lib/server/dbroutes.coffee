@@ -111,7 +111,7 @@ routes =  (app, data, io, session, fn)->
 					# before creating a new LinkScraped record, see if it matches a known contact
 					Linker.matchContact session.user, record.name.firstName, record.name.lastName, record.name.formattedName, (contact)->
 						if contact				#	and if it does, then trye to add some details from the linkedin record to the contact
-							models.User.findById session.user, (err, user) ->
+							Models.User.findById session.user, (err, user) ->
 								throw err if err
 								record.contact = addDeets2Contact null, user, contact, record
 			model.create record, (err, doc) ->
