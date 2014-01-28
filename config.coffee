@@ -115,7 +115,29 @@ module.exports =
 		MONGOLAB_URI: 'mongodb://heroku_app18594187:56m25k6325f2i6489mc4kh2r3h@ds053858.mongolab.com:53858/heroku_app18594187'
 		ES_URL: 'http://paas:041e4f042e1234537da0385d8305787b@api.searchbox.io'
 		ES_NAME: 'project11'
+		NUDGE_DAYS: 'Monday Thursday'
+
+	project11prod:
+		ORGANISATION_TITLE: 'Project11'
+		ORGANISATION_DOMAIN: 'project11.com'
+
+		HOST: 'project11.joinlite.com'
+		NODE_ENV: 'production'
+
+		GOOGLE_API_ID: '614207063627-ndqice8qdhlj3nceeabj6b7gh3hpdq0m.apps.googleusercontent.com'
+		GOOGLE_API_SECRET: '7hKRTdehivsmA_bqs9aoZMY1'
+		LINKEDIN_API_KEY: '5cbdonom6b77'
+		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
+
+		MONGOLAB_URI: 'mongodb://heroku_app18594197:ot6gs4lpocaheo262u60uclfq7@ds059868-a0.mongolab.com:59868/heroku_app18594197'
+		ES_URL: 'http://paas:715d2306105df387ab3b3f22dc62371a@api.searchbox.io'
+		ES_NAME: 'project11'
+
+		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
+
 		NUDGE_DAYS: 'Tuesday Friday'
+		NEWRELIC_KEY: 'abdc02b44f2ac6f422d61ee034da9c8906097cf6'
 
 	production:
 		HOST: 'redfly.redstar.com'
