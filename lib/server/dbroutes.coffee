@@ -54,6 +54,7 @@ routes =  (app, data, io, session, fn)->
 						if data.type is 'Admin'
 							process.env.ORGANISTION_DOMAINS ?= process.env.ORGANISATION_DOMAIN
 							process.env.AUTH_DOMAINS ?= process.env.AUTH_DOMAIN
+							process.env.AUTH_DOMAINS ?= process.env.ORGANISATION_DOMAINS
 							if doc
 								# mongoose is cool, but we need do this to get around its protection
 								if process.env.CONTEXTIO_KEY then doc._doc['contextio'] = true
