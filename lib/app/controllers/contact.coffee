@@ -138,7 +138,7 @@ module.exports = (Ember, App, socket) ->
 
 		getExtensionData: (ev)->
 			if not ev then return
-			if url = ev.url
+			if url = ev.publicProfileUrl
 				tmpSocV = App.SocialView.create()
 				patternName = tmpSocV.guessPattern 'linkedin', url
 				url = tmpSocV.simplifyID patternName, url
@@ -236,14 +236,6 @@ module.exports = (Ember, App, socket) ->
 			@get('tooltip')?.data('tooltip')?.options?.title = @vipHoverStr()
 		).observes 'controller.isVip'
 		didInsertElement: ->
-			socket.on 'linkscrapedcontact', (data)=>
-				for own key, val of data
-					if key isnt 'id'
-						@set "controller.#{key}", val
-			socket.on 'linkscrapedtag', (data)=>
-				console.log 'get socket.on linkscrapedtag'
-				console.dir data
-				App.Tag.find data.id
 			if @get 'controller.isKnown'
 				@set 'tooltip', @$('div.maybevip').tooltip
 					title: @vipHoverStr()
@@ -266,13 +258,9 @@ module.exports = (Ember, App, socket) ->
 				if arguments.length is 1
 					return @get 'controller.' + @get('primaryAttribute')
 				value
-			# ).property 'controller.' + @get('primaryAttribute')
-			# TODO hack
 			).property 'controller.name', 'controller.email'
 			others: (->
 				Ember.ArrayProxy.create content: @_makeProxyArray @get('controller.' + @get('otherAttribute'))
-			# ).property 'controller.' + @get('otherAttribute')
-			# TODO hack
 			).property 'controller.aliases', 'controller.otherEmails'
 			_makeProxyArray: (array) ->
 				# Since I can't bind to positions in an array, I have to create object proxies for each of the elements and add/remove those.

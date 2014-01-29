@@ -1,9 +1,8 @@
 _ = require 'underscore'
 request = require 'request'
 cheerio = require 'cheerio'
-models = require './models'
-linkLater = require './linklater'
 util = require './util'
+Models = require './models'
 
 # for any given url
 scrapeURL = (url, cb)->
@@ -42,8 +41,21 @@ scrapeContact = (user, contact, cb)->
 	else scrapeURL "http://www.linkedin.com/in/#{contact.linkedin}", cb
 
 
+# try to match the specified contact to a useful linkscraped record
+matchScraped = (contact, cb)->
+	names = contact.names[0]
+	q = {'name.formattedName':names}
+	Models.LinkScraped.find q, (err, linkedins)->
+		if not err and linkedins?.length then return cb linkedins[0]
+		names = names.split ' '
+		q = {'name.firstName':names[0], 'name.lastName':_.last(names)}
+		Models.LinkScraped.find q, (err, linkedins)->
+			if err then linkedins=null
+			cb linkedins?[0]
+
 # this module attempts to get linkedin data by scraping, where possible.
 
 module.exports =
+	matchScraped:matchScraped
 	contact:scrapeContact
 	URL:scrapeURL

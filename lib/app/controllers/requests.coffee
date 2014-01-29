@@ -177,7 +177,7 @@ module.exports = (Ember, App, socket) ->
 			@$(document).off 'respondExtension'					# never quite sure if it's already been set ...
 			@$(document).on 'respondExtension', (ev)=>
 				if (ev = ev?.originalEvent?.detail) and @get 'selectedSuggestLink'
-					if ev.url then @set 'newnote', ev.url
+					if ev.publicProfileUrl then @set 'newnote', ev.publicProfileUrl
 				false
 			true
 		).property 'selectedOption'

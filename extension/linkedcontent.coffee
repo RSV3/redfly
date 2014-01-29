@@ -9,6 +9,8 @@ linkedContentObj =
 			if el = profile.querySelector '.profile-picture img' then deets.pictureUrl = el.src
 			if el = profile.querySelector 'span.full-name' then deets.name = el.firstChild.nodeValue
 
+			if el = profile.querySelector '.public-profile span' then deets.publicProfileUrl = el.firstChild.nodeValue
+
 			if els = profile.querySelectorAll 'ul.skills-section li'
 				for el in els
 					if name = el.querySelector 'span.endorse-item-name a'
@@ -37,17 +39,21 @@ linkedContentObj =
 	# send data from linkedin tab to background page
 	linkevents:
 		save: (tab)->
-			data = {type:'save', url:window.location.href}
+			data = type:'save'
 			linkedContentObj.scrape data
+			data.publicProfileUrl ?= window.location.href
 			chrome.runtime.sendMessage {tab:tab, data:data}
 			false
 		respond: (tab)->
-			data = {type:'respond', url:window.location.href}
+			data = type:'respond'
+			linkedContentObj.scrape data
+			data.publicProfileUrl ?= window.location.href
 			chrome.runtime.sendMessage {tab:tab, data:data}
 			false
 		classify: (tab)->
-			data = {type:'classify', url:window.location.href}
+			data = type:'classify'
 			linkedContentObj.scrape data
+			data.publicProfileUrl ?= window.location.href
 			chrome.runtime.sendMessage {tab:tab, data:data}
 			false
 
