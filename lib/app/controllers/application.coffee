@@ -56,11 +56,11 @@ module.exports = (Ember, App, socket) ->
 
 			# handle the event sent by the browser plugin on scrape
 			Ember.$(document).on 'saveExtension', null, (ev, tr)=>
-				if (ev = ev?.originalEvent?.detail).url
+				if (ev = ev?.originalEvent?.detail).publicProfileUrl
 					App.ls = Ember.ObjectProxy.create()
 					lsinit = ->
 						App.set 'ls', App.LinkScraped.createRecord {
-							publicProfileUrl:ev.url,
+							publicProfileUrl:ev.publicProfileUrl
 							users:[], positions:[], companies:[], specialties:[]
 						}
 					lshandler = ->
@@ -81,7 +81,7 @@ module.exports = (Ember, App, socket) ->
 								App.ls.get('specialties').addObject spec
 						if not App.ls.get('pictureUrl')?.length then App.ls.set 'pictureUrl', ev.pictureUrl
 						App.store.commit()
-					App.set 'ls', App.LinkScraped.find publicProfileUrl:ev.url
+					App.set 'ls', App.LinkScraped.find publicProfileUrl:ev.publicProfileUrl
 					if App.get('ls.isLoaded') then lshandler()
 					else
 						App.ls.one 'didLoad', ->

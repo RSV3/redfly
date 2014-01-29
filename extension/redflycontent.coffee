@@ -51,15 +51,15 @@ redflyContentObj =
 		chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->		# listen for messsage from background page
 			switch request?.type													# (which actually originate from linkedin tabs)
 				when 'respond'		# response
-					if request.url
+					if request.publicProfileUrl
 						if evt = document.createEvent "CustomEvent"
 							evt.initCustomEvent "respondExtension", true, true, request
 				when 'classify'		# classifying
-					if request.url
+					if request.publicProfileUrl
 						if evt = document.createEvent "CustomEvent"
 							evt.initCustomEvent "classifyExtension", true, true, request
 				when 'save'		# regular scrape save
-					if request.url
+					if request.publicProfileUrl
 						if evt = document.createEvent "CustomEvent"
 							evt.initCustomEvent "saveExtension", true, true, request
 			if evt then document.dispatchEvent evt

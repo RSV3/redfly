@@ -34,6 +34,10 @@ module.exports = (Ember, App, socket) ->
 				if type is 'linkedin' then model = 'Contact'
 				Ember.run.next this, ->
 					if item = App[model].find data.id
+						if item.get('isLoaded') and data.doc
+							for own key,val of data.doc
+								if _.isString(val) and not item.get(key)?.length
+									item.set(key, val)
 						item['type' + _s.capitalize(type)] = true
 						if (id = data.updater or data.addedBy) then item.set 'updatedBy', App.User.find id
 						if f = @get('controller.feed') then f.unshiftObject item

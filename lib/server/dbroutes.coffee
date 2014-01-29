@@ -5,9 +5,9 @@ cheerio = require 'cheerio'
 Models = require './models'
 Elastic = require './elastic'
 Linker = require './linker'
-linkLater = require('./linklater')
+ScrapeLI = require './linkscraper'
+linkLater = require './linklater'
 addDeets2Contact = linkLater.addDeets2Contact
-# ScrapeLI = require './linkscraper'
 
 
 # when we first add a contact to ES:
@@ -41,7 +41,6 @@ routes =  (app, data, io, session, fn)->
 		if doc.addedBy then o.addedBy = doc.addedBy
 		if doc.response?.length then o.response = doc.response
 		if fn then io.broadcast 'feed', o
-		else io.emit 'linkscrapedtag', o
 
 
 	switch data.op
@@ -103,28 +102,25 @@ routes =  (app, data, io, session, fn)->
 		when 'create'
 			record = data.record
 			if _.isArray record then throw new Error 'unimplemented'
-			switch model
-				when Models.Contact
-					if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
-					if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
-				when Models.Note
-					record.body = marked record.body												# encode markdown, but
-					if ($b = cheerio.load(record.body)('p'))?.length then record.body = $b.html()	# dont wrap in paragraphs
-				when Models.LinkScraped
-					# before creating a new LinkScraped record, see if it matches a known contact
-					Linker.matchContact session.user, record.name.firstName, record.name.lastName, record.name.formattedName, (contact)->
-						if contact				#	and if it does, then trye to add some details from the linkedin record to the contact
+			beforeSave = (cb)->
+				switch model
+					when Models.Contact
+						if record.names?.length and not record.sortname then record.sortname = record.names[0].toLowerCase()
+						if record.addedBy and not record.knows?.length then record.knows = [record.addedBy]
+					when Models.Note
+						record.body = marked record.body												# encode markdown, but
+						if ($b = cheerio.load(record.body)('p'))?.length then record.body = $b.html()	# dont wrap in paragraphs
+					when Models.LinkScraped
+						# before creating a new LinkScraped record, see if it matches a known contact
+						return Linker.matchContact session.user, record.name.firstName, record.name.lastName, record.name.formattedName, (contact)->
+							unless contact then return cb()		# no match? move along then ...
+							# try to add some details from the linkedin record to the contact
 							Models.User.findById session.user, (err, user) ->
 								throw err if err
 								record.contact = addDeets2Contact null, user, contact, record
-			model.create record, (err, doc) ->
-				if err
-					console.log "ERROR: creating record"
-					console.dir err
-					console.dir record
-					throw err unless err.code is 11000		# duplicate key
-					doc = record
-				cb doc
+								cb()
+				cb()	# for whenever we didn't return in the switch
+			afterSave = (doc)->
 				switch model
 					when Models.Note
 						Elastic.onCreate doc, 'Note', "notes", (err)->
@@ -137,15 +133,33 @@ routes =  (app, data, io, session, fn)->
 									console.dir err
 							feed doc, data.type
 					when Models.Contact
-						if doc.addedBy
-							feed doc, data.type
-							Elastic.create doc, (err)->
-								if err
-									console.log "ERR: ES creating new contact"
-									console.dir doc
-									console.dir err
+						maybeAnnounceContact = (doc)->
+							if doc.addedBy
+								feed doc, data.type
+								Elastic.create doc, (err)->
+									if err
+										console.log "ERR: ES creating new contact"
+										console.dir doc
+										console.dir err
+						ScrapeLI.matchScraped doc, (scraped)->
+							unless scraped then return maybeAnnounceContact doc
+							Models.User.findById session.user, (err, user) ->
+								throw err if err
+								addDeets2Contact null, user, doc, scraped
+								maybeAnnounceContact doc
+								io.emit 'feed', {type:data.type, id:doc.id, addedBy:session.user, doc:doc}
 					when Models.Request
 						feed doc, data.type
+			beforeSave ->
+				model.create record, (err, doc) ->
+					if err
+						console.log "ERROR: creating record"
+						console.dir err
+						console.dir record
+						throw err unless err.code is 11000		# duplicate key
+						doc = record
+					cb doc
+					afterSave doc
 
 		when 'save'
 			record = data.record
@@ -226,31 +240,6 @@ routes =  (app, data, io, session, fn)->
 									if err
 										console.log "error incrementing data count for #{session.user}"
 										console.dir err
-							###
-							if 'linkedin' in modified
-								ScrapeLI.contact session.user, doc, (deets)->
-									updates = {}
-									if deets.positions?.length and deets.positions[0] and not doc.position?.length
-										updates.position = deets.positions[0]
-									if deets.companies?.length and deets.companies[0] and not doc.company?.length
-										updates.company = deets.companies[0]
-									if deets.pictureUrl?.length and not doc.picture?.length
-										updates.picture = deets.pictureUrl
-									if deets.name?.length and not _.contains doc.names, deets.name
-										doc.names.push deets.name
-									if _.keys(updates)?.length
-										updates.id = doc._id
-										io.emit 'linkscrapedcontact', updates
-										routes app, {op:'save', type:'Contact', record:updates}, io, session
-									for skill in deets.specialties
-										((rec)->
-											Models.Tag.find rec, (terr, tags)->
-												if tags?.length then return
-												rec.user = session.user
-												rec.category = 'industry'
-												routes app, {op:'create', type:'Tag', record:rec}, io, session
-										) {contact:doc._id, body:skill}
-							###
 
 		when 'remove'
 			if id = data.id
