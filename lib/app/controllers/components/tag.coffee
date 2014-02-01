@@ -1,9 +1,9 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 	App.TagView = Ember.View.extend
-		template: require '../../../../templates/components/tag'
+		template: require '../../../../templates/components/tag.jade'
 		tagName: 'span'
 		classNames: ['tag']
 		search: ->

@@ -2,8 +2,8 @@ module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
-	util = require '../util'
-	validation = require('../validation') socket
+	util = require '../util.coffee'
+	validation = require('../validation.coffee') socket
 
 	validate = validation.validate
 	filter = validation.filter
@@ -128,7 +128,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ImportView = Ember.View.extend
-		template: require '../../../templates/import'
+		template: require '../../../templates/import.jade'
 		classNames: ['import']
 
 		startView: Ember.View.extend

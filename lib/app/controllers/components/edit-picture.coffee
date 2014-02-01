@@ -1,13 +1,13 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	validation = require('../../validation') socket
+	validation = require('../../validation.coffee') socket
 
 	validate = validation.validate
 	filter = validation.filter
 
 
 	App.EditPictureView = Ember.View.extend
-		template: require '../../../../templates/components/edit-picture'
+		template: require '../../../../templates/components/edit-picture.jade'
 		tagName: 'span'
 		classNames: ['edit', 'overlay']
 		newPicture: ((key, value) ->

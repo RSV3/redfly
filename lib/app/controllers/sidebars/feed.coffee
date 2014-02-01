@@ -22,10 +22,10 @@ module.exports = (Ember, App, socket) ->
 			).property()
 
 	App.JustuserView = App.HoveruserView.extend
-		template: require '../../../templates/components/leaduser'
+		template: require '../../../../templates/components/leaduser.jade'
 
 	App.FeedView = Ember.View.extend
-		template: require '../../../../templates/sidebars/feed'
+		template: require '../../../../templates/sidebars/feed.jade'
 		userview: App.JustuserView.extend()
 		didInsertElement: ->
 			socket.on 'feed', (data) =>

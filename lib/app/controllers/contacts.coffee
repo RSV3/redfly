@@ -47,5 +47,5 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ContactsView = Ember.View.extend
-		template: require '../../../templates/contacts'
+		template: require '../../../templates/contacts.jade'
 		classNames: ['contacts']

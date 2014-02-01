@@ -1,9 +1,9 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 	App.TagAdminView = Ember.View.extend
-		template: require '../../../../templates/components/tagadmin'
+		template: require '../../../../templates/components/tagadmin.jade'
 		classNames: ['tagadmin']
 		catid: 'orgtagcat1'
 		category: (->

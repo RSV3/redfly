@@ -1,7 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-	util = require './util'
+	util = require './util.coffee'
 
 	recent_query_string = ''	# this is the query that returns the list of all contacts
 

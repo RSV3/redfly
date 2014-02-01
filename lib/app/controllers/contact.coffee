@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../util'
+	util = require '../util.coffee'
 	moment = require 'moment'
 
 	App.ContactController = Ember.ObjectController.extend
@@ -166,10 +166,10 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ContactuserView = App.HoveruserView.extend
-		template: require '../../../templates/components/contactuser'
+		template: require '../../../templates/components/contactuser.jade'
 
 	App.ContactView = Ember.View.extend
-		template: require '../../../templates/contact'
+		template: require '../../../templates/contact.jade'
 		classNames: ['contact']
 
 		showEmail: (->
@@ -251,7 +251,7 @@ module.exports = (Ember, App, socket) ->
 			@get('mergeViewInstance')._launch()
 
 		editView: Ember.View.extend
-			template: require '../../../templates/components/edit'
+			template: require '../../../templates/components/edit.jade'
 			tagName: 'span'
 			classNames: ['edit', 'overlay']
 			primary: ((key, value) ->

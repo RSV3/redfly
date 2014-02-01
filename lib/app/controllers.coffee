@@ -11,40 +11,40 @@ module.exports = (Ember, App, socket) ->
 		Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
 
 
-	require('./controllers/components/connection') Ember, App, socket
-	require('./controllers/components/edit-picture') Ember, App, socket
-	require('./controllers/components/hoveruser') Ember, App, socket
-	require('./controllers/components/intro') Ember, App, socket
-	require('./controllers/components/linker') Ember, App, socket
-	require('./controllers/components/loader') Ember, App, socket
-	require('./controllers/components/newtag') Ember, App, socket
-	require('./controllers/components/note') Ember, App, socket
-	require('./controllers/components/search') Ember, App, socket
-	require('./controllers/components/social') Ember, App, socket
-	require('./controllers/components/tag') Ember, App, socket
-	require('./controllers/components/tagadmin') Ember, App, socket
-	require('./controllers/components/tagger') Ember, App, socket
-	require('./controllers/components/fulltagger') Ember, App, socket
+	require('./controllers/components/connection.coffee') Ember, App, socket
+	require('./controllers/components/edit-picture.coffee') Ember, App, socket
+	require('./controllers/components/hoveruser.coffee') Ember, App, socket
+	require('./controllers/components/intro.coffee') Ember, App, socket
+	require('./controllers/components/linker.coffee') Ember, App, socket
+	require('./controllers/components/loader.coffee') Ember, App, socket
+	require('./controllers/components/newtag.coffee') Ember, App, socket
+	require('./controllers/components/note.coffee') Ember, App, socket
+	require('./controllers/components/search.coffee') Ember, App, socket
+	require('./controllers/components/social.coffee') Ember, App, socket
+	require('./controllers/components/tag.coffee') Ember, App, socket
+	require('./controllers/components/tagadmin.coffee') Ember, App, socket
+	require('./controllers/components/tagger.coffee') Ember, App, socket
+	require('./controllers/components/fulltagger.coffee') Ember, App, socket
 
-	require('./controllers/sidebars/pastreqs') Ember, App, socket
-	require('./controllers/sidebars/leaders') Ember, App, socket
-	require('./controllers/sidebars/filter') Ember, App, socket
-	require('./controllers/sidebars/feed') Ember, App, socket
+	require('./controllers/sidebars/pastreqs.coffee') Ember, App, socket
+	require('./controllers/sidebars/leaders.coffee') Ember, App, socket
+	require('./controllers/sidebars/filter.coffee') Ember, App, socket
+	require('./controllers/sidebars/feed.coffee') Ember, App, socket
 
-	require('./controllers/admin') Ember, App, socket
-	require('./controllers/application') Ember, App, socket
-	require('./controllers/classify') Ember, App, socket
-	require('./controllers/companies') Ember, App, socket
-	require('./controllers/contact') Ember, App, socket
-	require('./controllers/contacts') Ember, App, socket
-	require('./controllers/create') Ember, App, socket
-	require('./controllers/dashboard') Ember, App, socket
-	require('./controllers/home') Ember, App, socket
-	require('./controllers/import') Ember, App, socket
-	require('./controllers/leaderboard') Ember, App, socket
-	require('./controllers/profile') Ember, App, socket
-	require('./controllers/report') Ember, App, socket
-	require('./controllers/results') Ember, App, socket
-	require('./controllers/requests') Ember, App, socket
-	require('./controllers/tags') Ember, App, socket
+	require('./controllers/admin.coffee') Ember, App, socket
+	require('./controllers/application.coffee') Ember, App, socket
+	require('./controllers/classify.coffee') Ember, App, socket
+	require('./controllers/companies.coffee') Ember, App, socket
+	require('./controllers/contact.coffee') Ember, App, socket
+	require('./controllers/contacts.coffee') Ember, App, socket
+	require('./controllers/create.coffee') Ember, App, socket
+	require('./controllers/dashboard.coffee') Ember, App, socket
+	require('./controllers/home.coffee') Ember, App, socket
+	require('./controllers/import.coffee') Ember, App, socket
+	require('./controllers/leaderboard.coffee') Ember, App, socket
+	require('./controllers/profile.coffee') Ember, App, socket
+	require('./controllers/report.coffee') Ember, App, socket
+	require('./controllers/results.coffee') Ember, App, socket
+	require('./controllers/requests.coffee') Ember, App, socket
+	require('./controllers/tags.coffee') Ember, App, socket
 

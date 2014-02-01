@@ -1,7 +1,7 @@
 module.exports = (DS, App) ->
 	_ = require 'underscore'
-	util = require '../util'
-	require('phrenetic/lib/app/models') DS, App, require '../schemas'
+	util = require '../util.coffee'
+	require('../../phrenetic/lib/app/models.coffee') DS, App, require '../schemas.coffee'
 
 	App.Results = Em.Object.extend
 		text: ''

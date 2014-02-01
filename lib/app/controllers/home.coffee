@@ -5,7 +5,7 @@ module.exports = (Ember, App, socket) ->
 		andCounting: 0
 
 	App.IndexView = Ember.View.extend
-		template: require '../../../templates/home'
+		template: require '../../../templates/home.jade'
 		classNames: ['home']
 		didInsertElement: ()->
 			@$('.carousel').carousel interval: 5000

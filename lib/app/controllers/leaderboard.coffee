@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 		datapoor: 0
 
 	App.LeaderboardView = Ember.View.extend
-		template: require '../../../templates/leaderboard'
+		template: require '../../../templates/leaderboard.jade'
 		classNames: ['leaderboard']
 		lowest: 0
 		###
