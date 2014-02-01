@@ -1,9 +1,9 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 	App.TaggerView = Ember.View.extend
-		template: require '../../../../templates/components/tagger'
+		template: require '../../../../templates/components/tagger.jade'
 		classNames: ['tagger']
 		category: (->
 			switch (id = @get 'catid')

@@ -7,10 +7,10 @@ module.exports = (Ember, App, socket) ->
 		laggard: []
 
 	App.LeaduserView = App.HoveruserView.extend
-		template: require '../../../templates/components/leaduser'
+		template: require '../../../../templates/components/leaduser.jade'
 
 	App.LeadersView = Ember.View.extend
-		template: require '../../../../templates/sidebars/leaders'
+		template: require '../../../../templates/sidebars/leaders.jade'
 		classNames: ['leaders']
 		leaduserView: App.LeaduserView.extend()
 		didInsertElement: ->

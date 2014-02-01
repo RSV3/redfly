@@ -1,11 +1,11 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 
 	App.SearchView = Ember.View.extend
-		template: require '../../../../templates/components/search'
+		template: require '../../../../templates/components/search.jade'
 		classNames: ['search', 'dropdown']
 		didInsertElement: ->
 			$(@$('[rel=popover]')).popover()

@@ -41,7 +41,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.FilterView = Ember.View.extend
-		template: require '../../../../templates/sidebars/filter'
+		template: require '../../../../templates/sidebars/filter.jade'
 		classNames: ['filter']
 
 		nextNewUser: null

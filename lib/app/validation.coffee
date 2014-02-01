@@ -4,8 +4,8 @@ module.exports = (socket) ->
 	async = require 'async'
 	validators = require('validator').validators
 
-	blacklist = require '../blacklist'
-	util = require '../util'
+	blacklist = require '../blacklist.coffee'
+	util = require '../util.coffee'
 
 
 	messages =

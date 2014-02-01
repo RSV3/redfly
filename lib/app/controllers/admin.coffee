@@ -1,9 +1,9 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
-	util = require '../util'
+	util = require '../util.coffee'
 
 	App.AdminView = Ember.View.extend
-		template: require '../../../templates/admin'
+		template: require '../../../templates/admin.jade'
 		classNames: ['admin']
 		didInsertElement: ->
 			@$('textarea').blur ()=>

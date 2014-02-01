@@ -90,7 +90,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ClassifyView = Ember.View.extend
-		template: require '../../../templates/classify'
+		template: require '../../../templates/classify.jade'
 		classNames: ['classify']
 		classifying:true
 		didInsertElement: ->

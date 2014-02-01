@@ -2,7 +2,7 @@ module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 
 	App.ProfileView = Ember.View.extend
-		template: require '../../../templates/profile'
+		template: require '../../../templates/profile.jade'
 		classNames: ['profile']
 
 	App.ProfileController = Ember.ObjectController.extend

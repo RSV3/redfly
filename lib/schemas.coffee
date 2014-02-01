@@ -1,7 +1,7 @@
-schemasUtil = require 'phrenetic/lib/schemas'
+schemasUtil = require '../phrenetic/lib/schemas.coffee'
 validators = require('validator').validators
 
-util = require './util'
+util = require './util.coffee'
 
 Schema = schemasUtil.Schema
 Types = schemasUtil.Types

@@ -1,10 +1,10 @@
 _ = require 'underscore'
 
 module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 	App.LinkerView = Ember.View.extend
-		template: require '../../../../templates/components/linker'
+		template: require '../../../../templates/components/linker.jade'
 		classNames:['linker']
 
 		didInsertElement: ->

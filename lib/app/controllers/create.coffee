@@ -1,6 +1,6 @@
 module.exports = (Ember, App, socket) ->
-	validation = require('../validation') socket
-	util = require '../util'
+	validation = require('../validation.coffee') socket
+	util = require '../util.coffee'
 
 	validate = validation.validate
 	filter = validation.filter
@@ -18,7 +18,7 @@ module.exports = (Ember, App, socket) ->
 	App.CreateController = Ember.Controller.extend()
 
 	App.CreateView = Ember.View.extend
-		template: require '../../../templates/create'
+		template: require '../../../templates/create.jade'
 		classNames: ['create']
 
 		nameField: FormField.extend

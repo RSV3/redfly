@@ -4,7 +4,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ApplicationView = Ember.View.extend
-		template: require '../../../templates/application'
+		template: require '../../../templates/application.jade'
 		loggingOn: false
 
 		showLogin: false

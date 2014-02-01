@@ -235,7 +235,7 @@ module.exports = (Ember, App, socket) ->
 		setShowItAll: (r)-> r.set 'showitall', true
 
 	App.SortView = Ember.View.extend
-		template: require '../../../templates/components/sort'
+		template: require '../../../templates/components/sort.jade'
 		classNames: ['sort']
 		dir: (->
 			if t = @get 'controller.sortType'

@@ -1,5 +1,5 @@
 module.exports = (Ember, App, socket) ->
-	util = require '../util'
+	util = require '../util.coffee'
 	_ = require 'underscore'
 	moment = require 'moment'
 
@@ -87,7 +87,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'newreq'
 
 	App.RequestsView = Ember.View.extend
-		template: require '../../../templates/requests'
+		template: require '../../../templates/requests.jade'
 		classNames: ['requests']
 		toggleUrgency: (->
 			@set 'controller.urgent', not @get 'controller.urgent'
@@ -159,10 +159,10 @@ module.exports = (Ember, App, socket) ->
 				App.store.commit()
 
 	App.RequserView = App.HoveruserView.extend
-		template: require '../../../templates/components/requser'
+		template: require '../../../templates/components/requser.jade'
 
 	App.RespuserView = App.HoveruserView.extend
-		template: require '../../../templates/components/respuser'
+		template: require '../../../templates/components/respuser.jade'
 
 	App.RequestView = Ember.View.extend
 		selectedSearchContacts: (->

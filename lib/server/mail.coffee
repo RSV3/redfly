@@ -2,7 +2,7 @@
 path = require 'path'
 projectRoot = path.dirname path.dirname __dirname
 
-Mail = module.exports = require('phrenetic/lib/server/mail') projectRoot
+Mail = module.exports = require('../../phrenetic/lib/server/mail') projectRoot
 Logic = require './logic'
 
 

@@ -12,6 +12,6 @@ module.exports = (Ember, App, socket) ->
 		).property 'stats'
 
 	App.TagsView = Ember.View.extend
-		template: require '../../../templates/tags'
+		template: require '../../../templates/tags.jade'
 		classNames: ['tags']
 

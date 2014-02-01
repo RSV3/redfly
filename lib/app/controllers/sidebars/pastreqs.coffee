@@ -42,7 +42,7 @@ module.exports = (Ember, App, socket) ->
 				@set "#{which}_rangeStart", @get("#{which}_rangeStart") - @get("#{which}_pageSize")
 
 	App.PastreqsView = Ember.View.extend
-		template: require '../../../../templates/sidebars/pastreqs'
+		template: require '../../../../templates/sidebars/pastreqs.jade'
 		classNames: ['pastreqs']
 		selectTab: (ev)->
 			@closeModal()

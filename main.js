@@ -1,1 +1,1 @@
-require('phrenetic/main');
+require('./phrenetic/main');

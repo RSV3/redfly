@@ -38,16 +38,16 @@ preHook = (Ember, DS, App, socket) ->
 
 
 postHook = (Ember, DS, App, socket) ->
-	require '../vendor'
+	require '../vendor/index.coffee'
 
-	require('./templates') Ember
-	require('./handlebars') Ember, Handlebars
+	require('./templates.coffee') Ember
+	require('./handlebars.coffee') Ember, Handlebars
 
-	require('./ember') Ember, App
+	require('./ember.coffee') Ember, App
 
-	require('./models') DS, App
-	require('./controllers') Ember, App, socket
-	require('./router') Ember, App, socket
+	require('./models.coffee') DS, App
+	require('./controllers.coffee') Ember, App, socket
+	require('./router.coffee') Ember, App, socket
 
 	App.admin = Ember.ObjectProxy.create()
 	App.set 'admin', App.Admin.find 1
@@ -62,5 +62,5 @@ postHook = (Ember, DS, App, socket) ->
 			App.advanceReadiness()
 
 
-require('phrenetic/lib/app') preHook, postHook
+require('../../phrenetic/lib/app/index.coffee') preHook, postHook
 
