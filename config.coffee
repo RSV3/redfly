@@ -124,6 +124,8 @@ module.exports =
 		ORGANISATION_TITLE: 'Project11'
 		ORGANISATION_DOMAIN: 'project11.com'
 
+		ADMIN_EMAIL:	'bob@project11.com'
+
 		HOST: 'project11.joinlite.com'
 		NODE_ENV: 'production'
 
