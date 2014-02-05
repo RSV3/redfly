@@ -28,7 +28,8 @@ module.exports = (Ember, App, socket) ->
 				@set 'picture', newPicture
 				# Deferring makes this work becuase pictureBinding has to sync I think.
 				_.defer ->
-					App.store.commit()
+					#App.store.commit()
+					console.log 'ERROR: need to save'
 				@toggle()
 
 			@set 'working', false

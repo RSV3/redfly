@@ -14,7 +14,7 @@
 			+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')
 
 	+unless ('theResults')
-		.loading
+		.myloading
 			+unless ('empty')
 				i.icon-spinner.icon-spin
 			+if ('empty')
@@ -52,7 +52,7 @@
 							h3 {{canonicalName}}
 						div
 							i
-								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+								| {{position}}{{#if position}},{{/if}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 						| {{#if lastHistory}}
 						.row-fluid
 							p

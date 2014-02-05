@@ -66,23 +66,24 @@ module.exports = (Ember, App, socket) ->
 				@set 'parentView.results', results
 			).observes 'theresults.@each.@each.isLoaded'
 			valueChanged: (->
-					@set 'parentView.using', true
-					if not (query = util.trim @get('value')) then return @set 'results', null
-					prefix = @get('parentView.prefix')
-					if prefix then query = util.trim(prefix)+query
-					socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
-						query = util.trim @get('value')
-						if results.query is query or results.query is "contact:#{query}"
-							@set 'theresults', {}
-							@fragments = {}
-							tmpres = {}
-							delete results.query
-							xcludes = @get 'parentView.excludes'
-							for type, ids of results
-								if ids and ids.length
-									ids = _.reject ids, (o)=> _.contains xcludes, o._id
-									tmpres[type] = App.store.findMany(App.Contact, _.pluck ids, '_id')
-									@fragments[type] = _.pluck ids, 'fragment'
-							@set "theresults", tmpres
-				).observes 'value', 'parentView.excludes'
+				store= @get('parentView.controller').store
+				@set 'parentView.using', true
+				if not (query = util.trim @get('value')) then return @set 'results', null
+				prefix = @get('parentView.prefix')
+				if prefix then query = util.trim(prefix)+query
+				socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
+					query = util.trim @get('value')
+					if results.query is query or results.query is "contact:#{query}"
+						@set 'theresults', {}
+						@fragments = {}
+						tmpres = {}
+						delete results.query
+						xcludes = @get 'parentView.excludes'
+						for type, ids of results
+							if ids and ids.length
+								ids = _.reject ids, (o)=> _.contains xcludes, o._id
+								tmpres[type] = store.find 'contact', _.pluck ids, '_id'
+								@fragments[type] = _.pluck ids, 'fragment'
+						@set "theresults", tmpres
+			).observes 'value', 'parentView.excludes'
 

@@ -34,7 +34,7 @@ module.exports = (Ember, App, socket) ->
 				else conditions = category:$ne:'industry'
 				socket.emit 'tags.all', conditions, (allTags) =>
 					unless @isDestroyed then @set 'autocompletes', allTags
-			else @set 'allautos', App.User.filter {name:$exists:true}, (u)->u?.get('name')?.length
+			#else @set 'allautos', @get('parentView.controller').store.filter 'user', {name:$exists:true}, (u)->u?.get('name')?.length
 		updateTypeahead: (->
 			if t=@get('typeahead') then t.data('typeahead').source = @get('autocompletes')
 		).observes 'autocompletes.@each'
@@ -50,7 +50,8 @@ module.exports = (Ember, App, socket) ->
 				@get('controller').userToggle u.getEach('id')[0], u.getEach('name')[0]
 		).observes 'nextNewUser.@each'
 		addNose: (name)->
-			@set 'nextNewUser', App.User.filter (data) ->
+			console.dir name
+			@set 'nextNewUser', @get('controller').store.filter 'user', (data) ->
 					data.get('name') is name
 
 		addTag: (cat, body)->

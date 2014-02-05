@@ -44,6 +44,7 @@ module.exports = (Ember, App, socket) ->
 				cb?()
 
 		create: ->
+			store = @get('controller').store
 			async = require 'async'
 			async.forEach fields, (field, cb) =>
 				@get(field + 'FieldInstance')._fire cb
@@ -59,8 +60,8 @@ module.exports = (Ember, App, socket) ->
 						addedBy: App.user
 					if picture = util.trim @get('picture')
 						properties.picture = picture
-					contact = App.Contact.createRecord properties
-					App.store.commit()
+					contact = store.createRecord 'contact', properties
+					contact.save()
 
 					@$().addClass 'animated lightSpeedOut'
 					contact.addObserver 'id', =>

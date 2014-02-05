@@ -105,8 +105,9 @@ module.exports = (Ember, App, socket) ->
 				socket.emit 'stats', (stats) ->
 					for own key,val of stats
 						controller.set key, val
-					controller.set 'content', App.Admin.find 1
-					controller.set 'category', 'industry'
+					@store.find('admin', 1).then (admin)->
+						controller.set 'content', admin
+						controller.set 'category', 'industry'
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'admin'
@@ -129,10 +130,10 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'model', null
-			socket.emit 'classifyQ', App.user?.get('id'), (results) =>
+			socket.emit 'classifyQ', App.user?.get('id'), (results) ->
 				if results and results.length
 					controller.set 'classifyCount', 0
-					controller.set 'dynamicQ', App.store.findMany(App.Contact, results)
+					controller.set 'dynamicQ', controller.store.find 'contact', results
 				else @transitionTo 'recent'
 		renderTemplate: ->
 			@router.connectem @, 'classify'
@@ -140,7 +141,7 @@ module.exports = (Ember, App, socket) ->
 	App.ContactsRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'addedContacts', null
-			controller.set 'page1Contacts', App.Contact.find {
+			controller.set 'page1Contacts', @store.find 'contact', {
 				conditions: added: $exists: true
 				options:
 					sort: added: -1
@@ -215,7 +216,7 @@ module.exports = (Ember, App, socket) ->
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string
 						controller.set 'searchtag', results.query
-					controller.set 'all', App.store.findMany(App.Contact, results.response)
+					controller.set 'all', @store.find 'contact', results.response
 		renderTemplate: ->
 			@router.connectem @, 'results'
 
@@ -230,18 +231,20 @@ module.exports = (Ember, App, socket) ->
 				if reqs
 					controller.set 'hasNext', theresmore
 					if theresmore then controller.set 'pageSize', reqs.length
-					controller.set 'reqs', App.store.findMany App.Request, reqs
+					console.log "got #{reqs?.length} current requests to display ..."
+					controller.set 'reqs', controller.store.find 'request', reqs
 		renderTemplate: ->
 			@router.connectem @, 'requests'
 
 
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
-			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) =>
+			store = @store
+			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) ->
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
-				controller.set 'leader', App.store.findMany(App.User, leaders)
-				controller.set 'laggard', App.store.findMany(App.User, laggards)
+				controller.set 'leader', store.find 'user', leaders
+				controller.set 'laggard', store.find 'user', laggards
 				controller.set 'datapoor', datapoor
 		renderTemplate: ->
 			@router.connectem @, 'leaderboard'

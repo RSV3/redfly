@@ -14,7 +14,7 @@ module.exports = (Ember, App, socket) ->
 
 		prioritytags: (->
 			query = category: @get('category'), contact: null
-			result = App.Tag.filter query, (data) =>
+			result = @get('parentView.controller').filter 'tag', query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
 					return false
 				not data.get('contact')
@@ -61,11 +61,11 @@ module.exports = (Ember, App, socket) ->
 			@set 'currentTag', null
 		_add: (tag) ->
 			if not (existingTag = @get('prioritytags.content')?.find (candidate) -> tag is candidate.body)
-				t = App.Tag.createRecord
+				t = @get('controller').store.createRecord 'tag',
 					date: new Date
 					category: @get('category')
 					body: tag
-				App.store.commit()
+				t.save()
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
@@ -90,7 +90,7 @@ module.exports = (Ember, App, socket) ->
 								new: newtxt
 							socket.emit 'tags.rename', renameObj, () =>
 								that.set('context.body', newtxt)
-								App.store.filter(App.Tag, (t)->
+								@get('parentView.controller').store.filter('tag', (t)->
 									t.get('category') is renameObj.category and t.get('body') is renameObj.body
 								).forEach (t)->
 									t.set 'body', newtxt
@@ -105,11 +105,11 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
 				if tag.body
-					newtag = App.Tag.createRecord
+					newtag = @get('controller').store.createRecord 'tag',
 						date: new Date
 						category: @get 'parentView.category'
 						body: tag.body
-					App.store.commit()
+					newtag.save()
 				@set 'parentView.animate', true
 			delete: ->
 				@$().addClass 'animated rotateOutDownLeft'
@@ -117,18 +117,15 @@ module.exports = (Ember, App, socket) ->
 					b = tag.body
 					c = @get('parentView.category')
 					Ember.run.later this, ->
-						console.dir b
-						console.dir c
-						console.dir tag
 						if tag.deleteRecord 		# priority tags are real tags ..
 							tag.deleteRecord()
-							App.store.commit()
+							tag.save()
 						else								# .. but the 'alltags' list are just {body:} objs.
 							if b?.length and c?.length		# we need to tell the server to remove any tags with the same name
 								socket.emit 'tags.remove', {category: c, body: b}, (removedTags) =>
 									while removedTags.length
 										id = removedTags.shift()
-										App.store.filter(App.Tag, (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
+										@get('parentView.controller').store.filter('tag', (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
 					, 2345
 			didInsertElement: ->
 				that = this.get 'parentView'
@@ -146,7 +143,7 @@ module.exports = (Ember, App, socket) ->
 							new: util.trim $(this).text()
 						socket.emit 'tags.rename', renameObj, () =>
 							ui.draggable.remove()
-							App.store.filter(App.Tag, (t)->
+							@get('parentView.controller').store.filter('tag', (t)->
 								t.get('category') is renameObj.category and t.get('body') is renameObj.body
 							).forEach (t)-> t.set 'body', renameObj.new
 				).addClass(that.get 'catid').addClass(that.get 'category')
@@ -164,7 +161,7 @@ module.exports = (Ember, App, socket) ->
 							socket.emit 'tags.move', moveObj, () =>
 								ui.draggable.remove()
 								that.set('context.category', moveObj.newcat)
-								App.store.filter(App.Tag, (t)->
+								@get('parentView.controller').store.filter('tag', (t)->
 									t.get('category') is moveObj.category and t.get('body') is moveObj.body
 								).forEach (t)-> t.set 'category', moveObj.newcat
 				})

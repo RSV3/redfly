@@ -1,16 +1,5 @@
 module.exports = (Ember, App, socket) ->
 
-	# TO-DO This is stupid. Just instantiate directly, this wrapper adds no value and actually obfuscates some cool stuff you can do.
-	App.filter = (type, sort, query, filter) ->
-		records = type.filter query, filter
-		sort.asc ?= true
-		options =
-			content: records
-			sortProperties: [sort.field]
-			sortAscending: sort.asc
-		Ember.ArrayProxy.createWithMixins Ember.SortableMixin, options
-
-
 	require('./controllers/components/connection.coffee') Ember, App, socket
 	require('./controllers/components/edit-picture.coffee') Ember, App, socket
 	require('./controllers/components/hoveruser.coffee') Ember, App, socket

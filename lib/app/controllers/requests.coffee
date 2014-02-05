@@ -3,34 +3,6 @@ module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	moment = require 'moment'
 
-	###
-	App.DatePicker = Ember.View.extend
-		classNames: ['ember-text-field']
-		tagName: "input"
-		attributeBindings: ['data','value','format','readonly','type','size']
-		size:"16"
-		type: "text"
-		format:'mm/dd/yyyy'
-		data:null
-		clear: (->
-			if not @get 'parentView.controller.newdate'
-				@$().datepicker('setDate', null)
-		).observes 'parentView.controller.newdate'
-		didInsertElement: (->
-			parent = @get 'parentView.controller'
-			@$().attr('placeholder', 'set an expiry date').datepicker
-				format: @get 'format'
-				minDate: 0
-				defaultDate: 7
-				maxDate: 99
-				onClose: (thdate)->
-					parent.set 'newdate', thdate
-		)
-		willDestroyElement: (->
-			@$().datepicker('destroy')
-		)
-	###
-
 	App.RequestsController = Ember.ObjectController.extend
 		hasPrev: false
 		hasNext: false
@@ -49,14 +21,14 @@ module.exports = (Ember, App, socket) ->
 		prevPage: (->
 			socket.emit 'requests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
-					@set 'reqs', App.store.findMany(App.Request, reqs)
+					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', true
 					@set 'rangeStart', @get('rangeStart') - @get('pageSize')
 		)
 		nextPage: (->
 			socket.emit 'requests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
-					@set 'reqs', App.store.findMany(App.Request, reqs)
+					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', theresmore
 					@set 'rangeStart', @get('rangeStart') + @get('pageSize')
 		)
@@ -69,17 +41,15 @@ module.exports = (Ember, App, socket) ->
 					urgent: @get 'urgent'
 					text: note
 					response: []
-				nuReqRec = App.Request.createRecord nuReq
-				App.store.commit()
+				nuReqRec = @store.createRecord 'request', nuReq
+				nuReqRec.save().then -> @reloadFirstPage()
 				@set 'newreq', null
 				@set 'newdate', null
 				@set 'urgent', null
-				nuReqRec.addObserver 'id', =>
-					@reloadFirstPage()
 		)
 		reloadFirstPage: (->
 			socket.emit 'requests', (reqs, theresmore)=>
-				@set 'reqs', App.store.findMany App.Request, reqs
+				@set 'reqs', @store.find 'request', reqs
 				@set 'hasNext', theresmore
 		)
 		disableAdd: (->
@@ -97,22 +67,17 @@ module.exports = (Ember, App, socket) ->
 			placeholder: 'New request'
 			rows: 5
 			tabindex: 1
-		###
-		newDateView: App.DatePicker.extend
-			placeholder: 'Expiration'
-			classNames: ['span11']
-		###
+
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
+				store = @get('controller').store
 				if not data or data.type isnt 'Request' or not data.id then return
 				Ember.run.next this, ->
 					if data.response?.length	# update
-						isLoaded = App.store.recordIsLoaded App.Request, data.id
-						if isLoaded
-							request = App.Request.find data.id
+						request = store.find('request', data.id).then ->
 							responses = request.get 'response'
 							new_resp = _.without data.response, responses.getEach('id')
-							_.each new_resp, (r)-> responses.addObject App.Response.find r
+							_.each new_resp, (r)-> responses.addObject store.find 'response', r
 							Ember.run.next this, ->
 								request.get('stateManager').send 'becameClean'
 					else
@@ -123,7 +88,7 @@ module.exports = (Ember, App, socket) ->
 	App.RequestController = Ember.ObjectController.extend
 		hovering: null
 		count: (->
-			@get('response.length') or 0
+			@get('response')?.get('id') or 0
 		).property 'response.@each'
 		hoverable: (->
 			if @get('count') then 'hoverable' else 'nothoverable'
@@ -139,24 +104,21 @@ module.exports = (Ember, App, socket) ->
 			if @get('user')?.get('id') is App.user.id then "disabled"
 		).property 'user'
 		addNote: (note) ->
-			newnote = App.Response.createRecord
+			self = @
+			newnote = @store.createRecord 'response',
 				user: App.user
 				body: note
-			App.store.commit()
-			self = @
-			newnote.addObserver 'id', ->
+			newnote.save().then ->
 				self.get('response').pushObject newnote
-				App.store.commit()
+				self.get('response').save()
 		addSuggestions: (suggestions)->
-			suggestion = App.Response.createRecord
+			suggestion = @store.createRecord 'response',
 				user: App.user
 				contact: []
 			_.each suggestions, (r)-> suggestion.get('contact').pushObject r
-			App.store.commit()
-			self = @
-			suggestion.addObserver 'id', ->
+			suggestion.save().then ->
 				self.get('response').pushObject suggestion
-				App.store.commit()
+				self.get('response').save()
 
 	App.RequserView = App.HoveruserView.extend
 		template: require '../../../templates/components/requser.jade'
@@ -229,7 +191,7 @@ module.exports = (Ember, App, socket) ->
 		)
 		expire: (->
 			@set 'controller.expiry', new Date()		# used to be a future date: now set it to today when user ends request
-			App.store.commit()
+			@get('controller').save()
 		)
 		addResponse: (->
 			if @get('selectedSearchContacts') then @get('controller').addSuggestions @get 'selections'
@@ -260,7 +222,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'controller.content', 'parentView.selections.@each'
 			select: (context) ->
 				$('div.search.dropdown').blur()
-				@get('parentView.selections').addObject App.Contact.find context.id
+				@get('parentView.selections').addObject @get('parentView.controller').store.find 'contact', context.id
 			keyUp: (event) -> false
 			submit: -> false
 		willDestroyElement: (->

@@ -13,7 +13,7 @@ module.exports = (Ember, App, socket) ->
 		tags: (->
 			sort = field: 'date'
 			query = contact: @get('contact.id'), category: @get('category')
-			App.filter App.Tag, sort, query, (data) =>
+			@get('controller').store.filter 'tag', query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
 					return false
 				data.get('contact.id') is @get('contact.id')
@@ -41,9 +41,9 @@ module.exports = (Ember, App, socket) ->
 			if (pTags = @get('storePriorTags')) then return pTags
 			cat = @get 'category'
 			if grandparent = @gpView()?.get('storePriorTags')
-				if not grandparent[cat] then grandparent[cat] = App.Tag.find category: cat, contact: null
+				if not grandparent[cat] then grandparent[cat] = this.store.find 'tag', {category: cat, contact: null}
 				@set 'storePriorTags', grandparent[cat]
-			else @set 'storePriorTags', App.Tag.find category: cat, contact: null
+			else @set 'storePriorTags', this.store.find 'tag', {category: cat, contact: null}
 			@get 'storePriorTags'
 		).property 'tags.@each'
 
@@ -83,13 +83,13 @@ module.exports = (Ember, App, socket) ->
 			existingTag = @get('tags').find (candidate) ->
 				tag is candidate.get('body')
 			if not existingTag
-				App.Tag.createRecord
+				t = @get('controller').store.createRecord 'tag',
 					date: new Date	# Only so that sorting is smooth.
-					creator: App.User.find App.user.get 'id'
-					contact: App.Contact.find @get 'contact.id'
+					creator: App.user
+					contact: this.store.find 'contact', @get 'contact.id'
 					category: @get('category')
 					body: tag
-				App.store.commit()
+				t.save()
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
@@ -100,8 +100,9 @@ module.exports = (Ember, App, socket) ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
 				setTimeout =>
-					if tag and tag.deleteRecord then tag.deleteRecord()	# if its a real tag that exists
-					App.store.commit()
+					if tag and tag.deleteRecord
+						tag.deleteRecord()	# if its a real tag that exists
+						tag.save()
 				, 1000
 			didInsertElement: ->
 				@$().addClass(@get('parentView.category') or @get('context.category'))

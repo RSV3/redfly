@@ -8,7 +8,7 @@ module.exports = (Ember, App, socket) ->
 		hovering: null
 		allowEdits: (->
 			if @get('isKnown') then return true
-			a = App.Admin.find 1
+			a = @store.find 'admin', 1
 			a and a.get('anyedit') isnt false
 		).property 'id'
 		isKnown: (->
@@ -36,7 +36,7 @@ module.exports = (Ember, App, socket) ->
 			).property 'linkedin'
 		allMeasures: (->
 			if (id=@get('id'))
-				App.Measurement.find contact:id
+				this.store.find 'measurement', contact:id
 		).property 'id'
 		waitingForMeasures: (->
 			m = @get('allMeasures')
@@ -82,9 +82,9 @@ module.exports = (Ember, App, socket) ->
 		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
-				@set 'firstHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:1}}
-				@set 'lastHistory', App.findOne App.Mail, conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:-1}}
-				@set 'lastNote', App.findOne App.Note, conditions:{contact:id}, options:{sort:{date:-1}}
+				@set 'firstHistory', this.store.find 'mail', conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:1}}
+				@set 'lastHistory', this.store.find 'mail', conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:-1}}
+				@set 'lastNote', this.store.find 'note', conditions:{contact:id}, options:{sort:{date:-1}}
 		).observes 'id'
 		spokenTwice: (->
 			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
@@ -104,9 +104,9 @@ module.exports = (Ember, App, socket) ->
 
 		add: ->
 			if note = util.trim @get('currentNote')
-				App.Note.createRecord
+				@store.createRecord 'note',
 					date: new Date	# Only so that sorting is smooth.
-					author: App.User.find App.user.get 'id'
+					author: App.user
 					contact: @get 'content'
 					body: note
 				@commitNcount()
@@ -126,15 +126,15 @@ module.exports = (Ember, App, socket) ->
 				@set 'addedBy', ab
 			@set 'knows.content', knows
 			if not ab then @set 'added', null
-			App.Exclude.createRecord
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'id'
+			@store.createRecord 'exclude',
+				user: App.user
+				contact: @store.find 'contact', @get 'id'
 			@commitNcount()
 
 		commitNcount: ->
 			@set 'updated', new Date
-			@set 'updatedBy', App.User.find App.user.get 'id'
-			App.store.commit()
+			@set 'updatedBy', App.user
+			@save()
 
 		getExtensionData: (ev)->
 			if not ev then return
@@ -153,16 +153,16 @@ module.exports = (Ember, App, socket) ->
 			if ev.positions.length and not @get('position') then @set 'position', ev.positions[0]
 			for spec in ev.specialties
 				if spec and not _.contains @get('indTags'), spec
-					App.Tag.createRecord {
+					@store.createRecord 'tag', {
 					    date: new Date  # Only so that sorting is smooth.
-						creator: App.User.find App.user.get 'id'
-						contact: App.Contact.find @get 'id'
+						creator: App.user
+						contact: this.store.find 'contact', @get 'id'
 						category: 'industry'
 						body: spec
 					}
 			@set 'updated', new Date
 			@set 'updatedBy', App.user
-			App.store.commit()
+			@save()
 
 
 	App.ContactuserView = App.HoveruserView.extend
@@ -173,7 +173,7 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['contact']
 
 		showEmail: (->
-			a = App.Admin.find 1
+			a = this.store.find('admin', 1)
 			@get('controller.isKnown') or a and a.get('hidemails') is false or @get('parentView.classifying')
 		).property 'id'
 		indTags: (->
@@ -202,7 +202,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'tags.@each', 'App.admin.orgtagcats'
 		tags: (->
 			if (id = @get('controller.id'))
-				App.Tag.filter {contact: id}, (data) =>
+				this.store.filter 'tag', {contact: id}, (data) =>
 					data.get('contact.id') is id
 		).property 'controller.id'
 
@@ -352,11 +352,12 @@ module.exports = (Ember, App, socket) ->
 					# Refresh the store with the stuff that could have changed.
 					for own key,val of mergedcontact
 						if key is 'addedBy' then @set 'controller.addedBy', App.user
-						else if key is 'knows' then @set 'controller.knows', _.map val, (v)->App.User.find v
+						else if key is 'knows'
+							@set 'controller.knows', _.map val, (v)->this.store.find 'user', v
 						else @set "controller.#{key}", val
-					App.Tag.find contact: id
-					App.Note.find contact: id
-					App.Mail.find recipient: id
+					this.store.find 'tag', contact: id
+					this.store.find 'note', contact: id
+					this.store.find 'mail', recipient: id
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
@@ -374,7 +375,7 @@ module.exports = (Ember, App, socket) ->
 					###
 					@get('selections').clear()
 
-					App.store.commit()
+					@save()
 
 					notification.effect 'bounce'
 					notification.pnotify
@@ -396,7 +397,7 @@ module.exports = (Ember, App, socket) ->
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
 					$('div.search.dropdown').blur()
-					@get('parentView.selections').addObject App.Contact.find context.id
+					@get('parentView.selections').addObject @store.find 'contact', context.id
 				# override form submission
 				keyUp: (event) -> false
 				submit: -> false
@@ -526,7 +527,7 @@ module.exports = (Ember, App, socket) ->
 						view.set 'value', (newvalue+100)/40
 						view.set 'controller.updated', new Date
 						view.set 'controller.updatedBy', App.user
-						App.store.commit()
+						@get('controller').save()
 						view._drawStars()
 						view.get('controller').notifyPropertyChange 'measures'
 				@_drawStars()
@@ -547,7 +548,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'working', true
 					@set 'controller.updated', new Date
 					@set 'controller.updatedBy', App.user
-					App.store.commit()
+					@get('controller').save()
 					@toggleProperty 'show'
 					@set 'working', false
 
@@ -586,7 +587,7 @@ module.exports = (Ember, App, socket) ->
 					if not (@get('linkedinFieldInstance.error') or @get('twitterFieldInstance.error') or @get('facebookFieldInstance.error'))
 						@set 'controller.updated', new Date
 						@set 'controller.updatedBy', App.user
-						App.store.commit()
+						@get('controller').save()
 						@toggleProperty 'show'
 					@set 'working', false
 

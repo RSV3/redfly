@@ -32,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 					App.admin.set 'orgtagcats', "#{App.admin.get 'orgtagcat1'}, #{App.admin.get 'orgtagcat2'}, #{App.admin.get 'orgtagcat3'}"
 					$newInput.replaceWith $it
 					$it.val newText
-					App.store.commit()
+					App.admin.save()
 				unless newText is oldText
 					bootbox.dialog "Change tag category name from \"<b>#{oldText}</b>\" to \"<b>#{$newInput.val()}</b>\"", [
 						"label" : "Rename old tags",
@@ -92,7 +92,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'userstoo', @get 'userstoochk'
 			@set 'hidemails', @get 'hidemailschk'
 			@set 'anyedit', @get 'anyeditchk'
-			App.store.commit()
+			App.admin.save()
 		).observes 'hidemailschk', 'userstoochk', 'flushsavechk', 'anyeditchk'
 		_onTextArea: (->
 			if @get('domainlist')?.length
@@ -104,6 +104,6 @@ module.exports = (Ember, App, socket) ->
 				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				@set 'whitelistemails', _.filter _.map(@get('emailwhitelist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				App.store.commit()
+				App.admin.save()
 		)
 

@@ -12,8 +12,9 @@ module.exports = (Ember, App, socket) ->
 			if event.which is 8	# A backspace/delete.
 				if not @get('currentTag')
 					lastTag = @get 'parentView.tags.lastObject'
-					if lastTag and lastTag.deleteRecord then lastTag.deleteRecord()
-					App.store.commit()
+					if lastTag and lastTag.deleteRecord
+						lastTag.deleteRecord()
+						lastTag.save()
 			if event.which is 9	# A tab.
 				if @get('currentTag')
 					return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.

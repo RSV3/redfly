@@ -12,12 +12,15 @@ module.exports = (Ember, App, socket) ->
 				@set 'hasQ', results?.length
 		).observes 'id'
 		contacts: (->
+			store = @store
+			id = @get 'id'
 			Ember.ArrayProxy.createWithMixins App.Pagination,
-				content: do =>
+				content: do ->
 					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
-						content: do =>
-							App.Contact.filter addedBy: @get('id'), (data) =>
-								data.get('addedBy.id') is @get('id') and _.contains data.get('knows').getEach('id'), @get('id')
+						content: do ->
+							store.filter 'contact', addedBy: id, (data) =>
+								ids = data.get('knows')?.getEach('id')
+								data.get('addedBy')?.get('id') is id and _.contains(ids, id)
 						sortProperties: ['added']
 						sortAscending: false
 				itemsPerPage: 25

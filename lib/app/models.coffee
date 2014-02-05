@@ -6,11 +6,11 @@ module.exports = (DS, App) ->
 	App.Results = Em.Object.extend
 		text: ''
 
-	App.Admin.reopen
+	App['Admin'].reopen
 		contextio: DS.attr 'boolean'
 		googleauth: DS.attr 'boolean'
 
-	App.User.reopen
+	App['User'].reopen
 		canonicalName: (->
 				if this is App.user then return 'You'
 				@get 'name'
@@ -25,7 +25,7 @@ module.exports = (DS, App) ->
 		requestCount: DS.attr 'number'		# and then, just to make it interesting, stored on App.admin
 											# (because session user data may get batch loaded)
 
-	App.Contact.reopen
+	App['Contact'].reopen
 		name: (->
 				@get 'names.firstObject'
 			).property 'names.firstObject'
@@ -56,19 +56,19 @@ module.exports = (DS, App) ->
 				@get('picture') or 'http://media.zenfs.com/289/2011/07/30/movies-person-placeholder-310x310_160642.png'
 			).property 'picture'
 		notes: (->
-				App.filter App.Note, {field: 'date'}, {contact: @get('id')}, (data) =>
+				this.store.filter 'note', {field: 'date', contact: @get('id')}, (data) =>
 					data.get('contact.id') is @get('id')
 			).property 'id'
 
 
-	App.Note.reopen
+	App['Note'].reopen
 		preview: (->
 				_s = require 'underscore.string'
 				_s.prune _s.stripTags(@get 'body'), 80
 			).property 'body'
 
 
-	App.Tag.reopen
+	App['Tag'].reopen
 		catid: (->
 			switch (cat = @get 'category')
 				when App.admin.get('orgtagcat1').toLowerCase() then 'orgtagcat1'

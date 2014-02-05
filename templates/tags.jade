@@ -2,7 +2,7 @@
 	h1 All Tags
 
 	+unless ('tags.paginatedItems')
-		.loading
+		.myloading
 			i.icon-spinner.icon-spin
 	+if ('tags.paginatedItems')
 		| {{#each tags.paginatedItems}}
