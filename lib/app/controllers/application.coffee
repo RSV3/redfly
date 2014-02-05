@@ -14,8 +14,10 @@ module.exports = (Ember, App, socket) ->
 		getPassword: ->
 			@set 'showLogin', true
 
+		store: null
 		didInsertElement: ->
 
+			store = @store = @get('controller').store
 			$('#installationlink').click ->
 				chrome.webstore.install App.admin.get('plugin'), (o)->
 					console.log 'returned from install ...'
@@ -27,14 +29,13 @@ module.exports = (Ember, App, socket) ->
 					console.dir o
 					false
 				false
-
 			App.admin.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
+
 			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
 				changes = _.filter changes, (change) ->
-					App.store.recordIsLoaded App.Contact, change
-				if not _.isEmpty changes
-					App.Contact.find _id: $in: changes
+					store.recordIsLoaded App.Contact, change
+				if not _.isEmpty changes then store.find 'contact', changes
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
 			socket.emit 'summary.organisation', (title) ->
@@ -59,13 +60,13 @@ module.exports = (Ember, App, socket) ->
 				if (ev = ev?.originalEvent?.detail).publicProfileUrl
 					App.ls = Ember.ObjectProxy.create()
 					lsinit = ->
-						App.set 'ls', App.LinkScraped.createRecord {
+						App.set 'ls', store.createRecord 'linkScraped', {
 							publicProfileUrl:ev.publicProfileUrl
 							users:[], positions:[], companies:[], specialties:[]
 						}
 					lshandler = ->
 						if not App.get('ls') or not App.ls.get('id') then lsinit()
-						App.ls.get('users').addObject App.User.find App.user.get 'id'
+						App.ls.get('users').addObject store.find 'user', App.user.get 'id'
 						if not App.ls.get 'name'
 							App.ls.set 'name', formattedName:ev.name
 							if ev.name?.length
@@ -80,8 +81,8 @@ module.exports = (Ember, App, socket) ->
 							for spec in ev.specialties
 								App.ls.get('specialties').addObject spec
 						if not App.ls.get('pictureUrl')?.length then App.ls.set 'pictureUrl', ev.pictureUrl
-						App.store.commit()
-					App.set 'ls', App.LinkScraped.find publicProfileUrl:ev.publicProfileUrl
+						App.ls.save()
+					App.set 'ls', store.find 'linkScraped', publicProfileUrl:ev.publicProfileUrl
 					if App.get('ls.isLoaded') then lshandler()
 					else
 						App.ls.one 'didLoad', ->
@@ -120,7 +121,7 @@ module.exports = (Ember, App, socket) ->
 							@$().find(".#{r.err}").addClass 'error'
 							@set 'working', false
 						else if r.id
-							App.set 'user', App.User.find r.id
+							App.set 'user', @get('parentView.parentView.controller').store.find 'user', r.id
 							@set 'working', false
 							@.set 'parentView.parentView.showLogin', false
 							socket.emit 'session', (session) ->

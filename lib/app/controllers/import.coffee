@@ -160,29 +160,29 @@ module.exports = (Ember, App, socket) ->
 				@set 'controller.error', null
 				@get('controller.stateMachine').transitionTo 'start'
 			import: ->
+				store = @get('parentView.controller').store
 				@get('controller.processed.results').forEach (result) ->
 					if not result.status.new then return
-					contact = App.Contact.createRecord
+					contact = store.createRecord 'contact',
 						emails: result.emails
 						names: result.names
 						knows: Ember.ArrayProxy.create {content: [App.user]}
 						added: new Date
 						addedBy: App.user
-					contact.one 'didCreate', ->
-						Ember.run.next ->
-							result.tags.forEach (tag)->
-								App.Tag.createRecord
-									creator: App.user
-									contact: contact
-									category: 'industry'
-									body: tag
-							result.notes.forEach (note)->
-								App.Note.createRecord
-									author: App.user
-									contact: contact
-									body: note
-							App.store.commit()
-					App.store.commit()
+					contact.save()
+					result.tags.forEach (tag)->
+						t = store.createRecord 'tag',
+							creator: App.user
+							contact: contact
+							category: 'industry'
+							body: tag
+						t.save()
+					result.notes.forEach (note)->
+						n = store.createRecord 'note',
+							author: App.user
+							contact: contact
+							body: note
+						n.save()
 				@get('controller.stateMachine').transitionTo 'start'
 				console.log 'transitioned to start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.

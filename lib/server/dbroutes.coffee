@@ -33,7 +33,7 @@ routes =  (app, data, io, session, fn)->
 		hash[root] = payload
 		fn hash
 
-	model = Models[data.type]
+	model = Models[_s.capitalize data.type]
 
 	# add details about doc into feed
 	feed = (doc, type) ->
@@ -50,7 +50,7 @@ routes =  (app, data, io, session, fn)->
 				if id = data.id
 					model.findById id, (err, doc) ->
 						throw err if err
-						if data.type is 'Admin'
+						if data.type is 'admin'
 							process.env.ORGANISATION_DOMAINS ?= process.env.ORGANISATION_DOMAIN
 							process.env.AUTH_DOMAINS ?= process.env.AUTH_DOMAIN
 							process.env.AUTH_DOMAINS ?= process.env.ORGANISATION_DOMAINS
@@ -196,11 +196,9 @@ routes =  (app, data, io, session, fn)->
 									console.dir r
 									Models.User.findById doc.user, (err, u)->
 										if err or not u then return
-										console.dir u
 										b = "recommended for #{u.name}'s request: _#{doc.text}_"
 										for c in r.contact
 											rec = {author:r.user, contact:c, body:b}
-											console.dir rec
 											routes app, {op:'create', type:'Note', record:rec}, io, session
 						when Models.Contact
 							if doc.added

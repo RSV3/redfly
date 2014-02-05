@@ -5,20 +5,21 @@ module.exports = (Ember, App, socket) ->
 	App.FeedController = Ember.Controller.extend
 		feed: (->
 				mutable = []
-				@get('_initialContacts').forEach (contact) ->
-					item = Ember.ObjectProxy.create content:contact
-					item.typeInitialContact = true
-					item.when = require('moment')(contact.get "added").fromNow()
-					mutable.push item
+				if contacts = @get '_initialContacts'
+					contacts.forEach (contact) ->
+						item = Ember.ObjectProxy.create content:contact
+						item.typeInitialContact = true
+						item.when = require('moment')(contact.get "added").fromNow()
+						mutable.push item
 				mutable
 			).property '_initialContacts.@each'
 		_initialContacts: (->
-				App.Contact.find
-					conditions:
-						added: $exists: true
-					options:
-						sort: added: -1
-						limit: 5
+			this.store.find 'contact',
+				conditions:
+					added: $exists: true
+				options:
+					sort: added: -1
+					limit: 5
 			).property()
 
 	App.JustuserView = App.HoveruserView.extend
@@ -30,16 +31,16 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ->
 			socket.on 'feed', (data) =>
 				if not data?.id then return
-				model = type = data.type
-				if type is 'linkedin' then model = 'Contact'
+				model = type = data.type?.toLowerCase()
+				if type is 'linkedin' then model = 'contact'
 				Ember.run.next this, ->
-					if item = App[model].find data.id
+					if item = this.store.find model, data.id
 						if item.get('isLoaded') and data.doc
 							for own key,val of data.doc
 								if _.isString(val) and not item.get(key)?.length
 									item.set(key, val)
 						item['type' + _s.capitalize(type)] = true
-						if (id = data.updater or data.addedBy) then item.set 'updatedBy', App.User.find id
+						if (id = data.updater or data.addedBy) then item.set 'updatedBy', this.store.find 'user', id
 						if f = @get('controller.feed') then f.unshiftObject item
 
 		feedItemView: Ember.View.extend

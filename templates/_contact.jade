@@ -45,7 +45,7 @@
 			| {{/if}}
 			br
 			+view('view.positionView')
-				| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+				| {{position}}{{#if position}},{{/if}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 				+if('allowEdits')
 					| {{#if editpositiondetails}}
 					i {{editpositiondetails}}

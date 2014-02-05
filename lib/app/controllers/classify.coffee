@@ -54,22 +54,22 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'thisContact.addedBy'
 				@set 'thisContact.addedBy', App.user
 				App.user.incrementProperty 'contactCount'
-			App.Classify.createRecord
+			@store.createRecord 'classify', 
 				saved:require('moment')().toDate()
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
+				user: App.user
+				contact: this.store.find 'contact', @get 'thisContact.id'
 			@_next()
 
 		skip: ->
-			App.Classify.createRecord
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
+			@store.createRecord 'classify',
+				user: App.user
+				contact: this.store.find 'contact', @get 'thisContact.id'
 			@_next()
 		ignore: ->
 			@get('controllers.contact').remove()
 			@_next()
 		_next: ->
-			App.store.commit()
+			@get('thisContact').save()
 			@incrementProperty 'classifyCount'
 
 		unflush: -> @set 'flushing', false

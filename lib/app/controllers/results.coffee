@@ -52,7 +52,7 @@ module.exports = (Ember, App, socket) ->
 		known: (->
 			ids = @get('f_knows')
 			if not ids?.length then return null
-			App.User.filter {_id:$in:ids}, (data) =>
+			this.store.filter 'user', {_id:$in:ids}, (data) =>
 				_.contains ids, data.get('id')
 		).property 'f_knows'
 
@@ -88,7 +88,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 
 		nextPage: ->
@@ -101,7 +101,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 
 		runFilter: ->
@@ -112,7 +112,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'empty', false
 				socket.emit 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 					@set 'filteredCount', results?.filteredCount
 
@@ -141,7 +141,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'empty', false
 			socket.emit 'fullSearch', emission, (results) =>
 				if results?.response?.length
-					@set 'all', App.store.findMany(App.Contact, results.response)
+					@set 'all', @store.find 'contact', results.response
 				else @set 'empty', true
 
 		query:null				# query string

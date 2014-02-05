@@ -14,21 +14,21 @@
 				ul.nav
 					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
 					li
-						+linkTo('requests') Recommend
+						{{link-to "Recommend" "requests"}}
 					| {{#if App.admin.requestCount}}
 					li
 						span.badge.badge-important {{App.admin.requestCount}}
 					| {{/if}}				
 					li
-						+linkTo('classify') Classify
+						{{link-to "Classify" "classify"}}
 					| {{#if App.admin.classifyCount}}
 					li
 						span.badge.badge-important {{App.admin.classifyCount}}
 					| {{/if}}
 					li
-						+linkTo('companies') Companies
+						{{link-to "Companies" "companies"}}
 					li
-						+linkTo('leaderboard') Leaderboard
+						{{link-to "Leaderboard" "leaderboard"}}
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
@@ -62,13 +62,13 @@
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
-							+linkTo('create') Add a Contact					
+							{{link-to "Add a Contact" "create"}}
 						li
-							+linkTo('enrich') Enrich Contact Data
+							{{link-to "Enrich Contact Data" "enrich"}}
 						li
-							+linkTo('userProfile') Profile
+							{{link-to "Profile" "userProfile"}}
 						li
-							+linkTo('import') Bulk Upload
+							{{link-to "Bulk Upload" "import"}}
 						li.divider
 						li
 							a(href='/linker')
@@ -80,9 +80,9 @@
 						li.divider
 						{{#if App.user.admin}}
 						li
-							+linkTo('admin') Configure
+							{{link-to "Configure" "admin"}}
 						li
-							+linkTo('dashboard') Dashboard
+							{{link-to "Dashboard" "dashboard"}}
 						{{/if}}
 						{{#unless App.admin.extensionOn}}
 						li

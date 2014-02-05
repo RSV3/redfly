@@ -17,7 +17,7 @@ module.exports = (Ember, App, socket) ->
 			sort = field: 'date'
 			query = contact: @get('contact.id')
 			if category = @get('category') then query.category = category
-			App.filter App.Tag, sort, query, (data) =>
+			@get('controller').store.filter 'tag', query, (data) =>
 				if category and (category isnt data.get('category'))
 					return false
 				data.get('contact.id') is @get('contact.id')
