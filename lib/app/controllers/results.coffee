@@ -40,21 +40,19 @@ module.exports = (Ember, App, socket) ->
 			toptags
 		).property 'f_indtags'
 
-		noseToPick: (->
-			topnose = []
-			if gno = @get('known')
-				gno.forEach (n)->
-					unless n.get('canonicalName') then return
-					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
-			topnose
-		).property 'known.@each.isLoaded'
-
-		known: (->
-			ids = @get('f_knows')
-			if not ids?.length then return null
-			this.store.filter 'user', {_id:$in:ids}, (data) =>
-				_.contains ids, data.get('id')
-		).property 'f_knows'
+		noseToPick: []
+		pickTheNose: (->
+			ids = @get 'f_knows'
+			if ids?.length
+				@store.filter('user', {_id:$in:ids}, (data) =>
+					_.contains ids, data.get('id')
+				).then (gno)=>
+					topnose = []
+					gno.forEach (n)->
+						if n.get('canonicalName')
+							topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
+					@set 'noseToPick', topnose
+		).observes 'f_knows'
 
 		all: []				# every last search result
 		empty: false		# flag for empty results message
@@ -172,7 +170,7 @@ module.exports = (Ember, App, socket) ->
 			a = @get 'all'
 			if not a?.get('length') then return null
 			a
-		).property 'all'
+		).property 'all.@each'
 
 		scrollUp: (->
 			rs = @get 'rangeStart'
@@ -216,9 +214,9 @@ module.exports = (Ember, App, socket) ->
 		canHide: true
 		knowsSome: []
 		setKS: (->
-			if (f = @get('knows'))
-				if f.get('length') then @set 'knowsSome', f
-		).observes 'knows.@each.isLoaded'
+			@get('knows').then (docs)=>
+				if docs.get('length') then @set 'knowsSome', docs
+		).observes 'knows.@each'
 
 
 	App.ResultView = App.ContactView.extend

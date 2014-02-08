@@ -11,7 +11,7 @@ div.navbar
 		| {{/if}}
 		| {{/unless}}
 
-		.pull-right
+		div
 
 			| {{#if flushing}}
 
@@ -67,7 +67,7 @@ div.navbar
 	h1 Nicely done!
 	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity.
 	p
-		+linkTo('recent class="btn btn-primary btn-large"') See latest contacts
+		{{#link-to "recent" class="btn btn-primary btn-large"}} See latest contacts {{/link-to}}
 	p.star: i.icon-star
 
 | {{/unless}}

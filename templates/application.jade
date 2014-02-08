@@ -6,9 +6,10 @@
 				span.icon-bar
 				span.icon-bar
 				span.icon-bar
-			+linkTo('recent class="brand"')
-				| Redfly
-				img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
+			{{#link-to "recent" class="brand"}}
+			| Redfly
+			img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
+			{{/link-to}}
 			| {{#if App.user}}
 			.nav-collapse.collapse
 				ul.nav

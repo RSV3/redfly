@@ -28,8 +28,9 @@
 				| {{#view view.feedItemView}}
 
 				| {{#if typeInitialContact}}
-				+linkTo('contact this')
-					h4 {{canonicalName}}
+				{{#link-to "contact" this}}
+				h4 {{canonicalName}}
+				{{/link-to}}
 				div
 					span.leftone Added by 
 					{{#with addedBy}}
@@ -40,8 +41,9 @@
 				| {{/if}}
 
 				| {{#if typeContact}}
-				+linkTo('contact this')
-					h4 {{canonicalName}}
+				{{#link-to "contact" this}}
+				h4 {{canonicalName}}
+				{{/link-to}}
 				div
 					span.leftone Was just added by 
 					{{#with addedBy}}
@@ -56,8 +58,7 @@
 				{{view view.parentView.userview}}
 				{{/with}}
 				span  augmented 
-				+linkTo('contact this')
-					| {{canonicalName}}
+				{{#link-to "contact" this}} {{canonicalName}} {{/link-to}}
 				span  with Linked
 				i.icon-linkedin-sign
 				span  data.
@@ -70,8 +71,7 @@
 				span.leftone added the tag
 				em &nbsp;"{{body}}"
 				span to 
-				+linkTo('contact contact')
-					| {{contact.canonicalName}}
+				{{#link-to "contact" contact}} {{contact.canonicalName}} {{/link-to}}
 				span .
 				| {{/if}}
 
@@ -80,8 +80,7 @@
 				{{view view.parentView.userview}}
 				{{/with}}
 				span  wrote a note about 
-				+linkTo('contact contact')
-					| {{contact.canonicalName}}
+				{{#link-to "contact" contact}} {{contact.canonicalName}} {{/link-to}}
 				span : "{{preview}}"
 				| {{/if}}
 

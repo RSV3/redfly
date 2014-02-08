@@ -60,12 +60,12 @@ module.exports = (Ember, App, socket) ->
 				@_add tag
 			@set 'currentTag', null
 		_add: (tag) ->
-			if not (existingTag = @get('prioritytags.content')?.find (candidate) -> tag is candidate.body)
-				t = @get('controller').store.createRecord 'tag',
+			if not (existingTag = @get('prioritytags.content')?.find (t)-> tag is t.body)
+				newt = @get('controller').store.createRecord 'tag',
 					date: new Date
 					category: @get('category')
 					body: tag
-				t.save()
+				newt.save()
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'

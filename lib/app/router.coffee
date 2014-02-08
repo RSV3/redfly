@@ -231,7 +231,6 @@ module.exports = (Ember, App, socket) ->
 				if reqs
 					controller.set 'hasNext', theresmore
 					if theresmore then controller.set 'pageSize', reqs.length
-					console.log "got #{reqs?.length} current requests to display ..."
 					controller.set 'reqs', controller.store.find 'request', reqs
 		renderTemplate: ->
 			@router.connectem @, 'requests'

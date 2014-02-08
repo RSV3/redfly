@@ -12,21 +12,22 @@
 		{{body}}
 		| {{else}}
 		| {{#each contact itemViewClass="App.ContactView" itemController="contact"}}
-		+linkTo('contact this')
-			.span6
-				.span3.imgpad
-					<img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-				.span9
-					| {{#if view.parentView.parentView.idsme}}
-					span.bullhorn
-						a(href='#', action='introMailto target="view.parentView"')
-							{{view App.IntroView}}
-					| {{/if}}
-					span {{canonicalName}}
-					br
-					span {{position}}
-					br
-					span {{company}}
+		{{#link-to "contact" this}}
+		.span6
+			.span3.imgpad
+				<img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+			.span9
+				| {{#if view.parentView.parentView.idsme}}
+				span.bullhorn
+					a(href='#', action='introMailto target="view.parentView"')
+						{{view App.IntroView}}
+				| {{/if}}
+				span {{canonicalName}}
+				br
+				span {{position}}
+				br
+				span {{company}}
+		{{/link-to}}
 		| {{/each}}
 		| {{/if}}
 	| {{/if}}

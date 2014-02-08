@@ -3,7 +3,7 @@
 	.expanded.span10
 		| <img class="span12 img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
 		.insetalittle
-			+linkTo('profile this class="nodeco"') {{canonicalName}}
+			{{#link-to "profile" this class="nodeco"}} {{canonicalName}} {{/link-to}}
 			br
 			span {{email}}
 			br
