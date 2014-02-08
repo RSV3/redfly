@@ -14,7 +14,7 @@ module.exports = (Ember, App, socket) ->
 				else null
 		).property 'catid'
 		tags: (->
-			sort = field: 'date'
+			#sort = field: 'date'
 			query = contact: @get('contact.id')
 			if category = @get('category') then query.category = category
 			@get('controller').store.filter 'tag', query, (data) =>

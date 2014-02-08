@@ -11,7 +11,7 @@ module.exports = (Ember, App, socket) ->
 			null
 		)
 		tags: (->
-			sort = field: 'date'
+			#sort = field: 'date'
 			query = contact: @get('contact.id'), category: @get('category')
 			@get('controller').store.filter 'tag', query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
@@ -21,56 +21,69 @@ module.exports = (Ember, App, socket) ->
 
 		storeAutoTags: null
 		autoTags: (->
-			if (aTags = @get('storeAutoTags')) then return aTags
-			if (tags = @get('tags'))
+			@get('tags').then (tags)=>
+				if (aTags = @get('storeAutoTags')) then return aTags
 				bodies = tags.getEach 'body'
+				@set 'storeAutoTags', []
 				socket.emit 'tags.all', category: @get('category'), (allTags) =>
 					aTags = @get 'storeAutoTags'
-					aTags.pushObjects _.difference allTags, bodies
-			@set 'storeAutoTags', []
-			@get 'storeAutoTags'
-		).property 'cloudTags.@each'	# depends on tags.@each, but let's wait until cloudTags are done.
+					aTags.addObjects _.difference allTags, bodies
+					console.log "making autotags: leaving #{aTags.get('length')} autotags"
+				@get 'storeAutoTags'
+		).property 'cTags.@each' 	# depends on tags.@each, but let's wait until cloudTags are done.
 
+		cTags:null
 		cloudTags: (->
-			if (bodies = @get('tags')?.getEach('body')) and (popular = @get('_popularTags'))
-				popular.reject (i)-> _.contains bodies, i.body
+			@set 'cTags', []
+			@get('tags').then (tags)=>
+				popular = @get '_popularTags'
+				if tags?.length
+					bodies = tags.getEach 'body'
+					popular = popular.reject (i)-> _.contains bodies, i.body
+				if popular?.length then @get('cTags').addObjects popular
+			@get('cTags')
 		).property '_popularTags.@each'
 
 		storePriorTags: null
 		_priorityTags: (->
-			if (pTags = @get('storePriorTags')) then return pTags
+			if pTags = @get('storePriorTags') then return pTags
 			cat = @get 'category'
-			if grandparent = @gpView()?.get('storePriorTags')
-				if not grandparent[cat] then grandparent[cat] = this.store.find 'tag', {category: cat, contact: null}
+			store = @get('controller').store
+			if (grandparent = @gpView()?.get('storePriorTags')) and grandparent[cat]
 				@set 'storePriorTags', grandparent[cat]
-			else @set 'storePriorTags', this.store.find 'tag', {category: cat, contact: null}
+			else
+				@set 'storePriorTags', []
+				store.find('tag', {category: cat, contact: null}).then (tags)=>
+					if grandparent then grandparent[cat] = tags
+					@get('storePriorTags').addObjects tags
 			@get 'storePriorTags'
 		).property 'tags.@each'
 
 		storePopTags: null
 		_popularTags: (->
-			if (pTags = @get('storePopTags')) then return pTags
+			@get('_priorityTags')
+			if pTags = @get 'storePopTags' then return pTags
 			cat = @get 'category'
 			catid = @get 'catid'
 			unless (priorTags = @get('storePriorTags')) and priorTags.get('length')
 				return null
-			if grandparent = @gpView()?.get('storePopTags')
-				if grandparent[cat]
-					@set 'storePopTags', grandparent[cat]
-					return @get 'storePopTags'
-			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-				pTags = @get 'storePopTags'
-				priorTags = @get 'storePriorTags'
-				pTags.pushObjects priorTags.map (p)->
-					{body:p.get('body'), category:cat, catid:catid}
-				priorBodies = priorTags.getEach 'body'
-				pTags.pushObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
-					{body:p.body, category:cat, catid:catid}
+			if grandparent = @gpView()?.get('storePopTags') and grandparent[cat]
+				@set 'storePopTags', grandparent[cat]
+			else
+				@set 'storePopTags', []
+				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+					pTags = @get 'storePopTags'
+					if grandparent then grandparent[cat] = pTags
+					priorTags = @get 'storePriorTags'
+					pTags.addObjects priorTags.map (p)->
+						{body:p.get('body'), category:cat, catid:catid}
+					priorBodies = priorTags.getEach 'body'
+					pTags.addObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
+						{body:p.body, category:cat, catid:catid}
+					@get('autoTags')
 
-				if grandparent then grandparent[cat] = @get 'storePopTags'
-			@set 'storePopTags', []
 			@get 'storePopTags'
-		).property '_priorityTags.@each'
+		).property '_priorityTags.@each', 'storePriorTags.@each'
 
 
 		click: ->
@@ -86,7 +99,7 @@ module.exports = (Ember, App, socket) ->
 				t = @get('controller').store.createRecord 'tag',
 					date: new Date	# Only so that sorting is smooth.
 					creator: App.user
-					contact: this.store.find 'contact', @get 'contact.id'
+					contact: @get('controller').store.find 'contact', @get 'contact.id'
 					category: @get('category')
 					body: tag
 				t.save()

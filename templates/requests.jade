@@ -73,16 +73,17 @@
 			.span1
 			.span10
 				| {{#each view.selections}}
-				+linkTo('contact this')
-					.span6
-						.span3.imgpad
-							| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-						.span9
-							span {{canonicalName}}
-							br
-							span {{position}}
-							br
-							span {{company}}
+				{{#link-to "contact" this}}
+				.span6
+					.span3.imgpad
+						| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+					.span9
+						span {{canonicalName}}
+						br
+						span {{position}}
+						br
+						span {{company}}
+				{{/link-to}}
 				| {{/each}}
 			.span1
 		| {{/if}}

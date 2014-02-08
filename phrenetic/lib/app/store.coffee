@@ -28,7 +28,6 @@ module.exports = (Ember, DS, App, socket) ->
 		updateRecord: (store, type, record) ->
 			rec = record.serialize()
 			rec.id = record.get 'id'
-			console.dir rec
 			@doOp 'save', type, 'record', rec
 
 		createRecord: (store, type, record) ->

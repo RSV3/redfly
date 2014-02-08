@@ -9,7 +9,7 @@ module.exports = (Ember, App, socket) ->
 		rangeStart: 0
 		rangeStop: (->
 			@get('rangeStart') + @get('reqs.length')
-		).property 'rangeStart', 'reqs'
+		).property 'rangeStart', 'reqs.@each'
 		hasPrev: (->
 			@get('rangeStart')
 		).property 'rangeStart'
@@ -87,12 +87,9 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestController = Ember.ObjectController.extend
 		hovering: null
-		count: (->
-			@get('response')?.get('id') or 0
-		).property 'response.@each'
 		hoverable: (->
-			if @get('count') then 'hoverable' else 'nothoverable'
-		).property 'count'
+			if @get('response.length') then 'hoverable' else 'nothoverable'
+		).property 'response.@each'
 		###
 		# we used to display the date when the request was scheduled to expire ...
 		#
@@ -163,7 +160,7 @@ module.exports = (Ember, App, socket) ->
 		).property 'selections.@each', 'newnote', 'selectedSearchContacts', 'selectedAddNote'
 		showold: (->
 			if @get 'suggesting' then return
-			if @get('controller.count') then it = @get('controller.content')
+			if @get('controller.response.length') then it = @get('controller.content')
 			else it = null
 			@set 'parentView.idsme', App.user.get('id') is it?.get('user.id')
 			@set 'parentView.controller.showthisreq', it

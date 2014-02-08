@@ -106,7 +106,7 @@
 			p
 				b Last mail:&nbsp;
 				span
-					+linkTo('profile lastMail.sender') {{lastMail.sender.canonicalName}}
+					{{#link-to "profile" lastMail.sender}} {{lastMail.sender.canonicalName}} {{/link-to}}
 				span
 					&nbsp;{{sentdate}}
 		| {{/if}}		
@@ -177,11 +177,13 @@
 										i.icon-spinner.icon-spin
 
 		.row-fluid
+			{{#if knowsSome}}
 			h5.knows-header People who know {{nickname}}
 			ul.knows-list
 				{{#each knowsSome}}
 				{{view App.ContactuserView}}
 				{{/each}}
+			{{/if}}
 
 
 .row-fluid
@@ -205,8 +207,9 @@
 		.row-fluid
 			p.lead Notes
 			| {{#collection contentBinding="notes" itemViewClass="App.NoteView"}}
-			+linkTo('profile view.content.author class="pull-left"')
-				| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
+			{{#link-to "profile" view.content.author class="pull-left"}}
+			| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
+			{{/link-to}}
 			// TO-DO do nl2br with bindings
 			.media-body.note
 				p {{{view.content.body}}}

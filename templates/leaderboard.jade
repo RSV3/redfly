@@ -35,9 +35,10 @@
 				{{/if}}
 				span {{view.changeText}}
 			td
-				+linkTo('profile this')
-					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					span {{canonicalName}}
+				{{#link-to "profile" this}}
+				<img class="img-rounded" {{bind-attr src="canonicalPicture"}}>
+				span {{canonicalName}}
+				{{/link-to}}
 			td {{contactCount}}
 			td {{dataCount}}
 			td
@@ -52,7 +53,9 @@
 				{{#if view.idsme}}
 				{{#if view.parentView.controller.datapoor}}
 				span &nbsp; [
-				+linkTo('enrich') {{view.parentView.controller.datapoor}}
+				{{#link-to "enrich"}}
+				| {{view.parentView.controller.datapoor}}
+				{{/link-to}}
 				span ]
 				{{/if}}
 				{{/if}}
@@ -90,9 +93,10 @@
 				{{/if}}
 				span {{view.changeText}}
 			td
-				+linkTo('profile this')
-					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					span {{canonicalName}}
+				{{#link-to "profile" this}}
+				<img class="img-rounded" {{bind-attr src="canonicalPicture"}}>
+				span {{canonicalName}}
+				{{/link-to}}
 			td {{contactCount}}
 			td {{dataCount}}
 			td {{fullCount}}

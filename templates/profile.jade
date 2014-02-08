@@ -9,14 +9,13 @@
 				ul
 					| {{#each contacts.paginatedItems}}
 					li
-						+linkTo('contact this')
-							| {{canonicalName}}
+						{{#link-to "contact" this}} {{canonicalName}} {{/link-to}}
 					| {{/each}}
 			| {{#if hasQ}}
 			.span2
 				ul.pager
 					li
-						+linkTo('classify class="btn-success"') Classify
+						{{#link-to "classify" class="btn-success"}} Classify {{/link-to}}
 			| {{/if}}
 		.row-fluid
 			.span4

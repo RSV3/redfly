@@ -73,13 +73,11 @@ module.exports = (Ember, App, socket) ->
 				if @get 'controller'	# in case we already switched out
 					@set 'controller.other_hasNext', theresmore
 					if theresmore then @set 'controller.other_pageSize', reqs.length
-					console.log "got #{reqs?.length} other old requests to list ..."
 					if reqs then reqs = @store.find 'request', reqs
 					@set 'controller.other_reqs', reqs
 					socket.emit 'requests', {old:true, me:true}, (reqs, theresmore) =>
 						if @get 'controller'	# in case we already switched out
 							@set 'controller.my_hasNext', theresmore
 							if theresmore then @set 'controller.my_pageSize', reqs.length
-							console.log "got #{reqs?.length} of our own old requests to list ..."
 							if reqs then reqs = @store.find 'request', reqs
 							@set 'controller.my_reqs', reqs

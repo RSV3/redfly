@@ -34,24 +34,27 @@ module.exports = (Ember, App, socket) ->
 		linkedinMail: (->
 				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
+		waitingForMeasures:true
 		allMeasures: (->
-			if (id=@get('id'))
-				this.store.find 'measurement', contact:id
+			@store.find('measurement', contact:@get('id')).then ->
+				@set 'waitingForMeasures', false
 		).property 'id'
+		###
 		waitingForMeasures: (->
 			m = @get('allMeasures')
 			not m or not m.get('isLoaded')
 		).property 'allMeasures', 'allMeasures.@each'
+		###
 		gotMeasures: (->
-			@get('allMeasures')?.get 'length'
-		).property 'allMeasures', 'allMeasures.@each'
+			not @get('waitingForMeasures') and @get('allMeasures')?.get 'length'
+		).property 'waitingForMeasures', 'allMeasures.@each'
 		measures: (->
 			measures = {}
 			if @.get 'gotMeasures'
-				allMs = @get 'allMeasures'
-				atts = _.uniq allMs.getEach 'attribute'
-				for eachAt in atts
-					measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
+				@get('allMeasures').then (allMs)->
+					atts = _.uniq allMs.getEach 'attribute'
+					for eachAt in atts
+						measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
 			measures
 		).property 'gotMeasures', 'allMeasures.@each'
 		averages: (->
@@ -62,13 +65,13 @@ module.exports = (Ember, App, socket) ->
 					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / measures[eachAt].length or 1	# better not to have zero average
 			averages
 		).property 'measures', 'measures.@each'
-		knowsSome: (->
-			fams = @get('measures.familiarity')
-			if not fams or not fams.length then f = []
-			else f = fams.getEach 'user'
-			othernose = @get('knows')?.filter (k)-> not _.contains(f, k)
-			_.uniq f.concat othernose
-		).property 'knows', 'measures'
+
+		knowsSome: null
+		setKS: (->
+			@get('knows').then (docs)=>
+				if docs.get('length') then @set 'knowsSome', docs
+		).observes 'knows.@each'
+
 
 		editpositiondetails: (->
 			if not (@get('position') or @get('company') or @get('yearsExperience'))
@@ -118,7 +121,8 @@ module.exports = (Ember, App, socket) ->
 				@commitNcount()
 
 		remove: ->
-			knows = @get('knows.content').filter (u)-> u.id isnt App.user.get('id')
+			knows = @get('knows').then (ids)->
+				_.filter ids, (u)-> u.id isnt App.user.get('id')
 			ab = @get('addedBy') 
 			if ab?.get('id') is App.user.get('id')
 				if knows.length then ab = knows[0]
@@ -173,8 +177,9 @@ module.exports = (Ember, App, socket) ->
 		classNames: ['contact']
 
 		showEmail: (->
-			a = this.store.find('admin', 1)
-			@get('controller.isKnown') or a and a.get('hidemails') is false or @get('parentView.classifying')
+			c = @get('controller')
+			c.store.find('admin', 1).then (a)=>
+				c.get('isKnown') or a and a.get('hidemails') is false or @get('parentView.classifying')
 		).property 'id'
 		indTags: (->
 			@get('catTags')?['industry']
@@ -201,9 +206,10 @@ module.exports = (Ember, App, socket) ->
 			cattags
 		).property 'tags.@each', 'App.admin.orgtagcats'
 		tags: (->
-			if (id = @get('controller.id'))
-				this.store.filter 'tag', {contact: id}, (data) =>
-					data.get('contact.id') is id
+			c = @get 'controller'
+			id = c.get 'id'
+			c.store.filter 'tag', {contact: id}, (data) ->
+				id and data.get('contact.id') is id
 		).property 'controller.id'
 
 		introMailto: (->
@@ -335,6 +341,7 @@ module.exports = (Ember, App, socket) ->
 				@get('selections').clear()
 				@set 'modal', $(@$('.modal')).modal()
 			merge: ->
+				store = @get('controller').store
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'
@@ -353,11 +360,11 @@ module.exports = (Ember, App, socket) ->
 					for own key,val of mergedcontact
 						if key is 'addedBy' then @set 'controller.addedBy', App.user
 						else if key is 'knows'
-							@set 'controller.knows', _.map val, (v)->this.store.find 'user', v
+							@set 'controller.knows', _.map val, (v)-> store.find 'user', v
 						else @set "controller.#{key}", val
-					this.store.find 'tag', contact: id
-					this.store.find 'note', contact: id
-					this.store.find 'mail', recipient: id
+					store.find 'tag', contact: id
+					store.find 'note', contact: id
+					store.find 'mail', recipient: id
 
 					# Ideally we'd just unload the merged contacts from the store, but this functionality doesn't exist yet in ember-data.
 					# Issue a delete instead even though they're already deleted in the database.
@@ -396,8 +403,9 @@ module.exports = (Ember, App, socket) ->
 					@get('parentView.selections').getEach('id').concat @get('controller.id')
 				).property 'controller.content', 'parentView.selections.@each'
 				select: (context) ->
+					store = @get('controller').store
 					$('div.search.dropdown').blur()
-					@get('parentView.selections').addObject @store.find 'contact', context.id
+					@get('parentView.selections').addObject store.find 'contact', context.id
 				# override form submission
 				keyUp: (event) -> false
 				submit: -> false

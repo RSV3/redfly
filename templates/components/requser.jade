@@ -1,6 +1,6 @@
 div.badgecount
 	.expandiconspace
-		{{#if count}}
+		{{#if response.length}}
 		a.expandicon.nodeco(href='#')
 			{{#if view.parentView.expanded}}
 			i.icon-caret-down.icon-large
@@ -8,10 +8,10 @@ div.badgecount
 			i.icon-caret-right.icon-large
 			{{/if}}
 		{{/if}}
-	{{#if count}}
-	span.badge.badge-success {{count}}
+	{{#if response.length}}
+	span.badge.badge-success {{response.length}}
 	{{else}}
-	span.badge.badge-important {{count}}
+	span.badge.badge-important {{response.length}}
 	{{/if}}
 span
 	a.hoverme.nodeco(href="#") {{user.canonicalName}}

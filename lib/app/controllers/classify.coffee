@@ -9,29 +9,25 @@ module.exports = (Ember, App, socket) ->
 		flushing: false
 
 		thisContact: (->
-			@get('dynamicQ')?.objectAt(@get 'classifyCount')
-		).property 'dynamicQ', 'classifyCount'
-
-		modelChanged: (->
-			if (c = @get 'thisContact')
-				@set 'controllers.contact.content', c
-		).observes 'thisContact'
+			unless @get('dynamicQ.length') then return null
+			@set 'controllers.contact.content', @get('dynamicQ')?.objectAt(@get 'classifyCount')
+		).property 'dynamicQ.@each', 'classifyCount'
 
 		total: (->
-			total = @get('dynamicQ.length') - @get('classifyCount')
-			App.admin.set 'classifyCount', total
-			total
-		).property 'classifyCount', 'dynamicQ'
+			@get('dynamicQ.length') - @get('classifyCount')
+		).property 'classifyCount', 'dynamicQ.@each'
 
 		complete: (->
-				return @get('classifyCount') is @get('dynamicQ.length')
-			).property 'classifyCount', 'dynamicQ'
+			return @get('classifyCount') is @get('dynamicQ.length')
+		).property 'classifyCount', 'dynamicQ@.each'
 
 		continueText: (->
-				if not @get 'thisContact.added'
-					return 'Save and Continue'
-				'Continue'
-			).property 'thisContact.added'
+			if not @get 'thisContact.added'
+				return 'Save and Continue'
+			'Continue'
+		).property 'thisContact'
+		#).property 'thisContact.added'
+
 		continue: ->
 			tags = @$.find('div.tag-category:first')
 			if not tags.find('.tag').length
@@ -57,19 +53,19 @@ module.exports = (Ember, App, socket) ->
 			@store.createRecord 'classify', 
 				saved:require('moment')().toDate()
 				user: App.user
-				contact: this.store.find 'contact', @get 'thisContact.id'
+				contact: @store.find 'contact', @get 'thisContact.id'
 			@_next()
 
 		skip: ->
 			@store.createRecord 'classify',
 				user: App.user
-				contact: this.store.find 'contact', @get 'thisContact.id'
+				contact: @store.find 'contact', @get 'thisContact.id'
 			@_next()
 		ignore: ->
-			@get('controllers.contact').remove()
+			@get('controllers.contact').content.remove()
 			@_next()
 		_next: ->
-			@get('thisContact').save()
+			@get('controllers.contact').content.save()
 			@incrementProperty 'classifyCount'
 
 		unflush: -> @set 'flushing', false

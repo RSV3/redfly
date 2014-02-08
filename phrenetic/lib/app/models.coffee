@@ -26,8 +26,8 @@ module.exports = (DS, App, schemas) ->
 				throw new Error 'Specify the type key.'
 			properties[pathName] = do ->
 				if isArray
-					if ref = path.ref
-						return DS.hasMany ref.toLowerCase(), {async:true}
+					if ref = path.ref?.toLowerCase()
+						return DS.hasMany ref, {async:true}
 					return DS.attr 'array', defaultValue: []
 				if _.isObject(path) and not path.type
 					if _.isEmpty
@@ -39,7 +39,7 @@ module.exports = (DS, App, schemas) ->
 					when Date then DS.attr 'date'
 					when Boolean then DS.attr 'boolean'
 					when Number then DS.attr 'number'
-					when Types.ObjectId then DS.belongsTo path.ref
+					when Types.ObjectId then DS.belongsTo path.ref?.toLowerCase()
 					when Types.Mixed then DS.attr 'object'
 					else
 						throw new Error
