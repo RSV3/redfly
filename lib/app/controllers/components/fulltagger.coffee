@@ -36,13 +36,12 @@ module.exports = (Ember, App, socket) ->
 		cloudTags: (->
 			@set 'cTags', []
 			@get('tags').then (tags)=>
-				popular = @get '_popularTags'
-				if tags?.length
+				if (popular = @get '_popularTags') and tags.get('length')
 					bodies = tags.getEach 'body'
 					popular = popular.reject (i)-> _.contains bodies, i.body
 				if popular?.length then @get('cTags').addObjects popular
 			@get('cTags')
-		).property '_popularTags.@each'
+		).property '_popularTags.@each', 'tags.@each'
 
 		storePriorTags: null
 		_priorityTags: (->
@@ -99,7 +98,7 @@ module.exports = (Ember, App, socket) ->
 				t = @get('controller').store.createRecord 'tag',
 					date: new Date	# Only so that sorting is smooth.
 					creator: App.user
-					contact: @get('controller').store.find 'contact', @get 'contact.id'
+					contact: @get 'contact'
 					category: @get('category')
 					body: tag
 				t.save()
