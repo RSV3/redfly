@@ -48,10 +48,7 @@ postHook = (Ember, DS, App, socket) ->
 			require('./models.coffee') DS, App
 			require('./controllers.coffee') Ember, App, socket
 			require('./router.coffee') Ember, App, socket
-			console.log 'calling admin find'
 			store.find('admin', 1).then (data)->
-				console.log 'called admin find'
-				console.dir data
 				if data
 					App.set 'admin', data
 					configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
