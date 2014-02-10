@@ -5,10 +5,11 @@ configureAdminOnLogin = _.after 2, (App, socket)->
 
 	App.user.set 'lastLogin', new Date()
 	App.user.save()
+	App.admin?.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
 	cats = App.get 'admin.orgtagcats'
-	user = App.get 'user.id'
 	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
 		App.admin.set "orgtagcat#{i+1}", t
+	user = App.get 'user.id'
 	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
 		App.admin.set 'classifyCount', count
 		socket.emit 'requestCount', user, (count)->

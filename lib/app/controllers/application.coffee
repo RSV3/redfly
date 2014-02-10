@@ -29,7 +29,7 @@ module.exports = (Ember, App, socket) ->
 					console.dir o
 					false
 				false
-			App.admin.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
+			App.admin?.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
 
 			# Update contacts if they recieve additional linkedin data.
 			socket.on 'linked', (changes) =>
