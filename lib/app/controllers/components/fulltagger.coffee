@@ -48,7 +48,8 @@ module.exports = (Ember, App, socket) ->
 			if pTags = @get('storePriorTags') then return pTags
 			cat = @get 'category'
 			store = @get('controller').store
-			if (grandparent = @gpView()?.get('storePriorTags')) and grandparent[cat]
+			grandparent = @gpView()?.get('storePriorTags')
+			if grandparent?[cat]
 				@set 'storePriorTags', grandparent[cat]
 			else
 				@set 'storePriorTags', []
@@ -66,7 +67,8 @@ module.exports = (Ember, App, socket) ->
 			catid = @get 'catid'
 			unless (priorTags = @get('storePriorTags')) and priorTags.get('length')
 				return null
-			if grandparent = @gpView()?.get('storePopTags') and grandparent[cat]
+			grandparent = @gpView()?.get('storePopTags')
+			if grandparent?[cat]
 				@set 'storePopTags', grandparent[cat]
 			else
 				@set 'storePopTags', []
