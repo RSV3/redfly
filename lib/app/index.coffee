@@ -27,7 +27,7 @@ preHook = (Ember, DS, App, socket) ->
 					configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
-			App.admin.reload()
+			App.admin?.reload()
 		logOnOut: ->
 			document.cookie = "lastlogin=;path=/;expires=null"
 			document.cookie = "connect.sid=;path=/;expires=null"
