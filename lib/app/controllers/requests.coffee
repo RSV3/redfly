@@ -188,7 +188,7 @@ module.exports = (Ember, App, socket) ->
 		)
 		expire: (->
 			@set 'controller.expiry', new Date()		# used to be a future date: now set it to today when user ends request
-			@get('controller').save()
+			@get('controller.content').save()
 		)
 		addResponse: (->
 			if @get('selectedSearchContacts') then @get('controller').addSuggestions @get 'selections'

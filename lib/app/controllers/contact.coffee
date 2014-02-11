@@ -35,10 +35,12 @@ module.exports = (Ember, App, socket) ->
 				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 			).property 'linkedin'
 		waitingForMeasures:true
-		allMeasures: (->
-			@store.find('measurement', contact:@get('id')).then ->
+		allMeasures:null
+		getMeasures: (->
+			@store.find('measurement', contact:@get('id')).then (ms)=>
 				@set 'waitingForMeasures', false
-		).property 'id'
+				@set 'allMeasures', ms
+		).observes 'id'
 		###
 		waitingForMeasures: (->
 			m = @get('allMeasures')
@@ -85,9 +87,12 @@ module.exports = (Ember, App, socket) ->
 		).property 'lastHistory'
 		setHistories: (->
 			if id=@get('id')
-				@set 'firstHistory', this.store.find 'mail', conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:1}}
-				@set 'lastHistory', this.store.find 'mail', conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:-1}}
-				@set 'lastNote', this.store.find 'note', conditions:{contact:id}, options:{sort:{date:-1}}
+				@store.find('mail', {conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:1},limit:1}}).then (mails)=>
+					@set 'firstHistory', mails.content[0]
+				@store.find('mail', {conditions:{sender:App.user.get('id'), recipient:id}, options:{sort:{sent:-1},limit:1}}).then (mails)=>
+					@set 'lastHistory', mails.content[0]
+				@store.find('note', {conditions:{contact:id}, options:{sort:{date:-1},limit:1}}).then (notes)=>
+					@set 'lastNote', notes.content[0]
 		).observes 'id'
 		spokenTwice: (->
 			@get('lastHistory') and @get('firstHistory') and @get('lastHistory.id') isnt @get('firstHistory.id')
@@ -433,46 +438,6 @@ module.exports = (Ember, App, socket) ->
 			downBarView: Ember.View.extend
 				classNames: ['ltzbarview']
 
-		###
-		# this is how we used to show measurements with a slider
-		###
-		###
-		sliderView: Ember.View.extend
-			tagName: 'div'
-			classNames: ['contactslider']
-
-			myMeasurements: (->
-				@get('controller.measures')?[@get 'measure']?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')) or []
-			).property "controller.measures[controller.measure]"
-
-			didInsertElement: ()->
-				view = @
-				@$().slider {
-					value: _.first @get('myMeasurements').getEach 'value'
-					min: -100
-					step: 10
-					animate: 'fast'
-					change: (e, ui)=>
-						Ember.run.next this, ()->
-							allMs = view.get 'controller.measures'
-							thism = view.get 'measure'
-							if (m = allMs[thism]?.filter((eachM)-> eachM.get('user.id') is App.user.get('id')))
-								m.get('firstObject').set 'value', ui.value
-							else
-								if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
-								allMs[thism].pushObject App.Measurement.createRecord {
-									user: App.user
-									contact: view.get 'controller.content'
-									attribute: view.get 'measure'
-									value: ui.value
-								}
-							view.get('controller').notifyPropertyChange 'measures'
-							App.store.commit()
-						false
-				}
-
-		###
-
 		starView: Ember.View.extend
 			tagName: 'p'
 			classNames: ['contactstars']
@@ -493,6 +458,7 @@ module.exports = (Ember, App, socket) ->
 			).observes 'value'
 			didInsertElement: ()->
 				view = @
+				store = @get('parentView.controller').store
 				for i in [0...5]
 					@$().append($newstar=$("<i>"))
 					$newstar.addClass("icon-large starcount#{i}")
@@ -525,19 +491,21 @@ module.exports = (Ember, App, socket) ->
 						if (m = allMs[thism]?.find((eachM)-> eachM.get('user.id') is App.user.get('id')))
 							m.set 'value', newvalue
 						else
-							if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
-							allMs[thism].pushObject App.Measurement.createRecord {
+							newm = store.createRecord 'measurement', {
 								user: App.user
 								contact: view.get 'controller.content'
 								attribute: view.get 'measure'
 								value: newvalue
 							}
-						view.set 'value', (newvalue+100)/40
-						view.set 'controller.updated', new Date
-						view.set 'controller.updatedBy', App.user
-						@get('controller').save()
-						view._drawStars()
-						view.get('controller').notifyPropertyChange 'measures'
+							newm.save().then ->
+								if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
+								allMs[thism].pushObject newm
+								view.set 'value', (newvalue+100)/40
+								view.set 'controller.updated', new Date
+								view.set 'controller.updatedBy', App.user
+								@get('controller.content').save()
+								view._drawStars()
+								view.get('controller').notifyPropertyChange 'measures'
 				@_drawStars()
 				@$().parent().parent().tooltip
 					placement: 'bottom'
@@ -556,7 +524,7 @@ module.exports = (Ember, App, socket) ->
 					@set 'working', true
 					@set 'controller.updated', new Date
 					@set 'controller.updatedBy', App.user
-					@get('controller').save()
+					@get('controller.content').save()
 					@toggleProperty 'show'
 					@set 'working', false
 
@@ -595,7 +563,7 @@ module.exports = (Ember, App, socket) ->
 					if not (@get('linkedinFieldInstance.error') or @get('twitterFieldInstance.error') or @get('facebookFieldInstance.error'))
 						@set 'controller.updated', new Date
 						@set 'controller.updatedBy', App.user
-						@get('controller').save()
+						@get('controller.content').save()
 						@toggleProperty 'show'
 					@set 'working', false
 
