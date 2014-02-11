@@ -8,25 +8,26 @@ module.exports = (Ember, App, socket) ->
 		flushlist: null
 		flushing: false
 
+		complete: false
 		thisContact: (->
 			unless @get('dynamicQ.length') then return null
+			App.admin.set 'classifyCount', @get('dynamicQ.length') - @get('classifyCount')
+			if @get('classifyCount') is @get('dynamicQ.length')
+				@set 'complete', true
+				return null
 			@set 'controllers.contact.content', @get('dynamicQ')?.objectAt(@get 'classifyCount')
+			@get 'controllers.contact.content'
 		).property 'dynamicQ.@each', 'classifyCount'
 
 		total: (->
 			@get('dynamicQ.length') - @get('classifyCount')
 		).property 'classifyCount', 'dynamicQ.@each'
 
-		complete: (->
-			return @get('classifyCount') is @get('dynamicQ.length')
-		).property 'classifyCount', 'dynamicQ@.each'
-
 		continueText: (->
 			if not @get 'thisContact.added'
 				return 'Save and Continue'
 			'Continue'
 		).property 'thisContact'
-		#).property 'thisContact.added'
 
 		continue: ->
 			tags = @$.find('div.tag-category:first')
@@ -50,20 +51,26 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'thisContact.addedBy'
 				@set 'thisContact.addedBy', App.user
 				App.user.incrementProperty 'contactCount'
-			@store.createRecord 'classify', 
-				saved:require('moment')().toDate()
-				user: App.user
-				contact: @store.find 'contact', @get 'thisContact.id'
-			@_next()
+			App.user.save()
+			@get('controllers.contact').content.save().then =>
+				@store.createRecord('classify', 
+					saved:require('moment')().toDate()
+					user: App.user
+					contact: @get 'thisContact'
+				).save()
+				@_next()
 
 		skip: ->
-			@store.createRecord 'classify',
+			classy = @store.createRecord('classify',
 				user: App.user
-				contact: @store.find 'contact', @get 'thisContact.id'
+				contact: @get 'thisContact'
+			)
+			console.dir classy
+			classy.save()
 			@_next()
 		ignore: ->
 			@get('controllers.contact').content.remove()
-			@_next()
+			@incrementProperty 'classifyCount'
 		_next: ->
 			@get('controllers.contact').content.save()
 			@incrementProperty 'classifyCount'

@@ -130,9 +130,12 @@ module.exports = (Ember, App, socket) ->
 	App.ClassifyRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			controller.set 'model', null
+			controller.set 'dynamicQ', null
+			controller.set 'complete', false
+			controller.set 'classifyCount', 0
 			socket.emit 'classifyQ', App.user?.get('id'), (results) ->
 				if results and results.length
-					controller.set 'classifyCount', 0
+					App.admin.set 'classifyCount', results.length
 					controller.set 'dynamicQ', controller.store.find 'contact', results
 				else @transitionTo 'recent'
 		renderTemplate: ->

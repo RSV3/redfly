@@ -1,4 +1,4 @@
-| {{#unless complete}}
+{{#unless complete}}
 div.navbar
 	.navbar-inner
 
@@ -59,16 +59,18 @@ div.navbar
 			| {{render contact}}
 			| {{/if}}
 
-		| {{/if}}
+			| {{/if}}
 
-| {{else}}
+{{/unless}}
 
+
+{{#if complete}}
 .hero-unit
 	h1 Nicely done!
 	p Thanks for classifying all these dudes and dudettes! Your contribution to Redfly is appreciated, your deeds of valor will be remembered for all eternity.
 	p
 		{{#link-to "recent" class="btn btn-primary btn-large"}} See latest contacts {{/link-to}}
-	p.star: i.icon-star
-
-| {{/unless}}
+	p.star
+		i.icon-star
+{{/if}}
 

@@ -213,19 +213,19 @@ routes =  (app, data, io, session, fn)->
 								else
 									Elastic.update String(doc._id), doc:doc, (err)->
 										if not err then return
-										console.log "ERR: ES updating #{type}"
+										console.log "ERR: ES updating #{data.type}"
 										console.dir doc
 										console.dir err
 							else if 'knows' in modified		# taken ourselves out of knows list?
 								if not doc.knows.length
 									Elastic.delete doc._id, (err)->
 										if not err then return
-										console.log "ERR: ES removing #{type}"
+										console.log "ERR: ES removing #{data.type}"
 										console.dir doc
 								else
 									Elastic.update String(doc._id), doc:doc, (err)->
 										if not err then return
-										console.log "ERR: ES updating #{type}"
+										console.log "ERR: ES updating #{data.type}"
 										console.dir doc
 										console.dir err
 							if 'classified' in modified

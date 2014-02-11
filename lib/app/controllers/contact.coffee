@@ -143,7 +143,7 @@ module.exports = (Ember, App, socket) ->
 		commitNcount: ->
 			@set 'updated', new Date
 			@set 'updatedBy', App.user
-			@save()
+			@get('content').save()
 
 		getExtensionData: (ev)->
 			if not ev then return
@@ -171,7 +171,7 @@ module.exports = (Ember, App, socket) ->
 					}
 			@set 'updated', new Date
 			@set 'updatedBy', App.user
-			@save()
+			@get('content').save()
 
 
 	App.ContactuserView = App.HoveruserView.extend
@@ -387,7 +387,7 @@ module.exports = (Ember, App, socket) ->
 					###
 					@get('selections').clear()
 
-					@save()
+					@get('content').save()
 
 					notification.effect 'bounce'
 					notification.pnotify
