@@ -280,11 +280,7 @@ _matchContact = (userId, contacts, cb) ->
 	if (contacts.length > 1)
 		nc = _.select contacts, (i) -> i.addedBy is userId
 		if nc.length then contacts = nc
-	if contacts.length > 1				# oh dear, what a challenge: more than one? work it out later ...
-		# return cb contacts			# it'd be nice to just pass the list back to callers smart enough to handle it,
-		return null						# but for now we'll ignore multiple unresolvable matches
 	cb contacts[0]
-
 
 
 ###

@@ -5,6 +5,8 @@ module.exports = (projectRoot) ->
 	root = path.dirname path.dirname __dirname
 	express = require 'express.io'
 	app = express().http().io()
+	app.io.configure ->
+		app.io.set "heartbeat timeout", 99999
 	assets = require('./assets') root, projectRoot, app, ['NODE_ENV', 'HOST']
 	redisConfig = do ->
 		url = require('url').parse process.env.REDISTOGO_URL
