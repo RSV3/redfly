@@ -28,7 +28,6 @@ module.exports = (Ember, App, socket) ->
 				socket.emit 'tags.all', category: @get('category'), (allTags) =>
 					aTags = @get 'storeAutoTags'
 					aTags.addObjects _.difference allTags, bodies
-					console.log "making autotags: leaving #{aTags.get('length')} autotags"
 				@get 'storeAutoTags'
 		).property 'cTags.@each' 	# depends on tags.@each, but let's wait until cloudTags are done.
 

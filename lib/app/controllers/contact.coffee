@@ -53,10 +53,10 @@ module.exports = (Ember, App, socket) ->
 		measures: (->
 			measures = {}
 			if @.get 'gotMeasures'
-				@get('allMeasures').then (allMs)->
-					atts = _.uniq allMs.getEach 'attribute'
-					for eachAt in atts
-						measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
+				allMs = @get 'allMeasures'
+				atts = _.uniq allMs.getEach 'attribute'
+				for eachAt in atts
+					measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
 			measures
 		).property 'gotMeasures', 'allMeasures.@each'
 		averages: (->
@@ -64,7 +64,7 @@ module.exports = (Ember, App, socket) ->
 			measures = @get 'measures'
 			for eachAt of measures
 				if measures[eachAt].length
-					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / measures[eachAt].length or 1	# better not to have zero average
+					averages[eachAt] = (_.reduce measures[eachAt].getEach('value'), (memo, v)-> memo+v) / (measures[eachAt].length or 1)	# better not to have zero average
 			averages
 		).property 'measures', 'measures.@each'
 

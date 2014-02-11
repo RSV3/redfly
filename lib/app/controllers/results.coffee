@@ -212,11 +212,6 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultController = App.ContactController.extend
 		canHide: true
-		knowsSome: []
-		setKS: (->
-			@get('knows').then (docs)=>
-				if docs.get('length') then @set 'knowsSome', docs
-		).observes 'knows.@each'
 
 
 	App.ResultView = App.ContactView.extend
@@ -230,7 +225,10 @@ module.exports = (Ember, App, socket) ->
 
 		didInsertElement: ()-> @get('controller').set 'showitall', false
 		hideItAll: (r)-> r.set 'showitall', false
-		setShowItAll: (r)-> r.set 'showitall', true
+		setShowItAll: (r)->
+			r.set 'showitall', true
+			@get('controller').setHistories()
+			@get('controller').getMeasures()
 
 	App.SortView = Ember.View.extend
 		template: require '../../../templates/components/sort.jade'
