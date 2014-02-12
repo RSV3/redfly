@@ -12,6 +12,7 @@ module.exports = (Ember, App, socket) ->
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
+		results: {}
 		hasResults: (->
 				not _.isEmpty @get('results')
 			).property 'results'
@@ -57,33 +58,35 @@ module.exports = (Ember, App, socket) ->
 			valueBinding: 'parentView.query'
 			theresults: {}
 			fragments: {}
-			writeResults: (->
-				results = {}
-				theresults = @get 'theresults'
-				for own key,val of @fragments
-					if not val?.length or not theresults[key] then results[key]=null
-					else results[key] = theresults[key].map (item, index)-> {contact: item, fragment: val[index]}
-				@set 'parentView.results', results
-			).observes 'theresults.@each.@each.isLoaded'
 			valueChanged: (->
 				store= @get('parentView.controller').store
 				@set 'parentView.using', true
+				@set 'theresults', {}
+				@set 'fragments',  {}
 				if not (query = util.trim @get('value')) then return @set 'results', null
-				prefix = @get('parentView.prefix')
-				if prefix then query = util.trim(prefix)+query
+				if prefix = @get('parentView.prefix') then query = util.trim(prefix)+query
 				socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
 					query = util.trim @get('value')
 					if results.query is query or results.query is "contact:#{query}"
-						@set 'theresults', {}
-						@fragments = {}
-						tmpres = {}
 						delete results.query
 						xcludes = @get 'parentView.excludes'
+						@set 'parentView.results', {}
 						for type, ids of results
-							if ids and ids.length
-								ids = _.reject ids, (o)=> _.contains xcludes, o._id
-								tmpres[type] = store.find 'contact', _.pluck ids, '_id'
-								@fragments[type] = _.pluck ids, 'fragment'
-						@set "theresults", tmpres
+							do (type, ids)=>
+								if ids and ids.length
+									if xcludes and xcludes.length
+										ids = _.reject ids, (o)-> _.contains xcludes, o._id
+									if ids.length
+										store.find('contact', _.pluck ids, '_id').then (list)=>
+											if list?.get 'length'
+												pVresults = @get 'parentView.results'
+												# easiest way to update the box is to rebuild it
+												newpVr = {}
+												for own k,v of pVresults
+													newpVr[k] = v
+												newpVr[type] = list.map (item, index)->
+													contact: item
+													fragment: _.pluck ids, 'fragment'
+												@set 'parentView.results', newpVr
 			).observes 'value', 'parentView.excludes'
 
