@@ -12,7 +12,6 @@ if (module == 'server')
 else try {
 	require(projectRoot + '/lib/' + module);
 } catch (err) {
-	if (err.code != 'MODULE_NOT_FOUND')
-		throw err;
+	console.dir(err);
 	require('./lib/' + module);
 }
