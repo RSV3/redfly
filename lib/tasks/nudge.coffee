@@ -159,40 +159,8 @@ dailyRoutines = (doneDailies)->
 				console.log "Error removing old classifies (skips): IDs less than #{prefix}#{suffix}"
 				console.dir err
 
-			if _.contains process.env.NUDGE_DAYS.split(' '), moment().format('dddd')
-				console.log "dailydone"
-				return doneDailies()
-
-			# if we're not nudging today, let's take the time to make sure every added contact is searchable
-			Models.Contact.find {added: $exists: true}, (err, contacts)->
-				if not err and contacts?.length
-					_.each contacts, (c)->
-						Elastic.get c._id, (err, data)->
-							if err or not data
-								console.log "SANITY CHECK: creating ES index for missing contact #{c._id}"
-								Elastic.create c
-				Elastic.scan (err, id)->
-					if err or not id
-						console.log "SANITY CHECK: ES.scan err:"
-						console.dir err
-						console.dir id
-						return doneDailies()
-					hitAtATime = (hits)->
-						if not hits?.length then return scrollAtATime()
-						hit = hits.pop()
-						Models.Contact.findById hit._id, (err, c)->
-							if err or not c then Elastic.delete hit._id
-							hitAtATime hits
-					scrollAtATime = ()->
-						Elastic.scroll id, (err, data)->
-							if err
-								console.log "SANITY CHECK: ES.scroll err:"
-								console.dir err
-								return doneDailies()
-							if not data?.hits?.hits?.length then return doneDailies()
-							id = data._scroll_id
-							hitAtATime data.hits?.hits
-					scrollAtATime()
+			console.log "dailydone"
+			return doneDailies()
 
 
 resetEachRank = (cb, users)->
