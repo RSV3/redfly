@@ -151,6 +151,9 @@ summaryUnclassified = (cb) ->
 summaryQuery = (model, field, cb) ->
 	Models[model].where(field).gt(lastWeek).count cb
 
+summaryTags = (cb) ->
+	Models.Tag.where('date').gt(lastWeek).where('deleted').exists(false).count cb
+
 searchCount = (cb)->
 	Models.Admin.findOne {_id:1}, (err, adm)->
 		if err then return cb err, null
@@ -169,10 +172,10 @@ module.exports =
 	summaryContacts: (cb)-> summaryQuery 'Contact', 'added', cb
 	summaryActive: (cb)-> summaryQuery 'User', 'lastLogin', cb
 	summaryIntros: (cb)-> summaryQuery 'IntroMail', 'date', cb
-	summaryTags: (cb)-> summaryQuery 'Tag', 'date', cb
 	summaryNotes: (cb)-> summaryQuery 'Note', 'date', cb
 	summaryReqs: (cb)-> summaryQuery 'Request', 'date', cb
 	summaryResps: (cb)-> summaryQuery 'Response', 'date', cb
+	summaryTags: (cb)-> summaryTags cb
 	countConts: (cb)-> Models.Contact.find(added:{$exists:true}).count cb
 	myConts: (u, cb)-> Models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
 	classifyCount: (u, cb)->

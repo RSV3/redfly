@@ -88,6 +88,7 @@ routes =  (app, data, io, session, fn)->
 					if query = data.query
 						if not query.conditions and not query.options
 							query = conditions: query
+						if data.type is 'Tag' then query.conditions.deleted = $exists:false
 						model.find query.conditions, null, query.options, (err, docs) ->
 							throw err if err
 							cb docs
@@ -132,6 +133,8 @@ routes =  (app, data, io, session, fn)->
 									console.log "error incrementing data count for #{user}"
 									console.dir err
 							feed doc, data.type
+							delete doc._id
+							Models.Tag.find({contact:doc.contact, body:doc.body, deleted:true}).remove()
 					when Models.Contact
 						maybeAnnounceContact = (doc)->
 							if doc.addedBy
@@ -241,7 +244,17 @@ routes =  (app, data, io, session, fn)->
 
 		when 'remove'
 			if id = data.id
-				model.findByIdAndRemove id, (err, doc) ->
+				if data.type is 'Tag'	# tags aren't really deleted: instead, we set the 'deleted' flag
+					return model.findById id, (err, doc) ->		# look in store to mark deleted
+						if err then console.dir err
+						if err or not doc then return cb()			# bail out if we don't have a doc
+						whichtags = (if doc.category is 'industry' then 'indtags' else 'orgtags')
+						Elastic.onDelete doc, 'Tag', whichtags, ->	# remove from search index
+							doc.set 'deleted', true					# and mark as deleted
+							doc.save (err)->
+								if err then console.dir err
+								return cb()
+				model.findByIdAndRemove id, (err, doc) ->		# but if it's not a tag, find&rm
 					throw err if err
 					if not doc then return cb()
 					switch data.type
@@ -253,8 +266,6 @@ routes =  (app, data, io, session, fn)->
 								cb()
 						when 'Note'
 							Elastic.onDelete doc, 'Note', "notes", (err)-> cb()
-						when 'Tag'
-							Elastic.onDelete doc, 'Tag', (if doc.category is 'industry' then 'indtags' else 'orgtags'), cb
 						else cb()
 
 			else if ids = data.ids

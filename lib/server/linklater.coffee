@@ -1,7 +1,7 @@
 _ = require 'underscore'
 util = require './util'
 models = require './models'
-addTags = require './addtags'
+AddTags = require './addtags'
 
 
 ###
@@ -52,11 +52,10 @@ addDeets2Contact = (notifications, u, c, l) ->
 			c.knows.addToSet eachUser
 			dirtycontact = true
 
-	unless c.classified		# don't mess with tags if they've already been edited ...
-		tagstoadd = []
-		if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
-		if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
-		if tagstoadd.length then addTags u, c, 'industry', _.uniq tagstoadd
+	tagstoadd = []
+	if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
+	if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
+	if tagstoadd.length then AddTags u, c, 'industry', _.uniq tagstoadd
 
 	if (_.indexOf c.knows, u._id) < 0
 		c.knows.addToSet u

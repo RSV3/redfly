@@ -78,8 +78,9 @@ module.exports = (app, route) ->
 			throw err if err
 			fn count
 
+	# do we even use this anymore?? weird. #jTNT
 	route 'summary.verbose', (fn) ->
-		Models.Tag.find().sort('date').select('body').exec (err, tags) ->
+		Models.Tag.find().where('deleted').exists(false).sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) ->
 				tag.body.length
@@ -162,7 +163,7 @@ module.exports = (app, route) ->
 		Models.Tag.find conditions, (err, tags)->
 			throw err if err
 			ids = _.pluck tags, '_id'
-			Models.Tag.remove {_id: $in: ids}, (err)->
+			Models.Tag.remove {_id: {$in: ids}, deleted: {$exists: false}}, (err)->
 				if err
 					console.log "error removing tags:"
 					console.dir ids
@@ -179,6 +180,7 @@ module.exports = (app, route) ->
 					fn ids
 
 	route 'tags.all', (conditions, fn) ->
+		conditions.deleted = $exists:false
 		Models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
 			fn bodies.sort()
@@ -213,6 +215,7 @@ module.exports = (app, route) ->
 	route 'tags.popular', (conditions, fn) ->
 		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
 		else conditions.contact = $exists: true
+		conditions.deleted = $exists:false
 		Models.Tag.aggregate {$match: conditions},
 			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
 			{$sort: count: -1},
@@ -222,6 +225,7 @@ module.exports = (app, route) ->
 				fn _.map results, (r)-> {body:r._id, category:r.category}
 
 	route 'tags.stats', (fn) ->
+		match = $match: deleted: $exists: false
 		group =
 			$group:
 				_id: '$body'
@@ -234,7 +238,7 @@ module.exports = (app, route) ->
 				body: '$_id'
 				count: 1
 				mostRecent: 1
-		Models.Tag.aggregate group, project, (err, results) ->
+		Models.Tag.aggregate match, group, project, (err, results) ->
 			throw err if err
 			fn results
 		# fn [

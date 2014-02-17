@@ -178,7 +178,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 										console.dir contact
 									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
-										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
+										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 
 
 		sift()

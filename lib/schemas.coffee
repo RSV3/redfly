@@ -98,8 +98,9 @@ schemas.push Schema 'Contact',
 schemas.push Schema 'Tag',
 	creator: type: Types.ObjectId, ref: 'User', sparse: true
 	contact: type: Types.ObjectId, ref: 'Contact', sparse: true
-	category: type:String, required:true
+	category: type: String, required:true
 	body: type: String, required: true, trim: true, lowercase: true
+	deleted: type: Boolean
 
 schemas.push Schema 'Note',
 	author: type: Types.ObjectId, ref: 'User', required: true

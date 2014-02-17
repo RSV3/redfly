@@ -32,10 +32,15 @@ doAddTags = (user, contact, category, alist, force=false) ->
 	# since it populates with junk tags again after clean up."
 	# if we're not forcing, recall with force IFF there are no existing tags for this contact
 	###
+	# BUT,
+	# with the addition of the deleted flag, this step is no longer necessary ...
+	###
 	if not force then return models.Tag.find {contact: contact._id}, (err, existing) ->
 		if not existing?.length then doAddTags user, contact, category, alist, true
+	###
 
 	# get any existing tag bodies, to avoid doubling up
+	# note, since we dont specify deleted:$exists:false, this will also exclude 'deleted' tags
 	models.Tag.find {category: category, contact: contact._id}, (err, existing) ->
 		_addTags user, contact, category, _.pluck(existing, 'body'), alist
 
