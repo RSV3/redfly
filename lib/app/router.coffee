@@ -133,10 +133,10 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'dynamicQ', null
 			controller.set 'complete', false
 			controller.set 'classifyCount', 0
-			socket.emit 'classifyQ', App.user?.get('id'), (results) ->
+			socket.emit 'classifyQ', App.user?.get('id'), (results) =>
 				if results and results.length
 					App.admin.set 'classifyCount', results.length
-					controller.set 'dynamicQ', controller.store.find 'contact', results
+					controller.set 'dynamicQ', @store.find 'contact', results
 				else @transitionTo 'recent'
 		renderTemplate: ->
 			@router.connectem @, 'classify'
