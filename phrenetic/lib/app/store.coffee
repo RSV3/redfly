@@ -33,7 +33,7 @@ module.exports = (Ember, DS, App, socket) ->
 		createRecord: (store, type, record) ->
 			@doOp 'create', type, 'record', record.serialize()
 
-		deleteRecord: (type, record) ->
+		deleteRecord: (store, type, record) ->
 			@doOp 'remove', type, 'id', record.get('id')
 			###
 			socket.emit 'db', op: 'remove', type: util.typeName(type), id: record.get('id'), =>
