@@ -102,12 +102,11 @@ module.exports = (Ember, App, socket) ->
 	App.AdminRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
-				socket.emit 'stats', (stats) ->
+				socket.emit 'stats', (stats) =>
 					for own key,val of stats
 						controller.set key, val
 					@store.find('admin', 1).then (admin)->
 						controller.set 'content', admin
-						controller.set 'category', 'industry'
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
 			@router.connectem @, 'admin'

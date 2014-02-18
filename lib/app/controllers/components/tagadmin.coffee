@@ -10,11 +10,11 @@ module.exports = (Ember, App, socket) ->
 			if (id = @get 'catid') is 'industry' then id
 			else if (id = App.admin.get id) then id.toLowerCase()
 			else 'organisation'
-		).property 'catid', 'App.admin.orgtagcats'
+		).property 'catid'
 
 		prioritytags: (->
 			query = category: @get('category'), contact: null
-			result = @get('parentView.controller').filter 'tag', query, (data) =>
+			result = @get('parentView.controller').store.filter 'tag', query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
 					return false
 				not data.get('contact')
@@ -24,17 +24,17 @@ module.exports = (Ember, App, socket) ->
 
 		saveAllTags: null
 		saveTags: (->
-			@set 'saveAllTags', null
+			@set 'saveAllTags', []
 			socket.emit 'tags.all', category: @get('category'), (allTags) =>
-				result = Ember.ArrayController.create()
+				result = @get 'saveAllTags'
 				result.pushObjects allTags.map (b)->b
-				@set 'saveAllTags', result
+			@get 'saveAllTags'
 		).observes 'category'
 		didInsertElement: ->
 			@saveTags()
 		alltags: (->
 			result = null
-			if (allTags = @get 'saveAllTags.content')
+			if (allTags = @get 'saveAllTags')?.length
 				result = Ember.ArrayController.create()
 				if allTags.length
 					catid = @get 'catid'
@@ -88,14 +88,13 @@ module.exports = (Ember, App, socket) ->
 								category: that.get 'parentView.category'
 								body: oldtxt
 								new: newtxt
-							socket.emit 'tags.rename', renameObj, () =>
+							socket.emit 'tags.rename', renameObj, ()->
 								that.set('context.body', newtxt)
-								@get('parentView.controller').store.filter('tag', (t)->
+								that.get('parentView.controller').store.filter('tag', (t)->
 									t.get('category') is renameObj.category and t.get('body') is renameObj.body
 								).forEach (t)->
 									t.set 'body', newtxt
-									#t.transitionTo 'loaded.updated'
-									t.get('stateManager').send 'becameClean'
+									t.rollBack()		# new emberdata
 						$(this).replaceWith(oldhtml).find('a.body').text newtxt
 						$('input').prop('disabled', false)
 					$that.replaceWith $newone
