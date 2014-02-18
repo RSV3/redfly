@@ -46,10 +46,11 @@ recentOrgs = (cb)->
 		return cb null, _.sortBy(comps, (c)-> -c.count)[0..3]
 
 
-# given a list of contacts;
+# given a list of contacts (straight ID strings)
 # 1. remove excludes
 # 2. remove classifies with a date (ie already classified this month)
 # 3. remove classifies without a date (ie skip this week)
+# returning a (possibly shorter) list of contacts (straight ID strings)
 stripSome = (u, msgs, contactsList, cb)->
 	unless contactsList.length then return cb contactsList
 
@@ -112,9 +113,8 @@ classifyList = (u, cb, lazy=false)->
 					unclassified = _.uniq _.map unclassified, (m)->m._id.toString()
 					stripSome u, msgs, unclassified, (unclassified)->
 						if not unclassified.length then return cb neocons
-						unclassified = unclassified[0..20-neocons.length]
-						neocons = _.union neocons, _.map unclassified, (c)->c._id.toString()
-						return cb neocons
+						neocons = _.union neocons, unclassified
+						return cb neocons[0..20]
 			# but if there's more than 20, let's prioritise those that are brand new
 			Models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
 				if not err and unadded.length
