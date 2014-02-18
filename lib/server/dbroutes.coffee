@@ -120,6 +120,8 @@ routes =  (app, data, io, session, fn)->
 								throw err if err
 								record.contact = addDeets2Contact null, user, contact, record
 								cb()
+					when Models.Tag
+						return model.find({contact:record.contact, body:record.body, deleted:true}).remove cb
 				cb()	# for whenever we didn't return in the switch
 			afterSave = (doc)->
 				switch model
@@ -133,8 +135,6 @@ routes =  (app, data, io, session, fn)->
 									console.log "error incrementing data count for #{user}"
 									console.dir err
 							feed doc, data.type
-							delete doc._id
-							Models.Tag.find({contact:doc.contact, body:doc.body, deleted:true}).remove()
 					when Models.Contact
 						maybeAnnounceContact = (doc)->
 							if doc.addedBy
