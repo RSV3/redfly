@@ -77,6 +77,7 @@ module.exports = (Ember, App, socket) ->
 									if xcludes and xcludes.length
 										ids = _.reject ids, (o)-> _.contains xcludes, o._id
 									if ids.length
+										frags = _.pluck ids, 'fragment'
 										store.find('contact', _.pluck ids, '_id').then (list)=>
 											if list?.get 'length'
 												pVresults = @get 'parentView.results'
@@ -86,7 +87,7 @@ module.exports = (Ember, App, socket) ->
 													newpVr[k] = v
 												newpVr[type] = list.map (item, index)->
 													contact: item
-													fragment: _.pluck ids, 'fragment'
+													fragment: frags[index]
 												@set 'parentView.results', newpVr
 			).observes 'value', 'parentView.excludes'
 
