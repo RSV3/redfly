@@ -64,7 +64,7 @@ module.exports = (Ember, App, socket) ->
 		)
 		newReqView: Ember.TextArea.extend
 			classNames: ['span12']
-			placeholder: 'New request'
+			placeholder: 'Who are you looking for in detail? Please write 2 or 3 lines on what value you can also provide them?'
 			rows: 5
 			tabindex: 1
 
