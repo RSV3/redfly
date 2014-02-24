@@ -26,12 +26,12 @@ module.exports = (Ember, App, socket) ->
 				into: 'application'
 				outlet: 'panel'
 
-			if name is 'results'
+			if name in ['results', 'responses']
 				route.render 'filter',
 					into: appname
 					outlet: 'sidebar'
-					controller: 'results'
-			else if name is 'classify' or name is 'enrich'
+					controller: name
+			else if name in ['classify', 'enrich']
 				route.render 'leaders',
 					into: appname
 					outlet: 'sidebar'
@@ -59,6 +59,7 @@ module.exports = (Ember, App, socket) ->
 		@route 'leaderboard'
 		@route 'requests'
 		@resource 'results', path: '/results/:query_text'
+		@route 'responses', path: '/responses/:request_id'
 		@route 'noresult', path: '/results'
 		@route 'allresults', path: '/results/'
 		@route 'enrich', path: '/enrich'
@@ -180,6 +181,60 @@ module.exports = (Ember, App, socket) ->
 		renderTemplate: ->
 			@router.connectem @, 'companies'
 
+	App.ResponsesRoute = Ember.Route.extend
+		model: (params)->
+			{ req: params.request_id }
+		serialize: (model, param) ->
+			request_id: model.req
+		deserialize: (param) ->
+			qt = decodeURIComponent param.request_id
+			{ req: qt }
+		setupController: (controller, model) ->
+			@_super controller, model
+			# easy init
+			store = @store
+			for flag in ['hasResults', 'dontFilter']
+				controller.set flag, false
+			for nullit in ['all', 'f_knows', 'f_indtags', 'f_orgtags', 'sortType']
+				controller.set nullit, null
+			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
+				controller.set zeroit, 0
+			controller.set 'empty', false
+			controller.set 'staticSearchTag', true
+			# find responses
+			store.find('request', model.req).then (req)->
+				req.get('response').then (resps)->
+					Ember.RSVP.all(resps.getEach('contact')).then (lookups)->
+						lookups = _.uniq _.flatten _.map(lookups, (l)-> l.getEach 'id')
+						links = resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and util.isLIURL r.get('body')
+						comments = resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and not util.isLIURL r.get('body')
+						controller.set 'comments', comments
+						controller.set 'links', links
+						unless lookups?.length
+							controller.set 'all', []
+							controller.set 'hasResults', true
+							controller.set 'dontFilter', true
+							controller.set 'searchtag', req.get 'text'
+						else
+							query = _id:$in:lookups
+							socket.emit 'fullSearch', query, (results)->
+								unless results.response?.length then controller.set 'all', []
+								else
+									for own key, val of results
+										console.log "setting:#{key}"
+										console.dir val
+										if key is 'facets'
+											for own k, v of results.facets
+												controller.set "f_#{k}", v
+										else if key isnt 'response'
+											controller.set key, val
+									controller.set 'all', store.find 'contact', lookups
+								controller.set 'hasResults', true
+								controller.set 'searchtag', req.get 'text'
+
+		renderTemplate: ->
+			@router.connectem @, 'responses'
+
 	App.ResultsRoute = Ember.Route.extend
 		model: (params) ->
 			{ text: params.query_text }
@@ -192,8 +247,8 @@ module.exports = (Ember, App, socket) ->
 			if not qt?.length then qt = recent_query_string
 			{ text: qt }
 		setupController: (controller, model) ->
-			this._super controller, model
-			for nullit in ['all', 'f_knows', 'f_industry', 'f_organisation', 'sortType']
+			@_super controller, model
+			for nullit in ['all', 'f_knows', 'f_indtags', 'f_orgtags', 'sortType']
 				controller.set nullit, null
 			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
 				controller.set zeroit, 0
@@ -212,8 +267,6 @@ module.exports = (Ember, App, socket) ->
 						if key is 'facets'
 							for own k, v of results.facets
 								controller.set "f_#{k}", v
-							for zeroit in ['industryOp', 'orgOp']
-								controller.set zeroit, 0
 						else if key isnt 'response'
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string
@@ -264,7 +317,7 @@ module.exports = (Ember, App, socket) ->
 		model: ->
 			App.user
 		setupController: (controller, model) ->
-			this._super controller, model
+			@_super controller, model
 			controller = @controllerFor 'profile'
 			controller.set 'content', model
 			controller.set 'self', true

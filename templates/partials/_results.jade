@@ -1,0 +1,63 @@
+{{#each theResults itemViewClass="App.ResultView" itemController="result"}}
+.row-fluid.top
+	| {{#if showitall}}
+	hr.topexpanded
+	{{partial "contact"}}
+	hr.botexpanded
+	| {{else}}
+	.row-fluid
+		.span7
+			.row-fluid
+				.span2.picture
+					a(href='#', action='setShowItAll this target="view"')
+						| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
+				.span10
+					+if('isVip')
+						.maybevip
+							i.icon-star.icon-2x.fullredstar
+					a(href='#', action='setShowItAll this target="view"')
+						h3 {{canonicalName}}
+					div
+						i
+							| {{position}}{{#if position}},{{/if}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+					| {{#if lastHistory}}
+					.row-fluid
+						p
+							b Last mail:&nbsp;
+							span
+								{{#link-to "profile" lastHistory.sender}} {{lastHistory.sender.canonicalName}} {{/link-to}}
+							span
+								&nbsp; {{sentdate}}
+					| {{/if}}
+					| {{#if lastNote}}
+					.row-fluid
+						.somenote
+							b Last note: &nbsp;
+							{{#link-to "profile" lastNote.author}} {{lastNote.author.canonicalName}} {{/link-to}}
+							i &nbsp; {{lastNote.preview}}
+					| {{/if}}						
+						
+		.span5
+			.search-result.knows.knowstags
+				b Knows: &nbsp;
+				ul.tags
+					{{#each knowsSome}}
+					li
+						a(href="#", class='label knows', action='clickname this target="view"')
+							| {{canonicalName}}
+					{{/each}}
+			.sometags
+				{{#each view.orgTags}}
+				a(href="#", bindAttr='class=":label category catid"', action='clicktag this target="view"')
+					span {{body}}
+				{{/each}}
+				{{#each view.indTags}}
+				a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
+					span {{body}}
+				{{/each}}					
+
+
+
+	| {{/if}}
+{{/each}}
+

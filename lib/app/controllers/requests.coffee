@@ -160,12 +160,15 @@ module.exports = (Ember, App, socket) ->
 		).property 'selections.@each', 'newnote', 'selectedSearchContacts', 'selectedAddNote'
 		showold: (->
 			if @get 'suggesting' then return
+			@get('controller').transitionToRoute 'responses', @get 'controller.id'
+			###
 			if @get('controller.response.length') then it = @get('controller.content')
 			else it = null
 			@set 'parentView.idsme', App.user.get('id') is it?.get('user.id')
 			@set 'parentView.controller.showthisreq', it
 			Ember.run.next this, ->
 				@get('parentView').$('.thisReq').removeClass('myLightSpeedOut').addClass('animated myLightSpeedIn')
+			###
 		)
 		toggle: (->
 			if @get 'suggesting' then return

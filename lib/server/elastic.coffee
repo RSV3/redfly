@@ -67,20 +67,25 @@ ES_scroll = (id, cb) ->
 ES_search = (fields, terms, filters, sort, options, cb)->
 
 	tagfields = []
-	for field in fields
-		if field
-			if field is 'tag'
-				tagfields.push 'indtags.body'
-				tagfields.push 'orgtags.body'
-			else if field is 'note' then tagfields.push 'notes.body'
-			else if field is 'company' then tagfields.push field
+
+	unless fields is 'ids'
+		for field in fields
+			if field
+				if field is 'tag'
+					tagfields.push 'indtags.body'
+					tagfields.push 'orgtags.body'
+				else if field is 'note' then tagfields.push 'notes.body'
+				else if field is 'company' then tagfields.push field
 			else tagfields.push "#{field}s"
 	newq =
 		query:filtered: filter:and:[exists:field:'added']
 		from: options.skip
 		size: options.limit
 		fields: []
-	if tagfields.length then newq.query.filtered.query = bool:should:multi_match:{query:terms, fields:[]}
+	if fields is 'ids'
+		newq.query.filtered.filter.and.push ids:values:terms
+	else if tagfields.length
+		newq.query.filtered.query = bool:should:multi_match:{query:terms, fields:[]}
 
 	if options.highlights then newq.highlight = fields:{}
 	for field in tagfields
@@ -100,6 +105,7 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 
 	if sort and _.keys(sort).length then newq.sort = sort
 
+	console.dir newq
 	ES_client()?.search ES_index(), 'contact', newq, (err, data)->
 		if err
 			console.log "error querying #{name} on ES"

@@ -8,25 +8,30 @@ cheerio = require 'cheerio'
 
 module.exports = (fn, data, session, limit=0) ->
 
-	searchPagePageSize = 10		# used internally for paging
 
-	query = data.filter or data.query or ''
-	compound = _.compact query.split ':'
-	if not compound.length then terms=''
-	else terms = compound[compound.length-1]
+	if data._id and data._id.$in
+		fields = "ids"
+		terms = data._id.$in
+		searchPagePageSize = 100		# lets avoid paging ...
+	else
+		searchPagePageSize = 10		# used internally for paging
+		query = data.filter or data.query or ''
+		compound = _.compact query.split ':'
+		if not compound.length then terms=''
+		else terms = compound[compound.length-1]
 
-	if not limit and (query.length or data.moreConditions)
-		Models.Admin.update {_id:1}, $inc: 'searchCnt': 1, (err)->
-			if err then console.dir err
+		if not limit and (query.length or data.moreConditions)
+			Models.Admin.update {_id:1}, $inc: 'searchCnt': 1, (err)->
+				if err then console.dir err
 
-	availableTypes = ['name', 'email', 'company', 'tag', 'note']
-	fields = []		# this array maps the array of results to their type
-	if compound.length is 1						# type specified, eg tag:slacker
-		for type in availableTypes
-			fields.push type
-	else if compound[0] is 'contact'
-		fields = ['name', 'email']
-	else fields = [compound[0]]
+		availableTypes = ['name', 'email', 'company', 'tag', 'note']
+		fields = []		# this array maps the array of results to their type
+		if compound.length is 1						# type specified, eg tag:slacker
+			for type in availableTypes
+				fields.push type
+		else if compound[0] is 'contact'
+			fields = ['name', 'email']
+		else fields = [compound[0]]
 
 	filters = []
 	if data.moreConditions?.addedBy then filters.push terms:addedBy:[data.moreConditions.addedBy]
@@ -65,7 +70,7 @@ module.exports = (fn, data, session, limit=0) ->
 		else
 			key="#{key}.value"
 			sort[key]=dir
-	else if not query.length
+	else if not query?.length
 		sort.added = 'desc'
 		filters.push exists:field:"classified"
 

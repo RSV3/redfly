@@ -1,0 +1,12 @@
+.row-fluid
+	+unless ('hasResults')
+		.myloading
+			i.icon-spinner.icon-spin
+	+if ('hasResults')
+		+if ('theResults')
+			{{partial "sorting"}}
+			{{partial "results"}}
+		+if ('links')
+			{{partial "linkedinresults"}}
+		+if ('comments')
+			{{partial "commentresults"}}

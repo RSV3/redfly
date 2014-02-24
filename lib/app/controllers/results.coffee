@@ -8,6 +8,7 @@ module.exports = (Ember, App, socket) ->
 	sortFieldNames = ['familiarity', 'reachability', 'names', 'added']
 
 	App.ResultsController = Ember.ObjectController.extend
+		searchtag:null
 		hiding: 0			# this is just for templating, whether or not results are filtered out
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending

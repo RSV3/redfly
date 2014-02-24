@@ -34,6 +34,7 @@ module.exports = (Ember, App, socket) ->
 	require('./controllers/profile.coffee') Ember, App, socket
 	require('./controllers/report.coffee') Ember, App, socket
 	require('./controllers/results.coffee') Ember, App, socket
+	require('./controllers/responses.coffee') Ember, App, socket
 	require('./controllers/requests.coffee') Ember, App, socket
 	require('./controllers/tags.coffee') Ember, App, socket
 
