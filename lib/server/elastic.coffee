@@ -76,7 +76,7 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 					tagfields.push 'orgtags.body'
 				else if field is 'note' then tagfields.push 'notes.body'
 				else if field is 'company' then tagfields.push field
-			else tagfields.push "#{field}s"
+				else tagfields.push "#{field}s"
 	newq =
 		query:filtered: filter:and:[exists:field:'added']
 		from: options.skip
@@ -105,7 +105,6 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 
 	if sort and _.keys(sort).length then newq.sort = sort
 
-	console.dir newq
 	ES_client()?.search ES_index(), 'contact', newq, (err, data)->
 		if err
 			console.log "error querying #{name} on ES"

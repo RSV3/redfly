@@ -13,7 +13,7 @@ module.exports = (Ember, App, socket) ->
 					util.notify
 						title: 'Session Cleared'
 						text: 'You must login to access Redfly.'
-						before_open: (pnotify) =>
+						before_open: (pnotify) ->
 							pnotify.css top: '60px'
 				name = 'index'
 
@@ -121,7 +121,7 @@ module.exports = (Ember, App, socket) ->
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
-				socket.emit 'dashboard', (board)=>
+				socket.emit 'dashboard', (board)->
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
@@ -163,7 +163,7 @@ module.exports = (Ember, App, socket) ->
 			util.notify
 				title: 'No results found'
 				text: 'Reverting to all results.'
-				before_open: (pnotify) =>
+				before_open: (pnotify) ->
 					pnotify.css top: '60px'
 			newResults = App.Results.create {text: recent_query_string}
 			@transitionTo 'results', newResults
@@ -176,7 +176,7 @@ module.exports = (Ember, App, socket) ->
 	App.CompaniesRoute = Ember.Route.extend
 		setupController: (controller) ->
 			controller.set 'all', null
-			socket.emit 'companies', (results)=>
+			socket.emit 'companies', (results)->
 				controller.set 'all', results
 		renderTemplate: ->
 			@router.connectem @, 'companies'
@@ -221,14 +221,13 @@ module.exports = (Ember, App, socket) ->
 								unless results.response?.length then controller.set 'all', []
 								else
 									for own key, val of results
-										console.log "setting:#{key}"
-										console.dir val
 										if key is 'facets'
 											for own k, v of results.facets
 												controller.set "f_#{k}", v
 										else if key isnt 'response'
 											controller.set key, val
 									controller.set 'all', store.find 'contact', lookups
+								controller.set 'query', query
 								controller.set 'hasResults', true
 								controller.set 'searchtag', req.get 'text'
 
@@ -306,7 +305,7 @@ module.exports = (Ember, App, socket) ->
 	App.TagsRoute = Ember.Route.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->
-			socket.emit 'tags.stats', (stats) =>
+			socket.emit 'tags.stats', (stats) ->
 				for stat in stats
 					stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
 				controller.set 'stats', stats
@@ -343,7 +342,7 @@ module.exports = (Ember, App, socket) ->
 			util.notify
 				title: 'Unauthorized'
 				text: 'You must grant the requested permissions.'
-				before_open: (pnotify) =>
+				before_open: (pnotify) ->
 					pnotify.css top: '60px'
 		redirect: ->
 			@transitionTo 'index'
@@ -355,7 +354,7 @@ module.exports = (Ember, App, socket) ->
 			util.notify
 				title: 'Invalid Account'
 				text: "You must use your organisational account."
-				before_open: (pnotify) =>
+				before_open: (pnotify) ->
 					pnotify.css top: '60px'
 		redirect: ->
 			@transitionTo 'index'

@@ -1,7 +1,7 @@
 module.exports = (Ember, App, socket) ->
 	_ = require 'underscore'
 	_str = require 'underscore.string'
-	_.mixin(_str.exports());
+	_.mixin _str.exports()
 	moment = require 'moment'
 
 	searchPagePageSize = 10
@@ -9,7 +9,6 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultsController = Ember.ObjectController.extend
 		searchtag:null
-		hiding: 0			# this is just for templating, whether or not results are filtered out
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending
 
@@ -45,7 +44,7 @@ module.exports = (Ember, App, socket) ->
 		pickTheNose: (->
 			ids = @get 'f_knows'
 			if ids?.length
-				@store.filter('user', {_id:$in:ids}, (data) =>
+				@store.filter('user', {_id:$in:ids}, (data)->
 					_.contains ids, data.get('id')
 				).then (gno)=>
 					topnose = []

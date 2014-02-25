@@ -8,10 +8,10 @@ cheerio = require 'cheerio'
 
 module.exports = (fn, data, session, limit=0) ->
 
-
-	if data._id and data._id.$in
+	if ids = (data?._id or data?.filter?._id)
 		fields = "ids"
-		terms = data._id.$in
+		query = _id:ids
+		terms = ids.$in
 		searchPagePageSize = 100		# lets avoid paging ...
 	else
 		searchPagePageSize = 10		# used internally for paging
@@ -40,13 +40,13 @@ module.exports = (fn, data, session, limit=0) ->
 		filters.push missing:field:"indtags"
 		filters.push missing:field:"orgtags"
 	if data.knows?.length then filters.push terms:knows:data.knows
-	if data.industry?.length 
+	if data.industry?.length
 		thisf = []
 		for tag in data.industry
 			thisf.push term:"indtags.body.raw":tag,
 		if data.indAND then filters.push "and":thisf
 		else filters.push "or":thisf
-	if data.organisation?.length 
+	if data.organisation?.length
 		thisf = []
 		for tag in data.organisation
 			thisf.push term:"orgtags.body.raw":tag
@@ -70,6 +70,8 @@ module.exports = (fn, data, session, limit=0) ->
 		else
 			key="#{key}.value"
 			sort[key]=dir
+	else if query?._id?.$in?.length
+		sort.added = 'desc'
 	else if not query?.length
 		sort.added = 'desc'
 		filters.push exists:field:"classified"
