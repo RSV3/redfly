@@ -54,6 +54,13 @@ module.exports = (Ember, App, socket) ->
 					@set 'noseToPick', topnose
 		).observes 'f_knows'
 
+		multiNose: (->
+			@get('f_knows')?.length > 1
+		).property 'f_knows'
+		someFilter: (->
+			@get('f_knows')?.length > 1 or @get('f_inidtags')?.length > 0 or @get('f_orgtags')?.length > 0
+		).property 'f_knows', 'f_indtags', 'f_orgtags'
+
 		all: []				# every last search result
 		empty: false		# flag for empty results message
 		initialflag: 0		# dont scroll on initial load

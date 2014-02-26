@@ -99,9 +99,9 @@ ES_search = (fields, terms, filters, sort, options, cb)->
 		newq.query.filtered.filter.and.push filt
 
 	if options.facets then newq.facets =
-		knows:terms:{size:7, field:'knows'}
-		indtags:terms:{size:7, field:'indtags.body.raw'}
-		orgtags:terms:{size:7, field:'orgtags.body.raw'}
+		knows:terms:{size:8, field:'knows'}
+		indtags:terms:{size:8, field:'indtags.body.raw'}
+		orgtags:terms:{size:8, field:'orgtags.body.raw'}
 
 	if sort and _.keys(sort).length then newq.sort = sort
 

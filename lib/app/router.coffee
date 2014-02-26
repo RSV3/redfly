@@ -193,8 +193,8 @@ module.exports = (Ember, App, socket) ->
 			@_super controller, model
 			# easy init
 			store = @store
-			for flag in ['hasResults', 'dontFilter']
-				controller.set flag, false
+			controller.set 'hasResults', false
+			controller.set 'dontFilter', true
 			for nullit in ['all', 'f_knows', 'f_indtags', 'f_orgtags', 'sortType']
 				controller.set nullit, null
 			for zeroit in ['page', 'industryOp', 'orgOp', 'sortDir']
@@ -205,25 +205,24 @@ module.exports = (Ember, App, socket) ->
 			store.find('request', model.req).then (req)->
 				req.get('response').then (resps)->
 					Ember.RSVP.all(resps.getEach('contact')).then (lookups)->
+						controller.set 'storeLinks', resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and util.isLIURL r.get('body')
+						controller.set 'storeComments', resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and not util.isLIURL r.get('body')
 						lookups = _.uniq _.flatten _.map(lookups, (l)-> l.getEach 'id')
-						links = resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and util.isLIURL r.get('body')
-						comments = resps.filter (r)-> not r.get('contact.length') and r.get('body.length') and not util.isLIURL r.get('body')
-						controller.set 'comments', comments
-						controller.set 'links', links
 						unless lookups?.length
 							controller.set 'all', []
 							controller.set 'hasResults', true
-							controller.set 'dontFilter', true
 							controller.set 'searchtag', req.get 'text'
 						else
 							query = _id:$in:lookups
 							socket.emit 'fullSearch', query, (results)->
 								unless results.response?.length then controller.set 'all', []
 								else
+									controller.set 'dontFilter', false
 									for own key, val of results
 										if key is 'facets'
 											for own k, v of results.facets
-												controller.set "f_#{k}", v
+												controller.set "#{k}_enuff", v.length > 7
+												controller.set "f_#{k}", v[0..7]
 										else if key isnt 'response'
 											controller.set key, val
 									controller.set 'all', store.find 'contact', lookups
@@ -265,7 +264,8 @@ module.exports = (Ember, App, socket) ->
 					for own key, val of results
 						if key is 'facets'
 							for own k, v of results.facets
-								controller.set "f_#{k}", v
+								controller.set "#{k}_enuff", v.length > 7
+								controller.set "f_#{k}", v[0..7]
 						else if key isnt 'response'
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string
