@@ -4,7 +4,6 @@ module.exports = (Ember, App, socket) ->
 	moment = require 'moment'
 
 	App.RequestsController = Ember.ObjectController.extend
-		hasPrev: false
 		hasNext: false
 		rangeStart: 0
 		rangeStop: (->
@@ -36,13 +35,13 @@ module.exports = (Ember, App, socket) ->
 			if note = util.trim @get('newreq')
 				# we used to have set expiry to future a date, ie: new Date @get('newdate') or moment().add(7, 'days')
 				# now, we start with a record with no expiry, then set it when the request is ended.
-				nuReq = 
+				nuReq =
 					user: App.user
 					urgent: @get 'urgent'
 					text: note
 					response: []
-				nuReqRec = @store.createRecord 'request', nuReq
-				nuReqRec.save().then -> @reloadFirstPage()
+				@store.createRecord('request', nuReq).save().then ->
+					@reloadFirstPage()
 				@set 'newreq', null
 				@set 'newdate', null
 				@set 'urgent', null
@@ -102,10 +101,10 @@ module.exports = (Ember, App, socket) ->
 		).property 'user'
 		addNote: (note) ->
 			self = @
-			newnote = @store.createRecord 'response',
+			@store.createRecord('response',
 				user: App.user
 				body: note
-			newnote.save().then ->
+			).save().then ->
 				self.get('response').pushObject newnote
 				self.get('response').save()
 		addSuggestions: (suggestions)->

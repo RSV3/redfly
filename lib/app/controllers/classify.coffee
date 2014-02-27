@@ -61,15 +61,13 @@ module.exports = (Ember, App, socket) ->
 				@_next()
 
 		skip: ->
-			classy = @store.createRecord('classify',
+			@store.createRecord('classify',
 				user: App.user
 				contact: @get 'thisContact'
-			)
-			console.dir classy
-			classy.save()
+			).save()
 			@_next()
 		ignore: ->
-			@get('controllers.contact').content.remove()
+			@get('controllers.contact').remove()
 			@incrementProperty 'classifyCount'
 		_next: ->
 			@get('controllers.contact').content.save()

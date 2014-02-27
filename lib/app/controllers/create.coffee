@@ -60,13 +60,9 @@ module.exports = (Ember, App, socket) ->
 						addedBy: App.user
 					if picture = util.trim @get('picture')
 						properties.picture = picture
-					contact = store.createRecord 'contact', properties
-					contact.save()
+					store.createRecord('contact', properties).save().then (contact)=>
+						@$().addClass 'animated lightSpeedOut'
 
-					@$().addClass 'animated lightSpeedOut'
-					contact.addObserver 'id', =>
-					# TO-DO bring this back when ember-data is fixed
-					# contact.one 'didCreate', =>
 						@get('controller').transitionToRoute 'contact', contact
 		reset: ->
 			for field in fields

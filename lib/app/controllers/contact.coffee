@@ -26,14 +26,14 @@ module.exports = (Ember, App, socket) ->
 		).property 'addedBy', 'isKnown'	# someone added, and I don't know
 
 		gmailSearch: (->
-				encodeURI "//gmail.com#search/to:#{@get('email')}"
-			).property 'email'
+			encodeURI "//gmail.com#search/to:#{@get('email')}"
+		).property 'email'
 		directMailto: (->
-				"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
-			).property 'canonicalName', 'email'
+			"mailto:#{@get('canonicalName')}<#{@get('email')}>?subject=What are the haps my friend!"
+		).property 'canonicalName', 'email'
 		linkedinMail: (->
-				'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
-			).property 'linkedin'
+			'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
+		).property 'linkedin'
 		waitingForMeasures:true
 		allMeasures:null
 		getMeasures: (->
@@ -112,11 +112,12 @@ module.exports = (Ember, App, socket) ->
 
 		add: ->
 			if note = util.trim @get('currentNote')
-				@store.createRecord 'note',
+				@store.createRecord('note',
 					date: new Date	# Only so that sorting is smooth.
 					author: App.user
 					contact: @get 'content'
 					body: note
+				).save()
 				@commitNcount()
 				@set 'animate', true
 				@set 'currentNote', null
@@ -126,19 +127,20 @@ module.exports = (Ember, App, socket) ->
 				@commitNcount()
 
 		remove: ->
-			knows = @get('knows').then (ids)->
-				_.filter ids, (u)-> u.id isnt App.user.get('id')
-			ab = @get('addedBy') 
-			if ab?.get('id') is App.user.get('id')
-				if knows.length then ab = knows[0]
-				else ab = null
-				@set 'addedBy', ab
-			@set 'knows.content', knows
-			if not ab then @set 'added', null
-			@store.createRecord 'exclude',
-				user: App.user
-				contact: @store.find 'contact', @get 'id'
-			@commitNcount()
+			@get('knows').then (ids)=>
+				knows = ids.filter (u)-> u.id isnt App.user.id
+				ab = @get 'addedBy'
+				if ab?.get('id') is App.user.get('id')
+					if knows.length then ab = knows[0]
+					else ab = null
+					@set 'addedBy', ab
+				@set 'knows.content', knows
+				if not ab then @set 'added', null
+				@store.createRecord('exclude',
+					user: App.user
+					contact: @store.find 'contact', @get 'id'
+				).save()
+				@commitNcount()
 
 		commitNcount: ->
 			@set 'updated', new Date
@@ -162,13 +164,13 @@ module.exports = (Ember, App, socket) ->
 			if ev.positions.length and not @get('position') then @set 'position', ev.positions[0]
 			for spec in ev.specialties
 				if spec and not _.contains @get('indTags'), spec
-					@store.createRecord 'tag', {
-					    date: new Date  # Only so that sorting is smooth.
+					@store.createRecord('tag',
+						date: new Date  # Only so that sorting is smooth.
 						creator: App.user
 						contact: this.store.find 'contact', @get 'id'
 						category: 'industry'
 						body: spec
-					}
+					).save()
 			@set 'updated', new Date
 			@set 'updatedBy', App.user
 			@get('content').save()
@@ -224,7 +226,7 @@ module.exports = (Ember, App, socket) ->
 				port = if window.location.port then ":#{window.location.port}" else ""
 				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 				$('p.bullhorn>a').css('color','grey').bind('click', false)
-				socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, () =>
+				socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, ()->
 					util.notify
 						title: 'Introduction requested'
 						text: '<div id="requestintro"></div>'
@@ -233,7 +235,7 @@ module.exports = (Ember, App, socket) ->
 						sticker: false
 						hide: false
 						effect: 'bounce'
-						before_open: (pnotify) =>
+						before_open: (pnotify)->
 							pnotify.css top: '60px'
 
 		)
@@ -352,7 +354,7 @@ module.exports = (Ember, App, socket) ->
 					text: 'The merge is in progress. MEERRRGEEE.'
 					type: 'info', icon: 'icon-signin'
 					hide: false, closer: false, sticker: false
-					before_open: (pnotify) =>
+					before_open: (pnotify)->
 						pnotify.css top: '60px'
 
 				selections = @get 'selections'
@@ -490,20 +492,22 @@ module.exports = (Ember, App, socket) ->
 
 						if (m = allMs[thism]?.find((eachM)-> eachM.get('user.id') is App.user.get('id')))
 							m.set 'value', newvalue
+							m.save()
+							view._drawStars()
+							view.get('controller').notifyPropertyChange 'measures'
 						else
-							newm = store.createRecord 'measurement', {
+							store.createRecord('measurement',
 								user: App.user
 								contact: view.get 'controller.content'
 								attribute: view.get 'measure'
 								value: newvalue
-							}
-							newm.save().then ->
+							).save().then (newm)->
 								if not allMs[thism] then allMs[thism] = Ember.ArrayProxy.create content: []
 								allMs[thism].pushObject newm
 								view.set 'value', (newvalue+100)/40
 								view.set 'controller.updated', new Date
 								view.set 'controller.updatedBy', App.user
-								@get('controller.content').save()
+								view.get('controller.content').save()
 								view._drawStars()
 								view.get('controller').notifyPropertyChange 'measures'
 				@_drawStars()
