@@ -1,7 +1,9 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+
 	util = require './util.coffee'
+	socketemit = require './socketemit.coffee'
 
 	recent_query_string = ''	# this is the query that returns the list of all contacts
 
@@ -84,7 +86,7 @@ module.exports = (Ember, App, socket) ->
 	App.ApplicationRoute = Ember.Route.extend
 		events:
 			logout: (context) ->
-				socket.emit 'logout', =>
+				socketemit.post 'logout', =>
 					App.auth.logOnOut()
 					@transitionTo 'index'
 
@@ -103,7 +105,7 @@ module.exports = (Ember, App, socket) ->
 	App.AdminRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
-				socket.emit 'stats', (stats) =>
+				socketemit.get 'stats', (stats)=>
 					for own key,val of stats
 						controller.set key, val
 					@store.find('admin', 1).then (admin)->
@@ -121,7 +123,7 @@ module.exports = (Ember, App, socket) ->
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
-				socket.emit 'dashboard', (board)->
+				socketemit.get 'dashboard', (board)->
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
@@ -133,7 +135,7 @@ module.exports = (Ember, App, socket) ->
 			controller.set 'dynamicQ', null
 			controller.set 'complete', false
 			controller.set 'classifyCount', 0
-			socket.emit 'classifyQ', App.user?.get('id'), (results) =>
+			socketemit.get "classifyQ/#{App.user?.get('id')}", (results) =>
 				if results and results.length
 					App.admin.set 'classifyCount', results.length
 					controller.set 'dynamicQ', @store.find 'contact', results
@@ -176,7 +178,7 @@ module.exports = (Ember, App, socket) ->
 	App.CompaniesRoute = Ember.Route.extend
 		setupController: (controller) ->
 			controller.set 'all', null
-			socket.emit 'companies', (results)->
+			socketemit.get 'companies', (results)->
 				controller.set 'all', results
 		renderTemplate: ->
 			@router.connectem @, 'companies'
@@ -214,7 +216,7 @@ module.exports = (Ember, App, socket) ->
 							controller.set 'searchtag', req.get 'text'
 						else
 							query = _id:$in:lookups
-							socket.emit 'fullSearch', query, (results)->
+							socketemit.get 'fullSearch', query, (results)->
 								unless results.response?.length then controller.set 'all', []
 								else
 									controller.set 'dontFilter', false
@@ -256,7 +258,7 @@ module.exports = (Ember, App, socket) ->
 			if model.poor
 				controller.set 'datapoor', true
 				query.moreConditions = poor:true
-			socket.emit 'fullSearch', query, (results) =>
+			socketemit.get 'fullSearch', query, (results) =>
 				if results and results.query is model.text		# ignore stale results that don't match the query
 					if not results.response?.length
 						if model.text isnt recent_query_string then return @transitionTo 'noresult'
@@ -281,7 +283,7 @@ module.exports = (Ember, App, socket) ->
 
 	App.RequestsRoute = Ember.Route.extend
 		setupController: (controller, model)->
-			socket.emit 'requests', (reqs, theresmore)->
+			socketemit.get 'requests', (reqs, theresmore)->
 				if reqs
 					controller.set 'hasNext', theresmore
 					if theresmore then controller.set 'pageSize', reqs.length
@@ -293,7 +295,7 @@ module.exports = (Ember, App, socket) ->
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			store = @store
-			socket.emit 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) ->
+			socketemit.get 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) ->
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', store.find 'user', leaders
@@ -305,7 +307,7 @@ module.exports = (Ember, App, socket) ->
 	App.TagsRoute = Ember.Route.extend
 		# This would be a bit cleaner if we used 'model' instead of 'setupController' and called the stats the model.
 		setupController: (controller) ->
-			socket.emit 'tags.stats', (stats) ->
+			socketemit.get 'tags.stats', (stats) ->
 				for stat in stats
 					stat.mostRecent = require('moment')(stat.mostRecent).fromNow()
 				controller.set 'stats', stats

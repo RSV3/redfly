@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../socketemit.coffee'
 
 	App.ClassifyController = Ember.Controller.extend
 		needs: ['contact']
@@ -53,7 +54,7 @@ module.exports = (Ember, App, socket) ->
 				App.user.incrementProperty 'contactCount'
 			App.user.save()
 			@get('controllers.contact').content.save().then =>
-				@store.createRecord('classify', 
+				@store.createRecord('classify',
 					saved:require('moment')().toDate()
 					user: App.user
 					contact: @get 'thisContact'
@@ -82,7 +83,7 @@ module.exports = (Ember, App, socket) ->
 
 		flushem: ->
 			cons = @get('flushlist').filter((item)-> item.get 'checked').getEach('id')
-			socket.emit 'flush', cons, -> true	# just gonna assume success ...
+			socketemit.post 'flush', cons, -> true	# just gonna assume success ...
 			@set 'dynamicQ', @get('flushlist').filter((item)-> not item.get 'checked')
 			@set 'flushing', false
 

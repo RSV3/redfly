@@ -1,4 +1,4 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	util = require '../../util.coffee'
 

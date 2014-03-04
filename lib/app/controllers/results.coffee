@@ -1,8 +1,10 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_str = require 'underscore.string'
 	_.mixin _str.exports()
 	moment = require 'moment'
+
+	socketemit = require '../socketemit.coffee'
 
 	searchPagePageSize = 10
 	sortFieldNames = ['familiarity', 'reachability', 'names', 'added']
@@ -91,7 +93,7 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
@@ -104,7 +106,7 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
@@ -115,7 +117,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'all', []
 				@set 'page', 0
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
 						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
@@ -144,7 +146,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'all', []
 			@set 'page', 0
 			@set 'empty', false
-			socket.emit 'fullSearch', emission, (results) =>
+			socketemit.get 'fullSearch', emission, (results) =>
 				if results?.response?.length
 					@set 'all', @store.find 'contact', results.response
 				else @set 'empty', true

@@ -1,4 +1,4 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	util = require '../../util.coffee'
 
 	App.CompaniesController = Ember.ObjectController.extend

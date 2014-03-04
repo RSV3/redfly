@@ -1,6 +1,7 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	util = require '../util.coffee'
+	socketemit = require '../socketemit.coffee'
 
 	App.AdminView = Ember.View.extend
 		template: require '../../../templates/admin.jade'
@@ -38,7 +39,7 @@ module.exports = (Ember, App, socket) ->
 						"label" : "Rename old tags",
 						"class" : "btn-success",
 						"callback": ()=>
-							socket.emit 'renameTags', {old:oldText, new:newText}, ()->
+							socketemit.post 'renameTags', {old:oldText, new:newText}, ()->
 								renameTagCategory $it, $newInput
 					,
 						"label" : "Ignore old tags",

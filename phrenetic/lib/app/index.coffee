@@ -20,16 +20,7 @@ module.exports = (preHook, postHook) ->
 	App.ready = ->
 		$('#initializing').remove()
 
-	io = require 'express.io/node_modules/socket.io/node_modules/socket.io-client'
-	socket = io.connect require('./util.coffee').baseUrl
-	socket.on 'error', ->
-		# TODO remove once I'm convinced this never happens
-		alert 'Unable to establish connection, please refresh.'
-		# window.location.reload()
-	socket.on 'reloadApp', -> window.location.reload()
-	socket.on 'reloadStyles', -> App.styles.set 'timestamp', Date.now()
-
-	preHook? Ember, DS, App, socket
+	preHook? Ember, DS, App
 
 	App.addObserver 'title', ->
 		title = App.get 'title'
@@ -39,16 +30,16 @@ module.exports = (preHook, postHook) ->
 	App.styles = do ->
 		Styles = Ember.Object.extend
 			updateSheet: (->
-					href = '/' + @get('name') + '.css'
-					if timestamp = @get('timestamp')
-						href += '?timestamp=' + timestamp
-					$('#styles').attr 'href', href
-				).observes 'name', 'timestamp'
+				href = "/#{@get('name')}.css"
+				if timestamp = @get('timestamp')
+					href += '?timestamp=' + timestamp
+				$('#styles').attr 'href', href
+			).observes 'name', 'timestamp'
 		Styles.create()
 
-	require('./store.coffee') Ember, DS, App, socket
+	require('./store.coffee') Ember, DS, App
 	require('./ember.coffee') Ember, DS, App
 	require('./handlebars.coffee') Ember, Handlebars
 
-	postHook? Ember, DS, App, socket
+	postHook? Ember, DS, App
 

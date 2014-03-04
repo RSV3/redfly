@@ -1,6 +1,7 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
+	socketemit = require '../socketemit.coffee'
 
 
 	App.ApplicationView = Ember.View.extend
@@ -32,31 +33,34 @@ module.exports = (Ember, App, socket) ->
 			App.admin?.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
 
 			# Update contacts if they recieve additional linkedin data.
+			###
+			# SOCKET IO LOSS: we can't do this easily without socket.io
 			socket.on 'linked', (changes) =>
 				changes = _.filter changes, (change) ->
 					store.recordIsLoaded App.Contact, change
 				if not _.isEmpty changes then store.find 'contact', changes
+			###
 
 			# TO-DO Maybe create a pattern for the simple use case of using a socket to get and set one value.
-			socket.emit 'summary.organisation', (title) ->
+			socketemit.get 'summary.organisation', (title) ->
 				App.set 'orgTitle', title
-			socket.emit 'summary.contacts', (count) =>
+			socketemit.get 'summary.contacts', (count) =>
 				@set 'controller.contactsQueued', count
-			socket.emit 'summary.tags', (count) =>
+			socketemit.get 'summary.tags', (count) =>
 				@set 'controller.tagsCreated', count
-			socket.emit 'summary.notes', (count) =>
+			socketemit.get 'summary.notes', (count) =>
 				@set 'controller.notesAuthored', count
-			socket.emit 'summary.verbose', (verbose) =>
+			socketemit.get 'summary.verbose', (verbose) =>
 				@set 'controller.mostVerboseTag', verbose
-			socket.emit 'summary.user', (user) =>
+			socketemit.get 'summary.user', (user) =>
 				@set 'controller.mostActiveUser', user
 
 			# handle the event sent by the browser plugin on installation
-			Ember.$(document).on 'installExtension', null, (ev, tr)=>
+			Ember.$(document).on 'installExtension', null, (ev, tr)->
 				App.admin.set 'extensionOn', true
 
 			# handle the event sent by the browser plugin on scrape
-			Ember.$(document).on 'saveExtension', null, (ev, tr)=>
+			Ember.$(document).on 'saveExtension', null, (ev, tr)->
 				if (ev = ev?.originalEvent?.detail).publicProfileUrl
 					App.ls = Ember.ObjectProxy.create()
 					lsinit = ->
@@ -116,7 +120,7 @@ module.exports = (Ember, App, socket) ->
 					transmit =
 						email:@get('email.value')
 						password:@get('password.value')
-					socket.emit 'login.contextio', transmit, (r) =>
+					socketemit.post 'login.contextio', transmit, (r) =>
 						if r.err
 							@$().find(".#{r.err}").addClass 'error'
 							@set 'working', false
@@ -124,7 +128,7 @@ module.exports = (Ember, App, socket) ->
 							App.set 'user', @get('parentView.parentView.controller').store.find 'user', r.id
 							@set 'working', false
 							@.set 'parentView.parentView.showLogin', false
-							socket.emit 'session', (session) ->
+							socketemit.get 'session', (session) ->
 								if session.user is r.id
 									controller.transitionToRoute 'recent'
 								else

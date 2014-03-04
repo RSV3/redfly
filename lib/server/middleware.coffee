@@ -13,6 +13,13 @@ authWithHint = (next, hint)->
 
 module.exports = (app) ->
 	app.use (req, res, next)->
+		console.log 'autologin'
+		console.dir req.url
+		console.dir req.body
+		console.dir req.params
+		console.dir req.xhr
+		console.log ''
+
 		if req.session?.user?.length then return next() 	# already logged in? well, thatsok.
 		lastlogin = req.cookies?.lastlogin
 		if not lastlogin?.length then return authWithHint next

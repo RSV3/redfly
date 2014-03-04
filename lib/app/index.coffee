@@ -1,7 +1,8 @@
 _ = require 'underscore'
 moment = require 'moment'
+socketemit = require './socketemit.coffee'
 
-configureAdminOnLogin = _.after 2, (App, socket)->
+configureAdminOnLogin = _.after 2, (App)->
 
 	App.user.set 'lastLogin', new Date()
 	App.user.save()
@@ -10,14 +11,14 @@ configureAdminOnLogin = _.after 2, (App, socket)->
 	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
 		App.admin.set "orgtagcat#{i+1}", t
 	user = App.get 'user.id'
-	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
+	socketemit.get "classifyCount/#{user}", (count) ->		# always update these counts.
 		App.admin.set 'classifyCount', count
-		socket.emit 'requestCount', user, (count)->
+		socketemit.get "requestCount/#{user}", (count)->
 			App.admin.set 'requestCount', count
 			App.advanceReadiness()
 
 store = null
-preHook = (Ember, DS, App, socket) ->
+preHook = (Ember, DS, App) ->
 	App.set 'user', null
 	App.auth =
 		login: (id) ->
@@ -25,7 +26,7 @@ preHook = (Ember, DS, App, socket) ->
 				if data
 					App.set 'user', data
 					document.cookie = "lastlogin=#{id};path=/;expires=" + moment().add(1, 'month').toDate().toUTCString()
-					configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
+					configureAdminOnLogin App		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
 			App.admin?.reload()
@@ -34,7 +35,7 @@ preHook = (Ember, DS, App, socket) ->
 			document.cookie = "connect.sid=;path=/;expires=null"
 			App.auth.logout()
 
-postHook = (Ember, DS, App, socket) ->
+postHook = (Ember, DS, App) ->
 	Ember.Application.initializer
 		name: 'test'
 		after: 'store'
@@ -46,15 +47,15 @@ postHook = (Ember, DS, App, socket) ->
 			require('./handlebars.coffee') Ember, Handlebars
 			require('./ember.coffee') Ember, App
 			require('./models.coffee') DS, App
-			require('./controllers.coffee') Ember, App, socket
-			require('./router.coffee') Ember, App, socket
+			require('./controllers.coffee') Ember, App
+			require('./router.coffee') Ember, App
 			store.find('admin', 1).then (data)->
 				if data
 					App.set 'admin', data
-					configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
+					configureAdminOnLogin App		# this needs to run after admin is loaded AND user logged in
 
-			socket.emit 'session', (session) ->
-				if id = session.user then App.auth.login id
+			socketemit.get 'session', (session) ->
+				if id = session?.user then App.auth.login id
 				else
 					App.auth.logout()
 					App.advanceReadiness()

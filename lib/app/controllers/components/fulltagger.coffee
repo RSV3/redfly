@@ -1,6 +1,7 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 	App.FullTaggerView = App.TaggerView.extend
 		template: require '../../../../templates/components/tagger.jade'
@@ -25,7 +26,7 @@ module.exports = (Ember, App, socket) ->
 				if (aTags = @get('storeAutoTags')) then return aTags
 				bodies = tags.getEach 'body'
 				@set 'storeAutoTags', []
-				socket.emit 'tags.all', category: @get('category'), (allTags) =>
+				socketemit.get 'tags.all', category: @get('category'), (allTags) =>
 					aTags = @get 'storeAutoTags'
 					aTags.addObjects _.difference allTags, bodies
 				@get 'storeAutoTags'
@@ -71,7 +72,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'storePopTags', grandparent[cat]
 			else
 				@set 'storePopTags', []
-				socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
+				socketemit.get 'tags.popular', category: @get('category'), (popularTags) =>
 					pTags = @get 'storePopTags'
 					if grandparent then grandparent[cat] = pTags
 					priorTags = @get 'storePriorTags'
@@ -112,7 +113,7 @@ module.exports = (Ember, App, socket) ->
 			delete: ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
-				setTimeout =>
+				setTimeout ->
 					if tag and tag.deleteRecord
 						tag.deleteRecord()	# if its a real tag that exists
 						tag.save()

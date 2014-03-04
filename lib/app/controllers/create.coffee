@@ -1,5 +1,5 @@
-module.exports = (Ember, App, socket) ->
-	validation = require('../validation.coffee') socket
+module.exports = (Ember, App) ->
+	validation = require '../validation.coffee'
 	util = require '../util.coffee'
 
 	validate = validation.validate

@@ -127,7 +127,7 @@ findAndUpdateOtherLinkedInDataFor = (u, c, calldone) ->
 # these records come from users' connections which were not previously matched against contacts,
 # but were stored for later reference.
 #
-module.exports = 
+module.exports =
 	linkLater: findAndUpdateOtherLinkedInDataFor
 	addDeets2Contact: addDeets2Contact
 	REImake: REImake

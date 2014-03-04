@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App)->
 	util = require '../util.coffee'
+	socketemit = require '../socketemit.coffee'
 	_ = require 'underscore'
 	moment = require 'moment'
 
@@ -18,14 +19,14 @@ module.exports = (Ember, App, socket) ->
 		newdate:null
 		urgent: false
 		prevPage: (->
-			socket.emit 'requests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'requests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
 					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', true
 					@set 'rangeStart', @get('rangeStart') - @get('pageSize')
 		)
 		nextPage: (->
-			socket.emit 'requests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'requests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
 					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', theresmore
@@ -47,7 +48,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'urgent', null
 		)
 		reloadFirstPage: (->
-			socket.emit 'requests', (reqs, theresmore)=>
+			socketemit.get 'requests', (reqs, theresmore)=>
 				@set 'reqs', @store.find 'request', reqs
 				@set 'hasNext', theresmore
 		)
@@ -68,6 +69,8 @@ module.exports = (Ember, App, socket) ->
 			tabindex: 1
 
 		didInsertElement: ->
+			###
+			# SOCKET.IO LOSS: we can't easily do this without socket.io
 			socket.on 'feed', (data) =>
 				store = @get('controller').store
 				if not data or data.type isnt 'Request' or not data.id then return
@@ -83,6 +86,7 @@ module.exports = (Ember, App, socket) ->
 						if @get 'controller.rangeStart' then return		# dont try to show new request if we're on another page
 						if not @get 'controller.rangeStop' then return	# and dont bother if there's no shown
 						@get('controller').reloadFirstPage()
+			###
 
 	App.RequestController = Ember.ObjectController.extend
 		hovering: null

@@ -1,4 +1,4 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 
 	App.NoteView = Ember.View.extend
 		classNames: ['media']

@@ -1,6 +1,7 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 	App.TagAdminView = Ember.View.extend
 		template: require '../../../../templates/components/tagadmin.jade'
@@ -25,7 +26,7 @@ module.exports = (Ember, App, socket) ->
 		saveAllTags: null
 		saveTags: (->
 			@set 'saveAllTags', []
-			socket.emit 'tags.all', category: @get('category'), (allTags) =>
+			socketemit.get 'tags.all', category: @get('category'), (allTags) =>
 				result = @get 'saveAllTags'
 				result.pushObjects allTags.map (b)->b
 			@get 'saveAllTags'
@@ -42,7 +43,7 @@ module.exports = (Ember, App, socket) ->
 						allTags = _.difference allTags, p
 					doLongList = (res, tags)->
 						if not tags?.length then return
-						res.pushObjects _.map tags[0..99], (b)=> {body:b, catid:catid}
+						res.pushObjects _.map tags[0..99], (b)-> {body:b, catid:catid}
 						Ember.run.next this, ->
 							doLongList res, tags[100..]
 					if allTags.length then doLongList result, allTags
@@ -88,7 +89,7 @@ module.exports = (Ember, App, socket) ->
 								category: that.get 'parentView.category'
 								body: oldtxt
 								new: newtxt
-							socket.emit 'tags.rename', renameObj, ()->
+							socketemit.post 'tags.rename', renameObj, ()->
 								that.set('context.body', newtxt)
 								that.get('parentView.controller').store.filter('tag', (t)->
 									t.get('category') is renameObj.category and t.get('body') is renameObj.body
@@ -121,7 +122,7 @@ module.exports = (Ember, App, socket) ->
 							tag.save()
 						else								# .. but the 'alltags' list are just {body:} objs.
 							if b?.length and c?.length		# we need to tell the server to remove any tags with the same name
-								socket.emit 'tags.remove', {category: c, body: b}, (removedTags) =>
+								socketemit.post 'tags.remove', {category: c, body: b}, (removedTags) =>
 									while removedTags.length
 										id = removedTags.shift()
 										@get('parentView.controller').store.filter('tag', (t)-> t.get('isLoaded') and id is t.get 'id').get('firstObject')?.get('stateManager').goToState('deleted.saved')
@@ -136,11 +137,11 @@ module.exports = (Ember, App, socket) ->
 					containment:$('body')
 				).droppable(
 					drop: (e, ui)->
-						renameObj = 
+						renameObj =
 							category: that.get 'category'
 							body: util.trim ui.draggable.text()
 							new: util.trim $(this).text()
-						socket.emit 'tags.rename', renameObj, () =>
+						socketemit.post 'tags.rename', renameObj, () =>
 							ui.draggable.remove()
 							@get('parentView.controller').store.filter('tag', (t)->
 								t.get('category') is renameObj.category and t.get('body') is renameObj.body
@@ -157,7 +158,7 @@ module.exports = (Ember, App, socket) ->
 								category: that.get 'category'
 								body: util.trim ui.draggable.text()
 								newcat: util.trim $(this).find('a').attr 'href'
-							socket.emit 'tags.move', moveObj, () =>
+							socketemit.post 'tags.move', moveObj, () =>
 								ui.draggable.remove()
 								that.set('context.category', moveObj.newcat)
 								@get('parentView.controller').store.filter('tag', (t)->

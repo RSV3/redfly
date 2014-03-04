@@ -1,5 +1,5 @@
 
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 
 	App.NewTagView = Ember.TextField.extend

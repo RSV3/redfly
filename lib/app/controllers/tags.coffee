@@ -1,4 +1,4 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 
 	App.TagsController = Ember.ObjectController.extend
 		stats: []

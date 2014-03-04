@@ -99,8 +99,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						_.chain(mails)
 							.filter (mail) ->
 								mail.recipient is contact
-							.max (mail) ->
-								mail.sent.getTime() # TO-DO probably can be just mail.sent
+							.max (mail)->
+								mail.sent.getTime()
 							.value()
 					newContacts.reverse()
 					#user.queue.unshift newContacts... # dont use queue on user object anymore
@@ -109,7 +109,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			if not (mail = mails[index++]) then return sift index
 
 			notifications?.considerContact?()
-			# Find an existing contact with one of the same emails 
+			# Find an existing contact with one of the same emails
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 			Models.Contact.find {emails: mail.recipientEmail}, (err, contacts) ->
 

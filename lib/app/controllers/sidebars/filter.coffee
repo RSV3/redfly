@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../../socketemit.coffee'
 
 	Ember.RadioButton = Ember.View.extend
 		checked: false,
@@ -32,7 +33,7 @@ module.exports = (Ember, App, socket) ->
 			if category?.length
 				if category is 'industry' then conditions = category:'industry'
 				else conditions = category:$ne:'industry'
-				socket.emit 'tags.all', conditions, (allTags) =>
+				socketemit.get 'tags.all', conditions, (allTags) =>
 					unless @isDestroyed then @set 'autocompletes', allTags
 			#else @set 'allautos', @get('parentView.controller').store.filter 'user', {name:$exists:true}, (u)->u?.get('name')?.length
 		updateTypeahead: (->
@@ -51,8 +52,8 @@ module.exports = (Ember, App, socket) ->
 		).observes 'nextNewUser.@each'
 		addNose: (name)->
 			console.dir name
-			@set 'nextNewUser', @get('controller').store.filter 'user', (data) ->
-					data.get('name') is name
+			@set 'nextNewUser', @get('controller').store.filter 'user', (data)->
+				data.get('name') is name
 
 		addTag: (cat, body)->
 			@get('controller').tagToggle cat, body

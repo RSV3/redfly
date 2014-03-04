@@ -1,4 +1,4 @@
-module.exports = (Ember, DS, App, socket) ->
+module.exports = (Ember, DS, App) ->
 	_ = require 'underscore'
 	util = require './util.coffee'
 
@@ -11,12 +11,21 @@ module.exports = (Ember, DS, App, socket) ->
 			new Ember.RSVP.Promise (resolve, reject)->
 				success = (json)->
 					Ember.run null, resolve, json
-				error = (json)->
+				failure = (json)->
 					Ember.run null, reject, json
-				data = {op:op, type:util.typeName(type)}
+				data = {}
 				if field then data[field] = value
-				socket.emit 'db', data, (json) =>
-					Ember.run null, (if json then success else error), json
+				$.ajax
+					url: "/db/#{util.typeName type}/#{op}"
+					type: if op is 'find' then 'GET' else 'POST'
+					data: data
+					xhrFields: withCredentials: true
+					success: (data, textStatus, xhr)->
+						if data then success data
+						else failure data
+					error: (xhr, textStatus, errorThrown)->
+						console.dir textStatus
+						failure null
 		doFind: (type, field, value)-> @doOp 'find', type, field, value
 		find: (store, type, id) -> @doFind type, 'id', id
 		findAll: (store, type) -> @doFind type

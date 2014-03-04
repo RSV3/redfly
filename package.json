@@ -5,7 +5,7 @@
 	"jquery": "2.1.0",
     "longjohn": "0.2.0",
     "coffee-script": "1.6.3",
-    "express.io": "1.1.11",
+    "express": "3.4.8",
     "connect-redis": "1.4.5",
     "jade": "0.31.2",
     "nib": "0.9.1",

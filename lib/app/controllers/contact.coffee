@@ -1,7 +1,8 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	util = require '../util.coffee'
 	moment = require 'moment'
+	util = require '../util.coffee'
+	socketemit = require '../socketemit.coffee'
 
 	App.ContactController = Ember.ObjectController.extend
 
@@ -226,7 +227,7 @@ module.exports = (Ember, App, socket) ->
 				port = if window.location.port then ":#{window.location.port}" else ""
 				url = "http://#{window.location.hostname}#{port}/contact/#{@get 'controller.id'}"
 				$('p.bullhorn>a').css('color','grey').bind('click', false)
-				socket.emit 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, ()->
+				socketemit.post 'getIntro', {contact: @get('controller.id'), userto: @get('controller.addedBy.id'), userfrom: App.user.get('id'), url:url}, ()->
 					util.notify
 						title: 'Introduction requested'
 						text: '<div id="requestintro"></div>'
@@ -308,7 +309,7 @@ module.exports = (Ember, App, socket) ->
 				# Set primary and others to the new values so the user can see any modifications to the input while stuff saves.
 				that.set 'primary', _.first all
 				that.set 'others.content', that._makeProxyArray _.rest all
-				socket.emit 'deprecatedVerifyUniqueness', id: that.get('controller.id'), field: that.get('allAttribute'), candidates: all, (duplicate) ->
+				socketemit.post 'deprecatedVerifyUniqueness', {id: that.get('controller.id'), field: that.get('allAttribute'), candidates: all}, (duplicate) ->
 					that.set 'duplicate', duplicate
 
 					if (not nothing) and (not duplicate)
@@ -359,7 +360,7 @@ module.exports = (Ember, App, socket) ->
 
 				selections = @get 'selections'
 				id = @get 'controller.id'
-				socket.emit 'merge', contactId:id, mergeIds: selections.getEach('id'), (mergedcontact)=>
+				socketemit.post 'merge', {contactId:id, mergeIds: selections.getEach('id')}, (mergedcontact)=>
 					# doing this for now because the deleterec (below) doesn't work. maybe remove this line after EPF upgrade?
 					if not @get('parentView.parentView.classifying') then window.location.reload()
 

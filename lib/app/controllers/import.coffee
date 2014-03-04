@@ -1,9 +1,9 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
 	util = require '../util.coffee'
-	validation = require('../validation.coffee') socket
+	validation = require '../validation.coffee'
 
 	validate = validation.validate
 	filter = validation.filter

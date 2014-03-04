@@ -1,7 +1,8 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 
 	App.SearchView = Ember.View.extend
@@ -14,12 +15,12 @@ module.exports = (Ember, App, socket) ->
 		role: 'menu'
 		results: {}
 		hasResults: (->
-				not _.isEmpty @get('results')
-			).property 'results'
+			not _.isEmpty @get('results')
+		).property 'results'
 
 		showResults: (->
-				@get('using') and @get('hasResults')
-			).property 'using', 'hasResults'
+			@get('using') and @get('hasResults')
+		).property 'using', 'hasResults'
 		click: (event)->
 			@set 'using', true
 		keyUp: (event) ->
@@ -43,7 +44,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'using', true
 		focusOut: (ev)->
 			@set 'using', false
-			# Determine the newly focused element and see if it's anywhere inside the search view. 
+			# Determine the newly focused element and see if it's anywhere inside the search view.
 			# If not, hide the results (after a small delay in case of mousedown).
 			setTimeout =>
 				if @get 'using' then @set 'using', false
@@ -52,8 +53,8 @@ module.exports = (Ember, App, socket) ->
 		searchBoxView: Ember.TextField.extend
 			classNameBindings: [':search-query', 'noResultsFeedback:no-results']
 			noResultsFeedback: (->
-					@get('parentView.using') and not @get('parentView.hasResults')
-				).property 'parentView.using', 'parentView.hasResults'
+				@get('parentView.using') and not @get('parentView.hasResults')
+			).property 'parentView.using', 'parentView.hasResults'
 
 			valueBinding: 'parentView.query'
 			theresults: {}
@@ -65,7 +66,7 @@ module.exports = (Ember, App, socket) ->
 				@set 'fragments',  {}
 				if not (query = util.trim @get('value')) then return @set 'results', null
 				if prefix = @get('parentView.prefix') then query = util.trim(prefix)+query
-				socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
+				socketemit.get 'search', {query: query, moreConditions: @get('parentView.conditions')}, (results)=>
 					query = util.trim @get('value')
 					if results.query is query or results.query is "contact:#{query}"
 						delete results.query

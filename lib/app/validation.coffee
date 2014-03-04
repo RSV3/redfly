@@ -1,4 +1,4 @@
-module.exports = (socket) ->
+module.exports = ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	async = require 'async'
@@ -6,6 +6,7 @@ module.exports = (socket) ->
 
 	blacklist = require '../blacklist.coffee'
 	util = require '../util.coffee'
+	socketemit = require './socketemit.coffee'
 
 
 	messages =
@@ -52,7 +53,7 @@ module.exports = (socket) ->
 					return cb messages.format 'email'
 				if (_.last(email.split('@')) in blacklist.domains) or (email in blacklist.emails)
 					return cb messages.blacklisted
-				socket.emit 'verifyUniqueness', field: 'email', value: email, (duplicate) ->
+				socketemit.get 'verifyUniqueness', {field: 'email', value: email}, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'email'
 					cb()
@@ -65,7 +66,7 @@ module.exports = (socket) ->
 					return cb messages.required
 				if name in blacklist.names
 					return cb messages.blacklisted
-				socket.emit 'verifyUniqueness', field: 'name', value: name, (duplicate) ->
+				socketemit.get 'verifyUniqueness', {field: 'name', value: name}, (duplicate) ->
 					if duplicate
 						return cb messages.unique 'name'
 					cb()

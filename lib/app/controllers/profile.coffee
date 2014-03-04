@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../socketemit.coffee'
 
 	App.ProfileView = Ember.View.extend
 		template: require '../../../templates/profile.jade'
@@ -8,7 +9,7 @@ module.exports = (Ember, App, socket) ->
 	App.ProfileController = Ember.ObjectController.extend
 		hasQ: false
 		setHasQ: (->
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			socketemit.get 'classifyQ', App.user.get('id'), (results) =>
 				console.log "#{results?.length} to classify"
 				@set 'hasQ', results?.length
 		).observes 'id'
@@ -19,7 +20,7 @@ module.exports = (Ember, App, socket) ->
 				content: do ->
 					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
 						content: do ->
-							store.filter 'contact', {addedBy: id, knows: id}, (data) =>
+							store.filter 'contact', {addedBy: id, knows: id}, (data)->
 								data.get('knows').then (ids)->
 									ids = ids.getEach('id')
 									data.get('addedBy')?.get('id') is id and _.contains(ids, id)

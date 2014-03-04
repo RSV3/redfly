@@ -1,19 +1,17 @@
 module.exports = (projectRoot) ->
 	path = require 'path'
-
+	
+	url = require('url').parse process.env.REDISTOGO_URL
 
 	root = path.dirname path.dirname __dirname
-	express = require 'express.io'
-	app = express().http().io()
-	app.io.configure ->
-		app.io.set "heartbeat timeout", 99999
+	express = require 'express'
+	app = express()
+	RedisStore = require('connect-redis') express
 	assets = require('./assets') root, projectRoot, app, ['NODE_ENV', 'HOST']
-	redisConfig = do ->
-		url = require('url').parse process.env.REDISTOGO_URL
+	redisConfig =
 		host: url.hostname
 		port: url.port
 		pass: url.auth?.split(':')[1]
-
 
 	app.configure ->
 		app.set 'port', process.env.PORT or 5000
@@ -37,15 +35,24 @@ module.exports = (projectRoot) ->
 		app.use express.static(path.join(projectRoot, 'public'))
 		# app.use express.bodyParser()
 		# app.use express.methodOverride()
-		app.use express.cookieParser()
+		clandestine = 'cat on a keyboard in space'
+		app.use express.cookieParser clandestine
 		app.use express.session
-			store: do ->
-				RedisStore = require('connect-redis') express
-				new RedisStore redisConfig
-			secret: 'cat on a keyboard in space'
+			store: new RedisStore redisConfig
+			secret: clandestine
 		app.use (req, res, next) ->
 			if user = process.env.AUTO_AUTH
+				console.log "initialising session user: #{user}"
 				req.session.user = user
+				req.session.save()
+			console.dir req.url
+			console.dir req.host
+			console.dir req.xhr
+			console.dir req.sessionID
+			console.dir req.session
+			console.dir req.cookies
+			console.dir req.signedCookies
+			console.log ''
 			next()
 		
 		# Hook for project-specific middleware.
@@ -55,7 +62,9 @@ module.exports = (projectRoot) ->
 
 		app.use app.router
 		app.use assets.pipeline.middleware()
-		app.use (req, res) ->
+		app.use (req, res, next) ->
+			if req.xhr then return next()
+			res.header 'Access-Control-Allow-Credentials', 'true'
 			res.render 'main'
 
 	app.configure 'development', ->
@@ -69,17 +78,15 @@ module.exports = (projectRoot) ->
 
 
 	# Heroku doesn't support websockets, force long polling.
-	app.io.set 'transports', ['xhr-polling']
-	app.io.set 'polling duration', 10
-	app.io.set 'log', true   # Express.io defaults this to false.
-	app.io.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
-	app.io.set 'store', do ->
+	app.set 'log', true
+	app.set 'log level', if process.env.NODE_ENV is 'development' then 2 else 1
+	app.set 'store', do ->
 		redis = require 'connect-redis/node_modules/redis'
 		clients = (redis.createClient(redisConfig.port, redisConfig.host) for i in [1..3])
 		for client in clients
 			client.auth redisConfig.pass, (err) ->
 				throw err if err
-		new express.io.RedisStore
+		new RedisStore
 			redis: redis
 			redisPub: clients[0]
 			redisSub: clients[1]
@@ -87,10 +94,12 @@ module.exports = (projectRoot) ->
 
 	require('./routes') projectRoot, app
 
+	###
 	assets.bundle.on 'bundle', ->
-		app.io.broadcast 'reloadApp'
+		app.broadcast 'reloadApp'
 	assets.pipeline.on 'invalidate', ->
 		app.io.broadcast 'reloadStyles'
+	###
 
 
 	app.listen app.get('port'), ->

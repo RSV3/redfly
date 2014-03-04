@@ -15,11 +15,11 @@ module.exports = (projectRoot) ->
 			if err
 				console.error err
 				return cb? err
-			console.info 'Email sent to ' + options.to + ' with response ' + response.message
+			console.info "Email sent to #{options.to} with response #{response.message}"
 			cb?()
 
 	sendTemplate = (template, options, cb) ->
-		filename = projectRoot + '/mail/' + template + '.jade'
+		filename = "#{projectRoot}/mail/#{template}.jade"
 		options.filename = filename
 		options.cache = true
 		options.path = (path) ->

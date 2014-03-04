@@ -1,4 +1,5 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
+	socketemit = require '../../socketemit.coffee'
 
 	App.LeadersController = Ember.Controller.extend
 		sortProperties: ['name']
@@ -15,7 +16,7 @@ module.exports = (Ember, App, socket) ->
 		leaduserView: App.LeaduserView.extend()
 		didInsertElement: ->
 			store = @get('controller').store
-			socket.emit 'leaderboard', (day, lowest, leaders, laggards) =>
+			socketemit.get 'leaderboard', (day, lowest, leaders, laggards) =>
 				if @get 'controller'	# in case we already switched out
 					@set 'controller.lowest', lowest
 					@set 'controller.leader', store.find 'user', leaders

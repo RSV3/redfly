@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 
 	App.LoaderView = Ember.View.extend
@@ -31,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'stateQueueing', false
 			@set 'stateDone', false
 
-			socket.emit 'parse', App.user.get('id'), (err) =>
+			socketemit.post "parse/#{App.user.get('id')}", (err)=>
 				# TODO check if 'err' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
 				# temporary mesasure
 				if err
@@ -44,6 +45,10 @@ module.exports = (Ember, App, socket) ->
 				@get('notification').effect 'bounce'
 				@get('notification').pnotify type: 'success', closer: true
 
+			###
+			#
+			# We need to quickly find a way to do this
+			#
 			socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
@@ -68,30 +73,31 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateConnecting', false
 				@set 'stateParsing', true
 				@set 'stateDone', false
+			###
 
 
 		percent: (->
-				current = @get 'current'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current / total) * 100
-				"width: #{percentage}%;"
-			).property 'current', 'total'
+			current = @get 'current'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current / total) * 100
+			"width: #{percentage}%;"
+		).property 'current', 'total'
 
 		percent2: (->
-				current = @get 'current2'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current / total) * 100
-				"width: #{percentage}%;"
-			).property 'current2', 'total'
+			current = @get 'current2'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current / total) * 100
+			"width: #{percentage}%;"
+		).property 'current2', 'total'
 
 
 		classify: ->
 			# probably shouldn't use router, but hey: it works ...
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			socketemit.get 'classifyQ', App.user.get('id'), (results) =>
 				if results and results.length then @get('router').transitionTo 'classify'
 			@get('modal').modal 'hide'
 			@get('notification').pnotify_remove()

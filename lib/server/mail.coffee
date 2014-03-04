@@ -38,7 +38,7 @@ Mail.sendNewNewsletter = (user, cb) ->
 			if recentOrgs?.length > 2
 				mySubj += ", #{recentOrgs[2].company}"
 				headstrip += ", #{recentOrgs[2].company}"
-		templateObj = 
+		templateObj =
 			org: process.env.ORGANISATION_TITLE
 			title: "Hi #{user.name}!"
 			to: user.email
@@ -86,7 +86,7 @@ Mail.requestIntro = (userfrom, userto, contact, url, cb) ->
 
 Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 	if not uRequests?.length and not oRequests?.length then return cb()
-	templateObj = 
+	templateObj =
 		org: process.env.ORGANISATION_TITLE
 		title: "Hi #{user.name}!"
 		to: user.email
@@ -101,7 +101,7 @@ Mail.sendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 
 Mail.resendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 	if not uRequests?.length and not oRequests?.length then return cb()
-	templateObj = 
+	templateObj =
 		org: process.env.ORGANISATION_TITLE
 		title: "Hi #{user.name}!"
 		to: user.email
@@ -116,7 +116,7 @@ Mail.resendRequests = (numContacts, user, uRequests, oRequests, cb) ->
 
 Mail.sendResponses = (numContacts, user, requests, cb) ->
 	if not requests.length then return cb()
-	templateObj = 
+	templateObj =
 		org: process.env.ORGANISATION_TITLE
 		title: "Hi #{user.name}!"
 		to: user.email

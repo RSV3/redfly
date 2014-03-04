@@ -1,7 +1,8 @@
 _ = require 'underscore'
 
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 	App.LinkerView = Ember.View.extend
 		template: require '../../../../templates/components/linker.jade'
@@ -26,7 +27,7 @@ module.exports = (Ember, App, socket) ->
 					@$('#linkingStarted').appendTo '#linking'
 
 
-			socket.emit 'linkin', App.user.get('id'), (err) =>
+			socketemit.get "linkin/#{App.user.get('id')}", (err) =>
 				if err
 					@set 'stateThrottled', true
 					@set 'stateDone', false
@@ -41,6 +42,9 @@ module.exports = (Ember, App, socket) ->
 					closer: true
 					hide: true
 
+			###
+			# we need to quickly find a better way to do this ...
+			#
 			socket.on 'link.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
@@ -53,24 +57,25 @@ module.exports = (Ember, App, socket) ->
 					@incrementProperty 'current2'
 				socket.on 'link.contact', =>
 					@incrementProperty 'current'
+			###
 
 		percent2: (->
-				current2 = @get 'current2'
-				total = @get 'total'
-				percentage = 0
-				if current2 and total
-					percentage = Math.round (current2*100 / total)
-					if current2 is total
-						@set 'stateDone', true
-				"width: #{percentage}%;"
-			).property 'current2', 'total'
+			current2 = @get 'current2'
+			total = @get 'total'
+			percentage = 0
+			if current2 and total
+				percentage = Math.round (current2*100 / total)
+				if current2 is total
+					@set 'stateDone', true
+			"width: #{percentage}%;"
+		).property 'current2', 'total'
 
 		percent: (->
-				current = @get 'current'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current*100 / total)
-				"width: #{percentage}%;"
-			).property 'current', 'total'
+			current = @get 'current'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current*100 / total)
+			"width: #{percentage}%;"
+		).property 'current', 'total'
 
