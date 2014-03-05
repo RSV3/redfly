@@ -101,7 +101,6 @@ module.exports = (route) ->
 					session.save()
 					return fn id:user.id
 			Mboxer.create data, (cIOdata)->
-				console.dir cIOdata
 				if not cIOdata?.success then return fn err:'email'
 				if cIOdata.err then return fn err:cIOdata.err
 				if not user
@@ -257,10 +256,6 @@ module.exports = (route) ->
 		# ]
 
 	route 'post', 'merge', (data, fn) ->
-		console.log ''
-		console.log 'merge'
-		console.dir data
-		console.log ''
 		updatedObject = {}
 		Models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err

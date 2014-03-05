@@ -207,7 +207,6 @@ postRoutes = (params, body, session, fn)->
 									feed doc, params.type
 									Models.Response.findById _.last(doc.response), (err, r)->
 										if err or not r?.contact?.length then return
-										console.dir r
 										Models.User.findById doc.user, (err, u)->
 											if err or not u then return
 											b = "recommended for #{u.name}'s request: _#{doc.text}_"

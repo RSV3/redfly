@@ -2,16 +2,6 @@ module.exports = (projectRoot, app) ->
 
 	route = (action, name, cb) ->
 		app[action] "/#{name}", (req, res) ->
-			console.log "#{action} /#{name}"
-			console.dir req.url
-			console.dir req.host
-			console.dir req.xhr
-			console.dir req.sessionID
-			console.dir req.session
-			console.dir req.cookies
-			console.dir req.signedCookies
-			console.log ''
-		
 			fn = (o)->
 				res.contentType 'json'
 				res.send JSON.stringify o or null
@@ -23,7 +13,6 @@ module.exports = (projectRoot, app) ->
 				when 4 then cb req.params, data, req.session, fn
 				else
 					throw new Error
-
 
 	route 'get', 'session', (session, fn)->
 		fn session

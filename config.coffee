@@ -17,7 +17,6 @@ module.exports =
 		PLUGIN_URL: 'https://chrome.google.com/webstore/detail/pmhekbfebpnlmdpnffgbdmgmnkaamolg'
 
 	development:
-		#HOST: '127.0.0.1:5000'
 		HOST:	'10.0.0.8:5000'
 		AUTO_AUTH: '50f7716ac458e60200000007'
 		NODE_ENV: 'development'

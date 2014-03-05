@@ -7,7 +7,6 @@ module.exports = (projectRoot) ->
 	express = require 'express'
 	app = express()
 	RedisStore = require('connect-redis') express
-	assets = require('./assets') root, projectRoot, app, ['NODE_ENV', 'HOST']
 	redisConfig =
 		host: url.hostname
 		port: url.port
@@ -23,36 +22,31 @@ module.exports = (projectRoot) ->
 		app.use (req, res, next) ->
 			if req.headers.host isnt process.env.HOST
 				util = require './util'
-				url = util.baseUrl + req.url
+				url = util.baseUrl req.url
 				res.writeHead 301, Location: url
 				return res.end()
 			next()
+
 		# app.use express.logger('dev')
 		# app.use express.profiler()
 		app.use express.favicon(path.join(projectRoot, 'favicon.ico'))
 		app.use express.compress()
 		app.use express.static(path.join(root, 'public'))
 		app.use express.static(path.join(projectRoot, 'public'))
-		# app.use express.bodyParser()
-		# app.use express.methodOverride()
+
+		app.use express.json()			# for post body parsing
+		app.use express.urlencoded()
+
 		clandestine = 'cat on a keyboard in space'
 		app.use express.cookieParser clandestine
 		app.use express.session
 			store: new RedisStore redisConfig
 			secret: clandestine
+
 		app.use (req, res, next) ->
 			if user = process.env.AUTO_AUTH
-				console.log "initialising session user: #{user}"
 				req.session.user = user
 				req.session.save()
-			console.dir req.url
-			console.dir req.host
-			console.dir req.xhr
-			console.dir req.sessionID
-			console.dir req.session
-			console.dir req.cookies
-			console.dir req.signedCookies
-			console.log ''
 			next()
 		
 		# Hook for project-specific middleware.
@@ -60,12 +54,12 @@ module.exports = (projectRoot) ->
 			require(projectRoot + '/lib/server/middleware') app
 		catch
 
-		app.use app.router
+		assets = require('./assets') root, projectRoot, app, ['NODE_ENV', 'HOST']
 		app.use assets.pipeline.middleware()
-		app.use (req, res, next) ->
+		app.use (req, res, next) ->		# default to render the page
 			if req.xhr then return next()
-			res.header 'Access-Control-Allow-Credentials', 'true'
 			res.render 'main'
+		require('./routes') projectRoot, app
 
 	app.configure 'development', ->
 		app.use express.errorHandler()
@@ -92,15 +86,12 @@ module.exports = (projectRoot) ->
 			redisSub: clients[1]
 			redisClient: clients[2]
 
-	require('./routes') projectRoot, app
-
 	###
 	assets.bundle.on 'bundle', ->
 		app.broadcast 'reloadApp'
 	assets.pipeline.on 'invalidate', ->
 		app.io.broadcast 'reloadStyles'
 	###
-
 
 	app.listen app.get('port'), ->
 		console.info 'App started in ' + process.env.APP_ENV + ' environment, listening on port ' + app.get('port')

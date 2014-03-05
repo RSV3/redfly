@@ -2,17 +2,14 @@ doit = (type, name, data, cb)->
 	if not cb
 		cb = data	# often only two args ...
 		data = null
-	console.log "#{type}, #{name}"
-	console.dir data
 	$.ajax
-		url: name
+		url: "/#{name}"
+		cache:false
 		type: 'GET'
-		dataType: 'json'
 		data: data
-		xhrFields: withCredentials: true
+		beforeSend: (jqXHR, settings)->
+			settings['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
 		success: (data, textStatus, xhr)->
-			console.log 'success'
-			console.dir data
 			cb data
 		error: (xhr, textStatus, errorThrown)->
 			console.log 'error'
