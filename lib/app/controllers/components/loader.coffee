@@ -49,13 +49,13 @@ module.exports = (Ember, App) ->
 			#
 			# We need to quickly find a way to do this
 			#
-			socket.on 'parse.total', (total) =>
+			#socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
 				@set 'total', total
-				socket.on 'parse.couldqueue', =>
+				#socket.on 'parse.couldqueue', =>
 					@incrementProperty 'current2'
-				socket.on 'parse.mail', =>
+				#socket.on 'parse.mail', =>
 					@incrementProperty 'current'
 					@set 'stateStillConnecting', false
 					@set 'stateParsing', true
@@ -65,9 +65,9 @@ module.exports = (Ember, App) ->
 				@set 'stateQueueing', false
 				@set 'stateDone', false
 
-			socket.on 'parse.queueing', =>
+			#socket.on 'parse.queueing', =>
 				@set 'totalQueued', 0
-				socket.on 'parse.enqueued', =>
+				#socket.on 'parse.enqueued', =>
 					@incrementProperty 'totalQueued'
 					@set 'stateQueueing', true
 				@set 'stateConnecting', false

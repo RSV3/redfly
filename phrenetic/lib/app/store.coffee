@@ -14,7 +14,7 @@ module.exports = (Ember, DS, App) ->
 				failure = (json)->
 					Ember.run null, reject, json
 				data = {}
-				if field then data[field] = value
+				if field then data[field] = JSON.stringify value
 				$.ajax
 					url: "/db/#{util.typeName type}/#{op}"
 					type: if op is 'find' then 'GET' else 'POST'

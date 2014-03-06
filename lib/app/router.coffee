@@ -296,6 +296,8 @@ module.exports = (Ember, App) ->
 		setupController: (controller, model) ->
 			store = @store
 			socketemit.get 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) ->
+				console.dir leaders
+				console.dir laggards
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', store.find 'user', leaders

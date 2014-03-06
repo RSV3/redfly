@@ -17,7 +17,7 @@ module.exports = (Ember, App) ->
 			setTimeout (=>
 				@set 'hideReconnect', false
 			), 1000
-			model.socket.socket.connect()	# TODO get socket
+			#model.socket.socket.connect()	# TODO get socket
 		###
 		reload: ->
 			window.location.reload()

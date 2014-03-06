@@ -1,18 +1,18 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 
 	App.FeedController = Ember.Controller.extend
 		feed: (->
-				mutable = []
-				if contacts = @get '_initialContacts'
-					contacts.forEach (contact) ->
-						item = Ember.ObjectProxy.create content:contact
-						item.typeInitialContact = true
-						item.when = require('moment')(contact.get "added").fromNow()
-						mutable.push item
-				mutable
-			).property '_initialContacts.@each'
+			mutable = []
+			if contacts = @get '_initialContacts'
+				contacts.forEach (contact) ->
+					item = Ember.ObjectProxy.create content:contact
+					item.typeInitialContact = true
+					item.when = require('moment')(contact.get "added").fromNow()
+					mutable.push item
+			mutable
+		).property '_initialContacts.@each'
 		_initialContacts: (->
 			this.store.find 'contact',
 				conditions:
@@ -29,7 +29,8 @@ module.exports = (Ember, App, socket) ->
 		template: require '../../../../templates/sidebars/feed.jade'
 		userview: App.JustuserView.extend()
 		didInsertElement: ->
-			socket.on 'feed', (data) =>
+			###
+			#socket.on 'feed', (data) =>
 				if not data?.id then return
 				model = type = data.type?.toLowerCase()
 				if type is 'linkedin' then model = 'contact'
@@ -42,6 +43,7 @@ module.exports = (Ember, App, socket) ->
 						item['type' + _s.capitalize(type)] = true
 						if (id = data.updater or data.addedBy) then item.set 'updatedBy', this.store.find 'user', id
 						if f = @get('controller.feed') then f.unshiftObject item
+			###
 
 		feedItemView: Ember.View.extend
 			classNames: ['feed-item']

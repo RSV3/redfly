@@ -71,7 +71,7 @@ module.exports = (Ember, App)->
 		didInsertElement: ->
 			###
 			# SOCKET.IO LOSS: we can't easily do this without socket.io
-			socket.on 'feed', (data) =>
+			#socket.on 'feed', (data) =>
 				store = @get('controller').store
 				if not data or data.type isnt 'Request' or not data.id then return
 				Ember.run.next this, ->

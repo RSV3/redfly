@@ -10,7 +10,10 @@ doit = (type, name, data, cb)->
 		beforeSend: (jqXHR, settings)->
 			settings['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
 		success: (data, textStatus, xhr)->
-			cb data
+			_ = require 'underscore'
+			if _.isArray(data) and cb.prototype.constructor.length > 1
+				return cb.apply cb, data	# allow callbacks to take list of args
+			cb data			# ...but most commonly expect a single object response
 		error: (xhr, textStatus, errorThrown)->
 			console.log 'error'
 			console.dir textStatus

@@ -35,7 +35,7 @@ module.exports = (Ember, App) ->
 			# Update contacts if they recieve additional linkedin data.
 			###
 			# SOCKET IO LOSS: we can't do this easily without socket.io
-			socket.on 'linked', (changes) =>
+			#socket.on 'linked', (changes) =>
 				changes = _.filter changes, (change) ->
 					store.recordIsLoaded App.Contact, change
 				if not _.isEmpty changes then store.find 'contact', changes

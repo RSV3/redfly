@@ -90,7 +90,7 @@ module.exports = (route) ->
 	route 'get', 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
-	route 'post', 'login.contextio', (session, params, body, fn) ->
+	route 'post', 'login.contextio', (params, body, session, fn) ->
 		Models.User.findOne email: data.email, (err, user) ->
 			if err
 				console.log err
@@ -130,7 +130,7 @@ module.exports = (route) ->
 		Search fn, body, session, 19
 
 
-	route 'get', 'verifyUniqueness', (data, fn) ->
+	route 'get', 'verifyUniqueness', (data, session, fn) ->
 		field = data.field + 's'
 		conditions = {}
 		conditions[field] = data.value
@@ -138,7 +138,7 @@ module.exports = (route) ->
 			throw err if err
 			fn contact?[field][0]
 
-	route 'get', 'getIntro', (data, fn) ->	# get an email introduction
+	route 'get', 'getIntro', (data, session, fn) ->	# get an email introduction
 		Models.Contact.findById data.contact, (err, contact) ->
 			throw err if err
 			Models.User.findById data.userfrom, (err, userfrom) ->
@@ -151,7 +151,7 @@ module.exports = (route) ->
 							throw err if err
 							fn()
 
-	route 'get', 'deprecatedVerifyUniqueness', (data, fn) ->	# Deprecated, bitches
+	route 'get', 'deprecatedVerifyUniqueness', (data, session, fn) ->
 		Models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[data.field])
@@ -159,7 +159,76 @@ module.exports = (route) ->
 				.first()
 				.value()
 
-	route 'post', 'tags.remove', (conditions, fn) ->
+	route 'get', 'tags.stats', (fn) ->
+		match = $match: deleted: $exists: false
+		group =
+			$group:
+				_id: '$body'
+				count: $sum: 1
+				mostRecent: $max: '$date'
+				# contacts: $addToSet: '$contacts'
+		project =
+			$project:
+				_id: 0
+				body: '$_id'
+				count: 1
+				mostRecent: 1
+		Models.Tag.aggregate match, group, project, (err, results) ->
+			throw err if err
+			fn results
+
+	route 'get', 'tags.all', (conditions, session, fn) ->
+		conditions.deleted = $exists:false
+		Models.Tag.find(conditions).distinct 'body', (err, bodies)->
+			throw err if err
+			fn bodies.sort()
+
+	route 'get', 'tags.popular', (conditions, session, fn) ->
+		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
+		else conditions.contact = $exists: true
+		conditions.deleted = $exists:false
+		Models.Tag.aggregate {$match: conditions},
+			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
+			{$sort: count: -1},
+			{$limit: 20},
+			(err, results) ->
+				throw err if err
+				fn _.map results, (r)-> {body:r._id, category:r.category}
+
+	_updateTags = (updates, conditions, fn)->
+		Models.Tag.find conditions, (err, tags)->
+			if err or not tags?.length then return fn()
+			newcat = updates.category or conditions.category
+			newbod = updates.body or conditions.body
+			_.each tags, (doc)->
+				if conditions.category is newcat or conditions.category is 'industry' or newcat is 'industry'
+					Elastic.onDelete doc, 'Tag', (if conditions.category is 'industry' then 'indtags' else 'orgtags'), (err)->
+						doc.body = newbod
+						Elastic.onCreate doc, 'Tag', (if newcat is 'industry' then 'indtags' else 'orgtags')
+			Models.Tag.update conditions, updates, {multi:true}, (err) ->
+				if err and err.code is 11001 then return Models.Tag.remove conditions, fn	# error: duplicate
+				console.dir err if err
+				return fn()
+
+	route 'post', 'tags.move', (conditions, session, fn) ->
+		if not conditions.newcat then return fn()
+		updates = category:conditions.newcat
+		delete conditions.newcat
+		_updateTags updates, conditions, fn
+
+	route 'post', 'tags.rename', (conditions, session, fn) ->
+		if not conditions.new then return fn()
+		updates = body:conditions.new
+		delete conditions.new
+		_updateTags updates, conditions, fn
+
+	# we can also rename the tag categories...
+	route 'post', 'renameTags', (data, session, fn)->
+		Models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+			if err then console.dir err
+			fn err
+
+	route 'post', 'tags.remove', (conditions, session, fn) ->
 		Models.Tag.find conditions, (err, tags)->
 			throw err if err
 			ids = _.pluck tags, '_id'
@@ -179,83 +248,7 @@ module.exports = (route) ->
 					bulkESupd tags
 					fn ids
 
-	route 'get', 'tags.all', (conditions, fn) ->
-		conditions.deleted = $exists:false
-		Models.Tag.find(conditions).distinct 'body', (err, bodies)->
-			throw err if err
-			fn bodies.sort()
-
-	_updateTags = (updates, conditions, fn)->
-		Models.Tag.find conditions, (err, tags)->
-			if err or not tags?.length then return fn()
-			newcat = updates.category or conditions.category
-			newbod = updates.body or conditions.body
-			_.each tags, (doc)->
-				if conditions.category is newcat or conditions.category is 'industry' or newcat is 'industry'
-					Elastic.onDelete doc, 'Tag', (if conditions.category is 'industry' then 'indtags' else 'orgtags'), (err)->
-						doc.body = newbod
-						Elastic.onCreate doc, 'Tag', (if newcat is 'industry' then 'indtags' else 'orgtags')
-			Models.Tag.update conditions, updates, {multi:true}, (err) ->
-				if err and err.code is 11001 then return Models.Tag.remove conditions, fn	# error: duplicate
-				console.dir err if err
-				return fn()
-
-	route 'post', 'tags.move', (conditions, fn) ->
-		if not conditions.newcat then return fn()
-		updates = category:conditions.newcat
-		delete conditions.newcat
-		_updateTags updates, conditions, fn
-
-	route 'post', 'tags.rename', (conditions, fn) ->
-		if not conditions.new then return fn()
-		updates = body:conditions.new
-		delete conditions.new
-		_updateTags updates, conditions, fn
-
-	# we can also rename the tag categories...
-	route 'post', 'renameTags', (data, session, fn)->
-		Models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
-			if err then console.dir err
-			fn err
-
-	route 'get', 'tags.popular', (conditions, fn) ->
-		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
-		else conditions.contact = $exists: true
-		conditions.deleted = $exists:false
-		Models.Tag.aggregate {$match: conditions},
-			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
-			{$sort: count: -1},
-			{$limit: 20},
-			(err, results) ->
-				throw err if err
-				fn _.map results, (r)-> {body:r._id, category:r.category}
-
-	route 'get', 'tags.stats', (fn) ->
-		match = $match: deleted: $exists: false
-		group =
-			$group:
-				_id: '$body'
-				count: $sum: 1
-				mostRecent: $max: '$date'
-				# contacts: $addToSet: '$contacts'
-		project =
-			$project:
-				_id: 0
-				body: '$_id'
-				count: 1
-				mostRecent: 1
-		Models.Tag.aggregate match, group, project, (err, results) ->
-			throw err if err
-			fn results
-		# fn [
-		# 	{body: 'capitalism', count: 56, mostRecent: new Date()}
-		# 	{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
-		# 	{body: 'socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# 	{body: 'fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# ]
-
-	route 'post', 'merge', (data, fn) ->
+	route 'post', 'merge', (data, session, fn) ->
 		updatedObject = {}
 		Models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err

@@ -45,7 +45,7 @@ module.exports = (Ember, App) ->
 			###
 			# we need to quickly find a better way to do this ...
 			#
-			socket.on 'link.total', (total) =>
+			#socket.on 'link.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
 				@set 'total', total
@@ -53,9 +53,9 @@ module.exports = (Ember, App) ->
 				@set 'stateParsing', true
 				@set 'stateDone', false
 				@set 'stateThrottled', false
-				socket.on 'link.linkedin', =>
+				#socket.on 'link.linkedin', =>
 					@incrementProperty 'current2'
-				socket.on 'link.contact', =>
+				#socket.on 'link.contact', =>
 					@incrementProperty 'current'
 			###
 

@@ -2,10 +2,17 @@ module.exports = (projectRoot, app) ->
 
 	route = (action, name, cb) ->
 		app[action] "/#{name}", (req, res) ->
-			fn = (o)->
+			fn = ->
+				switch arguments.length
+					when 0 then o = null
+					when 1 then o = arguments[0]
+					else o = Array.prototype.slice.call arguments
 				res.contentType 'json'
-				res.send JSON.stringify o or null
-			data = if action is 'post' then req.body else req.query
+				res.send JSON.stringify o
+			if action is 'post' then data = req.body
+			else
+				data = req.query
+				delete data._	# ajax uses ?_=1234567 for no-cache: discard it.
 			switch cb.length
 				when 1 then cb fn
 				when 2 then cb req.session, fn

@@ -72,7 +72,7 @@ module.exports = (Ember, App) ->
 				@set 'storePopTags', grandparent[cat]
 			else
 				@set 'storePopTags', []
-				socketemit.get 'tags.popular', category: @get('category'), (popularTags) =>
+				socketemit.get 'tags.popular', category: cat, (popularTags)=>
 					pTags = @get 'storePopTags'
 					if grandparent then grandparent[cat] = pTags
 					priorTags = @get 'storePriorTags'

@@ -52,7 +52,8 @@ getRoutes = (params, body, session, fn)->
 	setupRoutes params.type, fn, (cb, model)->
 		if params.op is 'find'
 			try
-				if id = body.id
+				if body.id
+					id = JSON.parse body.id
 					model.findById id, (err, doc) ->
 						throw err if err
 						if params.type is 'Admin'
@@ -78,27 +79,28 @@ getRoutes = (params, body, session, fn)->
 									if process.env.GOOGLE_API_ID then doc._doc['googleauth'] = true
 									cb doc
 						cb doc
-				else if ids = body.ids
+				else if body.ids
+					ids = JSON.parse body.ids
 					if not ids.length then return cb []
 					model.find _id: $in: ids, (err, docs) ->
 						throw err if err
 						docs = _.sortBy docs, (doc) ->
 							ids.indexOf doc.id
 						cb docs
-				else
+				else if body.query
+					query = JSON.parse body.query
 					schemas = require '../schemas'
 					if schemas[params.type].base
-						body.query ?= conditions: {}
-						body.query.conditions._type = params.type
-					if query = body.query
-						if not query.conditions and not query.options
-							query = conditions: query
-						if params.type is 'Tag' then query.conditions.deleted = $exists:false
-						model.find query.conditions, null, query.options, (err, docs) ->
-							throw err if err
-							cb docs
-					else
-						model.find (err, docs) ->
+						query ?= conditions: {}
+						query.conditions._type = params.type
+					if not query.conditions and not query.options
+						query = conditions: query
+					if params.type is 'Tag' then query.conditions.deleted = $exists:false
+					model.find query.conditions, null, query.options, (err, docs) ->
+						throw err if err
+						cb docs
+				else
+					model.find (err, docs) ->
 							throw err if err
 							cb docs
 			catch err
@@ -112,7 +114,7 @@ postRoutes = (params, body, session, fn)->
 	setupRoutes params.type, fn, (cb, model)->
 		switch params.op
 			when 'create'
-				record = body.record
+				record = JSON.parse body.record
 				if _.isArray record then throw new Error 'unimplemented'
 				beforeSave = (cb)->
 					switch model
@@ -176,7 +178,7 @@ postRoutes = (params, body, session, fn)->
 						afterSave doc
 
 			when 'save'
-				record = body.record
+				record = JSON.parse body.record
 				if _.isArray record then throw new Error 'unimplemented'
 				model.findById record.id, (err, doc) ->
 					throw err if err
@@ -253,7 +255,8 @@ postRoutes = (params, body, session, fn)->
 											console.dir err
 
 			when 'remove'
-				if id = body.id
+				if body.id 
+					id = JSON.parse body.id
 					if params.type is 'Tag'	# tags aren't really deleted: instead, we set the 'deleted' flag
 						return model.findById id, (err, doc) ->		# look in store to mark deleted
 							if err then console.dir err
@@ -278,7 +281,8 @@ postRoutes = (params, body, session, fn)->
 								Elastic.onDelete doc, 'Note', "notes", (err)-> cb()
 							else cb()
 
-				else if ids = body.ids
+				else if body.ids
+					ids = JSON.parse body.ids
 					throw new Error 'unimplemented'	# Remove each one and call cb() when they're all done.
 				else
 					throw new Error 'no id on remove'
