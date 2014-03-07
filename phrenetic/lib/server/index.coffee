@@ -44,7 +44,7 @@ module.exports = (projectRoot) ->
 			secret: clandestine
 
 		app.use (req, res, next) ->
-			if user = process.env.AUTO_AUTH
+			if req.session and user = process.env.AUTO_AUTH
 				req.session.user = user
 				req.session.save()
 			next()
@@ -56,9 +56,11 @@ module.exports = (projectRoot) ->
 
 		assets = require('./assets') root, projectRoot, app, ['NODE_ENV', 'HOST']
 		app.use assets.pipeline.middleware()
+
 		app.use (req, res, next) ->		# default to render the page
 			if req.xhr then return next()
 			res.render 'main'
+
 		require('./routes') projectRoot, app
 
 	app.configure 'development', ->

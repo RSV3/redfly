@@ -17,7 +17,7 @@ module.exports = (route) ->
 	route 'post', 'db/:type/:op', Db.postRoutes
 
 
-	route 'get', 'dashboard', (fn)->
+	route 'get', 'dashboardlist', (fn)->
 		dash =
 			clicks: 0
 			tags: 0
@@ -365,7 +365,7 @@ module.exports = (route) ->
 		Logic.requestCount params.id, fn
 
 
-	route 'get', 'companies', (fn)->
+	route 'get', 'companylist', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
 		# TODO: fix companies
 		# this is still kinda nonsense. we really wanna search mails from the last week,
@@ -400,12 +400,10 @@ module.exports = (route) ->
 		Models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
 			throw err if err
 			recent = _.map contacts, (c)->c._id.toString()
-			console.log "recent"
-			console.dir recent
 			fn recent
 	###
 
-	route 'get', 'leaderboard', (session, fn)->
+	route 'get', 'leaderlist', (session, fn)->
 		Models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
 			l = users.length

@@ -111,7 +111,6 @@ module.exports = (root, projectRoot, app, variables) ->
 		'site.css': createConfig('site')
 		'admin.css': createConfig('admin')
 			
-
-
 	bundle: bundle
 	pipeline: pipeline
+

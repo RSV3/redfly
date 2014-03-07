@@ -11,8 +11,8 @@ module.exports = (projectRoot, app) ->
 				res.send JSON.stringify o
 			if action is 'post' then data = req.body
 			else
-				data = req.query
-				delete data._	# ajax uses ?_=1234567 for no-cache: discard it.
+				data = req.query	# GET data comes in query params
+				delete data._		# ajax uses ?_=1234567 for no-cache: discard it.
 			switch cb.length
 				when 1 then cb fn
 				when 2 then cb req.session, fn

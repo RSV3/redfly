@@ -123,7 +123,7 @@ module.exports = (Ember, App) ->
 	App.DashboardRoute = Ember.Route.extend
 		setupController: (controller) ->
 			if App.user?.get('admin')
-				socketemit.get 'dashboard', (board)->
+				socketemit.get 'dashboardlist', (board)->
 					controller.set 'dash', board
 			else @transitionTo 'userProfile'
 		renderTemplate: ->
@@ -178,7 +178,7 @@ module.exports = (Ember, App) ->
 	App.CompaniesRoute = Ember.Route.extend
 		setupController: (controller) ->
 			controller.set 'all', null
-			socketemit.get 'companies', (results)->
+			socketemit.get 'companylist', (results)->
 				controller.set 'all', results
 		renderTemplate: ->
 			@router.connectem @, 'companies'
@@ -295,9 +295,7 @@ module.exports = (Ember, App) ->
 	App.LeaderboardRoute = Ember.Route.extend
 		setupController: (controller, model) ->
 			store = @store
-			socketemit.get 'leaderboard', (rankday, lowest, leaders, laggards, datapoor) ->
-				console.dir leaders
-				console.dir laggards
+			socketemit.get 'leaderlist', (rankday, lowest, leaders, laggards, datapoor) ->
 				controller.set 'rankday', rankday
 				controller.set 'lowest', lowest
 				controller.set 'leader', store.find 'user', leaders

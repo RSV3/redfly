@@ -23,18 +23,6 @@ primeContactForES = (doc, cb)->
 				doc._doc.orgtags = _.map _.reject(tags, (t)->t.category is 'industry'), (t)-> {body:t.body, user:t.creator}
 			cb doc
 
-###
-#
-# lose this without socket.io
-#
-# add details about doc into feed
-feed = (doc, type) ->
-	o = {type: type, id: doc.id}
-	if doc.addedBy then o.addedBy = doc.addedBy
-	if doc.response?.length then o.response = doc.response
-	if fn then io.broadcast 'feed', o
-#
-###
 
 setupRoutes = (type, fn, doneSet)->
 	cb = (payload) ->
@@ -49,6 +37,7 @@ setupRoutes = (type, fn, doneSet)->
 
 
 getRoutes = (params, body, session, fn)->
+
 	setupRoutes params.type, fn, (cb, model)->
 		if params.op is 'find'
 			try
@@ -111,6 +100,25 @@ getRoutes = (params, body, session, fn)->
 
 
 postRoutes = (params, body, session, fn)->
+
+	# define the helper which can add details about doc into 'feed'
+	feed = (doc, type) ->
+		o = {type: type, id: doc.id}
+		if doc.addedBy then o.addedBy = doc.addedBy
+		if doc.response?.length then o.response = doc.response
+		if fn
+			console.dir o
+			###
+			# lose this without socket.io
+			# io.broadcast 'feed', o
+			###
+		else
+			console.dir o
+			###
+			# lose this without socket.io
+			# io.emit 'linkscrapedtag', o
+			###
+
 	setupRoutes params.type, fn, (cb, model)->
 		switch params.op
 			when 'create'
@@ -163,7 +171,7 @@ postRoutes = (params, body, session, fn)->
 									throw err if err
 									addDeets2Contact null, user, doc, scraped
 									maybeAnnounceContact doc
-									io.emit 'feed', {type:params.type, id:doc.id, addedBy:session.user, doc:doc}
+									feed {id:doc.id, addedBy:session.user, doc:doc}, params.type
 						when Models.Request
 							feed doc, params.type
 				beforeSave ->
