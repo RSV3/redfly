@@ -35,31 +35,24 @@ module.exports = (Ember, App) ->
 		linkedinMail: (->
 			'//www.linkedin.com/requestList?displayProposal=&destID=' + @get('linkedin') + '&creationType=DC'
 		).property 'linkedin'
-		waitingForMeasures:true
+		waitingForMeasures: (->
+			null is @get 'allMeasures'
+		).property 'allMeasures'
 		allMeasures:null
 		getMeasures: (->
+			@set 'allMeasures', null
 			@store.find('measurement', contact:@get('id')).then (ms)=>
-				@set 'waitingForMeasures', false
 				@set 'allMeasures', ms
 		).observes 'id'
-		###
-		waitingForMeasures: (->
-			m = @get('allMeasures')
-			not m or not m.get('isLoaded')
-		).property 'allMeasures', 'allMeasures.@each'
-		###
-		gotMeasures: (->
-			not @get('waitingForMeasures') and @get('allMeasures')?.get 'length'
-		).property 'waitingForMeasures', 'allMeasures.@each'
 		measures: (->
 			measures = {}
-			if @.get 'gotMeasures'
+			unless @.get 'waitingForMeasures'
 				allMs = @get 'allMeasures'
 				atts = _.uniq allMs.getEach 'attribute'
 				for eachAt in atts
 					measures[eachAt] = _.sortBy(allMs.filter((m)-> m.get('attribute') is eachAt), (eachM)-> -eachM.get('value'))
 			measures
-		).property 'gotMeasures', 'allMeasures.@each'
+		).property 'waitingForMeasures', 'allMeasures.@each'
 		averages: (->
 			averages = {}
 			measures = @get 'measures'

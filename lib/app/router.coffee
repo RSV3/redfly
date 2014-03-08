@@ -283,7 +283,7 @@ module.exports = (Ember, App) ->
 
 	App.RequestsRoute = Ember.Route.extend
 		setupController: (controller, model)->
-			socketemit.get 'requests', (reqs, theresmore)->
+			socketemit.get 'listrequests', (reqs, theresmore)->
 				if reqs
 					controller.set 'hasNext', theresmore
 					if theresmore then controller.set 'pageSize', reqs.length

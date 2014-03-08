@@ -19,14 +19,14 @@ module.exports = (Ember, App)->
 		newdate:null
 		urgent: false
 		prevPage: (->
-			socketemit.get 'requests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
 					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', true
 					@set 'rangeStart', @get('rangeStart') - @get('pageSize')
 		)
 		nextPage: (->
-			socketemit.get 'requests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
 					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', theresmore
@@ -41,14 +41,14 @@ module.exports = (Ember, App)->
 					urgent: @get 'urgent'
 					text: note
 					response: []
-				@store.createRecord('request', nuReq).save().then ->
+				@store.createRecord('request', nuReq).save().then =>
 					@reloadFirstPage()
 				@set 'newreq', null
 				@set 'newdate', null
 				@set 'urgent', null
 		)
 		reloadFirstPage: (->
-			socketemit.get 'requests', (reqs, theresmore)=>
+			socketemit.get 'listrequests', (reqs, theresmore)=>
 				@set 'reqs', @store.find 'request', reqs
 				@set 'hasNext', theresmore
 		)

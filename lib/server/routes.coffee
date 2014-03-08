@@ -415,7 +415,7 @@ module.exports = (route) ->
 			, {moreConditions:poor:true}, session
 
 
-	route 'get', 'requests', (data, session, fn) ->
+	route 'get', 'listrequests', (data, session, fn) ->
 		currentReqs = null
 		skip = data?.skip or 0
 		pageSize = 10

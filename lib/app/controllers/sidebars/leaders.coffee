@@ -16,7 +16,7 @@ module.exports = (Ember, App) ->
 		leaduserView: App.LeaduserView.extend()
 		didInsertElement: ->
 			store = @get('controller').store
-			socketemit.get 'leaderboard', (day, lowest, leaders, laggards) =>
+			socketemit.get 'leaderlist', (day, lowest, leaders, laggards) =>
 				if @get 'controller'	# in case we already switched out
 					@set 'controller.lowest', lowest
 					@set 'controller.leader', store.find 'user', leaders

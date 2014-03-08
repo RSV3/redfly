@@ -27,14 +27,14 @@ module.exports = (Ember, App) ->
 			@set "#{which}_rangeStart", 0
 
 		goNextPage: (which)->
-			socketemit.get 'requests', {old:true, skip:@get("#{which}_rangeStart")+@get("#{which}_pageSize")}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {old:true, skip:@get("#{which}_rangeStart")+@get("#{which}_pageSize")}, (reqs, theresmore)=>
 				if not reqs then return
 				@set "#{which}_reqs", @store.find 'request', reqs
 				@set "#{which}_hasNext", theresmore
 				@set "#{which}_rangeStart", @get("#{which}_rangeStart") + @get("#{which}_pageSize")
 
 		goPrevPage: (which)->
-			socketemit.get 'requests', {old:true, skip:@get("#{which}_rangeStart")-@get("#{which}_pageSize")}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {old:true, skip:@get("#{which}_rangeStart")-@get("#{which}_pageSize")}, (reqs, theresmore)=>
 				if not reqs then return
 				@set "#{which}_reqs", @store.find 'request', reqs
 				@set "#{which}_hasNext", true
@@ -68,13 +68,13 @@ module.exports = (Ember, App) ->
 		didInsertElement: ->
 			@get('controller').clear "other"
 			@get('controller').clear "my"
-			socketemit.get 'requests', {old:true}, (reqs, theresmore) =>
+			socketemit.get 'listrequests', {old:true}, (reqs, theresmore) =>
 				if @get 'controller'	# in case we already switched out
 					@set 'controller.other_hasNext', theresmore
 					if theresmore then @set 'controller.other_pageSize', reqs.length
 					if reqs then reqs = @store.find 'request', reqs
 					@set 'controller.other_reqs', reqs
-					socketemit.get 'requests', {old:true, me:true}, (reqs, theresmore) =>
+					socketemit.get 'listrequests', {old:true, me:true}, (reqs, theresmore) =>
 						if @get 'controller'	# in case we already switched out
 							@set 'controller.my_hasNext', theresmore
 							if theresmore then @set 'controller.my_pageSize', reqs.length

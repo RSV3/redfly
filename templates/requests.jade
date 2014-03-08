@@ -3,7 +3,6 @@
 		.span9.indent9
 			| {{view view.newReqView valueBinding="controller.newreq"}}
 		.span3
-			br
 			| {{#if urgent}}
 			button.btn-danger.span11(type='button', tabindex="2", action='toggleUrgency target="view"') Urgent
 			| {{else}}
