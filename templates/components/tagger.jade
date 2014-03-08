@@ -1,14 +1,14 @@
 .main
 	+if('view.full')
 		.background
-			i.icon-tags
+			i.fa.fa-tags
 	// TO-DO this would be more efficient with itemView
 	+each('view.tags')
 		+view('view.tagView')
-			i.icon-tag
+			i.fa.fa-tag
 			a.body(href='#', action='search target="view"') {{body}}
 			a.close(action='delete target="view"')
-				i.icon-remove
+				i.fa.fa-remove
 	+if('view.full')
 		form.new-tag-form(action='add on="submit" target="view"')
 			+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
@@ -19,6 +19,6 @@
 			+view('view.cloudView')
 				a(href='#', action='use target="view"')
 					span(bindAttr='class=":label category catid"')
-						i.icon-plus
+						i.fa.fa-plus
 						|{{body}}
 				| 

@@ -1,7 +1,7 @@
 form.navbar-search.pull-left(autocomplete='off')
 	| {{view view.searchBoxView placeholder="Search" viewName="searchBoxViewInstance"}}
 	| {{#if view.info}}
-	i.icon-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-html='true', data-title='Search', data-content='Find contacts by name, email, tag, etc. Search terms may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
+	i.fa.fa-question-sign(rel='popover', data-placement='bottom', data-trigger='hover', data-html='true', data-title='Search', data-content='Find contacts by name, email, tag, etc. Search terms may be strings or regular expressions!<br><br>Clicking the body of a tag will automatically begin a search for other contacts with that tag.<br><br>PRO TIP: Restrict searches to only a particular field by prefixing the term with the name of that field (e.g.,  <code>tag:mentor</code>).')
 	| {{/if}}
 | {{#if view.showResults}}
 ul.dropdown-menu.search-results

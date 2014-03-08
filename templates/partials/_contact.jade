@@ -1,27 +1,27 @@
-.row-fluid.top
-	.span3.picture
+.row.top
+	.col-md-3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
 
 		| {{#if isKnown}}
 		| {{view App.EditPictureView pictureBinding="picture"}}
 
-		.row-fluid.actions
+		.row.actions
 			| {{#if noneButIAdded}}
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
-					i.icon-resize-small.icon-2x
+					i.fa.fa-resize-small.fa-2x
 			| {{/if}}
 
 			| {{#unless view.parentView.classifying}}
 			span.contact-actions
 				a(href='#', action='remove')
-					i.icon-trash.icon-2x
+					i.fa.fa-trash.fa-2x
 			| {{/unless}}
 
 		| {{/if}}
 
-	.span6
-		.row-fluid
+	.col-md-6
+		.row
 			| {{#if hasIntro}}
 			p.bullhorn
 				a(href='#', action='introMailto target="view"')
@@ -30,10 +30,10 @@
 			.maybevip
 				a(href='#', action='toggleVIP')
 					+if('isVip')
-						i.icon-star.icon-2x.fullredstar
+						i.fa.fa-star.fa-2x.fullredstar
 						+else
 						+if('isKnown')
-							i.icon-star-empty.icon-2x.emptygraystar
+							i.fa.fa-star-o.fa-2x.emptygraystar
 			| {{#if canHide}}
 			a(href='#', action='hideItAll this target="view"')
 				h3 {{canonicalName}}
@@ -53,11 +53,11 @@
 					| &nbsp;&nbsp;
 					+view('view.editView')
 						a(href='#', action='toggle target="view"')
-							i.icon-pencil
+							i.fa.fa-pencil
 						div(bindAttr='class="view.show::hide"')
 							.popover
 								a.close(href='#', action='toggle target="view"')
-									i.icon-remove
+									i.fa.fa-remove
 								.nav-header Position and Experience
 								div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
 									+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
@@ -72,21 +72,21 @@
 									+unless('view.working')
 										a(href='#', action='save target="view"')
 											| Save 
-											i.icon-ok
+											i.fa.fa-ok
 										+else
-										i.icon-spinner.icon-spin
+										i.fa.fa-spinner.fa-spin
 
 				+if('linkedin')
 					br
 					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
-		.row-fluid
+		.row
 			| {{#if view.showEmail}}
 			h4.email
 				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
 			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
 			| {{/if}}
 		| {{#if firstHistory}}
-		.row-fluid
+		.row
 			| {{#if spokenTwice}}
 			p.messages
 				| You last <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other </a>
@@ -102,7 +102,7 @@
 				| .
 		| {{else}}	
 		| {{#if lastMail}}
-		.row-fluid
+		.row
 			p
 				b Last mail:&nbsp;
 				span
@@ -114,18 +114,18 @@
 
 
 		+if('waitingForMeasures')
-			i.icon-spinner.icon-spin
+			i.fa.fa-spinner.fa-spin
 		+unless('waitingForMeasures')
 			+if('isKnown')
-				.row-fluid.setmeasure(title='how well do you know this contact?')
+				.row.setmeasure(title='how well do you know this contact?')
 					span.leftsliderlabel Relationship Strength 
 					.starcontainer
 						+view('view.starView measure="familiarity"')
-				.row-fluid.setmeasure(title='how influential is this contact?')
+				.row.setmeasure(title='how influential is this contact?')
 					span.leftsliderlabel Influence 
 					.starcontainer
 						+view('view.starView measure="reachability"')
-			.row-fluid
+			.row
 				+view('view.measureBarView measure="reachability"')
 					+if('view.avgMeasure')
 						+unless('isKnown')
@@ -134,27 +134,27 @@
 							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}}>
 							| </div>
 
-	.span3
-		.row-fluid
+	.col-md-3
+		.row
 			p
 				+view('view.socialView')
 					a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
-						i.icon-linkedin-sign.icon-large
+						i.fa.fa-linkedin-square.fa-2x
 						|  
 					a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
-						i.icon-twitter-sign.icon-large
+						i.fa.fa-twitter-square.fa-2x
 						|  
 					a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
-						i.icon-facebook-sign.icon-large
+						i.fa.fa-facebook-square.fa-2x
 						|  
 					| &nbsp;&nbsp;
 					+view('view.editView')
 						a(href='#', action='toggle target="view"')
-							i.icon-pencil
+							i.fa.fa-pencil
 						div(bindAttr='class="view.show::hide"')
 							.popover
 								a.close(href='#', action='toggle target="view"')
-									i.icon-remove
+									i.fa.fa-remove
 								.nav-header Social Links
 								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
 									span.help-inline {{view.prefixes.linkedin}}
@@ -172,11 +172,11 @@
 									+unless('view.working')
 										a(href='#', action='save target="view"')
 											| Save 
-											i.icon-ok
+											i.fa.fa-ok
 										+else
-										i.icon-spinner.icon-spin
+										i.fa.fa-spinner.fa-spin
 
-		.row-fluid
+		.row
 			{{#if knowsSome}}
 			h5.knows-header People who know {{nickname}}
 			ul.knows-list
@@ -186,31 +186,31 @@
 			{{/if}}
 
 
-.row-fluid
-	.span12
-		.row-fluid.tag-category
-			.span4
+.row
+	.col-md-12
+		.row.tag-category
+			.col-md-4
 				p.lead {{App.admin.orgtagcat1}}
 				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat1" full="true" tabindex="1"}}
-			.span4
+			.col-md-4
 				p.lead {{App.admin.orgtagcat2}}
 				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat2" full="true" tabindex="1"}}
-			.span4
+			.col-md-4
 				p.lead {{App.admin.orgtagcat3}}
 				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat3" full="true" tabindex="1"}}
-.row-fluid
-	.span6
-		.row-fluid.tag-category
+.row
+	.col-md-6
+		.row.tag-category
 			p.lead Industry Tags
 			| {{view App.FullTaggerView contactBinding="this" catid="industry" full="true" tabindex="2"}}
-	.span6
-		.row-fluid
+	.col-md-6
+		.row
 			p.lead Notes
 			| {{#collection contentBinding="notes" itemViewClass="App.NoteView"}}
 			{{#link-to "profile" view.content.author class="pull-left"}}
 			| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
 			{{/link-to}}
-			// TO-DO do nl2br with bindings
+
 			.media-body.note
 				p {{{view.content.body}}}
 				small.muted
@@ -218,15 +218,13 @@
 					{{view App.ContactuserView}}
 					span  | {{view.naturaldate}}
 					{{/with}}
-				// TODO <i class="icon-edit"></i><i class="icon-trash"></i>
-			//- | {{else}}
-			//- span {{emptyNotesText}}
+
 			| {{/collection}}
-		.row-fluid
+		.row
 			| <form {{action add on="submit" target="controller"}}>
 			| {{view view.newNoteView valueBinding="controller.currentNote"}}
-			| <button class="btn pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
-			i.icon-comment
+			| <button class="btn btn-default pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
+			i.fa.fa-comment
 			| Add Note
 			| </button>
 			| </form>
@@ -237,10 +235,10 @@
 		h3#mergeModalLabel Merge with {{canonicalName}}
 	.modal-body
 		.muted Search your contacts by name or email.
-		.row-fluid
+		.row
 			| {{view view.mergeSearchView}}
 		| {{#if view.selections.length}}
-		.row-fluid
+		.row
 			ul.selections
 				| {{#each view.selections}}
 				li
@@ -250,7 +248,7 @@
 			h4.alert-heading Merging is irreversible!
 			p Make absolutely sure you selected the right contacts.
 			p
-				button.btn(data-dismiss='modal') Cancel
+				button.btn.btn-default(data-dismiss='modal') Cancel
 				|  <a href="#" class="btn btn-danger" {{action merge target="view"}}>I understand, let's do this</a>
 		| {{/if}}
 | {{/view}}

@@ -23,17 +23,24 @@ module.exports = (Ember, App) ->
 				# Defer adding the tag in case a typeahead selection is highlighted and should be added instead.
 				_.defer =>
 					@get('parentView').add()
-		didInsertElement: ->
-			@set 'typeahead', $(@$()).typeahead
-				source: null	# Placeholder, populate later.
-				items: 6
-				updater: (item) =>
-					@get('parentView')._add item
-					@set 'currentTag', null
-					return null
 		updateTypeahead: (->
 			@get('parentView.autoTags').then (srcs)=>
-				@get('typeahead')?.data('typeahead').source = srcs
+				unless srcs?.length then return
+				typeAheadOpts =
+					items: 6
+					highlight: true
+				updater = (item)=>
+					if category = @get('category') then @get('parentView').addTag category, item
+					else @get('parentView').addNose item
+				theseAutos = new Bloodhound
+					datumTokenizer: (d)-> Bloodhound.tokenizers.whitespace d.value
+					queryTokenizer: Bloodhound.tokenizers.whitespace
+					local: _.map @get('srcs'), (d)-> value:d
+				theseAutos.initialize()
+				@$().typeahead(typeAheadOpts, theseAutos.ttAdapter()
+				).on('typeahead:selected', (ev, data)->
+					updater data.value
+				)
 		).observes 'parentView.autoTags.@each'
 		attributeBindings: ['size', 'autocomplete', 'tabindex']
 		size: (->

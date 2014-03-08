@@ -346,7 +346,7 @@ module.exports = (Ember, App) ->
 				notification = util.notify
 					title: 'Merge status'
 					text: 'The merge is in progress. MEERRRGEEE.'
-					type: 'info', icon: 'icon-signin'
+					type: 'info', icon: 'fa-signin'
 					hide: false, closer: false, sticker: false
 					before_open: (pnotify)->
 						pnotify.css top: '60px'
@@ -447,9 +447,9 @@ module.exports = (Ember, App) ->
 				v = @get 'value'
 				@$().find('i').each (index)->
 					if index < v
-						$(this).addClass('icon-star').removeClass('tmpstar hoverstar icon-star-empty')
+						$(this).addClass('fa-star').removeClass('tmpstar hoverstar fa-star-o')
 					else
-						$(this).addClass('icon-star-empty').removeClass('tmpstar hoverstar icon-star')
+						$(this).addClass('fa-star-o').removeClass('tmpstar hoverstar fa-star')
 				false
 			).observes 'value'
 			didInsertElement: ()->
@@ -457,7 +457,7 @@ module.exports = (Ember, App) ->
 				store = @get('parentView.controller').store
 				for i in [0...5]
 					@$().append($newstar=$("<i>"))
-					$newstar.addClass("icon-large starcount#{i}")
+					$newstar.addClass("fa fa-2x starcount#{i}")
 					$newstar.hover ->
 						posval = -1
 						starclasses = $(this).attr('class').split(' ')
@@ -466,12 +466,12 @@ module.exports = (Ember, App) ->
 								posval = parseInt(sc.substr(9),10)
 						$(this).parent().find('i').each (index)->
 							if index is posval and view.get('value') is posval+1
-								$(this).addClass('tmpstar hoverstar icon-star-empty').removeClass('icon-star')
+								$(this).addClass('tmpstar hoverstar fa-star-o').removeClass('fa-star')
 							else if index <= posval
 								$(this).addClass 'hoverstar'
 					, ->
 						$(this).parent().find('i').removeClass 'hoverstar'
-						$(this).parent().find('i.tmpstar').addClass('icon-star').removeClass('icon-star-empty')
+						$(this).parent().find('i.tmpstar').addClass('fa-star').removeClass('fa-star-o')
 					$newstar.click ->
 						allMs = view.get 'controller.measures'
 						thism = view.get 'measure'
@@ -566,7 +566,7 @@ module.exports = (Ember, App) ->
 					@set 'working', false
 
 		newNoteView: Ember.TextArea.extend
-			classNames: ['span12']
+			classNames: ['col-md-12', 'contactnote']
 			attributeBindings: ['placeholder', 'rows', 'tabindex']
 			placeholder: (->
 				'Tell a story about ' + @get('controller.nickname') + ', describe a secret talent, whatever!'

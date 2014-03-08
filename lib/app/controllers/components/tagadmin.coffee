@@ -130,7 +130,7 @@ module.exports = (Ember, App) ->
 			didInsertElement: ->
 				that = this.get 'parentView'
 				@$().draggable(
-					helper: -> "<span class='tag'><span>&nbsp;<i class='icon-tag'></i>&nbsp; #{$(this).text()}</span></span>"
+					helper: -> "<span class='tag'><span>&nbsp;<i class='fa fa-tag'></i>&nbsp; #{$(this).text()}</span></span>"
 					zIndex:99
 					revert:'invalid'
 					opacity:'0.7'

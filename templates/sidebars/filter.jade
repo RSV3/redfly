@@ -30,7 +30,7 @@ h3
 .searchtag
 	span {{searchtag}}
 	a(href='#', action='loseTag')
-		i.icon-remove
+		i.fa-remove
 {{/if}}
 {{/unless}}
 
@@ -40,7 +40,7 @@ h3
 {{#unless dontFilter}}
 br
 p
-	i.icon-spinner.icon-spin
+	i.fa-spinner.fa.fa-spin
 {{/unless}}
 {{/unless}}
 {{/unless}}
@@ -49,7 +49,7 @@ p
 {{#if orgTagsToSelect.length}}
 h4
 	| {{App.orgTitle}} Tags
-	{{view App.FilterToggleView id="toggleorg" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="toggleorg" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 	.opradbutts
 		{{view Em.RadioButton title="OR" option="0" group="org"}}
@@ -69,7 +69,7 @@ div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 {{#if indTagsToSelect.length}}
 h4
 	| Industry Tags
-	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="toggleind" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters :toggleind theResults::disabled"')
 	.opradbutts
 		{{view Em.RadioButton title="OR" option="0" group="industry"}}
@@ -89,7 +89,7 @@ div(bindAttr='class=":filters :toggleind theResults::disabled"')
 {{#if multiNose}}
 h4
 	| Knows
-	{{view App.FilterToggleView id="togglenose" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="togglenose" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters theResults::disabled"')
 	{{#each item in noseToPick}}
 	.togglenose.checkfilter

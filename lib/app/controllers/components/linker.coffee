@@ -21,7 +21,7 @@ module.exports = (Ember, App) ->
 				hide: false
 				closer: false
 				sticker: false
-				icon: 'icon-linkedin-sign'
+				icon: 'fa-linkedin-square'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#linkingStarted').appendTo '#linking'

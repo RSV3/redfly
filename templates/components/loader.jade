@@ -2,11 +2,11 @@
 	#loadingStarted
 		| {{#if view.stateConnecting}}
 		| Makin' pals with gmail... 
-		i.icon-spinner.icon-spin.pull-right
+		i.fa.fa-spinner.fa-spin.pull-right
 		| {{/if}}
 		| {{#if view.stateStillConnecting}}
 		| Taking a moment to connect to your inbox. 
-		i.icon-spinner.icon-spin.pull-right
+		i.fa.fa-spinner.fa-spin.pull-right
 		| {{/if}}
 		| {{#if view.stateParsing}}
 		div {{view.current}} of {{view.total}}
@@ -29,4 +29,4 @@
 	.modal-body
 		p You've successfully connected your email, when parsing is complete you'll be able to classify the people Redfly finds.
 	.modal-footer
-		button.btn(data-dismiss='modal') Close
+		button.btn.btn-default(data-dismiss='modal') Close

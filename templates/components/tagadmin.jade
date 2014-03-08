@@ -1,4 +1,4 @@
-.span6.tagbox
+.col-md-6.tagbox
 	h4 Visible tags
 	i these tags will appear ahead of popular tags in the tag-cloud on the contact page
 	p
@@ -8,28 +8,28 @@
 			+each('view.prioritytags')
 				+view('view.tagView')
 					span.tagicon
-						i.icon-tag  
+						i.fa.fa-tag  
 					span.body {{body}}
 					a.close(action='delete target="view"')
-						i.icon-remove
+						i.fa.fa-remove
 	p
 		br
 	form.new-tag-form(action='add on="submit" target="view"')
 		span New tag:&nbsp;
 		+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')
 
-.span6.tagbox.bordered
+.col-md-6.tagbox.bordered
 	h4 other available tags
 	+unless('view.hastags')
 		p.textcenter
-			i.icon-spinner.icon-spin.icon-3x
+			i.fa.fa-spinner.fa-spin.fa-3x
 		+else
 		.tags
 			.main
 				+each('view.alltags')
 					+view('view.tagView')
 						a.add(action='add target="view"')
-							i.icon-tag  
+							i.fa.fa-tag  
 						a.body(href='#', action='rename target="view"') {{body}}
 						a.close(action='delete target="view"')
-							i.icon-remove
+							i.fa.fa-remove

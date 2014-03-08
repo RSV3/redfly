@@ -1,5 +1,5 @@
 | <a href="#" {{action toggle target="view"}}>
-i.icon-edit.icon-large
+i.fa.fa-edit.fa-2x
 | </a>
 | {{#if view.show}}
 .popover
@@ -13,9 +13,9 @@ i.icon-edit.icon-large
 		| {{#unless view.working}}
 		| <a href="#" {{action save target="view"}}>
 		| Save 
-		i.icon-ok
+		i.fa.fa-ok
 		| </a>
 		| {{else}}
-		i.icon-spinner.icon-spin
+		i.fa.fa-spinner.fa-spin
 		| {{/unless}}
 | {{/if}}

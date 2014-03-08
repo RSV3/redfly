@@ -63,7 +63,7 @@ module.exports = (Ember, App)->
 			@set 'controller.urgent', not @get 'controller.urgent'
 		)
 		newReqView: Ember.TextArea.extend
-			classNames: ['span12']
+			classNames: ['col-md-12']
 			placeholder: 'Who are you looking for in detail? Please write 2 or 3 lines on what value you can also provide them?'
 			rows: 5
 			tabindex: 1
@@ -204,15 +204,15 @@ module.exports = (Ember, App)->
 		)
 		reqUserView: App.RequserView.extend()
 		leaveLinkView: Ember.TextArea.extend
-			classNames: ['span12']
+			classNames: ['col-md-12']
 			placeholder: 'Paste Linkedin url'
 			rows: 1
 		newNoteView: Ember.TextArea.extend
-			classNames: ['span12']
+			classNames: ['col-md-12']
 			placeholder: 'Leave a message'
 			rows: 1
 		responseSearchView: App.SearchView.extend
-			classNames: ['span12']
+			classNames: ['col-md-12']
 			prefix: 'contact:'
 			conditions: (->
 				addedBy: App.user.get 'id'

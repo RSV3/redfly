@@ -1,9 +1,9 @@
-.row-fluid
+.row
 	{{partial "sorting"}}
 	+unless ('theResults')
 		.myloading
 			+unless ('empty')
-				i.icon-spinner.icon-spin
+				i.fa.fa-spinner.fa-spin
 			+if ('empty')
 				span.empty	No results match filter
 	+if ('theResults')

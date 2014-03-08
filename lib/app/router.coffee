@@ -267,7 +267,7 @@ module.exports = (Ember, App) ->
 						if key is 'facets'
 							for own k, v of results.facets
 								controller.set "#{k}_enuff", v.length > 7
-								controller.set "f_#{k}", v[0..7]
+								controller.set "f_#{k}", v[0...7]
 						else if key isnt 'response'
 							controller.set key, val
 					if results.query?.length and results.query isnt recent_query_string

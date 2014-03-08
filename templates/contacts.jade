@@ -1,4 +1,4 @@
-.row-fluid
+.row
 	h1 All Contacts
 	table.table.table-hover
 		thead
@@ -35,7 +35,7 @@
 
 +unless ('contacts.paginatedItems')
 	.waitingformorecontacts
-		i.icon-spinner.icon-spin.icon-3x
+		i.fa.fa-spinner.fa-spin.fa-3x
 +if ('contacts.paginatedItems')
 	ul.pager
 		| {{#if contacts.hasPrevious}}

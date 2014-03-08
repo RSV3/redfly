@@ -7,7 +7,7 @@ div.navbar
 		.lead There are {{total}} contacts in your queue.
 		| {{else}}
 		p.pager
-			i.icon-spinner.icon-spin.icon-large
+			i.fa.fa-spinner.fa-spin.fa-2x
 		| {{/if}}
 		| {{/unless}}
 
@@ -23,7 +23,7 @@ div.navbar
 				|  
 				li
 					| <a href="#" class="btn-info" {{action unflush}}>Back to Classify</a>
-			.row-fluid
+			.row
 				table.table.table-hover
 					thead
 						tr
@@ -71,6 +71,6 @@ div.navbar
 	p
 		{{#link-to "recent" class="btn btn-primary btn-large"}} See latest contacts {{/link-to}}
 	p.star
-		i.icon-star
+		i.fa.fa-star
 {{/if}}
 

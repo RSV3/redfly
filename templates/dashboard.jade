@@ -1,6 +1,6 @@
 {{#if App.user.admin}}
-.row-fluid
-	.span9
+.row
+	.col-md-9
 		h1 Redfly Dashboard
 		hr
 
@@ -31,6 +31,6 @@
 		{{else}}
 		.myloading
 			+unless ('empty')
-				i.icon-spinner.icon-spin
+				i.fa.fa-spinner.fa-spin
 		{{/if}}
 {{/if}}

@@ -3,8 +3,8 @@ h2
 	span Suggestions on 
 	img(class='linkedinlogo', src='http://dlc1-s.licdn.com/sites/default/files/Logo-59px-R.png')
 {{#each links itemController="response"}}
-.row-fluid.top
-	.span12
+.row.top
+	.col-md-12
 		span {{user.nickname}} suggested&nbsp;
 		a(target='_blank', bindAttr='href="body"') a LinkedIn Contact
 {{/each}}

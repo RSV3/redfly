@@ -1,27 +1,27 @@
 {{#each theResults itemViewClass="App.ResultView" itemController="result"}}
-.row-fluid.top
+.row.top
 	| {{#if showitall}}
 	hr.topexpanded
 	{{partial "contact"}}
 	hr.botexpanded
 	| {{else}}
-	.row-fluid
-		.span7
-			.row-fluid
-				.span2.picture
+	.row
+		.col-md-7
+			.row
+				.col-md-2.picture
 					a(href='#', action='setShowItAll this target="view"')
 						| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
-				.span10
+				.col-md-10
 					+if('isVip')
 						.maybevip
-							i.icon-star.icon-2x.fullredstar
+							i.fa.fa-star.fa-2x.fullredstar
 					a(href='#', action='setShowItAll this target="view"')
 						h3 {{canonicalName}}
 					div
 						i
 							| {{position}}{{#if position}},{{/if}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
 					| {{#if lastHistory}}
-					.row-fluid
+					.row
 						p
 							b Last mail:&nbsp;
 							span
@@ -30,14 +30,14 @@
 								&nbsp; {{sentdate}}
 					| {{/if}}
 					| {{#if lastNote}}
-					.row-fluid
+					.row
 						.somenote
 							b Last note: &nbsp;
 							{{#link-to "profile" lastNote.author}} {{lastNote.author.canonicalName}} {{/link-to}}
 							i &nbsp; {{lastNote.preview}}
 					| {{/if}}						
 						
-		.span5
+		.col-md-5
 			.search-result.knows.knowstags
 				b Knows: &nbsp;
 				ul.tags

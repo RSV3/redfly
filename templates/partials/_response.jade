@@ -1,22 +1,22 @@
-.row-fluid.response
+.row.response
 	| {{#if isLink}}
-	.span12.islink
+	.col-md-12.islink
 		span {{user.nickname}} has suggested a LinkedIn Contact&nbsp;&nbsp;
 		a(target='_blank', bindAttr='href="body"')
 			img(class='linkedinlogo', src='http://dlc1-s.licdn.com/sites/default/files/Logo-59px-R.png')
 	| {{else}}
-	.span2
+	.col-md-2
 		{{view view.respUserView}}
-	.span10.suggestions
+	.col-md-10.suggestions
 		| {{#if isMsg}}
 		{{body}}
 		| {{else}}
 		| {{#each contact itemViewClass="App.ContactView" itemController="contact"}}
 		{{#link-to "contact" this}}
-		.span6
-			.span3.imgpad
+		.col-md-6
+			.col-md-3.imgpad
 				<img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-			.span9
+			.col-md-9
 				| {{#if view.parentView.parentView.idsme}}
 				span.bullhorn
 					a(href='#', action='introMailto target="view.parentView"')
@@ -31,7 +31,7 @@
 		| {{/each}}
 		| {{/if}}
 	| {{/if}}
-.breaker.span12
-	.span2
-	.span8
-	.span2
+.breaker.col-md-12
+	.col-md-2
+	.col-md-8
+	.col-md-2

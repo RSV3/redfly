@@ -1,4 +1,4 @@
-.row-fluid
+.row
 	h1 Bulk Upload
 
 	ul
@@ -18,15 +18,15 @@
 
 
 	+view('view.startView')
-		.span6.offset3
+		.col-md-6.offset3
 			form.well(enctype='multipart/form-data')
 				span.help-block Select a .csv file to upload
-				| {{view view.fileInputView class="span9"}}
+				| {{view view.fileInputView class="col-md-9"}}
 
 
 	+view('view.parsingView')
-		.span1.offset6
-			i.icon-spinner.icon-spin.icon-4x
+		.col-md-1.offset6
+			i.fa.fa-spinner.fa-spin.fa-4x
 
 
 	+view('view.parsedView')
@@ -58,7 +58,7 @@
 				| {{#each view.result.tags}}
 				ul.unstyled
 					li
-						i.icon-tag.muted
+						i.fa.fa-tag.muted
 						| &nbsp;&nbsp; {{this}}
 				| {{/each}}
 				| {{/if}}
@@ -66,7 +66,7 @@
 				| {{#each view.result.notes}}
 				ul.unstyled
 					li
-						i.icon-comment.muted
+						i.fa.fa-comment.muted
 						| &nbsp;&nbsp; {{this}}
 				| {{/each}}
 				| {{/if}}

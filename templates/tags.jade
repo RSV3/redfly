@@ -1,17 +1,17 @@
-.row-fluid
+.row
 	h1 All Tags
 
 	+unless ('tags.paginatedItems')
 		.myloading
-			i.icon-spinner.icon-spin
+			i.fa.fa-spinner.fa-spin
 	+if ('tags.paginatedItems')
 		| {{#each tags.paginatedItems}}
-		.row-fluid
-			.span6.bodies
+		.row
+			.col-md-6.bodies
 				| {{view App.TagView}} 
-			.span1
+			.col-md-1
 				span.badge.badge-info {{count}}
-			.span4
+			.col-md-4
 				| Used {{mostRecent}}
 		| {{/each}}
 

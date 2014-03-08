@@ -15,7 +15,7 @@ module.exports = (Ember, App) ->
 				hide: false
 				closer: false
 				sticker: false
-				icon: 'icon-envelope'
+				icon: 'fa-envelope'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'

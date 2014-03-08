@@ -1,7 +1,7 @@
-.row-fluid
+.row
 	+unless ('hasResults')
 		.myloading
-			i.icon-spinner.icon-spin
+			i.fa.fa-spinner.fa-spin
 	+if ('hasResults')
 		{{partial "sorting"}}
 		+if ('theResults')
@@ -14,4 +14,4 @@
 			+unless ('comments')
 				+unless ('theResults')
 					.myloading
-						i.icon-spinner.icon-spin
+						i.fa.fa-spinner.fa-spin
