@@ -13,7 +13,7 @@ i.fa.fa-pencil
 		| <a href="#" {{action initiateMerge target="view"}}>Merge duplicate.</a>
 	| {{/if}}
 	a.close(href='#', action='toggle target="view"')
-		i.fa.fa-remove
+		i.fa.fa-times
 	.nav-header {{view.prettyPrimaryAttribute}}
 	| {{view Ember.TextField insertNewlineBinding="view.save" valueBinding="view.primary"}}
 	| {{#if view.others.length}}

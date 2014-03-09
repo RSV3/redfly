@@ -1,65 +1,64 @@
 {{#unless complete}}
 div.navbar
-	.navbar-inner
 
-		| {{#unless flushing}}
-		| {{#if total}}
-		.lead There are {{total}} contacts in your queue.
+	| {{#unless flushing}}
+	| {{#if total}}
+	.lead There are {{total}} contacts in your queue.
+	| {{else}}
+	p.pager
+		i.fa.fa-spinner.fa-spin.fa-2x
+	| {{/if}}
+	| {{/unless}}
+
+	div
+
+		| {{#if flushing}}
+
+		p
+			span Selected contacts will be skipped for now, and appear back in your queue in a couple of weeks
+		ul.pager
+			li
+				| <a href="#" class="btn btn-danger" {{action flushem}}>Remove Selected from Queue</a>
+			|  
+			li
+				| <a href="#" class="btn btn-info" {{action unflush}}>Back to Classify</a>
+		.row
+			table.table.table-hover
+				thead
+					tr
+						th Name
+						th Email
+						th Message Sent
+						th Message Subject
+				tbody
+					| {{#each flushlist itemController="contact"}}
+					tr
+						td {{view Ember.Checkbox checkedBinding="checked"}} &nbsp; {{canonicalName}}
+						td {{email}}
+						td {{firstTalked}}
+						td {{firstHistory.subject}}
+					| {{/each}}
+
 		| {{else}}
-		p.pager
-			i.fa.fa-spinner.fa-spin.fa-2x
+
+		| {{#if thisContact}}
+		| {{#if thisContact.added}}
+		span.already-added Already added by {{thisContact.addedBy.canonicalName}}.
 		| {{/if}}
-		| {{/unless}}
-
-		div
-
-			| {{#if flushing}}
-
+		ul.pager
+			li
+				| <a href="#" class="btn btn-success" {{action continue}}>{{continueText}}</a>
+			| 
+			li
+				| <a href="#" class="btn btn-warning" {{action skip}}>Classify Later</a>
+			| 
+			li
+				| <a href="#" class="btn btn-danger" {{action ignore}}>Don't Share</a>
 			p
-				span Selected contacts will be skipped for now, and appear back in your queue in a couple of weeks
-			ul.pager
-				li
-					| <a href="#" class="btn-danger" {{action flushem}}>Remove Selected from Queue</a>
-				|  
-				li
-					| <a href="#" class="btn-info" {{action unflush}}>Back to Classify</a>
-			.row
-				table.table.table-hover
-					thead
-						tr
-							th Name
-							th Email
-							th Message Sent
-							th Message Subject
-					tbody
-						| {{#each flushlist itemController="contact"}}
-						tr
-							td {{view Ember.Checkbox checkedBinding="checked"}} &nbsp; {{canonicalName}}
-							td {{email}}
-							td {{firstTalked}}
-							td {{firstHistory.subject}}
-						| {{/each}}
+		| {{render contact}}
+		| {{/if}}
 
-			| {{else}}
-
-			| {{#if thisContact}}
-			| {{#if thisContact.added}}
-			span.already-added Already added by {{thisContact.addedBy.canonicalName}}.
-			| {{/if}}
-			ul.pager
-				li
-					| <a href="#" class="btn-success" {{action continue}}>{{continueText}}</a>
-				| 
-				li
-					| <a href="#" class="btn-warning" {{action skip}}>Classify Later</a>
-				| 
-				li
-					| <a href="#" class="btn-danger" {{action ignore}}>Don't Share</a>
-				p
-			| {{render contact}}
-			| {{/if}}
-
-			| {{/if}}
+		| {{/if}}
 
 {{/unless}}
 

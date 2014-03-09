@@ -8,7 +8,7 @@
 			i.fa.fa-tag
 			a.body(href='#', action='search target="view"') {{body}}
 			a.close(action='delete target="view"')
-				i.fa.fa-remove
+				i.fa.fa-times
 	+if('view.full')
 		form.new-tag-form(action='add on="submit" target="view"')
 			+view('view.newTagView class="new-tag" viewName="newTagViewInstance" valueBinding="view.currentTag"')

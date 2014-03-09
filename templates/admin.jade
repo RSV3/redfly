@@ -14,7 +14,7 @@
 		h3 Tag Management
 		.row
 			.tabbable.tabs-left
-				ul.nav.nav-tabs
+				ul.nav.nav-tabs.col-md-2
 					p
 						br
 					li.cat1.editable.active.alreadyhere(action='editme "cat1" target="view"')
@@ -27,15 +27,7 @@
 						| <a href=industry data-toggle=tab> Industry </a>
 					li
 						| <a href=organisation data-toggle=tab>other {{App.orgTitle}} tags </a>
-					p
-						br
-					p
-						br
-					p
-						br
-					p
-						br
-				.tab-content
+				.tab-content.col-md-10
 					.tagboxes
 						.tab-pane.active#organisation
 						.tab-pane#industry

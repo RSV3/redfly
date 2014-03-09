@@ -270,7 +270,8 @@ module.exports = (Ember, App) ->
 								controller.set "f_#{k}", v[0...7]
 						else if key isnt 'response'
 							controller.set key, val
-					if results.query?.length and results.query isnt recent_query_string
+					if not results.query?.length then controller.set 'searchtag', ''
+					else if results.query isnt recent_query_string
 						controller.set 'searchtag', results.query
 					controller.set 'all', @store.find 'contact', results.response
 		renderTemplate: ->

@@ -12,7 +12,7 @@
 				h3#myModalLabel {{showthisreq.text}}
 			.col-md-1
 				a.close(action='closeModal target="view"')
-					i.text-error.fa.fa-remove-sign
+					i.text-error.fa.fa-times-circle
 	.modal-body.expandedcontent
 		| {{#each showthisreq.response itemViewClass="App.ResponseView" itemController="response"}}
 		{{partial "response"}}

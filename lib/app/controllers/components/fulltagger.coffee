@@ -20,17 +20,14 @@ module.exports = (Ember, App) ->
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 
-		storeAutoTags: null
+		storedAutoTags: null
 		autoTags: (->
 			@get('tags').then (tags)=>
-				if (aTags = @get('storeAutoTags')) then return aTags
+				if (aTags = @get('storedAutoTags')) and aTags.length then return
 				bodies = tags.getEach 'body'
-				@set 'storeAutoTags', []
 				socketemit.get 'tags.all', category: @get('category'), (allTags) =>
-					aTags = @get 'storeAutoTags'
-					aTags.addObjects _.difference allTags, bodies
-				@get 'storeAutoTags'
-		).property 'cTags.@each' 	# depends on tags.@each, but let's wait until cloudTags are done.
+					@set 'storedAutoTags', _.difference allTags, bodies
+		).observes 'cTags.@each' 	# depends on tags.@each, but let's wait until cloudTags are done.
 
 		cTags:null
 		cloudTags: (->
@@ -81,8 +78,6 @@ module.exports = (Ember, App) ->
 					priorBodies = priorTags.getEach 'body'
 					pTags.addObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
 						{body:p.body, category:cat, catid:catid}
-					@get('autoTags')
-
 			@get 'storePopTags'
 		).property '_priorityTags.@each', 'storePriorTags.@each'
 

@@ -57,7 +57,7 @@
 						div(bindAttr='class="view.show::hide"')
 							.popover
 								a.close(href='#', action='toggle target="view"')
-									i.fa.fa-remove
+									i.fa.fa-times
 								.nav-header Position and Experience
 								div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
 									+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
@@ -154,7 +154,7 @@
 						div(bindAttr='class="view.show::hide"')
 							.popover
 								a.close(href='#', action='toggle target="view"')
-									i.fa.fa-remove
+									i.fa.fa-times
 								.nav-header Social Links
 								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
 									span.help-inline {{view.prefixes.linkedin}}
