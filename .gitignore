@@ -9,7 +9,6 @@ analytics/redfly_config.py
 analytics/redfly_twitters.txt
 *.pyc
 
-node_modules
 venv
 newrelic_agent.log
 temp

@@ -2,6 +2,12 @@
   "name": "redfly",
   "version": "0.4.0",
   "dependencies": {
+	  /*
+	   * commented these out:
+	   * to avoid dangerous builds, let's check these in to our repo.
+	   * That way, we know that a new deploy is getting -precisely-
+	   * what it is meant to.
+	   *
 	"jquery": "2.1.0",
     "longjohn": "0.2.0",
     "coffee-script": "1.6.3",
@@ -41,6 +47,7 @@
     "marked": "~0.2.9",
     "newrelic": "~1.0.0",
 	"cheerio": "0.0.3"
+   */
   },
   "devDependencies": {
     "chai": "1.4.2"
