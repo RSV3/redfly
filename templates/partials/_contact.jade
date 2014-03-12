@@ -9,13 +9,13 @@
 			| {{#if noneButIAdded}}
 			span.contact-actions
 				a(href='#', role="button", action='showMerge target="view"')
-					i.fa.fa-resize-small.fa-2x
+					i.fa.fa-resize-small.myfa-1p5x
 			| {{/if}}
 
 			| {{#unless view.parentView.classifying}}
 			span.contact-actions
 				a(href='#', action='remove')
-					i.fa.fa-trash.fa-2x
+					i.fa.fa-trash.myfa-1p5x
 			| {{/unless}}
 
 		| {{/if}}
@@ -30,10 +30,10 @@
 			.maybevip
 				a(href='#', action='toggleVIP')
 					+if('isVip')
-						i.fa.fa-star.fa-2x.fullredstar
+						i.fa.fa-star.myfa-1p5x.fullredstar
 						+else
 						+if('isKnown')
-							i.fa.fa-star-o.fa-2x.emptygraystar
+							i.fa.fa-star-o.myfa-1p5x.emptygraystar
 			| {{#if canHide}}
 			a(href='#', action='hideItAll this target="view"')
 				h3 {{canonicalName}}
@@ -139,13 +139,13 @@
 			p
 				+view('view.socialView')
 					a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
-						i.fa.fa-linkedin-square.fa-2x
+						i.fa.fa-linkedin-square.myfa-1p5x
 						|  
 					a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
-						i.fa.fa-twitter-square.fa-2x
+						i.fa.fa-twitter-square.myfa-1p5x
 						|  
 					a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
-						i.fa.fa-facebook-square.fa-2x
+						i.fa.fa-facebook-square.myfa-1p5x
 						|  
 					| &nbsp;&nbsp;
 					+view('view.editView')

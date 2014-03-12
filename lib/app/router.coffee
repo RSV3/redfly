@@ -203,6 +203,7 @@ module.exports = (Ember, App) ->
 				controller.set zeroit, 0
 			controller.set 'empty', false
 			controller.set 'staticSearchTag', true
+			controller.set 'searchtag', ''
 			# find responses
 			store.find('request', model.req).then (req)->
 				req.get('response').then (resps)->
