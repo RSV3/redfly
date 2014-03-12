@@ -161,8 +161,10 @@ module.exports = (Ember, App)->
 			if @get 'selectedAddNote' then return not @get('newnote').length
 			return not util.isLIURL @get('newnote')
 		).property 'selections.@each', 'newnote', 'selectedSearchContacts', 'selectedAddNote'
+
 		showold: (->
 			if @get 'suggesting' then return
+			unless @get 'controller.response.length' then return
 			@get('controller').transitionToRoute 'responses', @get 'controller.id'
 			###
 			if @get('controller.response.length') then it = @get('controller.content')
