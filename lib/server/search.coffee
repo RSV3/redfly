@@ -70,11 +70,11 @@ module.exports = (fn, data, session, limit=0) ->
 		else
 			key="#{key}.value"
 			sort[key]=dir
-	else if query?._id?.$in?.length
+	else if query?._id?.$in?.length						# if records are specified, sort by added
 		sort.added = 'desc'
-	else if not query?.length
-		sort.added = 'desc'
-		filters.push exists:field:"classified"
+	else #if not query?.length							# whenever sort isnt specified
+		sort.classified = {order:'desc', missing:'_last'}
+		#filters.push exists:field:"classified"			# use sort instead of filter
 
 	if not limit
 		options = {limit:searchPagePageSize, facets: not data.filter and not data.moreConditions?.poor, highlights: false}
