@@ -93,6 +93,7 @@ module.exports = (fn, data, session, limit=0) ->
 						else thefield = d.field
 						if not resultsObj[thefield] then resultsObj[thefield] = []
 						if ($f = cheerio.load(d.fragment)('p'))?.length then d.fragment = $f.html()		# markdown paragraphs
+						d.fragment = d.fragment.replace(/<br\/?>/gi, '').replace(/<p[^>]*>/gi, '').replace(/<\/p>/gi, '');
 						resultsObj[thefield].push {_id:d._id, fragment:d.fragment}
 			else
 				resultsObj.response = _.pluck docs, '_id'

@@ -116,7 +116,8 @@ eachDoc = (docs, operate, fcb, succinct_manual) ->
 	if not docs.length then return fcb()
 	doc = docs.pop()
 	operate doc, ()->
-		eachDoc docs, operate, fcb, succinct_manual
+		setImmediate ->										# stack defense
+			eachDoc docs, operate, fcb, succinct_manual
 	, succinct_manual
 
 
