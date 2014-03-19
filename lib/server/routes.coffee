@@ -355,6 +355,9 @@ module.exports = (route) ->
 
 
 	route 'get', 'classifyQ/:id', (params, body, session, fn) ->
+		console.log 'classify'
+		console.dir params
+		console.dir body
 		Logic.classifyList params.id, (neocons)->
 			fn _.map neocons, (n)-> Models.ObjectId(n)		# convert back to objectID
 

@@ -9,24 +9,23 @@ module.exports = (Ember, App) ->
 	App.ProfileController = Ember.ObjectController.extend
 		hasQ: false
 		setHasQ: (->
-			socketemit.get 'classifyQ', App.user.get('id'), (results) =>
-				console.log "#{results?.length} to classify"
+			@setupContacts @get 'id'
+			socketemit.get "classifyQ/#{App.user.get('id')}", (results) =>
 				@set 'hasQ', results?.length
 		).observes 'id'
-		contacts: (->
-			store = @store
-			id = @get 'id'
-			Ember.ArrayProxy.createWithMixins App.Pagination,
-				content: do ->
-					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
-						content: do ->
-							store.filter 'contact', {addedBy: id, knows: id}, (data)->
-								data.get('knows').then (ids)->
-									ids = ids.getEach('id')
-									data.get('addedBy')?.get('id') is id and _.contains(ids, id)
-						sortProperties: ['added']
-						sortAscending: false
-				itemsPerPage: 25
-			).property 'id'
+		contacts: []
+		setupContacts: (id)->
+			@set 'contacts', []
+			unless id then return
+			@store.filter('contact', {addedBy: id, knows: id}, (data)->
+				data.get('addedBy')?.get('id') is id
+			).then (chosen)=>
+				@set 'contacts', Ember.ArrayProxy.createWithMixins App.Pagination,
+					content: do ->
+						Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
+							content: chosen
+							sortProperties: ['added']
+							sortAscending: false
+					itemsPerPage: 25
 
 
