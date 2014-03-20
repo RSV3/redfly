@@ -60,7 +60,7 @@ module.exports = (Ember, App) ->
 			theresults: {}
 			fragments: {}
 			valueChanged: (->
-				unless @get('parentView') then return		// are we still even there?
+				unless @get('parentView') then return		# are we still even there?
 				store= @get('parentView.controller').store
 				@set 'parentView.using', true
 				@set 'theresults', {}
@@ -68,7 +68,7 @@ module.exports = (Ember, App) ->
 				if not (query = util.trim @get('value')) then return @set 'results', null
 				if prefix = @get('parentView.prefix') then query = util.trim(prefix)+query
 				socketemit.get 'search', {query: query, moreConditions: @get('parentView.conditions')}, (results)=>
-					unless @get('parentView') then return		// are we still even there?
+					unless @get('parentView') then return		# are we still even there?
 					query = util.trim @get('value')
 					if results.query is query or results.query is "contact:#{query}"
 						delete results.query
@@ -82,7 +82,7 @@ module.exports = (Ember, App) ->
 									if ids.length
 										frags = _.pluck ids, 'fragment'
 										store.find('contact', _.pluck ids, '_id').then (list)=>
-											unless @get('parentView') then return		// are we still even there?
+											unless @get('parentView') then return		# are we still even there?
 											if list?.get 'length'
 												pVresults = @get 'parentView.results'
 												# easiest way to update the box is to rebuild it

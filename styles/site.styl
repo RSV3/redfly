@@ -1345,10 +1345,25 @@ i.myfa-1p5x
 
 #carousel-plugin
 	.carousel-indicators
-		top	100%
-		right	50%
+		top:	100%
+		right:	50%
 		li
-			background-color	#ccc
-		li:active
-			background-color	#666
+			background-color:	#ccc
+		li.active
+			background-color:	#666
+	.carousel-control:hover
+		background-color	#3a87ad
+	.carousel-control
+		background-color	#dde
+		width	44px
+		height	44px
+		top	40%
+		border-radius	23px
+		i
+			color	white
+			font-size	44px
+	.carousel-control.left
+		margin-left	-22px
+	.carousel-control.right
+		margin-right	-22px
 
