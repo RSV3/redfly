@@ -104,21 +104,20 @@ module.exports = (Ember, App)->
 			if @get('user')?.get('id') is App.user.id then "disabled"
 		).property 'user'
 		addNote: (note) ->
-			self = @
 			@store.createRecord('response',
 				user: App.user
 				body: note
-			).save().then ->
-				self.get('response').pushObject newnote
-				self.get('response').save()
+			).save().then =>
+				@get('response').pushObject newnote
+				@get('response').save()
 		addSuggestions: (suggestions)->
 			suggestion = @store.createRecord 'response',
 				user: App.user
-				contact: []
-			_.each suggestions, (r)-> suggestion.get('contact').pushObject r
-			suggestion.save().then ->
-				self.get('response').pushObject suggestion
-				self.get('response').save()
+			suggestion.get('contact').then =>
+				_.each suggestions, (r)-> suggestion.get('contact').pushObject r
+				suggestion.save().then =>
+					@get('response').pushObject suggestion
+					@get('response').save()
 
 	App.RequserView = App.HoveruserView.extend
 		template: require '../../../templates/components/requser.jade'

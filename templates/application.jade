@@ -82,7 +82,7 @@
 						{{/if}}
 						{{#unless App.admin.extensionOn}}
 						li
-							a#installationlink(href='#') Install Plugin
+							{{link-to "Install Plugin", "plugin"}}
 						{{/unless}}
 						li
 							| <a href="#" {{action logout}}>Log Out</a>

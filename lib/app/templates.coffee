@@ -15,6 +15,7 @@ module.exports = (Ember) ->
 	templates._hoveruser = require '../../templates/partials/_hoveruser.jade'
 
 	templates.index = require '../../templates/home.jade'
+	templates.plugin = require '../../templates/plugin.jade'
 	templates.classify = require '../../templates/classify.jade'
 	templates.contact = require '../../templates/contact.jade'
 	templates.contacts = require '../../templates/contacts.jade'

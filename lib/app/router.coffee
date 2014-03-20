@@ -56,6 +56,7 @@ module.exports = (Ember, App) ->
 
 	App.Router.map ->
 		@route 'profile', path: '/profile/:user_id'
+		@route 'plugin'
 		@route 'contact', path: '/contact/:contact_id'
 		@route 'contacts'
 		@route 'leaderboard'
@@ -95,6 +96,10 @@ module.exports = (Ember, App) ->
 			controller.set 'content', model
 		renderTemplate: ->
 			@router.connectem @, 'profile'
+
+	App.PluginRoute = Ember.Route.extend
+		renderTemplate: ->
+			@router.connectem @, 'plugin'
 
 	App.ContactRoute = Ember.Route.extend
 		setupController: (controller, model) ->
