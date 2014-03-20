@@ -19,17 +19,6 @@ module.exports = (Ember, App) ->
 		didInsertElement: ->
 
 			store = @store = @get('controller').store
-			$('#installationlink').click ->
-				chrome.webstore.install App.admin.get('plugin'), (o)->
-					console.log 'returned from install ...'
-					App.admin.set 'extensionOn', true
-					console.dir o
-					false
-				, (o)->
-					console.log 'failed from install ...'
-					console.dir o
-					false
-				false
 			App.admin?.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
 
 			# Update contacts if they recieve additional linkedin data.

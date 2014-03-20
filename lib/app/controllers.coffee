@@ -37,4 +37,5 @@ module.exports = (Ember, App) ->
 	require('./controllers/responses.coffee') Ember, App
 	require('./controllers/requests.coffee') Ember, App
 	require('./controllers/tags.coffee') Ember, App
+	require('./controllers/plugin.coffee') Ember, App
 
