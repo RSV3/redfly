@@ -1,66 +1,64 @@
 _ = require 'underscore'
 moment = require 'moment'
+socketemit = require './socketemit.coffee'
 
+configureAdminOnLogin = _.after 2, (App)->
 
-configureAdminOnLogin = (App, socket)->
-	if not (cats = App.get 'admin.orgtagcats') then return		# wait for object to load
-	if not (user = App.get 'user.id') then return				# need both admin and user loaded to be ready
-	if App.user.get('stateManager.currentPath') is 'rootState.loading'
-		return App.user.on 'didLoad', ->
-			configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
 	App.user.set 'lastLogin', new Date()
-	App.store.commit()
+	App.user.save()
+	App.admin?.set 'extensionOn', $('.redfly-flag-extension-is-loaded').length
+	cats = App.get 'admin.orgtagcats'
 	_.each _.map(cats.split(','), (t)-> t.trim()), (t, i)->
 		App.admin.set "orgtagcat#{i+1}", t
-	socket.emit 'classifyCount', user, (count) ->		# always update these counts.
+	user = App.get 'user.id'
+	socketemit.get "classifyCount/#{user}", (count) ->		# always update these counts.
 		App.admin.set 'classifyCount', count
-		socket.emit 'requestCount', user, (count)->
+		socketemit.get "requestCount/#{user}", (count)->
 			App.admin.set 'requestCount', count
 			App.advanceReadiness()
 
-preHook = (Ember, DS, App, socket) ->
-	App.user = Ember.ObjectProxy.create()
+store = null
+preHook = (Ember, DS, App) ->
+	App.set 'user', null
 	App.auth =
 		login: (id) ->
-			App.set 'user', App.User.find id
-			document.cookie = "lastlogin=#{id};path=/;expires=" + moment().add(1, 'month').toDate().toUTCString()
-			App.user.on 'didLoad', ->
-				configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
+			store.find('user', id).then (data)->
+				if data
+					App.set 'user', data
+					document.cookie = "lastlogin=#{id};path=/;expires=" + moment().add(1, 'month').toDate().toUTCString()
+					configureAdminOnLogin App		# this needs to run after admin is loaded AND user logged in
 		logout: ->
 			App.set 'user', null
-			# sometimes we logout after editing admin cfg, which loses the cio / goog flags
-			# since the only purpose of these flags is to show the login correctly, let's reload.
-			if App.admin.get('stateManager.currentPath') isnt 'rootState.loading' then App.admin.reload()
+			App.admin?.reload()
 		logOnOut: ->
 			document.cookie = "lastlogin=;path=/;expires=null"
 			document.cookie = "connect.sid=;path=/;expires=null"
 			App.auth.logout()
 
+postHook = (Ember, DS, App) ->
+	Ember.Application.initializer
+		name: 'test'
+		after: 'store'
+		initialize: (container)->
+			store = container.lookup 'store:main'
+			App.set 'admin', null
+			require '../vendor/index.coffee'
+			require('./templates.coffee') Ember
+			require('./handlebars.coffee') Ember, Handlebars
+			require('./ember.coffee') Ember, App
+			require('./models.coffee') DS, App
+			require('./controllers.coffee') Ember, App
+			require('./router.coffee') Ember, App
+			store.find('admin', 1).then (data)->
+				if data
+					App.set 'admin', data
+					configureAdminOnLogin App		# this needs to run after admin is loaded AND user logged in
 
-postHook = (Ember, DS, App, socket) ->
-	require '../vendor'
+			socketemit.get 'session', (session) ->
+				if id = session?.user then App.auth.login id
+				else
+					App.auth.logout()
+					App.advanceReadiness()
 
-	require('./templates') Ember
-	require('./handlebars') Ember, Handlebars
-
-	require('./ember') Ember, App
-
-	require('./models') DS, App
-	require('./controllers') Ember, App, socket
-	require('./router') Ember, App, socket
-
-	App.admin = Ember.ObjectProxy.create()
-	App.set 'admin', App.Admin.find 1
-	App.admin.on 'didLoad', ->
-		configureAdminOnLogin App, socket		# this needs to run after admin is loaded AND user logged in
-
-	socket.emit 'session', (session) ->
-		if id = session.user
-			App.auth.login id
-		else
-			App.auth.logout()
-			App.advanceReadiness()
-
-
-require('phrenetic/lib/app') preHook, postHook
+require('../../phrenetic/lib/app/index.coffee') preHook, postHook
 

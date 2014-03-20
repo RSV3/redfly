@@ -1,0 +1,9 @@
+h2
+	br
+	span Other suggestions
+{{#each comments itemController="response"}}
+.row.top
+	.col-md-12
+		span {{user.nickname}} added:&nbsp;
+		{{body}}
+{{/each}}

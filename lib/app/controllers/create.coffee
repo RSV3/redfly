@@ -1,6 +1,6 @@
-module.exports = (Ember, App, socket) ->
-	validation = require('../validation') socket
-	util = require '../util'
+module.exports = (Ember, App) ->
+	validation = require '../validation.coffee'
+	util = require '../util.coffee'
 
 	validate = validation.validate
 	filter = validation.filter
@@ -18,7 +18,7 @@ module.exports = (Ember, App, socket) ->
 	App.CreateController = Ember.Controller.extend()
 
 	App.CreateView = Ember.View.extend
-		template: require '../../../templates/create'
+		template: require '../../../templates/create.jade'
 		classNames: ['create']
 
 		nameField: FormField.extend
@@ -44,6 +44,7 @@ module.exports = (Ember, App, socket) ->
 				cb?()
 
 		create: ->
+			store = @get('controller').store
 			async = require 'async'
 			async.forEach fields, (field, cb) =>
 				@get(field + 'FieldInstance')._fire cb
@@ -59,13 +60,9 @@ module.exports = (Ember, App, socket) ->
 						addedBy: App.user
 					if picture = util.trim @get('picture')
 						properties.picture = picture
-					contact = App.Contact.createRecord properties
-					App.store.commit()
+					store.createRecord('contact', properties).save().then (contact)=>
+						@$().addClass 'animated lightSpeedOut'
 
-					@$().addClass 'animated lightSpeedOut'
-					contact.addObserver 'id', =>
-					# TO-DO bring this back when ember-data is fixed
-					# contact.one 'didCreate', =>
 						@get('controller').transitionToRoute 'contact', contact
 		reset: ->
 			for field in fields

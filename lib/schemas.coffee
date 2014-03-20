@@ -1,7 +1,7 @@
-schemasUtil = require 'phrenetic/lib/schemas'
+schemasUtil = require '../phrenetic/lib/schemas.coffee'
 validators = require('validator').validators
 
-util = require './util'
+util = require './util.coffee'
 
 Schema = schemasUtil.Schema
 Types = schemasUtil.Types
@@ -98,8 +98,9 @@ schemas.push Schema 'Contact',
 schemas.push Schema 'Tag',
 	creator: type: Types.ObjectId, ref: 'User', sparse: true
 	contact: type: Types.ObjectId, ref: 'Contact', sparse: true
-	category: type:String, required:true
+	category: type: String, required:true
 	body: type: String, required: true, trim: true, lowercase: true
+	deleted: type: Boolean
 
 schemas.push Schema 'Note',
 	author: type: Types.ObjectId, ref: 'User', required: true
@@ -117,9 +118,10 @@ schemas.push Schema 'IntroMail',
 	recipient: type: Types.ObjectId, ref: 'User', required: true
 	contact: type: Types.ObjectId, ref: 'Contact', required: true
 
+# these ones come via the API, so they must have a linkedinId
+# and they may have a public url
 schemas.push Schema 'LinkedIn',
 	users: [ type: Types.ObjectId, ref: 'User' ]
-	# TODO: fix schema design error: change user (ref) to users (array of refs)
 	contact: type: Types.ObjectId, ref: 'Contact'
 	linkedinId: type: String, required: true, unique: true
 	name:
@@ -136,6 +138,22 @@ schemas.push Schema 'LinkedIn',
 	publicProfileUrl: type: String, trim: true
 	yearsExperience: type: Number
 	lastLink: type: Date
+
+
+# these ones come via the web, so they dont have a linkedinId
+# and they must have a public url
+schemas.push Schema 'LinkScraped',
+	users: [ type: Types.ObjectId, ref: 'User' ]
+	contact: type: Types.ObjectId, ref: 'Contact'
+	name:
+		firstName: type: String
+		lastName: type: String
+		formattedName: type: String
+	positions: [ type: String ]
+	companies: [ type: String ]
+	specialties: [ type: String ]
+	pictureUrl: type: String, trim: true
+	publicProfileUrl: type: String, trim: true, required: true, unique: true
 
 
 schemas.push Schema 'Merge',

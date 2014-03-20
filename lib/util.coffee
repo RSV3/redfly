@@ -1,6 +1,6 @@
 _ = require 'underscore'
 _s = require 'underscore.string'
-util = _.extend module.exports, require('phrenetic/lib/util')
+util = _.extend module.exports, require('../phrenetic/lib/util.coffee')
 
 
 util.nickname = (name, email) ->

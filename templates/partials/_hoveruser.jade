@@ -1,0 +1,38 @@
+{{#if view.expanded}}
+.col-md-3.expandthis.flipcard
+	.expanded.col-md-10
+		| <img class="col-md-12 img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+		.insetalittle
+			{{#link-to "profile" this class="nodeco"}} {{canonicalName}} {{/link-to}}
+			br
+			span {{email}}
+			br
+			{{#if fullCount}}
+			strong {{fullCount}} contacts added
+			{{/if}}
+		hr
+		i
+			{{#if lastRank}}
+			span Ranked &#x23;{{lastRank}} 
+			{{/if}}
+			{{#if contactCount}}
+			span with {{contactCount}} contacts 
+			{{#if dataCount}}
+			span and 
+			{{/if}}
+			{{else}}
+			{{#if dataCount}}
+			span with 
+			{{/if}}
+			{{/if}}
+			{{#if dataCount}}
+			span {{dataCount}} data points 
+			{{/if}}
+			{{#if dataCount}}
+			span this month
+			{{else}}
+			{{#if contactCount}}
+			span this month
+			{{/if}}
+			{{/if}}
+{{/if}}

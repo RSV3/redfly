@@ -1,4 +1,4 @@
-.row-fluid
+.row
 	.partheading
 		h1 Monthly Leaders
 	.partheading
@@ -27,17 +27,18 @@
 			td {{view.pos}}
 			td
 				{{#if view.up}}
-				i.icon-caret-up.icon-2x.green
+				i.fa.fa-caret-up.myfa-1p5x.green
 				{{else}}
 				{{#if view.down}}
-				i.icon-caret-down.icon-2x.red
+				i.fa.fa-caret-down.myfa-1p5x.red
 				{{/if}}
 				{{/if}}
 				span {{view.changeText}}
 			td
-				+linkTo('profile this')
-					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					span {{canonicalName}}
+				{{#link-to "profile" this}}
+				<img class="img-rounded" {{bind-attr src="canonicalPicture"}}>
+				span {{canonicalName}}
+				{{/link-to}}
 			td {{contactCount}}
 			td {{dataCount}}
 			td
@@ -52,7 +53,9 @@
 				{{#if view.idsme}}
 				{{#if view.parentView.controller.datapoor}}
 				span &nbsp; [
-				+linkTo('enrich') {{view.parentView.controller.datapoor}}
+				{{#link-to "enrich"}}
+				| {{view.parentView.controller.datapoor}}
+				{{/link-to}}
 				span ]
 				{{/if}}
 				{{/if}}
@@ -82,17 +85,18 @@
 			td {{view.pos}}
 			td
 				{{#if view.up}}
-				i.icon-caret-up.icon-2x.green
+				i.fa.fa-caret-up.myfa-1p5x.green
 				{{else}}
 				{{#if view.down}}
-				i.icon-caret-down.icon-2x.red
+				i.fa.fa-caret-down.myfa-1p5x.red
 				{{/if}}
 				{{/if}}
 				span {{view.changeText}}
 			td
-				+linkTo('profile this')
-					| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
-					span {{canonicalName}}
+				{{#link-to "profile" this}}
+				<img class="img-rounded" {{bind-attr src="canonicalPicture"}}>
+				span {{canonicalName}}
+				{{/link-to}}
 			td {{contactCount}}
 			td {{dataCount}}
 			td {{fullCount}}

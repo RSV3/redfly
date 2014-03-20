@@ -1,4 +1,5 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
+	socketemit = require '../../socketemit.coffee'
 
 	App.LeadersController = Ember.Controller.extend
 		sortProperties: ['name']
@@ -7,15 +8,16 @@ module.exports = (Ember, App, socket) ->
 		laggard: []
 
 	App.LeaduserView = App.HoveruserView.extend
-		template: require '../../../templates/components/leaduser'
+		template: require '../../../../templates/components/leaduser.jade'
 
 	App.LeadersView = Ember.View.extend
-		template: require '../../../../templates/sidebars/leaders'
+		template: require '../../../../templates/sidebars/leaders.jade'
 		classNames: ['leaders']
 		leaduserView: App.LeaduserView.extend()
 		didInsertElement: ->
-			socket.emit 'leaderboard', (day, lowest, leaders, laggards) =>
+			store = @get('controller').store
+			socketemit.get 'leaderlist', (day, lowest, leaders, laggards) =>
 				if @get 'controller'	# in case we already switched out
 					@set 'controller.lowest', lowest
-					@set 'controller.leader', App.store.findMany(App.User, leaders)
-					@set 'controller.laggard', App.store.findMany(App.User, laggards)
+					@set 'controller.leader', store.find 'user', leaders
+					@set 'controller.laggard', store.find 'user', laggards

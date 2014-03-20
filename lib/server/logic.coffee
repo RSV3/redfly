@@ -46,7 +46,54 @@ recentOrgs = (cb)->
 		return cb null, _.sortBy(comps, (c)-> -c.count)[0..3]
 
 
-classifyList = (u, cb)->
+# given a list of contacts (straight ID strings)
+# 1. remove excludes
+# 2. remove classifies with a date (ie already classified this month)
+# 3. remove classifies without a date (ie skip this week)
+# returning a (possibly shorter) list of contacts (straight ID strings)
+stripSome = (u, msgs, contactsList, cb)->
+	unless contactsList.length then return cb contactsList
+
+	# first strip out those who are permanently excluded
+	Models.Exclude.find(user:u, contact:$in:contactsList).select('contact').exec (err, ludes) ->
+		throw err if err
+		if ludes?.length
+			ludes = _.map ludes, (l)->l.contact.toString()
+			contactsList = _.difference contactsList, ludes
+			unless contactsList.length then return cb contactsList
+
+		# then strip out those which we've classified
+		# (cron job will clear these out after a month, so that data doesn't go stale)
+		Models.Classify.find(user:u, saved:{$exists:true}, contact:{$in:contactsList}).select('contact').exec (err, saves) ->
+			throw err if err
+			if saves?.length
+				saves = _.map saves, (s)->s.contact.toString()
+				contactsList = _.difference contactsList, saves
+				unless contactsList.length then return cb contactsList
+
+			# finally, most difficult filter: the (temporary) skips.
+			# skips are classified records that dont have the 'saved' flag set.
+			Models.Classify.find(user:u, saved:{$exists:false}, contact:$in:contactsList).select('contact').exec (err, skips) ->
+				throw err if err
+				if skips?.length
+					skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
+						not _.some msgs, (msg)->
+							msg.recipient.toString() is skip.contact.toString() and Models.tmStmp(msg._id) > Models.tmStmp(skip._id)
+					if skips.length
+						skips = _.map skips, (s)->s.contact.toString()
+						contactsList = _.difference contactsList, skips
+				cb contactsList
+
+
+#
+# generate the list of contacts to classify.
+#
+# the lazy flag is for when we're trying not to be TOO enthusiastic about finding contacts to classify.
+# If we're hitting the classify page, lazy is false, and we look back in time to classify old contacts
+# that were added before this month, but never classified.
+# If we're showing a count, or listing them in an email, we don't bother being so keen.
+#
+classifyList = (u, cb, lazy=false)->
 	if _.isString(u) then u = Models.ObjectId(u)
 	# for power users, there'll eventually be a large number of excludes
 	# whereas with an aggressive classification policy there'll never be too many unclassified contacts/user
@@ -57,43 +104,25 @@ classifyList = (u, cb)->
 		neocons = _.uniq _.map msgs, (m)->m.recipient.toString()
 		msgs=null
 
-		# first strip out those who are permanently excluded
-		Models.Exclude.find(user:u, contact:$in:neocons).select('contact').exec (err, ludes) ->
-			throw err if err
-			neocons =  _.difference neocons, _.map ludes, (l)->l.contact.toString()
-			ludes=null
-
-			# then strip out those which we've classified
-			# (cron job will clear these out after a month, so that data doesn't go stale)
-			Models.Classify.find(user:u, saved:{$exists:true}, contact:{$in:neocons}).select('contact').exec (err, saves) ->
-				throw err if err
-				neocons =  _.difference neocons, _.map saves, (s)->s.contact.toString()
-				saves=null
-
-				# finally, most difficult filter: the (temporary) skips.
-				# skips are classified records that dont have the 'saved' flag set.
-				Models.Classify.find(user:u, saved:{$exists:false}, contact:$in:neocons).select('contact').exec (err, skips) ->
-					throw err if err
-					skips = _.filter skips, (skip)->	# skips only count for messages prior to the skip
-						not _.some msgs, (msg)->
-							msg.recipient.toString() is skip.contact.toString() and Models.tmStmp(msg._id) > Models.tmStmp(skip._id)
-					neocons = _.difference neocons, _.map skips, (k)->k.contact.toString()
-					skips=null
-
-					if neocons.length is 20 then return cb neocons
-					if neocons.length < 20	# less than 20? look for added but not classified
-						return Models.Contact.find(added:{$exists:true}, addedBy:u, classified:{$exists:false}).select('_id').limit(20-neocons.length).exec (err, unclassified) ->
-							if not err and unclassified.length
-								neocons = _.union neocons, _.map unclassified, (c)->c._id.toString()
-							return cb neocons
-					# but if there's more than 20, let's prioritise those that are brand new
-					Models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
-						if not err and unadded.length
-							unadded = _.map unadded, (c)->c._id.toString()
-							if unadded.length < 20
-								neocons = _.union unadded, neocons
-							else neocons = unadded
-						return cb neocons[0...20]
+		stripSome u, msgs, neocons, (neocons)->
+			if neocons.length is 20 then return cb neocons
+			if neocons.length < 20	# less than 20? look for added but not classified
+				if lazy then return cb neocons	# unless this is a lazy (count, classifySome) search
+				return Models.Contact.find(added:{$exists:true}, addedBy:u, classified:{$exists:false}).select('_id').exec (err, unclassified) ->
+					if err or not unclassified?.length then return cb neocons
+					unclassified = _.uniq _.map unclassified, (m)->m._id.toString()
+					stripSome u, msgs, unclassified, (unclassified)->
+						if not unclassified.length then return cb neocons
+						neocons = _.union neocons, unclassified
+						return cb neocons[0..20]
+			# but if there's more than 20, let's prioritise those that are brand new
+			Models.Contact.find(added:{$exists:false}, _id:$in:neocons).select('_id').exec (err, unadded) ->
+				if not err and unadded.length
+					unadded = _.map unadded, (c)->c._id.toString()
+					if unadded.length < 20
+						neocons = _.union unadded, neocons
+					else neocons = unadded
+				return cb neocons[0...20]
 
 
 classifySome = (u, cb)->
@@ -113,6 +142,7 @@ classifySome = (u, cb)->
 						console.log "error getting name for:"
 						console.dir contact
 			return cb null, names
+	, true	# set the lazy flag
 
 
 summaryUnclassified = (cb) ->
@@ -120,6 +150,9 @@ summaryUnclassified = (cb) ->
 
 summaryQuery = (model, field, cb) ->
 	Models[model].where(field).gt(lastWeek).count cb
+
+summaryTags = (cb) ->
+	Models.Tag.where('date').gt(lastWeek).where('deleted').exists(false).count cb
 
 searchCount = (cb)->
 	Models.Admin.findOne {_id:1}, (err, adm)->
@@ -139,13 +172,16 @@ module.exports =
 	summaryContacts: (cb)-> summaryQuery 'Contact', 'added', cb
 	summaryActive: (cb)-> summaryQuery 'User', 'lastLogin', cb
 	summaryIntros: (cb)-> summaryQuery 'IntroMail', 'date', cb
-	summaryTags: (cb)-> summaryQuery 'Tag', 'date', cb
 	summaryNotes: (cb)-> summaryQuery 'Note', 'date', cb
 	summaryReqs: (cb)-> summaryQuery 'Request', 'date', cb
 	summaryResps: (cb)-> summaryQuery 'Response', 'date', cb
+	summaryTags: (cb)-> summaryTags cb
 	countConts: (cb)-> Models.Contact.find(added:{$exists:true}).count cb
 	myConts: (u, cb)-> Models.Contact.find(addedBy:u).where('added').gt(lastWeek).count cb
-	classifyCount: (u, cb)-> classifyList u, (neocons)-> cb neocons?.length
+	classifyCount: (u, cb)->
+		classifyList u, (neocons)->
+			cb neocons?.length
+		, true	# set the lazy flag ...
 	requestCount: (u, cb)->
 		Models.Request.find(
 			expiry:{$gte:moment().toDate()}

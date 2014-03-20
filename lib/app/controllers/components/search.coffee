@@ -1,24 +1,26 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
-	util = require '../../util'
+	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 
 	App.SearchView = Ember.View.extend
-		template: require '../../../../templates/components/search'
+		template: require '../../../../templates/components/search.jade'
 		classNames: ['search', 'dropdown']
 		didInsertElement: ->
 			$(@$('[rel=popover]')).popover()
 			$(@$()).parent().addClass 'open'	# Containing element needs to have the 'open' class for arrow keys to work
 		attributeBindings: ['role']
 		role: 'menu'
+		results: {}
 		hasResults: (->
-				not _.isEmpty @get('results')
-			).property 'results'
+			not _.isEmpty @get('results')
+		).property 'results'
 
 		showResults: (->
-				@get('using') and @get('hasResults')
-			).property 'using', 'hasResults'
+			@get('using') and @get('hasResults')
+		).property 'using', 'hasResults'
 		click: (event)->
 			@set 'using', true
 		keyUp: (event) ->
@@ -42,7 +44,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'using', true
 		focusOut: (ev)->
 			@set 'using', false
-			# Determine the newly focused element and see if it's anywhere inside the search view. 
+			# Determine the newly focused element and see if it's anywhere inside the search view.
 			# If not, hide the results (after a small delay in case of mousedown).
 			setTimeout =>
 				if @get 'using' then @set 'using', false
@@ -51,38 +53,45 @@ module.exports = (Ember, App, socket) ->
 		searchBoxView: Ember.TextField.extend
 			classNameBindings: [':search-query', 'noResultsFeedback:no-results']
 			noResultsFeedback: (->
-					@get('parentView.using') and not @get('parentView.hasResults')
-				).property 'parentView.using', 'parentView.hasResults'
+				@get('parentView.using') and not @get('parentView.hasResults')
+			).property 'parentView.using', 'parentView.hasResults'
 
 			valueBinding: 'parentView.query'
 			theresults: {}
 			fragments: {}
-			writeResults: (->
-				results = {}
-				theresults = @get 'theresults'
-				for own key,val of @fragments
-					if not val?.length or not theresults[key] then results[key]=null
-					else results[key] = theresults[key].map (item, index)-> {contact: item, fragment: val[index]}
-				@set 'parentView.results', results
-			).observes 'theresults.@each.@each.isLoaded'
 			valueChanged: (->
-					@set 'parentView.using', true
-					if not (query = util.trim @get('value')) then return @set 'results', null
-					prefix = @get('parentView.prefix')
-					if prefix then query = util.trim(prefix)+query
-					socket.emit 'search', query: query, moreConditions: @get('parentView.conditions'), (results)=>
-						query = util.trim @get('value')
-						if results.query is query or results.query is "contact:#{query}"
-							@set 'theresults', {}
-							@fragments = {}
-							tmpres = {}
-							delete results.query
-							xcludes = @get 'parentView.excludes'
-							for type, ids of results
+				unless @get('parentView') then return		# are we still even there?
+				store= @get('parentView.controller').store
+				@set 'parentView.using', true
+				@set 'theresults', {}
+				@set 'fragments',  {}
+				if not (query = util.trim @get('value')) then return @set 'results', null
+				if prefix = @get('parentView.prefix') then query = util.trim(prefix)+query
+				socketemit.get 'search', {query: query, moreConditions: @get('parentView.conditions')}, (results)=>
+					unless @get('parentView') then return		# are we still even there?
+					query = util.trim @get('value')
+					if results.query is query or results.query is "contact:#{query}"
+						delete results.query
+						xcludes = @get 'parentView.excludes'
+						@set 'parentView.results', {}
+						for type, ids of results
+							do (type, ids)=>
 								if ids and ids.length
-									ids = _.reject ids, (o)=> _.contains xcludes, o._id
-									tmpres[type] = App.store.findMany(App.Contact, _.pluck ids, '_id')
-									@fragments[type] = _.pluck ids, 'fragment'
-							@set "theresults", tmpres
-				).observes 'value', 'parentView.excludes'
+									if xcludes and xcludes.length
+										ids = _.reject ids, (o)-> _.contains xcludes, o._id
+									if ids.length
+										frags = _.pluck ids, 'fragment'
+										store.find('contact', _.pluck ids, '_id').then (list)=>
+											unless @get('parentView') then return		# are we still even there?
+											if list?.get 'length'
+												pVresults = @get 'parentView.results'
+												# easiest way to update the box is to rebuild it
+												newpVr = {}
+												for own k,v of pVresults
+													newpVr[k] = v
+												newpVr[type] = list.map (item, index)->
+													contact: item
+													fragment: frags[index]
+												@set 'parentView.results', newpVr
+			).observes 'value', 'parentView.excludes'
 

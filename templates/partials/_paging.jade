@@ -1,0 +1,13 @@
+|{{#if theResults}}
+|{{#if paging}}
+.row
+	.col-md-7
+		ul.pager
+			li.previous
+				| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
+			div.pagenums
+				| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
+			li.next
+				| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
+|{{/if}}
+|{{/if}}

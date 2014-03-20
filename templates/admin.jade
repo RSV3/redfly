@@ -1,41 +1,33 @@
 {{#if App.user.admin}}
-.row-fluid
-	.span8
+.row
+	.col-md-8
 		h1 Configure Redfly
-	.span4
+	.col-md-4
 		strong {{totalThisMonth}} contacts added this month
 		br
 		i {{autoThisMonth}} yet to be enriched with data
-.row-fluid
-	.span12
+.row
+	.col-md-12
 		hr
 		br
 
 		h3 Tag Management
-		.row-fluid
+		.row
 			.tabbable.tabs-left
-				ul.nav.nav-tabs
+				ul.nav.nav-tabs.col-md-2
 					p
 						br
 					li.cat1.editable.active.alreadyhere(action='editme "cat1" target="view"')
-						| <a href=orgtagcat1 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat1}} </a>
+						| <a href=orgtagcat1 data-toggle=tab> <i class="fa fa-edit"></i> {{App.admin.orgtagcat1}} </a>
 					li.cat2.editable(action='editme "cat2" target="view"')
-						| <a href=orgtagcat2 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat2}} </a>
+						| <a href=orgtagcat2 data-toggle=tab> <i class="fa fa-edit"></i> {{App.admin.orgtagcat2}} </a>
 					li.cat3.editable(action='editme "cat3" target="view"')
-						| <a href=orgtagcat3 data-toggle=tab> <i class="icon-edit"></i> {{App.admin.orgtagcat3}} </a>
+						| <a href=orgtagcat3 data-toggle=tab> <i class="fa fa-edit"></i> {{App.admin.orgtagcat3}} </a>
 					li
 						| <a href=industry data-toggle=tab> Industry </a>
 					li
 						| <a href=organisation data-toggle=tab>other {{App.orgTitle}} tags </a>
-					p
-						br
-					p
-						br
-					p
-						br
-					p
-						br
-				.tab-content
+				.tab-content.col-md-10
 					.tagboxes
 						.tab-pane.active#organisation
 						.tab-pane#industry
@@ -45,47 +37,47 @@
 						{{view App.TagAdminView}}
 
 		h3 Organization Domains
-		.row-fluid
-			.span4
+		.row
+			.col-md-4
 				h5 parse emails sent from these domains:
 				{{view Ember.TextArea valueBinding="domainlist"}}
-			.span4
+			.col-md-4
 				h5 authorise any user from these domains:
 				{{view Ember.TextArea valueBinding="authdomainlist"}}
-			.span4
+			.col-md-4
 				h5 authorise these specific email addresses:
 				{{view Ember.TextArea valueBinding="emailwhitelist"}}
 
 		h3 Classify Queue Configuration
-			.row-fluid.checkadmin
+			.row.checkadmin
 				|<label>
 				{{view Ember.Checkbox valueBinding="userstoo" checkedBinding="userstoochk"}}
 				&nbsp;Include employees in classify queue
 				|</label>
 
 		h3 Contact View Management
-			.row-fluid.checkadmin
+			.row.checkadmin
 				|<label>
 				{{view Ember.Checkbox valueBinding="hidemails" checkedBinding="hidemailschk"}}
 				&nbsp;Hide e-mail when contact is not known to me
 				|</label>
 
 		h3 Editing Contacts
-			.row-fluid.checkadmin
+			.row.checkadmin
 				|<label>
 				{{view Ember.Checkbox valueBinding="anyedit" checkedBinding="anyeditchk"}}
 				&nbsp;Allow any user to edit some contact fields
 				|</label>
 
 		h3 Blacklists
-		.row-fluid
-			.span4
+		.row
+			.col-md-4
 				h5 Domains
 				{{view Ember.TextArea valueBinding="domainblacklist"}}
-			.span4
+			.col-md-4
 				h5 Names
 				{{view Ember.TextArea valueBinding="nameblacklist"}}
-			.span4
+			.col-md-4
 				h5 Emails
 				{{view Ember.TextArea valueBinding="emailblacklist"}}
 

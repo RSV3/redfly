@@ -43,7 +43,7 @@ module.exports = (contact, cb)->
 			delete fullDeets.status
 
 			if fullDeets.contactInfo
-				if not _.contains contact.names, fullDeets.contactInfo.fullName 
+				if not _.contains contact.names, fullDeets.contactInfo.fullName
 					contact.names.push fullDeets.contactInfo.fullName
 				catname = "#{fullDeets.contactInfo.givenName} #{fullDeets.contactInfo.familyName}"
 				if not _.contains contact.names, catname

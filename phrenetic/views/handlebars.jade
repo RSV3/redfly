@@ -1,0 +1,46 @@
+mixin if(args)
+	| {{#if !{args}}}
+	block
+	| {{/if}}
+
+mixin unless(args)
+	| {{#unless !{args}}}
+	block
+	| {{/unless}}
+
+mixin each(args)
+	| {{#each !{args}}}
+	block
+	| {{/each}}
+
+mixin collection(args)
+	| {{#collection !{args}}}
+	block
+	| {{/collection}}
+
+mixin view(args)
+	if block
+		| {{#view !{args}}}
+		block
+		| {{/view}}
+	else
+		| {{view !{args}}}
+
+mixin linkTo(args)
+	| {{#linkTo !{args}}}
+	if block
+		block
+	| {{/linkTo}}
+
+
+mixin else
+	| {{else}}
+
+
+
+//- Custom helpers.
+
+mixin is(args)
+	| {{#is !{args}}}
+	block
+	| {{/is}}

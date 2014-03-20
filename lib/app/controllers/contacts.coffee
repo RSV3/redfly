@@ -1,19 +1,20 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 
 	_ = require 'underscore'
+	socketemit = require '../socketemit.coffee'
 
 	batchFindQuery = (type, query) ->
 		store = App.store
 		adapter = store.adapter
 		typeName = _.last type.toString().split('.')
 		recordArray = DS.AdapterPopulatedRecordArray.create {type:type, query:query, content:Ember.A([]), store:store}
-		socket.emit 'db', op: 'find', type: typeName, query: query, (json) =>
+		socketemit.get 'db', {op: 'find', type: typeName, query: query}, (json)->
 			Ember.run adapter, ->
 				batchSize = 50
 				item = _.first _.keys json
 				items = json[item]
 				f = (counter=0) =>
-					Ember.run.later this, =>	# small delay gives better UX than next ...
+					Ember.run.later this, ->	# small delay gives better UX than next ...
 						json[item] = items.slice counter*batchSize, (counter+1)*batchSize
 						thisArray = DS.AdapterPopulatedRecordArray.create {type:type, query:query, content:Ember.A([]), store:App.store}
 						adapter.didFindQuery store, type, json, thisArray
@@ -47,5 +48,5 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ContactsView = Ember.View.extend
-		template: require '../../../templates/contacts'
+		template: require '../../../templates/contacts.jade'
 		classNames: ['contacts']

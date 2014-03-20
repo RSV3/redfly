@@ -1,9 +1,10 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 	App.FullTaggerView = App.TaggerView.extend
-		template: require '../../../../templates/components/tagger'
+		template: require '../../../../templates/components/tagger.jade'
 		classNames: ['tagger']
 		gpView: (->
 			gpV = this.get('parentView')?.get('parentView')
@@ -11,66 +12,74 @@ module.exports = (Ember, App, socket) ->
 			null
 		)
 		tags: (->
-			sort = field: 'date'
+			#sort = field: 'date'
 			query = contact: @get('contact.id'), category: @get('category')
-			App.filter App.Tag, sort, query, (data) =>
+			@get('controller').store.filter 'tag', query, (data) =>
 				if (category = @get('category')) and (category isnt data.get('category'))
 					return false
 				data.get('contact.id') is @get('contact.id')
 		).property 'contact.id', 'category'
 
-		storeAutoTags: null
+		storedAutoTags: null
 		autoTags: (->
-			if (aTags = @get('storeAutoTags')) then return aTags
-			if (tags = @get('tags'))
+			@get('tags').then (tags)=>
+				if (aTags = @get('storedAutoTags')) and aTags.length then return
 				bodies = tags.getEach 'body'
-				socket.emit 'tags.all', category: @get('category'), (allTags) =>
-					aTags = @get 'storeAutoTags'
-					aTags.pushObjects _.difference allTags, bodies
-			@set 'storeAutoTags', []
-			@get 'storeAutoTags'
-		).property 'cloudTags.@each'	# depends on tags.@each, but let's wait until cloudTags are done.
+				socketemit.get 'tags.all', category: @get('category'), (allTags) =>
+					@set 'storedAutoTags', _.difference allTags, bodies
+		).observes 'cTags.@each' 	# depends on tags.@each, but let's wait until cloudTags are done.
 
+		cTags:null
 		cloudTags: (->
-			if (bodies = @get('tags')?.getEach('body')) and (popular = @get('_popularTags'))
-				popular.reject (i)-> _.contains bodies, i.body
-		).property '_popularTags.@each'
+			@set 'cTags', []
+			@get('tags').then (tags)=>
+				if (popular = @get '_popularTags') and tags.get('length')
+					bodies = tags.getEach 'body'
+					popular = popular.reject (i)-> _.contains bodies, i.body
+				if popular?.length then @get('cTags').addObjects popular
+			@get('cTags')
+		).property '_popularTags.@each', 'tags.@each'
 
 		storePriorTags: null
 		_priorityTags: (->
-			if (pTags = @get('storePriorTags')) then return pTags
+			if pTags = @get('storePriorTags') then return pTags
 			cat = @get 'category'
-			if grandparent = @gpView()?.get('storePriorTags')
-				if not grandparent[cat] then grandparent[cat] = App.Tag.find category: cat, contact: null
+			store = @get('controller').store
+			grandparent = @gpView()?.get('storePriorTags')
+			if grandparent?[cat]
 				@set 'storePriorTags', grandparent[cat]
-			else @set 'storePriorTags', App.Tag.find category: cat, contact: null
+			else
+				@set 'storePriorTags', []
+				store.find('tag', {category: cat, contact: null}).then (tags)=>
+					if grandparent then grandparent[cat] = tags
+					@get('storePriorTags').addObjects tags
 			@get 'storePriorTags'
 		).property 'tags.@each'
 
 		storePopTags: null
 		_popularTags: (->
-			if (pTags = @get('storePopTags')) then return pTags
+			@get('_priorityTags')
+			if pTags = @get 'storePopTags' then return pTags
 			cat = @get 'category'
 			catid = @get 'catid'
 			unless (priorTags = @get('storePriorTags')) and priorTags.get('length')
 				return null
-			if grandparent = @gpView()?.get('storePopTags')
-				if grandparent[cat]
-					@set 'storePopTags', grandparent[cat]
-					return @get 'storePopTags'
-			socket.emit 'tags.popular', category: @get('category'), (popularTags) =>
-				pTags = @get 'storePopTags'
-				priorTags = @get 'storePriorTags'
-				pTags.pushObjects priorTags.map (p)->
-					{body:p.get('body'), category:cat, catid:catid}
-				priorBodies = priorTags.getEach 'body'
-				pTags.pushObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
-					{body:p.body, category:cat, catid:catid}
-
-				if grandparent then grandparent[cat] = @get 'storePopTags'
-			@set 'storePopTags', []
+			grandparent = @gpView()?.get('storePopTags')
+			if grandparent?[cat]
+				@set 'storePopTags', grandparent[cat]
+			else
+				@set 'storePopTags', []
+				socketemit.get 'tags.popular', category: cat, (popularTags)=>
+					pTags = @get 'storePopTags'
+					if grandparent then grandparent[cat] = pTags
+					priorTags = @get 'storePriorTags'
+					pTags.addObjects priorTags.map (p)->
+						{body:p.get('body'), category:cat, catid:catid}
+					priorBodies = priorTags.getEach 'body'
+					pTags.addObjects _.reject(popularTags, (t)-> _.contains priorBodies, t.body)[0...20-priorBodies.length].map (p)->
+						{body:p.body, category:cat, catid:catid}
 			@get 'storePopTags'
-		).property '_priorityTags.@each'
+		).property '_priorityTags.@each', 'storePriorTags.@each'
 
 
 		click: ->
@@ -83,13 +92,13 @@ module.exports = (Ember, App, socket) ->
 			existingTag = @get('tags').find (candidate) ->
 				tag is candidate.get('body')
 			if not existingTag
-				App.Tag.createRecord
+				t = @get('controller').store.createRecord 'tag',
 					date: new Date	# Only so that sorting is smooth.
-					creator: App.User.find App.user.get 'id'
-					contact: App.Contact.find @get 'contact.id'
+					creator: App.user
+					contact: @get 'contact'
 					category: @get('category')
 					body: tag
-				App.store.commit()
+				t.save()
 				@set 'animate', true
 			else
 				# TODO do this better    @get('childViews').objectAt(0).get('context')      existingTag/@$().addClass 'animated pulse'
@@ -99,9 +108,10 @@ module.exports = (Ember, App, socket) ->
 			delete: ->
 				tag = @get 'context'
 				@$().addClass 'animated rotateOutDownLeft'
-				setTimeout =>
-					if tag and tag.deleteRecord then tag.deleteRecord()	# if its a real tag that exists
-					App.store.commit()
+				setTimeout ->
+					if tag and tag.deleteRecord
+						tag.deleteRecord()	# if its a real tag that exists
+						tag.save()
 				, 1000
 			didInsertElement: ->
 				@$().addClass(@get('parentView.category') or @get('context.category'))

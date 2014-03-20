@@ -1,3 +1,9 @@
+{{#if staticSearchTag}}
+{{#if searchtag}}
+.searchtag
+	span {{searchtag}}
+{{/if}}
+{{/if}}
 {{#if datapoor}}
 strong.total-results {{totalCount}} contacts need more data
 {{else}}
@@ -7,28 +13,35 @@ i.total-results {{#if hiding}}{{filteredCount}}{{else}}{{totalCount}}{{/if}} res
 i &nbsp;
 {{/if}}
 {{/if}}
-
 {{#if datapoor}}
 p
 br
 
 span Contacts from your emails are automatically added if you don't classify them promptly. These contacts are then in the system without useful data like tags and notes. This page allows you to go through those automatically added contacts and enrich them with data.
 {{else}}
+{{#unless dontFilter}}
+{{#if someFilter}}
 h3
 	| Filters
+{{/if}}
+{{/unless}}
+{{#unless staticSearchTag}}
 {{#if searchtag}}
 .searchtag
 	span {{searchtag}}
 	a(href='#', action='loseTag')
-		i.icon-remove
+		i.fa.fa-times
 {{/if}}
+{{/unless}}
 
 {{#unless orgTagsToSelect.length}}
 {{#unless indTagsToSelect.length}}
 {{#unless noseToPick.length}}
+{{#unless dontFilter}}
 br
 p
-	i.icon-spinner.icon-spin
+	i.fa-spinner.fa.fa-spin
+{{/unless}}
 {{/unless}}
 {{/unless}}
 {{/unless}}
@@ -36,7 +49,7 @@ p
 {{#if orgTagsToSelect.length}}
 h4
 	| {{App.orgTitle}} Tags
-	{{view App.FilterToggleView id="toggleorg" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="toggleorg" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 	.opradbutts
 		{{view Em.RadioButton title="OR" option="0" group="org"}}
@@ -48,13 +61,15 @@ div(bindAttr='class=":filters :toggleorg theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{#if orgtags_enuff}}
 	{{view App.AutoCompleteView class="newtag org" category="org" placeholder="add another tag"}}
+	{{/if}}
 {{/if}}
 
 {{#if indTagsToSelect.length}}
 h4
 	| Industry Tags
-	{{view App.FilterToggleView id="toggleind" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="toggleind" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters :toggleind theResults::disabled"')
 	.opradbutts
 		{{view Em.RadioButton title="OR" option="0" group="industry"}}
@@ -66,13 +81,15 @@ div(bindAttr='class=":filters :toggleind theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{#if indtags_enuff}}
 	{{view App.AutoCompleteView class="newtag industry" category="industry" placeholder="new industry tag"}}
+	{{/if}}
 {{/if}}
 
-{{#if noseToPick.length}}
+{{#if multiNose}}
 h4
 	| Knows
-	{{view App.FilterToggleView id="togglenose" class="icon-caret-down"}}
+	{{view App.FilterToggleView id="togglenose" class="fa fa-caret-down"}}
 div(bindAttr='class=":filters theResults::disabled"')
 	{{#each item in noseToPick}}
 	.togglenose.checkfilter
@@ -81,7 +98,9 @@ div(bindAttr='class=":filters theResults::disabled"')
 		{{item.label}}
 		|</label>
 	{{/each}}
+	{{#if knows_enuff}}
 	{{view App.AutoCompleteView class="newnose" placeholder="another user"}}
+	{{/if}}
 {{/if}}
 
 {{#if yearsToSelect.length}}

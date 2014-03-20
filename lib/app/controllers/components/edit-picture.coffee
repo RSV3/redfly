@@ -1,13 +1,13 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	validation = require('../../validation') socket
+	validation = require '../../validation.coffee'
 
 	validate = validation.validate
 	filter = validation.filter
 
 
 	App.EditPictureView = Ember.View.extend
-		template: require '../../../../templates/components/edit-picture'
+		template: require '../../../../templates/components/edit-picture.jade'
 		tagName: 'span'
 		classNames: ['edit', 'overlay']
 		newPicture: ((key, value) ->
@@ -28,7 +28,8 @@ module.exports = (Ember, App, socket) ->
 				@set 'picture', newPicture
 				# Deferring makes this work becuase pictureBinding has to sync I think.
 				_.defer ->
-					App.store.commit()
+					#App.store.commit()
+					console.log 'ERROR: need to save'
 				@toggle()
 
 			@set 'working', false

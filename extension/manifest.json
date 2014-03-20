@@ -1,21 +1,15 @@
 {
 	"manifest_version": 2,
 
-	"name": "redflyext",
+	"name": "redflyplugin",
 	"description": "This extension helps make the link between linkedin and redfly",
-	"version": "1.0",
+	"version": "0.0.7",
 
+	"icons": { "128": "icon128.png"},
 
-	"content_scripts": [
-		{
-			"run_at": "document_end",
-			"matches": ["http://www.linkedin.com/*", "http://10.0.0.2:5000/*"],
-			"js": ["extconf.js", "redflycontent.js"]
-		}
-	],
 
 	"externally_connectable": {
-		  "matches": ["http://10.0.0.2:5000/*"]
+		  "matches": ["http://redfly-staging.herokuapp.com/*"]
 	},
 
 	"background": {
@@ -28,7 +22,26 @@
 		"tabs",
 		"cookies",
 		"storage",
-		"http://www.linkedin.com/",
-		"http://10.0.0.2:5000/"
+		"http://www.linkedin.com/*",
+		"http://redfly-staging.herokuapp.com/*"
+	],
+
+	"content_scripts": [
+		{
+			"run_at": "document_end",
+			"matches": ["http://redfly-staging.herokuapp.com/*"],
+			"js": ["extconf.js", "redflycontent.js"]
+		},
+		{
+			"run_at": "document_end",
+			"matches": ["http://www.linkedin.com/*"],
+			"js": ["extconf.js", "linkedcontent.js"]
+		}
+	],
+
+	"web_accessible_resources": [
+		"extconf.js",
+		"redflycontent.js",
+		"linkedcontent.js"
 	]
 }

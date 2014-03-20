@@ -1,71 +1,71 @@
-.row-fluid
-	.span12
+.row
+	.col-md-12
 		#carousel-front-page.carousel.slide
 			.carousel-inner
 				.item.active.section
 					.row
-						.span6
+						.col-md-6
 							h2 What is Redfly?
 							ul
 								li.subheading Redfly helps you organize and align individual networks around organizational goals
 								//li Redfly is a business contact management software that helps you build your <b>institutional memory</b> by sharing and organizing important contacts within your organization
 								li.subheading We allow you take advantage of your organization's existing social capital
-						.span6
+						.col-md-6
 							img.img-responsive(src="/images/collabnet.png")
 
 				.item.section-colored
 					.row
-						.span6
+						.col-md-6
 							h2 Get email updates for new contacts
 							ul
 								li.subheading Redfly sends you weekly emails with new contacts added to your company's network each week
 								li.subheading We allow you to stay on top of business opportunities and network growth
-						.span6
+						.col-md-6
 							img.img-responsive(src="/images/emailupdates2.png")
 
 				.item.section
 					.row
-						.span6
+						.col-md-6
 							img.img-responsive(src="/images/syncgmail.png")
-						.span6
+						.col-md-6
 							h2 Easy login and syncing with Gmail and LinkedIn
 							ul
 								li.subheading Import your contacts from outgoing emails
 								li.subheading Augment your current contacts with up-to-date LinkedIn information
 								li.subheading Keep private contacts private with personal controls
 			a.left.carousel-control(href="#carousel-front-page", data-slide="prev")
-				i.icon-chevron-left
+				i.fa.fa-chevron-left
 			a.right.carousel-control(href="#carousel-front-page", data-slide="next")
-				i.icon-chevron-right
+				i.fa.fa-chevron-right
 			ol.carousel-indicators
 				li.active(data-target="#carousel-front-page", data-slide-to="0")
 				li(data-target="#carousel-front-page", data-slide-to="1")
 				li(data-target="#carousel-front-page", data-slide-to="2")
 
-.row-fluid
-	.span12
+.row
+	.col-md-12
 		.row
 			br
 		.row
-			.span4
+			.col-md-4
 				h4
-					i.icon-tags
+					i.fa.fa-tags
 					span &nbsp; Tag to Classify
 				p Tag contacts with custom labels by project, event, or even extracurricular interest. Redly allows you to create custom tag dictionaries and tag groups.
-			.span4
+			.col-md-4
 				h4
-					i.icon-search
+					i.fa.fa-search
 					span &nbsp; Search Contacts
 				p Easily locate contacts with a specific expertise or background and ask colleagues for an introduction through Redfly.
-			.span4
+			.col-md-4
 				h4
-					i.icon-exchange
+					i.fa.fa-exchange
 					span &nbsp; Request and Recommend
 				p Request recommendations for contacts with a particular background and have colleagues recommend current contacts who may fit your need.
 		.row
 			br
 		.row.well
-			.span8
+			.col-md-8
 				h4 Get started by logging in with your organization's Gmail.
-			.span4
+			.col-md-4
 				a.btn.btn-large.btn-primary.pull-right(href='/authorize') Login with Gmail

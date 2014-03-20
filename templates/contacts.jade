@@ -1,4 +1,4 @@
-.row-fluid
+.row
 	h1 All Contacts
 	table.table.table-hover
 		thead
@@ -12,26 +12,30 @@
 		tbody
 			+unless ('contacts.paginatedItems')
 				+each('contacts')
-					+linkTo('contact this tagName="tr"')
+					{{#link-to "contact" this}}
+					tr
 						td {{canonicalName}}
 						td {{email}}
 						td {{position}}
 						td {{company}}
 						td {{format added}}
 						td {{addedBy.canonicalName}}
+					{{/link-to}}
 			+if ('contacts.paginatedItems')
 				+each('contacts.paginatedItems')
-					+linkTo('contact this tagName="tr"')
+					{{#link-to "contact" this}}
+					tr
 						td {{canonicalName}}
 						td {{email}}
 						td {{position}}
 						td {{company}}
 						td {{format added}}
 						td {{addedBy.canonicalName}}
+					{{/link-to}}
 
 +unless ('contacts.paginatedItems')
 	.waitingformorecontacts
-		i.icon-spinner.icon-spin.icon-3x
+		i.fa.fa-spinner.fa-spin.fa-3x
 +if ('contacts.paginatedItems')
 	ul.pager
 		| {{#if contacts.hasPrevious}}

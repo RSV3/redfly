@@ -1,90 +1,95 @@
-.row-fluid
+.row
 	form(action='add on="submit" target="controller"')
-		.span9
+		.col-md-9.indent9
 			| {{view view.newReqView valueBinding="controller.newreq"}}
-		.span3
+		.col-md-3
 			| {{#if urgent}}
-			button.btn-danger.span11(type='button', tabindex="2", action='toggleUrgency target="view"') Urgent
+			button.btn-danger.col-md-11(type='button', tabindex="2", action='toggleUrgency target="view"') Urgent
 			| {{else}}
-			button.btn.span11(type='button', tabindex="2", action='toggleUrgency target="view"')
+			button.btn.col-md-11(type='button', tabindex="2", action='toggleUrgency target="view"')
 				i Flag Urgent &nbsp;
-				i.text-error.icon-flag
+				i.text-error.fa.fa-flag
 			| {{/if}}
 			br
-			{{view view.newDateView elementId="datepicker"}}
 			br
-			button.btn.span11(type="submit", tabindex="4", bindAttr='disabled="disableAdd"') Submit
+			button.btn.col-md-11(type="submit", tabindex="4", bindAttr='disabled="disableAdd"') Submit
 			br
-.row-fluid
+.row
 	h4 Pending Requests
 	hr
 .flipcardparent
 	| {{#each reqs itemViewClass="App.RequestView" itemController="request"}}
-	.row-fluid.request
-		.row-fluid
-			.span9(action='toggle target="view"')
+	| {{#unless expiry}}
+	.row.request
+		.row
+			.col-md-10(action='toggle target="view"')
 				{{view view.reqUserView}}
 				{{text}}
-			.span3
-				.row-fluid
-					.span6.request
-						| <a {{bindAttr class=":label :span12 disabled"}} href="#" {{action suggest target="view"}}>Suggest</a>
-					.span6.request
-						| <a class="label span12" href="#" {{action note target="view"}}>Comment</a>
-				.row-fluid
-					| {{#if urgent}}
-					i.text-error.icon-flag
-					span &nbsp; &nbsp;
-					| {{/if}}
-					| {{#if expires}}
-					i.expiry Expires {{expires}}
-					| {{/if}}
+			.col-md-2
+				.row
+					.col-md-9
+						| {{#if controller.disabled}}
+						| <a {{bindAttr class=":reqend :label :col-md-12"}} href="#" {{action expire target="view"}}>End </a>
+						| {{else}}
+						| {{#unless view.suggesting}}
+						| <a {{bindAttr class=":reqact :label :col-md-12"}} href="#" {{action suggest target="view"}}>Suggest</a>
+						| {{else}}
+						| <a {{bindAttr class=":reqend :label :col-md-12"}} href="#" {{action cancel target="view"}}>Cancel </a>
+						| {{/unless}}
+						| {{/if}}
+					.col-md-3
+						| {{#if urgent}}
+						span
+							| &nbsp;&nbsp;
+							i.text-error.fa.fa-flag
+						| {{/if}}
 
-		| {{#if view.addingnote}}
-		.row-fluid
+			| {{#if view.suggesting}}
 			br
-			form(action='addNewNote on="submit" target="view"')
-				.span10
-					| {{view view.newNoteView valueBinding="view.newnote"}}
-				.span2
-					button.btn.span11(type="submit", bindAttr='disabled="view.saveNote"') Save
-					br
-					br
-					button.btn.span11(type="cancel", action='closenote target="view"') Cancel
-		| {{/if}}
-
-		| {{#if view.addingcontacts}}
-		.row-fluid
-			br
-			form(action='addNewContacts on="submit" target="view"')
-				.row-fluid
-					.span8
-						| {{view view.responseSearchView}}
-					.span4
-						button.btn.span5(type="submit", bindAttr='disabled="view.saveSuggestions"') Done
-						span.1 &nbsp;
-						button.btn.span5(type="cancel", action='closecontacts target="view"') Cancel
+			form(action='addResponse on="submit" target="view"')
+				.row
+					.col-md-4
+						.col-md-1
+						.btn-group.col-md-11
+							| {{view Ember.Select class="col-md-10" contentBinding="view.selectOptions" valueBinding="view.selectedOption"}}
+					.col-md-8
+						.col-md-10.shiftleft10
+							| {{#if view.selectedSearchContacts}}
+							| {{view view.responseSearchView}}
+							| {{else}}
+							| {{#if view.selectedSuggestLink}}
+							| {{view view.leaveLinkView valueBinding="view.newnote"}}
+							| {{else}}
+							| {{view view.newNoteView valueBinding="view.newnote"}}
+							| {{/if}}
+							| {{/if}}
+						.col-md-3
+							button.btn.col-md-8(type="submit", bindAttr='disabled="view.saveSuggestions"') Done
+			| {{/if}}
 
 		| {{#if view.selections.length}}
-		.row-fluid
-			| {{#each view.selections}}
-			+linkTo('contact this')
-				.span6
-					.span3
-						| <img class=".span11 img-rounded" {{bindAttr src="canonicalPicture"}}>
-					.span9
+		.row
+			.col-md-1
+			.col-md-10
+				| {{#each view.selections}}
+				{{#link-to "contact" this}}
+				.col-md-6
+					.col-md-3.imgpad
+						| <img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+					.col-md-9
 						span {{canonicalName}}
 						br
 						span {{position}}
 						br
 						span {{company}}
-			| {{/each}}
+				{{/link-to}}
+				| {{/each}}
+			.col-md-1
 		| {{/if}}
 
-		| {{/if}}
 
 		| {{#if view.expanded}}
-		.row-fluid.expandedcontent
+		.row.expandedcontent
 			| {{#each response itemViewClass="App.ResponseView" itemController="response"}}
 			{{partial "response"}}
 			| {{/each}}
@@ -92,10 +97,11 @@
 
 
 	hr
+	| {{/unless}}
 	| {{/each}}
 
-	.row-fluid
-		.span7
+	.row
+		.col-md-7
 		{{#if rangeStop}}
 		ul.pager
 			li.previous

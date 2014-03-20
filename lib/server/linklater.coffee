@@ -1,7 +1,7 @@
 _ = require 'underscore'
 util = require './util'
 models = require './models'
-addTags = require './addtags'
+AddTags = require './addtags'
 
 
 ###
@@ -47,20 +47,21 @@ addDeets2Contact = (notifications, u, c, l) ->
 		c.picture = l.pictureUrl
 		dirtycontact = true
 
-	tagstoadd = []
-	if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
-	if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
 	for eachUser in l.users
 		unless _.contains c.knows, eachUser
 			c.knows.addToSet eachUser
 			dirtycontact = true
-	if tagstoadd.length then addTags u, c, 'industry', _.uniq tagstoadd
+
+	tagstoadd = []
+	if l.industries?.length then tagstoadd = tagstoadd.concat l.industries
+	if l.specialties?.length then tagstoadd = tagstoadd.concat l.specialties
+	if tagstoadd.length then AddTags u, c, 'industry', _.uniq tagstoadd
 
 	if (_.indexOf c.knows, u._id) < 0
 		c.knows.addToSet u
 		dirtycontact = true
 
-	if c.linkedinId isnt l.linkedinId
+	if l.linkedinId and c.linkedinId isnt l.linkedinId
 		c.linkedinId = l.linkedinId
 		dirtycontact = true
 
@@ -126,7 +127,7 @@ findAndUpdateOtherLinkedInDataFor = (u, c, calldone) ->
 # these records come from users' connections which were not previously matched against contacts,
 # but were stored for later reference.
 #
-module.exports = 
+module.exports =
 	linkLater: findAndUpdateOtherLinkedInDataFor
 	addDeets2Contact: addDeets2Contact
 	REImake: REImake

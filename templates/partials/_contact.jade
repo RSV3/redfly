@@ -1,0 +1,254 @@
+.row.top
+	.col-md-3.picture
+		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
+
+		| {{#if isKnown}}
+		| {{view App.EditPictureView pictureBinding="picture"}}
+
+		.row.actions
+			| {{#if noneButIAdded}}
+			span.contact-actions
+				a(href='#', role="button", action='showMerge target="view"')
+					i.fa.fa-resize-small.myfa-1p5x
+			| {{/if}}
+
+			| {{#unless view.parentView.classifying}}
+			span.contact-actions
+				a(href='#', action='remove')
+					i.fa.fa-trash.myfa-1p5x
+			| {{/unless}}
+
+		| {{/if}}
+
+	.col-md-6
+		.row
+			| {{#if hasIntro}}
+			p.bullhorn
+				a(href='#', action='introMailto target="view"')
+					{{view App.IntroView}}
+			| {{/if}}
+			.maybevip
+				a(href='#', action='toggleVIP')
+					+if('isVip')
+						i.fa.fa-star.myfa-1p5x.fullredstar
+						+else
+						+if('isKnown')
+							i.fa.fa-star-o.myfa-1p5x.emptygraystar
+			| {{#if canHide}}
+			a(href='#', action='hideItAll this target="view"')
+				h3 {{canonicalName}}
+			| {{else}}
+			h3 {{canonicalName}}
+			| {{/if}}
+			| {{#if allowEdits}}
+			| {{view view.editView allAttribute="names" primaryAttribute="name" otherAttribute="aliases" prettyPrimaryAttribute="Display Name" prettyOtherAttribute="Aliases"}}
+			| {{/if}}
+			br
+			+view('view.positionView')
+				| {{position}}{{#if position}},{{/if}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
+				+if('allowEdits')
+					| {{#if editpositiondetails}}
+					i {{editpositiondetails}}
+					| {{/if}}
+					| &nbsp;&nbsp;
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.fa.fa-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"')
+									i.fa.fa-times
+								.nav-header Position and Experience
+								div(bindAttr='class=":control-group view.positionFieldInstance.error:error"')
+									+view('view.field valueBinding="position" viewName="positionFieldInstance" placeholder="position"')
+									span.help-block {{view.positionFieldInstance.error}}
+								div(bindAttr='class=":control-group view.companyFieldInstance.error:error"')
+									+view('view.field valueBinding="company" viewName="companyFieldInstance" placeholder="company"')
+									span.help-block {{view.companyFieldInstance.error}}
+								div(bindAttr='class=":control-group view.yearsExperienceFieldInstance.error:error"')
+									+view('view.field valueBinding="yearsExperience" viewName="yearsExperienceFieldInstance" placeholder="years of experience"')
+									span.help-block {{view.yearsExperienceFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.fa.fa-ok
+										+else
+										i.fa.fa-spinner.fa-spin
+
+				+if('linkedin')
+					br
+					a(bindAttr='href="linkedinMail"', target='_blank') Send a Linkedin inMail
+		.row
+			| {{#if view.showEmail}}
+			h4.email
+				| <a {{bindAttr href="directMailto"}} target="_blank">{{email}}</a>
+			| {{view view.editView allAttribute="emails" primaryAttribute="email" otherAttribute="otherEmails" prettyPrimaryAttribute="Primary Email" prettyOtherAttribute="Other Emails"}}
+			| {{/if}}
+		| {{#if firstHistory}}
+		.row
+			| {{#if spokenTwice}}
+			p.messages
+				| You last <a {{bindAttr href="gmailSearch"}} target="_blank">emailed each other </a>
+				strong {{lastTalked}}
+			| {{/if}}
+			p
+				| You and {{nickname}} first talked {{firstTalked}}. The email subject was&nbsp;
+				| {{#if spokenTwice}}
+				em "{{firstHistory.subject}}"
+				| {{else}}
+				| <a {{bindAttr href="gmailSearch"}} target="_blank">{{firstHistory.subject}}</a>
+				| {{/if}}
+				| .
+		| {{else}}	
+		| {{#if lastMail}}
+		.row
+			p
+				b Last mail:&nbsp;
+				span
+					{{#link-to "profile" lastMail.sender}} {{lastMail.sender.canonicalName}} {{/link-to}}
+				span
+					&nbsp;{{sentdate}}
+		| {{/if}}		
+		| {{/if}}
+
+
+		+if('waitingForMeasures')
+			i.fa.fa-spinner.fa-spin
+		+unless('waitingForMeasures')
+			+if('isKnown')
+				.row.setmeasure(title='how well do you know this contact?')
+					span.leftsliderlabel Relationship Strength 
+					.starcontainer
+						+view('view.starView measure="familiarity"')
+				.row.setmeasure(title='how influential is this contact?')
+					span.leftsliderlabel Influence 
+					.starcontainer
+						+view('view.starView measure="reachability"')
+			.row
+				+view('view.measureBarView measure="reachability"')
+					+if('view.avgMeasure')
+						+unless('isKnown')
+							span.leftbarlabel Influence
+						.barviewcontainer
+							| <div {{bindAttr class="view.ltORgtClass"}} {{bindAttr style="view.widthAsPcage"}}>
+							| </div>
+
+	.col-md-3
+		.row
+			p
+				+view('view.socialView')
+					a(href='#', bindAttr='class=":social linkedin::muted"', action='openLinkedin target="view"')
+						i.fa.fa-linkedin-square.myfa-1p5x
+						|  
+					a(href='#', bindAttr='class=":social twitter::muted"', action='openTwitter target="view"')
+						i.fa.fa-twitter-square.myfa-1p5x
+						|  
+					a(href='#', bindAttr='class=":social facebook::muted"', action='openFacebook target="view"')
+						i.fa.fa-facebook-square.myfa-1p5x
+						|  
+					| &nbsp;&nbsp;
+					+view('view.editView')
+						a(href='#', action='toggle target="view"')
+							i.fa.fa-pencil
+						div(bindAttr='class="view.show::hide"')
+							.popover
+								a.close(href='#', action='toggle target="view"')
+									i.fa.fa-times
+								.nav-header Social Links
+								div(bindAttr='class=":control-group view.linkedinFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.linkedin}}
+									+view('view.field valueBinding="linkedin" network="linkedin" viewName="linkedinFieldInstance" placeholder="Linkedin"')
+									span.help-block {{view.linkedinFieldInstance.error}}
+								div(bindAttr='class=":control-group view.twitterFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.twitter}}
+									+view('view.field valueBinding="twitter" network="twitter" viewName="twitterFieldInstance" placeholder="Twitter"')
+									span.help-block {{view.twitterFieldInstance.error}}
+								div(bindAttr='class=":control-group view.facebookFieldInstance.error:error"')
+									span.help-inline {{view.prefixes.facebook}}
+									+view('view.field valueBinding="facebook" network="facebook" viewName="facebookFieldInstance" placeholder="Facebook"')
+									span.help-block {{view.facebookFieldInstance.error}}
+								.pull-right
+									+unless('view.working')
+										a(href='#', action='save target="view"')
+											| Save 
+											i.fa.fa-ok
+										+else
+										i.fa.fa-spinner.fa-spin
+
+		.row
+			{{#if knowsSome}}
+			h5.knows-header People who know {{nickname}}
+			ul.knows-list
+				{{#each knowsSome}}
+				{{view App.ContactuserView}}
+				{{/each}}
+			{{/if}}
+
+
+.row
+	.col-md-12
+		.row.tag-category
+			.col-md-4
+				p.lead {{App.admin.orgtagcat1}}
+				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat1" full="true" tabindex="1"}}
+			.col-md-4
+				p.lead {{App.admin.orgtagcat2}}
+				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat2" full="true" tabindex="1"}}
+			.col-md-4
+				p.lead {{App.admin.orgtagcat3}}
+				| {{view App.FullTaggerView contactBinding="this" catid="orgtagcat3" full="true" tabindex="1"}}
+.row
+	.col-md-6
+		.row.tag-category
+			p.lead Industry Tags
+			| {{view App.FullTaggerView contactBinding="this" catid="industry" full="true" tabindex="2"}}
+	.col-md-6
+		.row
+			p.lead Notes
+			| {{#collection contentBinding="notes" itemViewClass="App.NoteView"}}
+			{{#link-to "profile" view.content.author class="pull-left"}}
+			| <img class="media-object" {{bindAttr src="view.content.author.canonicalPicture"}}>
+			{{/link-to}}
+
+			.media-body.note
+				p {{{view.content.body}}}
+				small.muted
+					{{#with view.content.author}}
+					{{view App.ContactuserView}}
+					span  | {{view.naturaldate}}
+					{{/with}}
+
+			| {{/collection}}
+		.row
+			| <form {{action add on="submit" target="controller"}}>
+			| {{view view.newNoteView valueBinding="controller.currentNote"}}
+			| <button class="btn btn-default pull-right" type="submit" tabindex="4" {{bindAttr disabled="disableAdd"}}>
+			i.fa.fa-comment
+			| Add Note
+			| </button>
+			| </form>
+| {{#view view.mergeView viewName="mergeViewInstance"}}
+.modal.hide.fade(tabindex='-1', role='dialog', aria-labelledby='mergeModalLabel', aria-hidden='true')
+	.modal-header
+		button.close(type='button', data-dismiss='modal')
+		h3#mergeModalLabel Merge with {{canonicalName}}
+	.modal-body
+		.muted Search your contacts by name or email.
+		.row
+			| {{view view.mergeSearchView}}
+		| {{#if view.selections.length}}
+		.row
+			ul.selections
+				| {{#each view.selections}}
+				li
+					| {{canonicalName}} &mdash; {{email}}
+				| {{/each}}
+		.alert.alert-block.alert-error
+			h4.alert-heading Merging is irreversible!
+			p Make absolutely sure you selected the right contacts.
+			p
+				button.btn.btn-default(data-dismiss='modal') Cancel
+				|  <a href="#" class="btn btn-danger" {{action merge target="view"}}>I understand, let's do this</a>
+		| {{/if}}
+| {{/view}}

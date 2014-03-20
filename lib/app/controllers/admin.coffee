@@ -1,9 +1,10 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	util = require '../util'
+	util = require '../util.coffee'
+	socketemit = require '../socketemit.coffee'
 
 	App.AdminView = Ember.View.extend
-		template: require '../../../templates/admin'
+		template: require '../../../templates/admin.jade'
 		classNames: ['admin']
 		didInsertElement: ->
 			@$('textarea').blur ()=>
@@ -32,13 +33,13 @@ module.exports = (Ember, App, socket) ->
 					App.admin.set 'orgtagcats', "#{App.admin.get 'orgtagcat1'}, #{App.admin.get 'orgtagcat2'}, #{App.admin.get 'orgtagcat3'}"
 					$newInput.replaceWith $it
 					$it.val newText
-					App.store.commit()
+					App.admin.save()
 				unless newText is oldText
 					bootbox.dialog "Change tag category name from \"<b>#{oldText}</b>\" to \"<b>#{$newInput.val()}</b>\"", [
 						"label" : "Rename old tags",
 						"class" : "btn-success",
 						"callback": ()=>
-							socket.emit 'renameTags', {old:oldText, new:newText}, ()->
+							socketemit.post 'renameTags', {old:oldText, new:newText}, ()->
 								renameTagCategory $it, $newInput
 					,
 						"label" : "Ignore old tags",
@@ -88,22 +89,33 @@ module.exports = (Ember, App, socket) ->
 			@get('blacklistemails')?.join '\n'
 		).property 'blacklistemails'
 		onChk: (->
-			@set 'flushsave', @get 'flushsavechk'
-			@set 'userstoo', @get 'userstoochk'
-			@set 'hidemails', @get 'hidemailschk'
-			@set 'anyedit', @get 'anyeditchk'
-			App.store.commit()
+			changed = false
+			if App.admin.get('flushsave') isnt @get 'flushsavechk'
+				App.admin.set 'flushsave', @get 'flushsavechk'
+				changed = true
+			if App.admin.get('userstoo') isnt @get 'userstoochk'
+				App.admin.set 'userstoo', @get 'userstoochk'
+				changed = true
+			if App.admin.get('hidemails') isnt @get 'hidemailschk'
+				App.admin.set 'hidemails', @get 'hidemailschk'
+				changed = true
+			if App.admin.get('anyedit') isnt @get 'anyeditchk'
+				App.admin.set 'anyedit', @get 'anyeditchk'
+				changed = true
+			if changed
+				console.log 'onChk'
+				App.admin.save()
 		).observes 'hidemailschk', 'userstoochk', 'flushsavechk', 'anyeditchk'
 		_onTextArea: (->
 			if @get('domainlist')?.length
 				regexp = /(?:,|\n)+/
-				@set 'domains',  _.filter _.map(@get('domainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				@set 'authdomains',  _.filter _.map(@get('authdomainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				@set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.set 'domains',  _.filter _.map(@get('domainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.set 'authdomains',  _.filter _.map(@get('authdomainlist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.set 'blacklistdomains', _.filter _.map(@get('domainblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
 				
-				@set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				@set 'whitelistemails', _.filter _.map(@get('emailwhitelist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				@set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
-				App.store.commit()
+				App.admin.set 'blacklistemails', _.filter _.map(@get('emailblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.set 'whitelistemails', _.filter _.map(@get('emailwhitelist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.set 'blacklistnames', _.filter _.map(@get('nameblacklist').split(regexp), (d)->util.trim(d)), (d)->d.length
+				App.admin.save()
 		)
 

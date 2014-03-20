@@ -1,4 +1,4 @@
-module.exports = (app, route) ->
+module.exports = (route) ->
 	_ = require 'underscore'
 	_s = require 'underscore.string'
 	moment = require 'moment'
@@ -12,11 +12,12 @@ module.exports = (app, route) ->
 	Elastic = require './elastic'
 
 
-	route 'db', (data, io, session, fn)->
-		Db.routes app, data, io, session, fn
+	route 'get', 'db/:type/:op', Db.getRoutes
+
+	route 'post', 'db/:type/:op', Db.postRoutes
 
 
-	route 'dashboard', (fn)->
+	route 'get', 'dashboardlist', (fn)->
 		dash =
 			clicks: 0
 			tags: 0
@@ -44,7 +45,7 @@ module.exports = (app, route) ->
 										if not err then dash.searches = c
 										fn dash
 
-	route 'stats', (fn)->
+	route 'get', 'stats', (fn)->
 		stats = {}
 		last30days = $gt:moment().subtract('days', 30).toDate()
 		query = added:last30days
@@ -55,40 +56,41 @@ module.exports = (app, route) ->
 				if not err then stats.autoThisMonth = totes
 				fn stats
 
-	route 'summary.organisation', (fn) ->
+	route 'get', 'summary.organisation', (fn) ->
 		fn process.env.ORGANISATION_TITLE
 
-	route 'total.contacts', (fn) ->
+	route 'get', 'total.contacts', (fn) ->
 		Logic.countConts (err, count) ->
 			throw err if err
 			fn count
 
-	route 'summary.contacts', (fn) ->
+	route 'get', 'summary.contacts', (fn) ->
 		Logic.summaryContacts (err, count) ->
 			throw err if err
 			fn count
 
-	route 'summary.tags', (fn) ->
+	route 'get', 'summary.tags', (fn) ->
 		Logic.summaryTags (err, count) ->
 			throw err if err
 			fn count
 
-	route 'summary.notes', (fn) ->
+	route 'get', 'summary.notes', (fn) ->
 		Logic.summaryNotes (err, count) ->
 			throw err if err
 			fn count
 
-	route 'summary.verbose', (fn) ->
-		Models.Tag.find().sort('date').select('body').exec (err, tags) ->
+	# do we even use this anymore?? weird. #jTNT
+	route 'get', 'summary.verbose', (fn) ->
+		Models.Tag.find().where('deleted').exists(false).sort('date').select('body').exec (err, tags) ->
 			throw err if err
 			verbose = _.max tags, (tag) ->
 				tag.body.length
 			fn verbose?.body
 
-	route 'summary.user', (fn) ->
+	route 'get', 'summary.user', (fn) ->
 		fn 'Joe Chung'
 
-	route 'login.contextio', (data, io, session, fn) ->
+	route 'post', 'login.contextio', (params, body, session, fn) ->
 		Models.User.findOne email: data.email, (err, user) ->
 			if err
 				console.log err
@@ -99,7 +101,6 @@ module.exports = (app, route) ->
 					session.save()
 					return fn id:user.id
 			Mboxer.create data, (cIOdata)->
-				console.dir cIOdata
 				if not cIOdata?.success then return fn err:'email'
 				if cIOdata.err then return fn err:cIOdata.err
 				if not user
@@ -122,14 +123,14 @@ module.exports = (app, route) ->
 						fn id:u.id
 
 
-	route 'fullSearch', (data, io, session, fn) ->
-		Search fn, data, session
+	route 'get', 'fullSearch', (body, session, fn) ->
+		Search fn, body, session
 
-	route 'search', (data, io, session, fn)->
-		Search fn, data, session, 19
+	route 'get', 'search', (body, session, fn)->
+		Search fn, body, session, 19
 
 
-	route 'verifyUniqueness', (data, fn) ->
+	route 'get', 'verifyUniqueness', (data, session, fn) ->
 		field = data.field + 's'
 		conditions = {}
 		conditions[field] = data.value
@@ -137,7 +138,7 @@ module.exports = (app, route) ->
 			throw err if err
 			fn contact?[field][0]
 
-	route 'getIntro', (data, fn) ->	# get an email introduction
+	route 'get', 'getIntro', (data, session, fn) ->	# get an email introduction
 		Models.Contact.findById data.contact, (err, contact) ->
 			throw err if err
 			Models.User.findById data.userfrom, (err, userfrom) ->
@@ -150,7 +151,7 @@ module.exports = (app, route) ->
 							throw err if err
 							fn()
 
-	route 'deprecatedVerifyUniqueness', (data, fn) ->	# Deprecated, bitches
+	route 'get', 'deprecatedVerifyUniqueness', (data, session, fn) ->
 		Models.Contact.findOne().ne('_id', data.id).in(data.field, data.candidates).exec (err, contact) ->
 			throw err if err
 			fn _.chain(contact?[data.field])
@@ -158,30 +159,41 @@ module.exports = (app, route) ->
 				.first()
 				.value()
 
-	route 'tags.remove', (conditions, fn) ->
-		Models.Tag.find conditions, (err, tags)->
+	route 'get', 'tags.stats', (fn) ->
+		match = $match: deleted: $exists: false
+		group =
+			$group:
+				_id: '$body'
+				count: $sum: 1
+				mostRecent: $max: '$date'
+				# contacts: $addToSet: '$contacts'
+		project =
+			$project:
+				_id: 0
+				body: '$_id'
+				count: 1
+				mostRecent: 1
+		Models.Tag.aggregate match, group, project, (err, results) ->
 			throw err if err
-			ids = _.pluck tags, '_id'
-			Models.Tag.remove {_id: $in: ids}, (err)->
-				if err
-					console.log "error removing tags:"
-					console.dir ids
-					console.dir err
-					fn null
-				else
-					whichtags = if conditions.category is 'industry' then 'indtags' else 'orgtags'
-					bulkESupd = (tags)->
-						if not tags?.length then return
-						if not (tag = tags.pop()) then return bulkESupd tags
-						Elastic.onDelete tag, 'Tag', whichtags, (err)->
-							bulkESupd tags
-					bulkESupd tags
-					fn ids
+			fn results
 
-	route 'tags.all', (conditions, fn) ->
+	route 'get', 'tags.all', (conditions, session, fn) ->
+		conditions.deleted = $exists:false
 		Models.Tag.find(conditions).distinct 'body', (err, bodies)->
 			throw err if err
 			fn bodies.sort()
+
+	route 'get', 'tags.popular', (conditions, session, fn) ->
+		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
+		else conditions.contact = $exists: true
+		conditions.deleted = $exists:false
+		Models.Tag.aggregate {$match: conditions},
+			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
+			{$sort: count: -1},
+			{$limit: 20},
+			(err, results) ->
+				throw err if err
+				fn _.map results, (r)-> {body:r._id, category:r.category}
 
 	_updateTags = (updates, conditions, fn)->
 		Models.Tag.find conditions, (err, tags)->
@@ -198,58 +210,45 @@ module.exports = (app, route) ->
 				console.dir err if err
 				return fn()
 
-	route 'tags.move', (conditions, fn) ->
+	route 'post', 'tags.move', (conditions, session, fn) ->
 		if not conditions.newcat then return fn()
 		updates = category:conditions.newcat
 		delete conditions.newcat
 		_updateTags updates, conditions, fn
 
-	route 'tags.rename', (conditions, fn) ->
+	route 'post', 'tags.rename', (conditions, session, fn) ->
 		if not conditions.new then return fn()
 		updates = body:conditions.new
 		delete conditions.new
 		_updateTags updates, conditions, fn
 
-	route 'tags.popular', (conditions, fn) ->
-		if conditions.contact then conditions.contact = Models.ObjectId(conditions.contact)
-		else conditions.contact = $exists: true
-		Models.Tag.aggregate {$match: conditions},
-			{$group:  _id: '$body', category: {$first:'$category'}, count: {$sum: 1}},
-			{$sort: count: -1},
-			{$limit: 20},
-			(err, results) ->
-				throw err if err
-				fn _.map results, (r)-> {body:r._id, category:r.category}
+	# we can also rename the tag categories...
+	route 'post', 'renameTags', (data, session, fn)->
+		Models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
+			if err then console.dir err
+			fn err
 
-	route 'tags.stats', (fn) ->
-		group =
-			$group:
-				_id: '$body'
-				count: $sum: 1
-				mostRecent: $max: '$date'
-				# contacts: $addToSet: '$contacts'
-		project =
-			$project:
-				_id: 0
-				body: '$_id'
-				count: 1
-				mostRecent: 1
-		Models.Tag.aggregate group, project, (err, results) ->
+	route 'post', 'tags.remove', (conditions, session, fn) ->
+		Models.Tag.find conditions, (err, tags)->
 			throw err if err
-			fn results
-		# fn [
-		# 	{body: 'capitalism', count: 56, mostRecent: new Date()}
-		# 	{body: 'communism', count: 4, mostRecent: require('moment')().subtract('days', 7).toDate()}
-		# 	{body: 'socialism', count: 110, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# 	{body: 'fascism', count: 61, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# 	{body: 'vegetarianism', count: 5, mostRecent: require('moment')().subtract('days', 40).toDate()}
-		# ]
+			ids = _.pluck tags, '_id'
+			Models.Tag.remove {_id: {$in: ids}, deleted: {$exists: false}}, (err)->
+				if err
+					console.log "error removing tags:"
+					console.dir ids
+					console.dir err
+					fn null
+				else
+					whichtags = if conditions.category is 'industry' then 'indtags' else 'orgtags'
+					bulkESupd = (tags)->
+						if not tags?.length then return
+						if not (tag = tags.pop()) then return bulkESupd tags
+						Elastic.onDelete tag, 'Tag', whichtags, (err)->
+							bulkESupd tags
+					bulkESupd tags
+					fn ids
 
-	route 'merge', (data, fn) ->
-		console.log ''
-		console.log 'merge'
-		console.dir data
-		console.log ''
+	route 'post', 'merge', (data, session, fn) ->
 		updatedObject = {}
 		Models.Contact.findById data.contactId, (err, contact) ->
 			throw err if err
@@ -309,7 +308,8 @@ module.exports = (app, route) ->
 
 	# TODO have a check here to see when the last time the user's contacts were parsed was. People could hit the url for this by accident.
 	routing_flag_hash = {}
-	route 'parse', (id, io, fn) ->
+	route 'get', 'parse/:id', (params, body, session, fn) ->
+		id = params.id
 		Models.User.findById id, (err, user) ->
 			throw err if err
 			if not user then return fn()	# in case this gets called and there's not logged in user
@@ -330,11 +330,13 @@ module.exports = (app, route) ->
 				delete routing_flag_hash[id]	# good job well done.
 				fn err
 
-	route 'linkin', (id, io, session, fn) ->
-		Models.User.findById id, (err, user) ->
+	route 'get', 'linkin/:id', (params, body, session, fn) ->
+		Models.User.findById params.id, (err, user) ->
 			throw err if err
 			if not user then return fn err	# in case this gets called and there's not logged in user
-			notifications =
+			notifications = {}
+			###
+			# ccos we removed socket.io
 				foundTotal: (total) ->
 					io.emit 'link.total', total
 				completedLinkedin: ->
@@ -346,20 +348,27 @@ module.exports = (app, route) ->
 						type: 'linkedin'
 						id: contact.id
 						updater: user.id
+			###
 			require('./linker').linker user, notifications, (err, changes) ->
-				if not _.isEmpty changes then io.emit 'linked', changes
+				#if not _.isEmpty changes then io.emit 'linked', changes
 				fn err
 
 
-	route 'classifyQ', (id, fn) ->
-		Logic.classifyList id, (neocons)->
+	route 'get', 'classifyQ/:id', (params, body, session, fn) ->
+		console.log 'classify'
+		console.dir params
+		console.dir body
+		Logic.classifyList params.id, (neocons)->
 			fn _.map neocons, (n)-> Models.ObjectId(n)		# convert back to objectID
 
-	route 'classifyCount', Logic.classifyCount		# classifyCount has the same signature as the route: (id, cb)
-	route 'requestCount', Logic.requestCount		# ditto
+	route 'get', 'classifyCount/:id', (params, body, session, fn) ->
+		Logic.classifyCount params.id, fn
+
+	route 'get', 'requestCount/:id', (params, body, session, fn) ->
+		Logic.requestCount params.id, fn
 
 
-	route 'companies', (fn)->
+	route 'get', 'companylist', (fn)->
 		oneWeekAgo = moment().subtract('days', 700).toDate()
 		# TODO: fix companies
 		# this is still kinda nonsense. we really wanna search mails from the last week,
@@ -378,7 +387,7 @@ module.exports = (app, route) ->
 			fn companies
 
 
-	route 'flush', (contacts, io, session, fn) ->
+	route 'post', 'flush', (session, fn) ->
 		_.each contacts, (c)->
 			classification = {user:session.user, contact:c}
 			if session?.admin?.flushsave then classification.saved = moment().toDate()
@@ -394,12 +403,10 @@ module.exports = (app, route) ->
 		Models.Contact.find({added:{$exists:true}, picture:{$exists:true}}).sort(added:-1).limit(searchPagePageSize).execFind (err, contacts)->
 			throw err if err
 			recent = _.map contacts, (c)->c._id.toString()
-			console.log "recent"
-			console.dir recent
 			fn recent
 	###
 
-	route 'leaderboard', (data, io, session, fn)->
+	route 'get', 'leaderlist', (session, fn)->
 		Models.User.find().select('_id contactCount dataCount lastRank').exec (err, users)->
 			throw err if err
 			l = users.length
@@ -411,21 +418,17 @@ module.exports = (app, route) ->
 			, {moreConditions:poor:true}, session
 
 
-	route 'requests', (data, io, session, fn) ->
+	route 'get', 'listrequests', (data, session, fn) ->
 		currentReqs = null
 		skip = data?.skip or 0
 		pageSize = 10
 		if data?.old
-			query = expiry:$lt:moment().toDate()
+			query = expiry:$exists:true
 			if data.me then query.user = session.user
 			else query.user = $ne:session.user
-		else query = expiry:$gte:moment().toDate()
-		Models.Request.find(query).sort(date:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
+		else query = expiry:$exists:false
+		Models.Request.find(query).sort(expiry:-1).skip(skip).limit(pageSize+1).execFind (err, reqs)->
 			theresMore = reqs?.length > pageSize
 			if not err and reqs?.length then currentReqs = _.map reqs[0...pageSize], (r)->r._id.toString()
 			fn currentReqs, theresMore
 
-	route 'renameTags', (data, io, session, fn)->
-		Models.Tag.update {category:data.old.toLowerCase()}, {$set:category:data.new.toLowerCase()}, {multi:true}, (err) ->
-			if err then console.dir err
-			fn err

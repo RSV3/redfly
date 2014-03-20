@@ -1,14 +1,16 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 	_str = require 'underscore.string'
-	_.mixin(_str.exports());
+	_.mixin _str.exports()
 	moment = require 'moment'
+
+	socketemit = require '../socketemit.coffee'
 
 	searchPagePageSize = 10
 	sortFieldNames = ['familiarity', 'reachability', 'names', 'added']
 
 	App.ResultsController = Ember.ObjectController.extend
-		hiding: 0			# this is just for templating, whether or not results are filtered out
+		searchtag:null
 		sortType: null		# identify sorting rule
 		sortDir: 0			# 1 if ascending, -1 if descending
 
@@ -40,21 +42,26 @@ module.exports = (Ember, App, socket) ->
 			toptags
 		).property 'f_indtags'
 
-		noseToPick: (->
-			topnose = []
-			if gno = @get('known')
-				gno.forEach (n)->
-					unless n.get('canonicalName') then return
-					topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
-			topnose
-		).property 'known.@each.isLoaded'
+		noseToPick: []
+		pickTheNose: (->
+			ids = @get 'f_knows'
+			if ids?.length
+				@store.filter('user', {_id:$in:ids}, (data)->
+					_.contains ids, data.get('id')
+				).then (gno)=>
+					topnose = []
+					gno.forEach (n)->
+						if n.get('canonicalName')
+							topnose.push { id:n.get('id'), checked:false, label:n.get('canonicalName') }
+					@set 'noseToPick', topnose
+		).observes 'f_knows'
 
-		known: (->
-			ids = @get('f_knows')
-			if not ids?.length then return null
-			App.User.filter {_id:$in:ids}, (data) =>
-				_.contains ids, data.get('id')
+		multiNose: (->
+			@get('f_knows')?.length > 1
 		).property 'f_knows'
+		someFilter: (->
+			@get('f_knows')?.length > 1 or @get('f_inidtags')?.length > 0 or @get('f_orgtags')?.length > 0
+		).property 'f_knows', 'f_indtags', 'f_orgtags'
 
 		all: []				# every last search result
 		empty: false		# flag for empty results message
@@ -86,9 +93,9 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 
 		nextPage: ->
@@ -99,9 +106,9 @@ module.exports = (Ember, App, socket) ->
 				emission = @buildFilter()
 				emission.page = p
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 
 		runFilter: ->
@@ -110,9 +117,9 @@ module.exports = (Ember, App, socket) ->
 				@set 'all', []
 				@set 'page', 0
 				@set 'empty', false
-				socket.emit 'fullSearch', emission, (results) =>
+				socketemit.get 'fullSearch', emission, (results) =>
 					if results?.response?.length
-						@set 'all', App.store.findMany(App.Contact, results.response)
+						@set 'all', @store.find 'contact', results.response
 					else @set 'empty', true
 					@set 'filteredCount', results?.filteredCount
 
@@ -139,9 +146,9 @@ module.exports = (Ember, App, socket) ->
 			@set 'all', []
 			@set 'page', 0
 			@set 'empty', false
-			socket.emit 'fullSearch', emission, (results) =>
+			socketemit.get 'fullSearch', emission, (results) =>
 				if results?.response?.length
-					@set 'all', App.store.findMany(App.Contact, results.response)
+					@set 'all', @store.find 'contact', results.response
 				else @set 'empty', true
 
 		query:null				# query string
@@ -172,7 +179,7 @@ module.exports = (Ember, App, socket) ->
 			a = @get 'all'
 			if not a?.get('length') then return null
 			a
-		).property 'all'
+		).property 'all.@each'
 
 		scrollUp: (->
 			rs = @get 'rangeStart'
@@ -214,11 +221,6 @@ module.exports = (Ember, App, socket) ->
 
 	App.ResultController = App.ContactController.extend
 		canHide: true
-		knowsSome: []
-		setKS: (->
-			if (f = @get('knows'))
-				if f.get('length') then @set 'knowsSome', f
-		).observes 'knows.@each.isLoaded'
 
 
 	App.ResultView = App.ContactView.extend
@@ -232,10 +234,13 @@ module.exports = (Ember, App, socket) ->
 
 		didInsertElement: ()-> @get('controller').set 'showitall', false
 		hideItAll: (r)-> r.set 'showitall', false
-		setShowItAll: (r)-> r.set 'showitall', true
+		setShowItAll: (r)->
+			r.set 'showitall', true
+			@get('controller').setHistories()
+			@get('controller').getMeasures()
 
 	App.SortView = Ember.View.extend
-		template: require '../../../templates/components/sort'
+		template: require '../../../templates/components/sort.jade'
 		classNames: ['sort']
 		dir: (->
 			if t = @get 'controller.sortType'

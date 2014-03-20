@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../../socketemit.coffee'
 
 	Ember.RadioButton = Ember.View.extend
 		checked: false,
@@ -13,48 +14,60 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.AutoCompleteView = Ember.TextField.extend
-		allautos: null
 		autocompletes: null
-		setACs: (->
-			a = @get 'allautos'
-			if a?.get('length') and not @get('category')?.length
-				@set 'autocompletes', a.getEach('name')
-		).observes 'allautos.@each'
+		cantMatchTag: false
 		didInsertElement: ->
 			category = @get('category')
-			@set 'typeahead', $(@$()).typeahead
-				source: null	# Placeholder, populate later.
-				items: 6
-				updater: (item) =>
-					if category then @get('parentView').addTag category, item
-					else @get('parentView').addNose item
-					return null
 			if category?.length
 				if category is 'industry' then conditions = category:'industry'
 				else conditions = category:$ne:'industry'
-				socket.emit 'tags.all', conditions, (allTags) =>
-					unless @isDestroyed then @set 'autocompletes', allTags
-			else @set 'allautos', App.User.filter {name:$exists:true}, (u)->u?.get('name')?.length
+				socketemit.get 'tags.all', conditions, (allTags) =>
+					@set 'autocompletes', allTags
+			else @get('parentView.controller').store.filter('user', {name:$exists:true}, (u)->u?.get('name')?.length).then (allUsers)=>
+				@set 'autocompletes', allUsers.getEach 'name'
 		updateTypeahead: (->
-			if t=@get('typeahead') then t.data('typeahead').source = @get('autocompletes')
+			typeAheadOpts =
+				items: 6
+				autoselect: true
+				highlight: true
+			updater = (item)=>
+				if category = @get('category') then @get('parentView').addTag category, item
+				else @get('parentView').addNose item
+			theseAutos = new Bloodhound
+				datumTokenizer: (d)-> Bloodhound.tokenizers.whitespace d.value
+				queryTokenizer: Bloodhound.tokenizers.whitespace
+				local: _.map @get('autocompletes'), (d)-> value:d
+			theseAutos.initialize()
+			@$().typeahead(typeAheadOpts, source: (q, cb)=>
+				theseAutos.ttAdapter() q, (a)=>
+					if a?.length then @$().removeClass 'error'
+					else @$().addClass 'error'
+					cb a
+			).on('typeahead:selected', (ev, data)->
+				updater data.value
+			).on('typeahead:autocompleted', (ev, data)->
+				updater data.value
+			)
 		).observes 'autocompletes.@each'
 
 
 	App.FilterView = Ember.View.extend
-		template: require '../../../../templates/sidebars/filter'
+		template: require '../../../../templates/sidebars/filter.jade'
 		classNames: ['filter']
 
 		nextNewUser: null
 		doToggleUser: (->
-			if u = @get 'nextNewUser'
-				@get('controller').userToggle u.getEach('id')[0], u.getEach('name')[0]
+			if (u = @get 'nextNewUser')
+				if u = u.nextObject 0
+					@get('controller').userToggle u.get('id'), u.get('name')
 		).observes 'nextNewUser.@each'
 		addNose: (name)->
-			@set 'nextNewUser', App.User.filter (data) ->
-					data.get('name') is name
+			@set 'nextNewUser', @get('controller').store.filter 'user', (data)->
+				data.get('name') is name
 
 		addTag: (cat, body)->
-			@get('controller').tagToggle cat, body
+			if c = @get 'controller'
+				c.tagToggle cat, body
 
 
 	App.FilterToggleView = Ember.View.extend
@@ -63,6 +76,6 @@ module.exports = (Ember, App, socket) ->
 		didInsertElement: ()->
 			$i = @$()
 			$i.click ->
-				$(this).toggleClass 'icon-caret-right icon-caret-down'
+				$(this).toggleClass 'fa-caret-right fa-caret-down'
 				$d = $("div.#{$(this).attr 'id'}")
 				if ($d.toggleClass 'collapsed').hasClass 'collapsed' then $d.hide() else $d.show()

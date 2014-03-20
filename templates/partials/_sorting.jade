@@ -1,0 +1,13 @@
+div(bindAttr='class=":row theResults::disabled"')
+	.col-md-2
+		h4.sort-by SORT BY
+	.col-md-2
+		+view ('App.SortView class="names" sortTitle = "sort name alphabetically" sortName = "Alphabetical"')
+	| {{#unless datapoor}}
+	.col-md-2
+		+view ('App.SortView class="familiarity" sortTitle = "how many users know each contact" sortName = "Influence"')
+	.col-md-3
+		+view ('App.SortView class="reachability" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
+	| {{/unless}}
+	.col-md-2
+		+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')

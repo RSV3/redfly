@@ -1,46 +1,40 @@
-// TODO do connection alert if possible, remove .connection styles if not
-// <ui:connectionAlert>
 
 .navbar.navbar-inverse.navbar-fixed-top
-	.navbar-inner
-		.container
-			a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
-				span.icon-bar
-				span.icon-bar
-				span.icon-bar
-			+linkTo('recent class="brand"')
-				| Redfly
-				img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
+	.container
+		.navbar-header.col-md-12
+			{{#link-to "recent" class="navbar-brand"}}
+			| Redfly
+			img(src='/images/redfly_logo.png', width='30px', class='logo-up') 
+			{{/link-to}}
 			| {{#if App.user}}
-			.nav-collapse.collapse
-				ul.nav
-					| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
-					li
-						+linkTo('requests') Recommend
-					| {{#if App.admin.requestCount}}
-					li
-						span.badge.badge-important {{App.admin.requestCount}}
-					| {{/if}}				
-					li
-						+linkTo('classify') Classify
-					| {{#if App.admin.classifyCount}}
-					li
-						span.badge.badge-important {{App.admin.classifyCount}}
-					| {{/if}}
-					li
-						+linkTo('companies') Companies
-					li
-						+linkTo('leaderboard') Leaderboard
+			ul.nav.navbar-nav
+				| {{view view.spotlightSearchView info="true" viewName="spotlightSearchViewInstance"}}
+				li
+					{{link-to "Recommend" "requests"}}
+				| {{#if App.admin.requestCount}}
+				li
+					span.badge.badge-important {{App.admin.requestCount}}
+				| {{/if}}				
+				li
+					{{link-to "Classify" "classify"}}
+				| {{#if App.admin.classifyCount}}
+				li
+					span.badge.badge-important {{App.admin.classifyCount}}
+				| {{/if}}
+				li
+					{{link-to "Companies" "companies"}}
+				li
+					{{link-to "Leaderboard" "leaderboard"}}
 			| {{/if}}
 			.pull-right
 				| {{#unless App.user}}
 				| {{#if App.admin.contextio}}
 				| {{#if App.admin.googleauth}}
 				.btn-group
-					a.btn(action='noPassword target="view"')
-						i.icon-user
+					a.btn.btn-default(action='noPassword target="view"')
+						i.fa.fa-user
 						|  Log In
-					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
+					a.btn.btn-default.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
@@ -48,44 +42,48 @@
 						li
 							a(action='getPassword target="view"') Password
 				| {{else}}
-				a.btn(action='getPassword target="view"') Log In
+				a.btn.btn-default(action='getPassword target="view"') Log In
 				| {{/if}}
 				| {{else}}
 				| {{#if App.admin.googleauth}}
-				a.btn(href='/authorize') Log In
+				a.btn.btn-default(href='/authorize') Log In
 				| {{/if}}
 				| {{/if}}
 				| {{else}}
 				.btn-group
-					+linkTo('userProfile class="btn"')
-						i.icon-user
+					+linkTo('userProfile class="btn btn-default"')
+						i.fa.fa-user
 						|  {{App.user.name}}
-					a.btn.dropdown-toggle(data-toggle='dropdown', href='#')
+					a.btn.btn-default.dropdown-toggle(data-toggle='dropdown', href='#')
 						span.caret
 					ul.dropdown-menu(role='menu')
 						li
-							+linkTo('create') Add a Contact					
+							{{link-to "Add a Contact" "create"}}
 						li
-							+linkTo('enrich') Enrich Contact Data
+							{{link-to "Enrich Contact Data" "enrich"}}
 						li
-							+linkTo('userProfile') Profile
+							{{link-to "Profile" "userProfile"}}
 						li
-							+linkTo('import') Bulk Upload
+							{{link-to "Bulk Upload" "import"}}
 						li.divider
 						li
 							a(href='/linker')
 								| Sync Linked
-								i.icon-linkedin-sign.icon-large
+								i.fa.fa-linkedin-square
 						li.divider
 						li
 							a(href='mailto:justin@da.r-w.in?subject=can you fix it for me...', target='_blank') Report a bug
 						li.divider
 						{{#if App.user.admin}}
 						li
-							+linkTo('admin') Configure
+							{{link-to "Configure" "admin"}}
 						li
-							+linkTo('dashboard') Dashboard
+							{{link-to "Dashboard" "dashboard"}}
 						{{/if}}
+						{{#unless App.admin.extensionOn}}
+						li
+							{{link-to "Install Plugin" "plugin"}}
+						{{/unless}}
 						li
 							| <a href="#" {{action logout}}>Log Out</a>
 				| {{/unless}}
@@ -113,19 +111,19 @@
 									a.advanced(href="#", action='advance target="view"')
 										+unless('view.parentView.parentView.advanced')
 											span advanced &nbsp;
-											i.icon-caret-down
+											i.fa.fa-caret-down
 										+if('view.parentView.parentView.advanced')
 											span hide &nbsp;
-											i.icon-caret-up
+											i.fa.fa-caret-up
 									button(href='#', action='login target="view"')
 										| Login 
-										i.icon-ok
+										i.fa.fa-ok
 									+else
-										i.icon-spinner.icon-spin
+										i.fa.fa-spinner.fa-spin
 
 .container
 	{{outlet panel}}
-
 	hr
 	footer
-		p ©{{App.orgTitle}} 2013
+		p ©{{App.orgTitle}} 2014
+

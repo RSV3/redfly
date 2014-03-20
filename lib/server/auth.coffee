@@ -24,10 +24,8 @@ everyauth.google.configure
 		].join ' '
 
 	handleAuthCallbackError: (req, res) ->
-		console.log ""
-		console.log "AuthCallbackError"
-		console.log ""
 		req.session = null
+		req.session.save()
 		res.clearCookie 'lastlogin'
 		res.redirect '/unauthorized'
 

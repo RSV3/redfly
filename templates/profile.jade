@@ -1,25 +1,24 @@
-.row-fluid
-	.span9
+.row
+	.col-md-9
 		h1 {{name}}
 		p Signed up on {{date}}
 		br
-		.row-fluid
-			.span7
+		.row
+			.col-md-7
 				p Added {{contacts.length}} contacts so far.
 				ul
 					| {{#each contacts.paginatedItems}}
 					li
-						+linkTo('contact this')
-							| {{canonicalName}}
+						{{#link-to "contact" this}} {{canonicalName}} {{/link-to}}
 					| {{/each}}
 			| {{#if hasQ}}
-			.span2
+			.col-md-2
 				ul.pager
 					li
-						+linkTo('classify class="btn-success"') Classify
+						{{#link-to "classify" class="btn-success"}} Classify {{/link-to}}
 			| {{/if}}
-		.row-fluid
-			.span4
+		.row
+			.col-md-4
 				ul.pager
 					| {{#if contacts.hasPrevious}}
 					li.previous
@@ -29,7 +28,7 @@
 					li.next
 						| <a href="#" {{action nextPage target="contacts"}}>Older &rarr;</a>
 					| {{/if}}
-	.span3.picture
+	.col-md-3.picture
 		| <img class="img-polaroid img-rounded" {{bindAttr src="canonicalPicture"}}>
 		| {{#if self}}
 		| {{view App.EditPictureView pictureBinding="picture"}}

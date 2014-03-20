@@ -1,0 +1,10 @@
+.tt-dropdown-menu {
+	&:extend(.dropdown-menu);
+}
+
+.tt-suggestion > p {
+	&:extend(.dropdown-menu > li > a);
+	  &:hover, &:focus {
+			&:extend(.dropdown-menu > .active > a);
+	  }
+}

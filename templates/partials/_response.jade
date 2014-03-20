@@ -1,0 +1,37 @@
+.row.response
+	| {{#if isLink}}
+	.col-md-12.islink
+		span {{user.nickname}} has suggested a LinkedIn Contact&nbsp;&nbsp;
+		a(target='_blank', bindAttr='href="body"')
+			img(class='linkedinlogo', src='http://dlc1-s.licdn.com/sites/default/files/Logo-59px-R.png')
+	| {{else}}
+	.col-md-2
+		{{view view.respUserView}}
+	.col-md-10.suggestions
+		| {{#if isMsg}}
+		{{body}}
+		| {{else}}
+		| {{#each contact itemViewClass="App.ContactView" itemController="contact"}}
+		{{#link-to "contact" this}}
+		.col-md-6
+			.col-md-3.imgpad
+				<img class="img-rounded" {{bindAttr src="canonicalPicture"}}>
+			.col-md-9
+				| {{#if view.parentView.parentView.idsme}}
+				span.bullhorn
+					a(href='#', action='introMailto target="view.parentView"')
+						{{view App.IntroView}}
+				| {{/if}}
+				span {{canonicalName}}
+				br
+				span {{position}}
+				br
+				span {{company}}
+		{{/link-to}}
+		| {{/each}}
+		| {{/if}}
+	| {{/if}}
+.breaker.col-md-12
+	.col-md-2
+	.col-md-8
+	.col-md-2

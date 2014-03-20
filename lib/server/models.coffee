@@ -1,5 +1,5 @@
-modelsUtil = require 'phrenetic/lib/server/models'
-services = require 'phrenetic/lib/server/services'
+modelsUtil = require '../../phrenetic/lib/server/models'
+services = require '../../phrenetic/lib/server/services'
 schemas = require '../schemas'
 _ = require 'underscore'
 

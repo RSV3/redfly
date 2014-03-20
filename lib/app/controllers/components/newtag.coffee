@@ -1,5 +1,5 @@
 
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
 
 	App.NewTagView = Ember.TextField.extend
@@ -12,8 +12,9 @@ module.exports = (Ember, App, socket) ->
 			if event.which is 8	# A backspace/delete.
 				if not @get('currentTag')
 					lastTag = @get 'parentView.tags.lastObject'
-					if lastTag and lastTag.deleteRecord then lastTag.deleteRecord()
-					App.store.commit()
+					if lastTag and lastTag.deleteRecord
+						lastTag.deleteRecord()
+						lastTag.save()
 			if event.which is 9	# A tab.
 				if @get('currentTag')
 					return false	# Prevent focus from changing, the normal tab key behavior, if there's a tag currently being typed.
@@ -23,16 +24,19 @@ module.exports = (Ember, App, socket) ->
 				_.defer =>
 					@get('parentView').add()
 		didInsertElement: ->
-			@set 'typeahead', $(@$()).typeahead
-				source: null	# Placeholder, populate later.
+			opts =
 				items: 6
-				updater: (item) =>
-					@get('parentView')._add item
-					@set 'currentTag', null
-					return null
-		updateTypeahead: (->
-			@get('typeahead')?.data('typeahead').source = @get 'parentView.autoTags'
-		).observes 'parentView.autoTags.@each'
+				hint: false
+				highlight: true
+			updater = (item)=>
+				@get('parentView')._add item
+				@set 'currentTag', ''
+			@$().typeahead(opts, source:(q, cb)=>
+				srcs = @get 'parentView.storedAutoTags'
+				cb _.map _.sortBy(_.reject(srcs, (source)-> source.indexOf(q) < 0
+				), (filtered)-> filtered.indexOf q
+				), (sorted)-> value:sorted
+			).on 'typeahead:selected', (ev, data)-> updater data.value
 		attributeBindings: ['size', 'autocomplete', 'tabindex']
 		size: (->
 			2 + (@get('currentTag.length') or 0)

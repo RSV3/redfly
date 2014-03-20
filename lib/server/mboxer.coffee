@@ -205,10 +205,10 @@ cIOcreate = (data, cb)->
 # common logic to decide whether to use google (preferred if available) or contextio (only if valid)
 googOrCio = (user, goog, cio, cb, action)->
 	errmsg = null
-	if process.env.GOOGLE_API_ID 
+	if process.env.GOOGLE_API_ID
 		if user.oauth then return goog()
 		errmsg = "#{action} ERROR: google oauth unavailable, "
-	if process.env.CONTEXTIO_KEY 
+	if process.env.CONTEXTIO_KEY
 		if user.cIO and user.cIO.hash and not user.cIO.expired then return cio()
 		errmsg = "#{errmsg} ERROR: cIO unavailable or expired, #{action}"
 	if not errmsg then errmsg = "#{action} ERROR: no mailbox option (cio, goog) to #{action}"

@@ -1,5 +1,5 @@
-module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+module.exports = (Ember, App) ->
+	util = require '../../util.coffee'
 
 	App.CompaniesController = Ember.ObjectController.extend
 		all:null
@@ -10,7 +10,7 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.CompaniesView = Ember.View.extend
-		template: require '../../../templates/companies'
+		template: require '../../../templates/companies.jade'
 		classNames: ['companies']
 		search: (v) ->
 			newResults = App.Results.create {text: "company:#{util.trim v}"}

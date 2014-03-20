@@ -1,24 +1,31 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../socketemit.coffee'
 
 	App.ProfileView = Ember.View.extend
-		template: require '../../../templates/profile'
+		template: require '../../../templates/profile.jade'
 		classNames: ['profile']
 
 	App.ProfileController = Ember.ObjectController.extend
 		hasQ: false
 		setHasQ: (->
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			@setupContacts @get 'id'
+			socketemit.get "classifyQ/#{App.user.get('id')}", (results) =>
 				@set 'hasQ', results?.length
 		).observes 'id'
-		contacts: (->
-			Ember.ArrayProxy.createWithMixins App.Pagination,
-				content: do =>
-					Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
-						content: do =>
-							App.Contact.filter addedBy: @get('id'), (data) =>
-								data.get('addedBy.id') is @get('id') and _.contains data.get('knows').getEach('id'), @get('id')
-						sortProperties: ['added']
-						sortAscending: false
-				itemsPerPage: 25
-			).property 'id'
+		contacts: []
+		setupContacts: (id)->
+			@set 'contacts', []
+			unless id then return
+			@store.filter('contact', {addedBy: id, knows: id}, (data)->
+				data.get('addedBy')?.get('id') is id
+			).then (chosen)=>
+				@set 'contacts', Ember.ArrayProxy.createWithMixins App.Pagination,
+					content: do ->
+						Ember.ArrayProxy.createWithMixins Ember.SortableMixin,
+							content: chosen
+							sortProperties: ['added']
+							sortAscending: false
+					itemsPerPage: 25
+
+

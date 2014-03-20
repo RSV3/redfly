@@ -1,10 +1,11 @@
 _ = require 'underscore'
 
-module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+module.exports = (Ember, App) ->
+	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 	App.LinkerView = Ember.View.extend
-		template: require '../../../../templates/components/linker'
+		template: require '../../../../templates/components/linker.jade'
 		classNames:['linker']
 
 		didInsertElement: ->
@@ -20,13 +21,13 @@ module.exports = (Ember, App, socket) ->
 				hide: false
 				closer: false
 				sticker: false
-				icon: 'icon-linkedin-sign'
+				icon: 'fa fa-linkedin-square'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#linkingStarted').appendTo '#linking'
 
 
-			socket.emit 'linkin', App.user.get('id'), (err) =>
+			socketemit.get "linkin/#{App.user.get('id')}", (err) =>
 				if err
 					@set 'stateThrottled', true
 					@set 'stateDone', false
@@ -41,7 +42,10 @@ module.exports = (Ember, App, socket) ->
 					closer: true
 					hide: true
 
-			socket.on 'link.total', (total) =>
+			###
+			# we need to quickly find a better way to do this ...
+			#
+			#socket.on 'link.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
 				@set 'total', total
@@ -49,28 +53,29 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateParsing', true
 				@set 'stateDone', false
 				@set 'stateThrottled', false
-				socket.on 'link.linkedin', =>
+				#socket.on 'link.linkedin', =>
 					@incrementProperty 'current2'
-				socket.on 'link.contact', =>
+				#socket.on 'link.contact', =>
 					@incrementProperty 'current'
+			###
 
 		percent2: (->
-				current2 = @get 'current2'
-				total = @get 'total'
-				percentage = 0
-				if current2 and total
-					percentage = Math.round (current2*100 / total)
-					if current2 is total
-						@set 'stateDone', true
-				"width: #{percentage}%;"
-			).property 'current2', 'total'
+			current2 = @get 'current2'
+			total = @get 'total'
+			percentage = 0
+			if current2 and total
+				percentage = Math.round (current2*100 / total)
+				if current2 is total
+					@set 'stateDone', true
+			"width: #{percentage}%;"
+		).property 'current2', 'total'
 
 		percent: (->
-				current = @get 'current'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current*100 / total)
-				"width: #{percentage}%;"
-			).property 'current', 'total'
+			current = @get 'current'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current*100 / total)
+			"width: #{percentage}%;"
+		).property 'current', 'total'
 

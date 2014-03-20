@@ -1,17 +1,18 @@
 {{#if showthisreq}}
 .thisReq.myLightSpeedIn.modal.request(tabindex='-1', show='true', role='dialog', aria-labelledby='myModalLabel')
 	.modal-header
-		.row-fluid
-			.span2
-				+linkTo('profile showthisreq.user')
-					| <img class=".span11 img-rounded" {{bindAttr src="showthisreq.user.canonicalPicture"}}>
+		.row
+			.col-md-2
+				{{#link-to "profile" showthisreq.user}}
+				img.col-md-11.img-rounded(bindAttr='src="showthisreq.user.canonicalPicture"')
+				{{/link-to}}
 				br
 				i.fright {{showthisreq.user.canonicalName}}
-			.span9
+			.col-md-9
 				h3#myModalLabel {{showthisreq.text}}
-			.span1
+			.col-md-1
 				a.close(action='closeModal target="view"')
-					i.text-error.icon-remove-sign
+					i.text-error.fa.fa-times-circle
 	.modal-body.expandedcontent
 		| {{#each showthisreq.response itemViewClass="App.ResponseView" itemController="response"}}
 		{{partial "response"}}
@@ -28,20 +29,20 @@ ul.nav.nav-tabs
 .tab-content
 	.tab-pane.minerex
 		| {{#each my_reqs itemViewClass="App.RequestView" itemController="request"}}
-		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
+		div(bindAttr='class=":col-md-12 :oldrequests hoverable"', action='showold this target="view"')
 			| {{#if urgent}}
-			i.text-error.icon-flag
+			i.text-error.fa.fa-flag
 			&nbsp;&nbsp;
 			| {{/if}}
-			| {{#if count}}
-			span.badge.badge-success {{count}}
+			| {{#if response.length}}
+			col-md-.badge.badge-success {{response.length}}
 			&nbsp;&nbsp;
 			| {{/if}}
 			{{text}}
 		| {{/each}}
-		.row-fluid
-			.span2
-			.span8
+		.row
+			.col-md-2
+			.col-md-8
 				hr
 				ul.pager
 					li.previous
@@ -51,20 +52,20 @@ ul.nav.nav-tabs
 
 	.tab-pane.active.othersrex
 		| {{#each other_reqs itemViewClass="App.RequestView" itemController="request"}}
-		div(bindAttr='class=":span12 :oldrequests hoverable"', action='showold this target="view"')
+		div(bindAttr='class=":col-md-12 :oldrequests hoverable"', action='showold this target="view"')
 			| {{#if urgent}}
-			i.text-error.icon-flag
+			i.text-error.fa.fa-flag
 			&nbsp;&nbsp;
 			| {{/if}}
-			| {{#if count}}
-			span.badge.badge-success {{count}}
+			| {{#if response.length}}
+			col-md-.badge.badge-success {{response.length}}
 			&nbsp;&nbsp;
 			| {{/if}}
 			{{text}}
 		| {{/each}}
-		.row-fluid
-			.span2
-			.span8
+		.row
+			.col-md-2
+			.col-md-8
 				hr
 				ul.pager
 					li.previous

@@ -1,109 +1,12 @@
-.row-fluid
-	div(bindAttr='class=":row-fluid theResults::disabled"')
-		.span2
-			h4.sort-by SORT BY
-		.span2
-			+view ('App.SortView class="names" sortTitle = "sort name alphabetically" sortName = "Alphabetical"')
-		| {{#unless datapoor}}
-		.span2
-			+view ('App.SortView class="familiarity" sortTitle = "how many users know each contact" sortName = "Influence"')
-		.span3
-			+view ('App.SortView class="reachability" sortTitle = "prioritize contacts you already know" sortName = "Relationship Strength"')
-		| {{/unless}}
-		.span2
-			+view ('App.SortView class="added" sortTitle = "sort by chronology of classification" sortName = "Added Date"')
-
+.row
+	{{partial "sorting"}}
 	+unless ('theResults')
-		.loading
+		.myloading
 			+unless ('empty')
-				i.icon-spinner.icon-spin
+				i.fa.fa-spinner.fa-spin
 			+if ('empty')
 				span.empty	No results match filter
 	+if ('theResults')
-		| {{#if paging}}
-		.row-fluid
-			.span7
-				ul.pager.toppager
-					li.previous
-						| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
-					div.pagenums
-						| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
-					li.next
-						| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
-			| {{/if}}			
-	| {{#each theResults itemViewClass="App.ResultView" itemController="result"}}
-	.row-fluid.top
-		| {{#if showitall}}
-		hr.topexpanded
-		{{partial "contact"}}
-		hr.botexpanded
-		| {{else}}
-		.row-fluid
-			.span7
-				.row-fluid
-					.span2.picture
-						a(href='#', action='setShowItAll this target="view"')
-							| <img class="fullwidth img-rounded" {{bindAttr src="canonicalPicture"}}>
-					.span10
-						+if('isVip')
-							.maybevip
-								i.icon-star.icon-2x.fullredstar
-						a(href='#', action='setShowItAll this target="view"')
-							h3 {{canonicalName}}
-						div
-							i
-								| {{position}}{{#if position}},{{/if}}} {{company}} {{#if yearsExperience}} with {{yearsExperience}} years experience. {{/if}}
-						| {{#if lastHistory}}
-						.row-fluid
-							p
-								b Last mail:&nbsp;
-								span
-									+linkTo('profile lastHistory.sender') {{lastHistory.sender.canonicalName}}
-								span
-									&nbsp; {{sentdate}}
-						| {{/if}}
-						| {{#if lastNote}}
-						.row-fluid
-							.somenote
-								b Last note: &nbsp;
-								+linkTo('profile lastNote.author') {{lastNote.author.canonicalName}}
-								i &nbsp; {{lastNote.preview}}
-						| {{/if}}						
-							
-			.span5
-				.search-result.knows.knowstags
-					b Knows: &nbsp;
-					ul.tags
-						{{#each knowsSome}}
-						li
-							a(href="#", class='label knows', action='clickname this target="view"')
-								| {{canonicalName}}
-						{{/each}}
-				.sometags
-					{{#each view.orgTags}}
-					a(href="#", bindAttr='class=":label category catid"', action='clicktag this target="view"')
-						span {{body}}
-					{{/each}}
-					{{#each view.indTags}}
-					a(href="#", bindAttr='class=":label category"', action='clicktag this target="view"')
-						span {{body}}
-					{{/each}}					
-
-
-
-		| {{/if}}
-	{{/each}}
-
-	+if ('theResults')
-		| {{#if paging}}
-		.row-fluid
-			.span7
-				ul.pager
-					li.previous
-						| {{#if hasPrevious}}<a href="#" {{action previousPage}}>&larr; Prev</a>{{/if}}
-					div.pagenums
-						| {{plusOne rangeStart}}-{{rangeStop}} {{#if hasNext}}/ {{filteredCount}}{{/if}}
-					li.next
-						| {{#if hasNext}}<a href="#" {{action nextPage}}>Next &rarr;</a>{{/if}}
-		| {{/if}}
-
+		{{partial "paging"}}
+		{{partial "results"}}
+		{{partial "paging"}}

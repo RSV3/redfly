@@ -1,9 +1,9 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	util = require '../../util'
+	util = require '../../util.coffee'
 
 	App.TaggerView = Ember.View.extend
-		template: require '../../../../templates/components/tagger'
+		template: require '../../../../templates/components/tagger.jade'
 		classNames: ['tagger']
 		category: (->
 			switch (id = @get 'catid')
@@ -14,10 +14,10 @@ module.exports = (Ember, App, socket) ->
 				else null
 		).property 'catid'
 		tags: (->
-			sort = field: 'date'
+			#sort = field: 'date'
 			query = contact: @get('contact.id')
 			if category = @get('category') then query.category = category
-			App.filter App.Tag, sort, query, (data) =>
+			@get('controller').store.filter 'tag', query, (data) =>
 				if category and (category isnt data.get('category'))
 					return false
 				data.get('contact.id') is @get('contact.id')

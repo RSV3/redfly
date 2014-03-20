@@ -1,0 +1,17 @@
+.row
+	+unless ('hasResults')
+		.myloading
+			i.fa.fa-spinner.fa-spin
+	+if ('hasResults')
+		{{partial "sorting"}}
+		+if ('theResults')
+			{{partial "results"}}
+		+if ('links')
+			{{partial "linkedinresults"}}
+		+if ('comments')
+			{{partial "commentresults"}}
+		+unless ('links')
+			+unless ('comments')
+				+unless ('theResults')
+					.myloading
+						i.fa.fa-spinner.fa-spin

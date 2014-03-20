@@ -4,18 +4,20 @@
 # a warning that anything you do offline won't be saved)
 
 
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 
 	# TO-DO define 'connected' and 'canConnect' like derby does.
 	App.ConnectionView = Ember.View.extend	# TO-DO probably inline this in appview # TO-DO does this have to be on the App object?
-		template: require '../../../../templates/components/connection'
+		template: require '../../../../templates/components/connection.jade'
 		classNames: ['connection']
+		###
 		connect: ->
 			# Hide the reconnect link for a second after clicking it.
 			@set 'hideReconnect', true
 			setTimeout (=>
 				@set 'hideReconnect', false
 			), 1000
-			model.socket.socket.connect()	# TODO get socket
+			#model.socket.socket.connect()	# TODO get socket
+		###
 		reload: ->
 			window.location.reload()

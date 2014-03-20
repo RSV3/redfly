@@ -5,7 +5,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 	_ = require 'underscore'
 	Mailer = require './mail'
 	Models = require './models'
-	LinkLater = require('./linklater').linkLater;
+	LinkLater = require './linklater'
+	ScrapeLI = require './linkscraper'
 	AddTags = require './addtags'
 	GetFC = require './fullcontact'
 	Mboxer = require './mboxer'
@@ -98,8 +99,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 						_.chain(mails)
 							.filter (mail) ->
 								mail.recipient is contact
-							.max (mail) ->
-								mail.sent.getTime() # TO-DO probably can be just mail.sent
+							.max (mail)->
+								mail.sent.getTime()
 							.value()
 					newContacts.reverse()
 					#user.queue.unshift newContacts... # dont use queue on user object anymore
@@ -108,7 +109,7 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 			if not (mail = mails[index++]) then return sift index
 
 			notifications?.considerContact?()
-			# Find an existing contact with one of the same emails 
+			# Find an existing contact with one of the same emails
 			# models.Contact.findOne $or: [{emails: mail.recipientEmail}, {names: mail.recipientName}], (err, contact) ->
 			Models.Contact.find {emails: mail.recipientEmail}, (err, contacts) ->
 
@@ -154,27 +155,18 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 				newContacts.push contact
 				notifications?.foundNewContact?()
 
-				#
-				# If this is the regular nudge, notifications will be null: get fullcontact data.
-				# If this is a load on initial log in, don't use fullcontact (it's too long to wait)
-				#  - we'll pick up the slack in the background
-				#
-				# So these two cases have a slightly different order of operations
-
-				#
-				# this one's the load on initial sign up (hit the '/load' link)
-				# see the return: doesn't proceed past this block.
-				#
-				# or atleast we used to. but that makes it take too long, so ...
-				#if notifications then
-
-				return LinkLater user, contact, ()->
+				return LinkLater.linkLater user, contact, ()->
 					contact.save (err) ->		# new contact has been populated with any old data from LI
 						if err
 							console.log "Error saving Contact data for new user"
 							console.dir err
 							console.dir contact
 							return sift index
+
+						ScrapeLI.matchScraped contact, (scraped)->
+							if scraped
+								LinkLater.addDeets2Contact null, user, contact, scraped
+
 						_saveMail user, contact, mail, ->
 							sift index
 							# then, sometime in the not too distant future, go and slowly get the FC data
@@ -186,26 +178,8 @@ module.exports = (user, notifications, cb, succinct_manual) ->
 										console.dir contact
 									_saveFullContact contact, fullDeets
 									if fullDeets.digitalFootprint
-										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
+										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value')
 
-				# only gets here iff no notifications (ie. this is part of an out of session batch task)
-				###
-
-				GetFC contact, (fullDeets) ->
-					LinkLater user, contact, ()->
-						contact.save (err) ->		# new contact, populated with any data from FC and LI
-							if err
-								console.log "Error saving Contact with FullContact data"
-								console.dir err
-								console.dir contact
-							else	# now save other records that need the contact reference: mail, FC, tags
-								_saveMail user, contact, mail
-								if fullDeets
-									_saveFullContact contact, fullDeets
-									if fullDeets.digitalFootprint
-										AddTags user, contact, 'industry', _.pluck(fullDeets.digitalFootprint.topics, 'value'), true
-							sift index
-				###
 
 		sift()
 

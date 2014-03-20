@@ -2,7 +2,7 @@
 moment = require 'moment'
 _ = require 'underscore'
 
-services = require 'phrenetic/lib/server/services'
+services = require '../../phrenetic/lib/server/services'
 
 models = require '../server/models'
 Mail = require '../server/mail'

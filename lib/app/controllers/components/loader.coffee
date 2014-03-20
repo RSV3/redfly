@@ -1,9 +1,10 @@
-module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+module.exports = (Ember, App) ->
+	util = require '../../util.coffee'
+	socketemit = require '../../socketemit.coffee'
 
 
 	App.LoaderView = Ember.View.extend
-		template: require '../../../../templates/components/loader'
+		template: require '../../../../templates/components/loader.jade'
 
 		didInsertElement: ->
 			@set 'modal', $(@$()).modal()	# TO-DO when fixing this, also check out the contacts merge modal
@@ -14,7 +15,7 @@ module.exports = (Ember, App, socket) ->
 				hide: false
 				closer: false
 				sticker: false
-				icon: 'icon-envelope'
+				icon: 'fa-envelope'
 				before_open: (pnotify) =>
 					pnotify.css top: '60px'
 					@$('#loadingStarted').appendTo '#loading'
@@ -31,7 +32,7 @@ module.exports = (Ember, App, socket) ->
 			@set 'stateQueueing', false
 			@set 'stateDone', false
 
-			socket.emit 'parse', App.user.get('id'), (err) =>
+			socketemit.post "parse/#{App.user.get('id')}", (err)=>
 				# TODO check if 'err' param exists, if so there was an error. Can also do error as a custom event if necessary. The alert is a
 				# temporary mesasure
 				if err
@@ -44,13 +45,17 @@ module.exports = (Ember, App, socket) ->
 				@get('notification').effect 'bounce'
 				@get('notification').pnotify type: 'success', closer: true
 
-			socket.on 'parse.total', (total) =>
+			###
+			#
+			# We need to quickly find a way to do this
+			#
+			#socket.on 'parse.total', (total) =>
 				@set 'current', 0
 				@set 'current2', 0
 				@set 'total', total
-				socket.on 'parse.couldqueue', =>
+				#socket.on 'parse.couldqueue', =>
 					@incrementProperty 'current2'
-				socket.on 'parse.mail', =>
+				#socket.on 'parse.mail', =>
 					@incrementProperty 'current'
 					@set 'stateStillConnecting', false
 					@set 'stateParsing', true
@@ -60,38 +65,39 @@ module.exports = (Ember, App, socket) ->
 				@set 'stateQueueing', false
 				@set 'stateDone', false
 
-			socket.on 'parse.queueing', =>
+			#socket.on 'parse.queueing', =>
 				@set 'totalQueued', 0
-				socket.on 'parse.enqueued', =>
+				#socket.on 'parse.enqueued', =>
 					@incrementProperty 'totalQueued'
 					@set 'stateQueueing', true
 				@set 'stateConnecting', false
 				@set 'stateParsing', true
 				@set 'stateDone', false
+			###
 
 
 		percent: (->
-				current = @get 'current'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current / total) * 100
-				"width: #{percentage}%;"
-			).property 'current', 'total'
+			current = @get 'current'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current / total) * 100
+			"width: #{percentage}%;"
+		).property 'current', 'total'
 
 		percent2: (->
-				current = @get 'current2'
-				total = @get 'total'
-				percentage = 0
-				if current and total
-					percentage = Math.round (current / total) * 100
-				"width: #{percentage}%;"
-			).property 'current2', 'total'
+			current = @get 'current2'
+			total = @get 'total'
+			percentage = 0
+			if current and total
+				percentage = Math.round (current / total) * 100
+			"width: #{percentage}%;"
+		).property 'current2', 'total'
 
 
 		classify: ->
 			# probably shouldn't use router, but hey: it works ...
-			socket.emit 'classifyQ', App.user.get('id'), (results) =>
+			socketemit.get 'classifyQ', App.user.get('id'), (results) =>
 				if results and results.length then @get('router').transitionTo 'classify'
 			@get('modal').modal 'hide'
 			@get('notification').pnotify_remove()

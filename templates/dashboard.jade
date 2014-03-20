@@ -1,6 +1,6 @@
 {{#if App.user.admin}}
-.row-fluid
-	.span9
+.row
+	.col-md-9
 		h1 Redfly Dashboard
 		hr
 
@@ -29,8 +29,8 @@
 				| <a class="nodeco body" href="#" {{action search company target="view"}}>{{company}}</a>
 			| {{/each}}
 		{{else}}
-		.loading
+		.myloading
 			+unless ('empty')
-				i.icon-spinner.icon-spin
+				i.fa.fa-spinner.fa-spin
 		{{/if}}
 {{/if}}

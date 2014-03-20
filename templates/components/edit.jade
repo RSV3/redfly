@@ -1,5 +1,5 @@
 | <a href="#" {{action toggle target="view"}}>
-i.icon-pencil
+i.fa.fa-pencil
 | </a>
 | {{#if view.show}}
 .popover
@@ -13,7 +13,7 @@ i.icon-pencil
 		| <a href="#" {{action initiateMerge target="view"}}>Merge duplicate.</a>
 	| {{/if}}
 	a.close(href='#', action='toggle target="view"')
-		i.icon-remove
+		i.fa.fa-times
 	.nav-header {{view.prettyPrimaryAttribute}}
 	| {{view Ember.TextField insertNewlineBinding="view.save" valueBinding="view.primary"}}
 	| {{#if view.others.length}}
@@ -23,10 +23,10 @@ i.icon-pencil
 	| {{view Ember.TextField insertNewlineBinding="view.parentView.save" valueBinding="other.content"}}
 	.pull-right
 		| <a href="#" {{action promote target="view"}}>
-		i.icon-arrow-up
+		i.fa.fa-arrow-up
 		| </a>
 		| <a href="#" {{action remove target="view"}}>
-		i.icon-trash
+		i.fa.fa-trash
 		| </a>
 	| {{/view}}
 	| {{/each}}
@@ -34,7 +34,7 @@ i.icon-pencil
 	| {{#if view.primary}}
 	div
 		| <a href="#" {{action add target="view"}}>
-		i.icon-plus
+		i.fa.fa-plus
 		|  Add another
 		| </a>
 	| {{/if}}
@@ -42,9 +42,9 @@ i.icon-pencil
 		| {{#unless view.working}}
 		| <a href="#" {{action save target="view"}}>
 		| Save 
-		i.icon-ok
+		i.fa.fa-ok
 		| </a>
 		| {{else}}
-		i.icon-spinner.icon-spin
+		i.fa.fa-spinner.fa-spin
 		| {{/unless}}
 | {{/if}}

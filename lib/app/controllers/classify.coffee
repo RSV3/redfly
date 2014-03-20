@@ -1,5 +1,6 @@
-module.exports = (Ember, App, socket) ->
+module.exports = (Ember, App) ->
 	_ = require 'underscore'
+	socketemit = require '../socketemit.coffee'
 
 	App.ClassifyController = Ember.Controller.extend
 		needs: ['contact']
@@ -8,30 +9,27 @@ module.exports = (Ember, App, socket) ->
 		flushlist: null
 		flushing: false
 
+		complete: false
 		thisContact: (->
-			@get('dynamicQ')?.objectAt(@get 'classifyCount')
-		).property 'dynamicQ', 'classifyCount'
-
-		modelChanged: (->
-			if (c = @get 'thisContact')
-				@set 'controllers.contact.content', c
-		).observes 'thisContact'
+			unless @get('dynamicQ.length') then return null
+			App.admin.set 'classifyCount', @get('dynamicQ.length') - @get('classifyCount')
+			if @get('classifyCount') is @get('dynamicQ.length')
+				@set 'complete', true
+				return null
+			@set 'controllers.contact.content', @get('dynamicQ')?.objectAt(@get 'classifyCount')
+			@get 'controllers.contact.content'
+		).property 'dynamicQ.@each', 'classifyCount'
 
 		total: (->
-			total = @get('dynamicQ.length') - @get('classifyCount')
-			App.admin.set 'classifyCount', total
-			total
-		).property 'classifyCount', 'dynamicQ'
-
-		complete: (->
-				return @get('classifyCount') is @get('dynamicQ.length')
-			).property 'classifyCount', 'dynamicQ'
+			@get('dynamicQ.length') - @get('classifyCount')
+		).property 'classifyCount', 'dynamicQ.@each'
 
 		continueText: (->
-				if not @get 'thisContact.added'
-					return 'Save and Continue'
-				'Continue'
-			).property 'thisContact.added'
+			if not @get 'thisContact.added'
+				return 'Save and Continue'
+			'Continue'
+		).property 'thisContact'
+
 		continue: ->
 			tags = @$.find('div.tag-category:first')
 			if not tags.find('.tag').length
@@ -54,22 +52,26 @@ module.exports = (Ember, App, socket) ->
 			if not @get 'thisContact.addedBy'
 				@set 'thisContact.addedBy', App.user
 				App.user.incrementProperty 'contactCount'
-			App.Classify.createRecord
-				saved:require('moment')().toDate()
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
-			@_next()
+			App.user.save()
+			@get('controllers.contact').content.save().then =>
+				@store.createRecord('classify',
+					saved:require('moment')().toDate()
+					user: App.user
+					contact: @get 'thisContact'
+				).save()
+				@_next()
 
 		skip: ->
-			App.Classify.createRecord
-				user: App.User.find App.user.get 'id'
-				contact: App.Contact.find @get 'thisContact.id'
+			@store.createRecord('classify',
+				user: App.user
+				contact: @get 'thisContact'
+			).save()
 			@_next()
 		ignore: ->
 			@get('controllers.contact').remove()
-			@_next()
+			@incrementProperty 'classifyCount'
 		_next: ->
-			App.store.commit()
+			@get('controllers.contact').content.save()
 			@incrementProperty 'classifyCount'
 
 		unflush: -> @set 'flushing', false
@@ -81,7 +83,7 @@ module.exports = (Ember, App, socket) ->
 
 		flushem: ->
 			cons = @get('flushlist').filter((item)-> item.get 'checked').getEach('id')
-			socket.emit 'flush', cons, -> true	# just gonna assume success ...
+			socketemit.post 'flush', cons, -> true	# just gonna assume success ...
 			@set 'dynamicQ', @get('flushlist').filter((item)-> not item.get 'checked')
 			@set 'flushing', false
 
@@ -90,15 +92,15 @@ module.exports = (Ember, App, socket) ->
 
 
 	App.ClassifyView = Ember.View.extend
-		template: require '../../../templates/classify'
+		template: require '../../../templates/classify.jade'
 		classNames: ['classify']
+		classifying:true
 		didInsertElement: ->
 			@set 'controller.$', @$()
-
 			# handle this event from the chrome extension,
 			# which brings us scraped data for adding to the classify contact
 			Ember.$(document).on 'classifyExtension', null, (ev, tr)=>
 				if (ev = ev?.originalEvent?.detail) and (c = @get 'controller.thisContact')
 					@get('controller.controllers.contact').getExtensionData ev
-
-		classifying:true
+		willDestroyElement: ->
+			Ember.$(document).off 'classifyExtension'

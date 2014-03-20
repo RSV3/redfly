@@ -272,19 +272,15 @@ addDeets2Linkedin = (user, contact, details, listedDetails, cb) ->
 #
 # after submitting a query on contact name, try to narrow down the results ...
 #
-_matchContact = (user, contacts, cb) ->
-	if not contacts.length
-		return cb null
+_matchContact = (userId, contacts, cb) ->
+	if not contacts.length then return cb null
 	if (contacts.length > 1)
-		nc = _.select contacts, (c) -> (_.indexOf c.knows, user._id) >= 0
+		nc = _.select contacts, (c) -> (_.indexOf c.knows, userId) >= 0
 		if nc.length then contacts = nc
 	if (contacts.length > 1)
-		nc = _.select contacts, (i) -> i.addedBy is user._id
+		nc = _.select contacts, (i) -> i.addedBy is userId
 		if nc.length then contacts = nc
-	if (contacts.length > 1)
-		return cb contacts				# oh dear, what a challenge: more than one? work it out later ...
 	cb contacts[0]
-
 
 
 ###
@@ -316,12 +312,12 @@ still too many? maybe try to narrow in to the ones this user added :
 but if this won't work, return an array of possible matches, and let spongebob sort them out
 TODO: one option might be to make a (n+1)-th contact, and let the user merge (if they can ...)
 ###
-matchContact = (user, first, last, formatted, cb) ->
+matchContact = (userId, first, last, formatted, cb) ->
 	name = "#{first} #{last}"
 	matchInsensitiveContact name, (contacts) ->
-		if contacts or name is formatted then _matchContact user, contacts, cb
+		if contacts or name is formatted then _matchContact userId, contacts, cb
 		else matchInsensitiveContact formatted, (contacts) ->
-			_matchContact user, contacts, cb
+			_matchContact userId, contacts, cb
 
 
 #
@@ -398,7 +394,7 @@ linker = (user, notifications, finalCB) ->
 			network.values = network.values[user.linkedInThrottle..]
 		syncForEach network.values, (item, counter, cb) ->
 			item.profileid = profileIdFrom item
-			matchContact user, item.firstName, item.lastName, item.formattedName, (contact) ->
+			matchContact user._id, item.firstName, item.lastName, item.formattedName, (contact) ->
 				notifications?.completedLinkedin?()
 				if not contact				# if this connection doesn't match a contact
 					maybeMore.push item		# don't bother pulling down more linkedin data on them just yet
@@ -425,3 +421,4 @@ linker = (user, notifications, finalCB) ->
 module.exports =
 	linker:linker
 	addDeets:addDeets2Linkedin
+	matchContact:matchContact

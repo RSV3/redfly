@@ -1,4 +1,4 @@
-@import '../node_modules/phrenetic/styles'
+@import '../phrenetic/styles'
 @import 'vendor/jquery-ui-1.10.2.custom.css'
 @import 'vendor/jquery.counter-analog.css'
 
@@ -34,6 +34,15 @@ a.nodeco:hover
 	margin-top: -10px
 	margin-left: -5px
 
+.img-polaroid
+	padding	4px
+	background-color	#fff
+	border	1px solid #ccc
+	border	1px solid rgba(0,0,0,0.2)
+	-webkit-box-shadow	0 1px 3px rgba(0,0,0,0.1)
+	-moz-box-shadow	0 1px 3px rgba(0,0,0,0.1)
+	box-shadow	0 1px 3px rgba(0,0,0,0.1)
+
 .picture
 	position relative
 	.img-polaroid
@@ -42,8 +51,8 @@ a.nodeco:hover
 		max-width 120px	// kwantopia changed to 120 
 	.edit
 		position absolute
-		top 2px
-		left 2px
+		top 4px
+		left 16px
 		background-color white
 		padding-top 4px
 		padding-left 4px
@@ -139,7 +148,7 @@ tagger(fontSize)
 			a:hover
 				text-decoration none
 			span
-				i.icon-plus
+				i.fa-plus
 					margin-right	0.3em
 
 span.label.organisation, a.label.organisation
@@ -171,7 +180,7 @@ a.label.knows
 	color organisation
 	margin-top 90px	  // so lazy
 	text-align center
-	font-size baseFontSize * 15
+	font-size baseFontSize * 10
 	img
 		position absolute
 		margin-left -150px
@@ -192,9 +201,21 @@ body
 	searchMargin = 30px
 	.navbar-search
 		margin-left searchMargin
+		position: relative
+		float: left
+		margin-bottom: 0
+		.search-query
+			margin	8px
+			margin-bottom: 0
+			padding: 4px 14px
+			border-radius 15px	// redeclare because of specificity of the type attribute
 	.search-results
 		margin-left searchMargin
 		display block	// Always show the dropdown.
+		.nav-header
+			margin-left	7px
+			font-weight bold
+			color	#666
 	.navbar-form .btn
 		margin-left 4px
 .activity
@@ -313,7 +334,20 @@ body
 
 .requests
 	.request
-		.span9
+		a.reqend
+			margin-left	0.5em
+		a.reqend:hover
+			color	#f50
+		a.reqact
+			margin-left	0.5em
+		form
+			margin	0
+			button.btn.col-md-8
+				margin-left	1.2em
+		.shiftleft10
+			padding-left	0
+			margin-left	-10%
+		.indent9
 			padding-left	3em
 			.hoveruser
 				margin-left	-3em
@@ -344,6 +378,8 @@ body
 			display	inline-block
 
 .request
+	.imgpad
+		padding-bottom	0.5em
 	.hoveruser
 		.expandthis
 			margin-left	0
@@ -352,7 +388,7 @@ body
 		display	inline-block
 	i.fright
 		float right
-	.btn.span11
+	.btn.col-md-11
 		margin-left	0
 	.label.urgent
 		border-color	#bd362f
@@ -375,28 +411,45 @@ body
 		color	#808080
 	.expandedcontent
 		padding	1em
+		.breaker.col-md-12
+			min-height	6px
+			padding-bottom	6px
+		.breaker.col-md-12
+			.col-md-2
+				min-height	6px
+		.breaker.col-md-12
+			.col-md-8
+				min-height	6px
+				border-bottom	1px solid #f7f7f7
 		.response
-			i.icon-bullhorn
+			>div
+				margin-left	1%
+			.islink
+				font-size	150%
+				img
+					height	1.5em
+			i.fa-bullhorn
 				padding-right	0.3em
-			i.icon-bullhorn:hover
+			i.fa-bullhorn:hover
 				text-decoration	none
 			padding-bottom	1em
 			.suggesttext
 				margin-left	0.2em
-			.suggestions
-				.imgpad
-					padding-bottom	1em
 
 
 .results
+	h2
+		img.linkedinlogo
+			width	4em
+			margin-top	-4px
 	.sort
 		display	inline-block
 		i
 			margin-left	5px
 			color	#aaa
-		.icon-large
+		.fa-2x
 			color	#3af
-		.icon-large:hover
+		.fa-large:hover
 			text-decoration	none
 	hr.topexpanded
 		border	0
@@ -417,6 +470,7 @@ body
 		overflow	hidden
 		span.label, a.label
 			margin	0 3px 0 3px		
+			display	inline-block
 	.sometags
 		//height	1.5em
 		//min-height	1.5em
@@ -425,6 +479,7 @@ body
 		margin-top 1em
 		span.label, a.label
 			margin	0 3px 0 3px
+			display	inline-block
 	.indtags
 		margin-bottom	1em
 	.contact > .top
@@ -534,10 +589,11 @@ body
 			margin-top 7px
 		label
 			display	inline-block
-			height	1.5em
+			height	2em
 			margin-left	1em
 			overflow	hidden
 			padding-bottom	2px
+			font-weight	normal
 	.collapsed
 		display	none
 	a:hover
@@ -553,6 +609,8 @@ body
 		label
 			display	inline
 			margin-left	1em
+			font-weight	lighter
+			font-size	80%
 	li.editable
 		a
 			i
@@ -575,30 +633,30 @@ body
 	.tag.orgtagcat1
 		background-color	#dfe
 		border-color		#acb
-		i.icon-tag
+		i.fa-tag
 			color		#564
 	.tag.orgtagcat2
 		background-color	#fde
 		border-color		#cab
-		i.icon-tag
+		i.fa-tag
 			color		#645
 	.tag.orgtagcat3
 		background-color	#fed
 		border-color		#cba
-		i.icon-tag
+		i.fa-tag
 			color		#654
 	.tag.industry
 		background-color	#def
 		border-color		#abc
-		i.icon-tag
+		i.fa-tag
 			color		#456
 	.tag.organisation
 		background-color	#eee
 		border-color		#bbb
-		i.icon-tag
+		i.fa-tag
 			color		#444
 	.tag
-		i.icon-tag
+		i.fa-tag
 			margin-left	-0.3em
 			margin-right	0.3em
 	.tag a.body
@@ -656,9 +714,9 @@ body
 		p.contactstars
 			text-align	center
 			margin	0
-			i.icon-star-empty
+			i.fa-star-o
 				color	#888077
-			i.icon-star
+			i.fa-star
 				color	#dc6
 			i.hoverstar
 				color	#fe3
@@ -712,6 +770,9 @@ body
 					width 227px
 					text-align right
 					margin-right 5px
+				.control-group
+					input
+						width	7em
 		.actions
 			margin-top horizontalMargin
 	.lead
@@ -723,8 +784,10 @@ body
 			min-height 42px
 			border 1px solid #ddd
 			border-radius baseBorderRadius
-		.span4
-			margin-left	1%
+	.col-md-6
+		.tag-category
+			margin	0
+			margin-right	5%
 	.media
 		margin-bottom horizontalMargin * 2
 		.media-object
@@ -758,7 +821,15 @@ body
 	.hoveruser
 		display	block
 		margin-right	1em
+	.contactnote
+		margin-bottom	10px
 
+.contact
+	textarea
+		border-color	#ddd
+	.note
+		.hoveruser
+			display	inline-block
 
 .contact
 	.hoveruser
@@ -848,6 +919,38 @@ body
 
 
 .admin
+	.tabbable
+		ul.nav-tabs
+			padding	0
+			margin	0
+		.tab-content
+			padding	0
+			.tagboxes
+				box-shadow	3px 3px 7px #ccc
+				border	1px solid #ddd
+				border-radius	5px
+				background	white
+				padding-top	1em
+				margin	-3px 1em 1em -3px
+				height	30em
+				.tagbox.bordered
+					.tags
+						height	26em
+						overflow-y	scroll
+						overflow-x	hidden
+						border	1px solid #ddd
+						border-radius	5px
+						.tag, .tag .body
+							margin-left	0.5em
+							margin-right	0.5em
+						.tag a:hover
+							text-decoration	none
+				.tagbox
+					.tags
+						padding	3px
+					h4
+						margin-left	4em
+						margin-top	-3px
 	.whichtags
 		background	#eee
 		height	1.6em
@@ -862,31 +965,6 @@ body
 	.activetags
 		background	#ddd
 		color	#000
-	.tagboxes
-		box-shadow	3px 3px 7px #ccc
-		border	1px solid #ddd
-		border-radius	5px
-		padding	3px
-		margin	-3px 1em 1em -3px
-		height	30em
-		.tagbox.bordered
-			.tags
-				height	26em
-				overflow-y	scroll
-				overflow-x	hidden
-				border	1px solid #ddd
-				border-radius	5px
-				.tag, .tag .body
-					margin-left	0.5em
-					margin-right	0.5em
-				.tag a:hover
-					text-decoration	none
-		.tagbox
-			.tags
-				padding	3px
-			h4
-				margin-left	4em
-				margin-top	-3px
 
 // Components.
 
@@ -894,7 +972,7 @@ body
 	.search-results
 		display block	// Always show the dropdown.
 
-.loading
+.myloading
 	margin-top horizontalMargin * 10 // TO-DO so lazy, make this vertically centered. Possibly after I figure out if body will have height 100%
 	text-align center
 	font-size baseFontSize * 6
@@ -919,7 +997,7 @@ tag(baseFontSize)
 
 // Search results page
 .total-results
-	margin-left -10px
+	margin-left 1em
 	color #aaa
 
 // used per search result
@@ -967,8 +1045,12 @@ tag(baseFontSize)
 
 // for the badge on the top menu next to Classify link
 .navbar ul.nav li .badge
-	margin-top 11px
+	margin-top 1.5em
 	margin-left -10px
+
+.navbar-header
+	.pull-right
+		margin-top	5px
 
 ul.nav .popover
 	width 20em
@@ -1130,8 +1212,6 @@ li
     -moz-animation-timing-function: ease-out;
     -o-animation-timing-function: ease-out;
     animation-timing-function: ease-out;
-
-	opacity:	0;
 }
 
 .animated.myLightSpeedIn {
@@ -1190,6 +1270,10 @@ li
 }
 
 
+input.newtag.error, input.newnose.error
+	border-color: rgba(236, 84, 82, 0.8);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(236,84,82,.6);
+
 
 .home
 	.carousel
@@ -1198,7 +1282,8 @@ li
 			bottom	-1em
 			top	auto
 			height	1.2em
-			left	50%
+			left	0
+			width	100%
 			margin-left	-1em
 			li
 				background-color	#dde
@@ -1208,17 +1293,77 @@ li
 			background-color	#3a87ad
 		.carousel-control
 			background-color	#dde
+			width	44px
+			height	44px
+			top	40%
+			border-radius	23px
 			i
+				color	white
 				font-size	44px
 		.carousel-control.left
-			margin-left	-40px
+			margin-left	-22px
 		.carousel-control.right
-			margin-right	-20px
+			margin-right	-22px
 	.section, .section-colored
 		padding	50px
 		height	280px
-		width	90%
+		width	100%
 	.section-colored
 		background-color	#eee
-	.span4 > h4 > i
+	.col-md-4 > h4 > i
 		color	#3a87ad
+
+.pager li
+	>a.btn-success
+		color: #fff
+		background-color: #5cb85c
+		border-color: #4cae4c
+	>a.btn-success:hover
+		color: #fff
+		background-color: #47a447
+		border-color: #398439
+	>a.btn-warning
+		color: #fff
+		background-color: #f0ad4e
+		border-color: #eea236
+	>a.btn-warning:hover
+		color: #fff
+		background-color: #ed9c28
+		border-color: #d58512
+	>a.btn-danger
+		color: #fff
+		background-color: #d9534f
+		border-color: #d43f3a
+	>a.btn-danger:hover
+		color: #fff
+		background-color: #d2322d
+		border-color: #ac2925
+
+
+i.myfa-1p5x
+	font-size	1.5em
+
+#carousel-plugin
+	.carousel-indicators
+		top:	100%
+		right:	50%
+		li
+			background-color:	#ccc
+		li.active
+			background-color:	#666
+	.carousel-control:hover
+		background-color	#3a87ad
+	.carousel-control
+		background-color	#dde
+		width	44px
+		height	44px
+		top	40%
+		border-radius	23px
+		i
+			color	white
+			font-size	44px
+	.carousel-control.left
+		margin-left	-22px
+	.carousel-control.right
+		margin-right	-22px
+

@@ -1,41 +1,15 @@
-module.exports = (Ember, App, socket) ->
-	util = require '../../util'
+module.exports = (Ember, App)->
+	util = require '../util.coffee'
+	socketemit = require '../socketemit.coffee'
 	_ = require 'underscore'
 	moment = require 'moment'
 
-	App.DatePicker = Ember.View.extend
-		classNames: ['ember-text-field']
-		tagName: "input"
-		attributeBindings: ['data','value','format','readonly','type','size']
-		size:"16"
-		type: "text"
-		format:'mm/dd/yyyy'
-		data:null
-		clear: (->
-			if not @get 'parentView.controller.newdate'
-				@$().datepicker('setDate', null)
-		).observes 'parentView.controller.newdate'
-		didInsertElement: (->
-			parent = @get 'parentView.controller'
-			@$().attr('placeholder', 'set an expiry date').datepicker
-				format: @get 'format'
-				minDate: 0
-				defaultDate: 7
-				maxDate: 99
-				onClose: (thdate)->
-					parent.set 'newdate', thdate
-		)
-		willDestroyElement: (->
-			@$().datepicker('destroy')
-		)
-
 	App.RequestsController = Ember.ObjectController.extend
-		hasPrev: false
 		hasNext: false
 		rangeStart: 0
 		rangeStop: (->
 			@get('rangeStart') + @get('reqs.length')
-		).property 'rangeStart', 'reqs'
+		).property 'rangeStart', 'reqs.@each'
 		hasPrev: (->
 			@get('rangeStart')
 		).property 'rangeStart'
@@ -45,38 +19,37 @@ module.exports = (Ember, App, socket) ->
 		newdate:null
 		urgent: false
 		prevPage: (->
-			socket.emit 'requests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {skip:@get('rangeStart')-@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
-					@set 'reqs', App.store.findMany(App.Request, reqs)
+					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', true
 					@set 'rangeStart', @get('rangeStart') - @get('pageSize')
 		)
 		nextPage: (->
-			socket.emit 'requests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
+			socketemit.get 'listrequests', {skip:@get('rangeStart')+@get('pageSize')}, (reqs, theresmore)=>
 				if reqs
-					@set 'reqs', App.store.findMany(App.Request, reqs)
+					@set 'reqs', @store.find 'request', reqs
 					@set 'hasNext', theresmore
 					@set 'rangeStart', @get('rangeStart') + @get('pageSize')
 		)
 		add: (->
 			if note = util.trim @get('newreq')
-				nuReq = 
-					expiry: new Date @get('newdate') or moment().add(7, 'days')
+				# we used to have set expiry to future a date, ie: new Date @get('newdate') or moment().add(7, 'days')
+				# now, we start with a record with no expiry, then set it when the request is ended.
+				nuReq =
 					user: App.user
 					urgent: @get 'urgent'
 					text: note
 					response: []
-				nuReqRec = App.Request.createRecord nuReq
-				App.store.commit()
+				@store.createRecord('request', nuReq).save().then =>
+					@reloadFirstPage()
 				@set 'newreq', null
 				@set 'newdate', null
 				@set 'urgent', null
-				nuReqRec.addObserver 'id', =>
-					@reloadFirstPage()
 		)
 		reloadFirstPage: (->
-			socket.emit 'requests', (reqs, theresmore)=>
-				@set 'reqs', App.store.findMany App.Request, reqs
+			socketemit.get 'listrequests', (reqs, theresmore)=>
+				@set 'reqs', @store.find 'request', reqs
 				@set 'hasNext', theresmore
 		)
 		disableAdd: (->
@@ -84,134 +57,163 @@ module.exports = (Ember, App, socket) ->
 		).property 'newreq'
 
 	App.RequestsView = Ember.View.extend
-		template: require '../../../templates/requests'
+		template: require '../../../templates/requests.jade'
 		classNames: ['requests']
 		toggleUrgency: (->
 			@set 'controller.urgent', not @get 'controller.urgent'
 		)
 		newReqView: Ember.TextArea.extend
-			classNames: ['span12']
-			placeholder: 'New request'
+			classNames: ['col-md-12']
+			placeholder: 'Who are you looking for in detail? Please write 2 or 3 lines on what value you can also provide them?'
 			rows: 5
 			tabindex: 1
-		newDateView: App.DatePicker.extend
-			placeholder: 'Expiration'
-			classNames: ['span11']
+
 		didInsertElement: ->
-			socket.on 'feed', (data) =>
+			###
+			# SOCKET.IO LOSS: we can't easily do this without socket.io
+			#socket.on 'feed', (data) =>
+				store = @get('controller').store
 				if not data or data.type isnt 'Request' or not data.id then return
 				Ember.run.next this, ->
 					if data.response?.length	# update
-						isLoaded = App.store.recordIsLoaded App.Request, data.id
-						if isLoaded
-							request = App.Request.find data.id
+						request = store.find('request', data.id).then ->
 							responses = request.get 'response'
 							new_resp = _.without data.response, responses.getEach('id')
-							_.each new_resp, (r)-> responses.addObject App.Response.find r
+							_.each new_resp, (r)-> responses.addObject store.find 'response', r
 							Ember.run.next this, ->
 								request.get('stateManager').send 'becameClean'
 					else
 						if @get 'controller.rangeStart' then return		# dont try to show new request if we're on another page
 						if not @get 'controller.rangeStop' then return	# and dont bother if there's no shown
 						@get('controller').reloadFirstPage()
+			###
 
 	App.RequestController = Ember.ObjectController.extend
 		hovering: null
-		count: (->
-			@get('response.length') or 0
-		).property 'response.@each'
 		hoverable: (->
-			if @get('count') then 'hoverable' else 'nothoverable'
-		).property 'count'
+			if @get('response.length') then 'hoverable' else 'nothoverable'
+		).property 'response.@each'
+		###
+		# we used to display the date when the request was scheduled to expire ...
+		#
 		expires: (->
 			if expireswhen = @get('expiry') then moment(expireswhen).fromNow()
 		).property 'expiry'
+		###
 		disabled: (->
 			if @get('user')?.get('id') is App.user.id then "disabled"
 		).property 'user'
 		addNote: (note) ->
-			newnote = App.Response.createRecord
+			@store.createRecord('response',
 				user: App.user
 				body: note
-			App.store.commit()
-			self = @
-			newnote.addObserver 'id', ->
-				self.get('response').pushObject newnote
-				App.store.commit()
+			).save().then =>
+				@get('response').pushObject newnote
+				@get('response').save()
 		addSuggestions: (suggestions)->
-			suggestion = App.Response.createRecord
+			suggestion = @store.createRecord 'response',
 				user: App.user
-				contact: []
-			_.each suggestions, (r)-> suggestion.get('contact').pushObject r
-			App.store.commit()
-			self = @
-			suggestion.addObserver 'id', ->
-				self.get('response').pushObject suggestion
-				App.store.commit()
+			suggestion.get('contact').then =>
+				_.each suggestions, (r)-> suggestion.get('contact').pushObject r
+				suggestion.save().then =>
+					@get('response').pushObject suggestion
+					@get('response').save()
 
 	App.RequserView = App.HoveruserView.extend
-		template: require '../../../templates/components/requser'
+		template: require '../../../templates/components/requser.jade'
 
 	App.RespuserView = App.HoveruserView.extend
-		template: require '../../../templates/components/respuser'
+		template: require '../../../templates/components/respuser.jade'
 
 	App.RequestView = Ember.View.extend
+		selectedSearchContacts: (->
+			if @get('selectedOption') isnt 'Redfly Contact' then return false
+			location.hash = ''
+			true
+		).property 'selectedOption'
+		selectedSuggestLink: (->
+			if @get('selectedOption') isnt 'Linkedin Link' then return false
+			location.hash = 'respond'
+			# setup handler for linkedin response
+			@$(document).off 'respondExtension'					# never quite sure if it's already been set ...
+			@$(document).on 'respondExtension', (ev)=>
+				if (ev = ev?.originalEvent?.detail) and @get 'selectedSuggestLink'
+					if ev.publicProfileUrl then @set 'newnote', ev.publicProfileUrl
+				false
+			true
+		).property 'selectedOption'
+		selectedAddNote: (->
+			if @get('selectedOption') isnt 'Message' then return false
+			location.hash = ''
+			true
+		).property 'selectedOption'
+		selectedOption: "Redfly Contact"
+		selectOptions: ["Redfly Contact", "Linkedin Link", "Message"]
 		expanded: false
 		selections:[]
 		newnote:''
 		idsme: (->
 			@get('controller.user.id') is App.user.get('id')
 		).property 'controller.user'
-		saveNote: (->
-			not @get('newnote').length
-		).property 'newnote'
 		saveSuggestions: (->
-			not @get('selections').length
-		).property 'selections.@each'
+			if @get 'selectedSearchContacts' then return not @get('selections').length
+			if @get 'selectedAddNote' then return not @get('newnote').length
+			return not util.isLIURL @get('newnote')
+		).property 'selections.@each', 'newnote', 'selectedSearchContacts', 'selectedAddNote'
+
 		showold: (->
-			if @get('addingcontacts') or @get('addingnote') then return
-			if @get('controller.count') then it = @get('controller.content')
+			if @get 'suggesting' then return
+			unless @get 'controller.response.length' then return
+			@get('controller').transitionToRoute 'responses', @get 'controller.id'
+			###
+			if @get('controller.response.length') then it = @get('controller.content')
 			else it = null
-			@set 'parentView.idsme', (App.user.get('id') is it.get 'user.id')
+			@set 'parentView.idsme', App.user.get('id') is it?.get('user.id')
 			@set 'parentView.controller.showthisreq', it
 			Ember.run.next this, ->
 				@get('parentView').$('.thisReq').removeClass('myLightSpeedOut').addClass('animated myLightSpeedIn')
+			###
 		)
 		toggle: (->
-			if @get('addingcontacts') or @get('addingnote') then return
+			if @get 'suggesting' then return
 			if not @get('controller.response.length') then return
 			@set 'expanded', not @get 'expanded'
 		)
-		closecontacts: (->
-			@set 'addingcontacts', false
+		clear: (->
+			@set 'selections', []
+			@set 'newnote', ''
+			location.hash = ''
+		)
+		cancel: (->
+			@clear()
+			@set 'suggesting', false
 		)
 		suggest: (->
-			@set 'selections', []
-			if not @get('controller.disabled') then @set 'addingcontacts', true
+			if @get('controller.disabled') then return
+			@clear()
+			@set 'suggesting', true
 		)
-		closenote: (->
-			@set 'addingnote', false
+		expire: (->
+			@set 'controller.expiry', new Date()		# used to be a future date: now set it to today when user ends request
+			@get('controller.content').save()
 		)
-		note: (->
-			@set 'newnote', ''
-			@set 'addingnote', true
-		)
-		addNewNote: (->
-			@get('controller').addNote @get 'newnote'
-			@closenote()
-			@set 'expanded', true
-		)
-		addNewContacts: (->
-			@get('controller').addSuggestions @get 'selections'
-			@closecontacts()
+		addResponse: (->
+			if @get('selectedSearchContacts') then @get('controller').addSuggestions @get 'selections'
+			else @get('controller').addNote @get 'newnote'
+			@cancel()
 			@set 'expanded', true
 		)
 		reqUserView: App.RequserView.extend()
+		leaveLinkView: Ember.TextArea.extend
+			classNames: ['col-md-12']
+			placeholder: 'Paste Linkedin url'
+			rows: 1
 		newNoteView: Ember.TextArea.extend
-			classNames: ['span12']
-			placeholder: 'Leave a comment'
-			rows: 4
+			classNames: ['col-md-12']
+			placeholder: 'Leave a message'
+			rows: 1
 		responseSearchView: App.SearchView.extend
+			classNames: ['col-md-12']
 			prefix: 'contact:'
 			conditions: (->
 				addedBy: App.user.get 'id'
@@ -224,18 +226,26 @@ module.exports = (Ember, App, socket) ->
 			).property 'controller.content', 'parentView.selections.@each'
 			select: (context) ->
 				$('div.search.dropdown').blur()
-				@get('parentView.selections').addObject App.Contact.find context.id
+				@get('parentView.selections').addObject @get('parentView.controller').store.find 'contact', context.id
 			keyUp: (event) -> false
 			submit: -> false
+		willDestroyElement: (->
+			@$(document).off 'respondExtension'				# tear down handler if we're disappearing...
+		)
 
 
 	App.ResponseController = Ember.ObjectController.extend
 		mine: (->
 			@get('user') is App.user.id
 		).property 'user'
+		isLink: (->
+			return util.isLIURL @get('body')
+		).property 'body'
+		isMsg: (->
+			return @get('body')?.length and not @get('isLink')
+		).property 'body'
 
 	App.ResponseView = Ember.View.extend
 		respUserView: App.RespuserView.extend()
-		select: (->
-		)
+
 
