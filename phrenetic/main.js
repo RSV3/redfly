@@ -12,6 +12,5 @@ if (module == 'server')
 else try {
 	require(projectRoot + '/lib/' + module);
 } catch (err) {
-	console.dir(err);
 	require('./lib/' + module);
 }
