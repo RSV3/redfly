@@ -21,13 +21,13 @@
 		.col-md-9.offset3
 			form.well(enctype='multipart/form-data')
 				span.help-block Select a .csv file to upload
+				br
 				| {{view view.fileInputView class="col-md-9"}}
-
+				br
 
 	+view('view.parsingView')
 		.col-md-1.offset6
 			i.fa.fa-spinner.fa-spin.fa-4x
-
 
 	+view('view.parsedView')
 		table.table
@@ -38,52 +38,30 @@
 					| {{/each}}
 					th Status
 			tbody
-				| {{#each processed.results}}
-				| <tr {{bindAttr class="status.new:success status.blacklisted:info status.error:error"}}>
-				| {{#collection contentBinding="controller.processed.fields" itemViewClass="view.resultFieldView"}}
-				//- TO-DO lots of copypasta
-				| {{#if view.typeEmails}}
-				| {{#each view.result.emails}}
-				ul.unstyled
-					li {{this}}
-				| {{/each}}
-				| {{/if}}
-				| {{#if view.typeNames}}
-				| {{#each view.result.names}}
-				ul.unstyled
-					li {{this}}
-				| {{/each}}
-				| {{/if}}
-				| {{#if view.typeTags}}
-				| {{#each view.result.tags}}
-				ul.unstyled
-					li
-						i.fa.fa-tag.muted
-						| &nbsp;&nbsp; {{this}}
-				| {{/each}}
-				| {{/if}}
-				| {{#if view.typeNotes}}
-				| {{#each view.result.notes}}
-				ul.unstyled
-					li
-						i.fa.fa-comment.muted
-						| &nbsp;&nbsp; {{this}}
-				| {{/each}}
-				| {{/if}}
-				| {{/collection}}
+				| {{#each result in processed.results}}
+				| <tr {{bindAttr class="result.status.new:success result.status.blacklisted:info result.status.error:error"}}>
+				| {{#each field in result.fields}}
 				td
-					| {{#if status.new}}
+					| {{#each item in field}}
+					span {{item}}
+					br
+					| {{/each}}
+				| {{/each}}
+
+				td
+					| {{#if result.status.new}}
 					| 	OK
 					| {{/if}}
-					| {{#if status.blacklisted}}
+					| {{#if result.status.blacklisted}}
 					| 	That&apos;s a {{App.orgTitle}} person and will be ignored.
 					| {{/if}}
-					| {{#if status.error}}
-					|	{{status.error}}
+					| {{#if result.status.error}}
+					|	{{result.status.error}}
 					br
 					br
 					|	Entry will be ignored.
 					| {{/if}}
+
 				| </tr>
 				| {{/each}}
 		.form-actions

@@ -136,7 +136,7 @@ module.exports = (route) ->
 		conditions[field] = data.value
 		Models.Contact.findOne conditions, (err, contact) ->
 			throw err if err
-			fn contact?[field][0]
+			fn contact?[field][0] or null
 
 	route 'get', 'getIntro', (data, session, fn) ->	# get an email introduction
 		Models.Contact.findById data.contact, (err, contact) ->

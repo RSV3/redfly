@@ -11,6 +11,95 @@ module.exports = (Ember, App) ->
 
 	App.ImportController = Ember.Controller.extend
 		currentState: null
+		recCnt: 0
+
+		# applies transformation to data rows (ie. not the first row)
+		doTransformation: (transform, data)->
+			result =
+				notes: []
+				status: {}
+			transform result, data
+			@set 'recCnt', 1 + @get 'recCnt'
+
+			result.names = filter.contact.names result.names
+			result.emails = filter.contact.emails result.emails
+			result.tags = _.chain(result.tags)
+				.map (item) ->
+					item.toLowerCase()
+				.compact()
+				.uniq()
+				.value()
+			require('async').forEach ['emails', 'names'], (field, cb) ->
+				validate.contact[field] result[field], cb
+			, (message) =>
+				if message is "blacklisted" # hacky
+					result.status.blacklisted = true
+				else if message
+					result.status.error = message
+				else
+					result.status.new = true
+				result.fields = []
+				_.each @get('processed.fields'), (f)->
+					result.fields.push result[f.toLowerCase()]
+				@get('processed.results').pushObject result
+				if @get('processed.results.length') is @get 'recCnt'
+					@set 'currentState', 'parsed'
+
+		# operates on header row that has field names
+		setTransform: (data)->
+			@set 'recCnt', 0
+			fields = []
+			functions = []
+			arrayify = (string) ->
+				_.map string.split(','), (item) ->
+					util.trim item
+			normalizedData = _.map data, (cell) ->
+				cell.toLowerCase()
+			data.forEach (entry, index) ->
+				if not entry
+					return
+				normalizedEntry = entry.toLowerCase()
+				if normalizedEntry in ['email', 'tag', 'note']	# 'name' is handled specially.
+					normalizedEntry += 's'
+				if _s.contains normalizedEntry, 'name'
+					if _s.contains normalizedEntry, 'first'
+						lastNameEntry = _.find normalizedData, (candidate) ->
+							_s.contains(candidate, 'name') and _s.contains(candidate, 'last')
+						lastNameIndex = normalizedData.indexOf lastNameEntry
+						functions.push do (index, lastNameIndex) ->
+							(result, raw) ->
+								if raw[index] and raw[lastNameIndex]
+									result.names = [raw[index] + ' ' + raw[lastNameIndex]]
+								else if raw[index]
+									result.names = [raw[index]]
+					else if 'Names' not in fields	# Ensure name transform isn't done already.
+						functions.push do (index) ->
+							(result, raw) ->
+								if raw[index]
+									result.names = arrayify raw[index]
+					fields.push 'Names'
+				else if normalizedEntry in ['emails', 'tags']
+					functions.push do (index) ->
+						(result, raw) ->
+							if raw[index]
+								result[normalizedEntry] = arrayify raw[index]
+					fields.push _s.capitalize(normalizedEntry)
+				else if normalizedEntry is 'notes'
+					functions.push do (index) ->
+						(result, raw) ->
+							if raw[index]
+								result.notes.unshift raw[index]	# Put "proper" notes at the beginning.
+					fields.push _s.capitalize(normalizedEntry)
+				else
+					functions.push do (index) ->
+						(result, raw) ->
+							if raw[index]
+								result.notes.push entry + ': ' + raw[index]
+					fields.push 'Notes'
+			@set 'processed.fields', _.sortBy _.uniq(fields), (field) ->
+				['Emails', 'Names', 'Tags', 'Notes'].indexOf field
+			return (result, raw) ->
+				func result, raw for func in functions
 
 		_process: ->
 			# Buffer needs to be available globally to use the csv module as-written. Oh well.
@@ -18,97 +107,16 @@ module.exports = (Ember, App) ->
 
 			reader = new FileReader
 			reader.onload = (upload) =>
-				fields = []
 				transform = null
 				require('csv')()
 					.from.string(upload.target.result)
 					.on 'record', (data) =>
-						data = _.map data, (item) ->
-							util.trim item
-						console.dir data
-						# Ignore blank rows.
-						if _.isEmpty _.compact data
-							return
-
-						if not transform
-							functions = []
-							arrayify = (string) ->
-								_.map string.split(','), (item) ->
-									util.trim item
-							normalizedData = _.map data, (cell) ->
-								cell.toLowerCase()
-							data.forEach (entry, index) ->
-								if not entry
-									return
-								normalizedEntry = entry.toLowerCase()
-								if normalizedEntry in ['email', 'tag', 'note']	# 'name' is handled specially.
-									normalizedEntry += 's'
-								if _s.contains normalizedEntry, 'name'
-									if _s.contains normalizedEntry, 'first'
-										lastNameEntry = _.find normalizedData, (candidate) ->
-											_s.contains(candidate, 'name') and _s.contains(candidate, 'last')
-										lastNameIndex = normalizedData.indexOf lastNameEntry
-										functions.push do (index, lastNameIndex) ->
-											(result, raw) ->
-												if raw[index] and raw[lastNameIndex]
-													result.names = [raw[index] + ' ' + raw[lastNameIndex]]
-												else if raw[index]
-													result.names = [raw[index]]
-									else if 'Names' not in fields	# Ensure name transform isn't done already.
-										functions.push do (index) ->
-											(result, raw) ->
-												if raw[index]
-													result.names = arrayify raw[index]
-									fields.push 'Names'
-								else if normalizedEntry in ['emails', 'tags']
-									functions.push do (index) ->
-										(result, raw) ->
-											if raw[index]
-												result[normalizedEntry] = arrayify raw[index]
-									fields.push _s.capitalize(normalizedEntry)
-								else if normalizedEntry is 'notes'
-									functions.push do (index) ->
-										(result, raw) ->
-											if raw[index]
-												result.notes.unshift raw[index]	# Put "proper" notes at the beginning.
-									fields.push _s.capitalize(normalizedEntry)
-								else
-									functions.push do (index) ->
-										(result, raw) ->
-											if raw[index]
-												result.notes.push entry + ': ' + raw[index]
-									fields.push 'Notes'
-							transform = (result, raw) ->
-								func result, raw for func in functions
-							fields = _.sortBy _.uniq(fields), (field) ->
-								['Emails', 'Names', 'Tags', 'Notes'].indexOf field
-							@set 'processed.fields', fields
-						else
-							result =
-								notes: []
-								status: {}
-							transform result, data
-
-							result.names = filter.contact.names result.names
-							result.emails = filter.contact.emails result.emails
-							result.tags = _.chain(result.tags)
-								.map (item) ->
-									item.toLowerCase()
-								.compact()
-								.uniq()
-								.value()
-							require('async').forEach ['emails', 'names'], (field, cb) ->
-								validate.contact[field] result[field], cb
-							, (message) =>
-								if message is "blacklisted" # hacky
-									result.status.blacklisted = true
-								else if message
-									result.status.error = message
-								else
-									result.status.new = true
-								@get('processed.results').pushObject result
+						data = _.map data, (item) -> util.trim item
+						if _.isEmpty _.compact data then return		# Ignore blank rows.
+						if not transform then transform = @setTransform data	# first row field names
+						else @doTransformation transform, data	# real data!
 					.on 'end', (count)=>
-						@set 'currentState', 'parsed'
+						console.log 'csv loaded'
 					.on 'error', (err)=>
 						@set 'error', 'Something went wrong during parsing: ' + err.message
 						console.dir err
@@ -189,7 +197,7 @@ module.exports = (Ember, App) ->
 
 			resultFieldView: Ember.View.extend
 				tagName: 'td'
-				resultBinding: 'parentView.context'
+				resultBinding: 'parentView.content'
 				didInsertElement: ->
 					@set 'type' + _s.capitalize(@get('content')), true
 
