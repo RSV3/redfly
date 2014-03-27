@@ -3,25 +3,14 @@ module.exports = (Ember, App) ->
 	_s = require 'underscore.string'
 
 	util = require '../util.coffee'
-	validation = require '../validation.coffee'
+	validation = require('../validation.coffee')()
 
 	validate = validation.validate
 	filter = validation.filter
 
 
 	App.ImportController = Ember.Controller.extend
-		stateMachine: (->
-				Ember.StateManager.create
-					start: Ember.State.create()
-					parsing: Ember.State.create
-						enter: => # Bind 'this' to the controller.
-							@set 'error', null
-							# Set initial state.
-							@set 'processed', {}
-							@set 'processed.results', []
-							@_process()
-					parsed: Ember.State.create()
-			).property()
+		currentState: null
 
 		_process: ->
 			# Buffer needs to be available globally to use the csv module as-written. Oh well.
@@ -36,6 +25,7 @@ module.exports = (Ember, App) ->
 					.on 'record', (data) =>
 						data = _.map data, (item) ->
 							util.trim item
+						console.dir data
 						# Ignore blank rows.
 						if _.isEmpty _.compact data
 							return
@@ -117,11 +107,12 @@ module.exports = (Ember, App) ->
 								else
 									result.status.new = true
 								@get('processed.results').pushObject result
-					.on 'end', (count) =>
-						@get('stateMachine').transitionTo 'parsed'
-					.on 'error', (err) =>
+					.on 'end', (count)=>
+						@set 'currentState', 'parsed'
+					.on 'error', (err)=>
 						@set 'error', 'Something went wrong during parsing: ' + err.message
-						@get('stateMachine').transitionTo 'start'
+						console.dir err
+						@set 'currentState', 'start'
 
 			reader.readAsText @get('file')
 
@@ -131,10 +122,13 @@ module.exports = (Ember, App) ->
 		template: require '../../../templates/import.jade'
 		classNames: ['import']
 
+		didInsertElement: ->
+			@set 'controller.currentState', 'start'
+
 		startView: Ember.View.extend
 			isVisible: (->
-					@get('controller.stateMachine.currentState.name') is 'start'
-				).property 'controller.stateMachine.currentState.name'
+				@get('controller.currentState') is 'start'
+			).property 'controller.currentState'
 
 			fileInputView: Ember.View.extend
 				tagName: 'input'
@@ -145,20 +139,25 @@ module.exports = (Ember, App) ->
 						if file.type isnt 'text/csv'
 							return @set 'controller.error', 'This doesn\'t appear to be a csv file.'
 						@set 'controller.file', file
-						@get('controller.stateMachine').transitionTo 'parsing'
+						@set 'controller.error', null
+						# Set initial state.
+						@set 'controller.processed', {}
+						@set 'controller.processed.results', []
+						@get('controller')._process()
+						@set 'controller.currentState', 'parsing'
 
 		parsingView: Ember.View.extend
 			isVisible: (->
-					@get('controller.stateMachine.currentState.name') is 'parsing'
-				).property 'controller.stateMachine.currentState.name'
+				@get('controller.currentState') is 'parsing'
+			).property 'controller.currentState'
 
 		parsedView: Ember.View.extend
 			isVisible: (->
-					@get('controller.stateMachine.currentState.name') is 'parsed'
-				).property 'controller.stateMachine.currentState.name'
+				@get('controller.currentState') is 'parsed'
+			).property 'controller.currentState'
 			reset: ->
 				@set 'controller.error', null
-				@get('controller.stateMachine').transitionTo 'start'
+				@set 'controller.currentState', 'start'
 			import: ->
 				store = @get('parentView.controller').store
 				@get('controller.processed.results').forEach (result) ->
@@ -169,21 +168,21 @@ module.exports = (Ember, App) ->
 						knows: Ember.ArrayProxy.create {content: [App.user]}
 						added: new Date
 						addedBy: App.user
-					contact.save()
-					result.tags.forEach (tag)->
-						t = store.createRecord 'tag',
-							creator: App.user
-							contact: contact
-							category: 'industry'
-							body: tag
-						t.save()
-					result.notes.forEach (note)->
-						n = store.createRecord 'note',
-							author: App.user
-							contact: contact
-							body: note
-						n.save()
-				@get('controller.stateMachine').transitionTo 'start'
+					contact.save().then ->
+						result.tags.forEach (tag)->
+							t = store.createRecord 'tag',
+								creator: App.user
+								contact: contact
+								category: 'industry'
+								body: tag
+							t.save()
+						result.notes.forEach (note)->
+							n = store.createRecord 'note',
+								author: App.user
+								contact: contact
+								body: note
+							n.save()
+				@set 'controller.currentState', 'start'
 				console.log 'transitioned to start'
 				# Move to the top of the page so the user sees the new contacts coming into the feed.
 				$('html, body').animate {scrollTop: '0px'}, 300
@@ -194,7 +193,3 @@ module.exports = (Ember, App) ->
 				didInsertElement: ->
 					@set 'type' + _s.capitalize(@get('content')), true
 
-					# type = @get 'content'
-					# if type in ['emails', 'names', 'notes']
-					# 	type = 'default'
-					# @set 'type' + _s.capitalize(type), true
