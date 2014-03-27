@@ -5,7 +5,7 @@ doit = (type, name, data, cb)->
 	$.ajax
 		url: "/#{name}"
 		cache:false
-		type: 'GET'
+		type: type
 		data: data
 		beforeSend: (jqXHR, settings)->
 			settings['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest'
@@ -15,8 +15,10 @@ doit = (type, name, data, cb)->
 				return cb.apply cb, data	# allow callbacks to take list of args
 			cb data			# ...but most commonly expect a single object response
 		error: (xhr, textStatus, errorThrown)->
-			console.log 'error'
+			console.log "error from #{type} on #{name}"
+			console.dir data
 			console.dir textStatus
+			console.dir errorThrown
 			cb null
 
 module.exports =

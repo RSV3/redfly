@@ -44,6 +44,7 @@ scrapeContact = (user, contact, cb)->
 # try to match the specified contact to a useful linkscraped record
 matchScraped = (contact, cb)->
 	names = contact.names[0]
+	if not names?.length then return cb null
 	q = {'name.formattedName':names}
 	Models.LinkScraped.find q, (err, linkedins)->
 		if not err and linkedins?.length then return cb linkedins[0]

@@ -1,6 +1,6 @@
 module.exports = (Ember, App) ->
 	_ = require 'underscore'
-	validation = require '../../validation.coffee'
+	validation = require('../../validation.coffee')()
 
 	validate = validation.validate
 	filter = validation.filter
