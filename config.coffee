@@ -89,7 +89,7 @@ module.exports =
 		LINKEDIN_API_KEY: 'dmniuz3esjfd'
 		LINKEDIN_API_SECRET: 'lUEtRHIlApJ8NKt9'
 
-		MONGOLAB_URI: 'mongodb://heroku_app6375934:oc78rcclpfcs9iu3i8prldlki3@ds043847.mongolab.com:43847/heroku_app6375934'
+		MONGOLAB_URI: 'mongodb://heroku_app6375934_A:QtdWmwQZmGTiJjEvLQVgEVmrffflhVeO@ds043847.mongolab.com:43847/heroku_app6375934'
 
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
@@ -113,7 +113,7 @@ module.exports =
 		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://heroku_app18594187:56m25k6325f2i6489mc4kh2r3h@ds053858.mongolab.com:53858/heroku_app18594187'
+		MONGOLAB_URI: 'mongodb://heroku_app18594187_A:hzaSOPHVVsXdYcxVWvhXDIrBhJutFzzt@ds053858.mongolab.com:53858/heroku_app18594187'
 		ES_URL: 'http://paas:041e4f042e1234537da0385d8305787b@api.searchbox.io'
 		ES_NAME: 'project11'
 		NUDGE_DAYS: 'Monday Thursday'
@@ -134,7 +134,7 @@ module.exports =
 		LINKEDIN_API_SECRET: 'Z6kn0jAFC8wQCflH'
 		FULLCONTACT_API_KEY:	'f162c93405d0f7d7'
 
-		MONGOLAB_URI: 'mongodb://heroku_app18594197:ot6gs4lpocaheo262u60uclfq7@ds059868-a0.mongolab.com:59868/heroku_app18594197'
+		MONGOLAB_URI: 'mongodb://heroku_app18594197_A:EjimweAsZhXlRRftWicEwNRxvBvSPSoe@ds059868-a0.mongolab.com:59868/heroku_app18594197'
 		ES_URL: 'http://paas:715d2306105df387ab3b3f22dc62371a@api.searchbox.io'
 		ES_NAME: 'project11'
 
@@ -157,7 +157,7 @@ module.exports =
 		AWS_SECRET_KEY: '+hWdQ7SL0YUVwdKw1hp6lWIdeAYiD/fHMJrEHPXn'
 		S3_BACKUP_BUCKET: 'backups.redfly.redstar.com'
 
-		MONGOLAB_URI: 'mongodb://heroku_app8065862:6cqi48lldblomdf4uebuhplblj@ds039147.mongolab.com:39147/heroku_app8065862'
+		MONGOLAB_URI: 'mongodb://heroku_app8065862_A:FPqoZICFQWUJHQNPtoGrYDHgnwrJcysl@ds039147.mongolab.com:39147/heroku_app8065862'
 
 		ES_URL: 'http://paas:d39effca815a6a4d7a310d0c7974ea1a@api.searchbox.io'
 
